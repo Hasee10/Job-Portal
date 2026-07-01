@@ -1,0 +1,8 @@
+# Secrets — never commit these
+SUPABASE_DB_Password.txt
+*.env
+.env*
+
+# n8n workflow exports contain hardcoded live API keys (Supabase service_role,
+# Adzuna, Jooble). Keep them local only.
+n8n-workflows/workflows/*.json

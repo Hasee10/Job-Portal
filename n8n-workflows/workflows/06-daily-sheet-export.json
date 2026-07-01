@@ -1,0 +1,132 @@
+{
+  "name": "Daily Top Jobs Export - Google Sheet (Admin)",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "days",
+              "daysInterval": 1,
+              "triggerAtHour": 8
+            }
+          ]
+        }
+      },
+      "id": "cron-daily",
+      "name": "Every Day at 8am",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [0, 0]
+    },
+    {
+      "parameters": {
+        "jsCode": "const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();\nreturn [{ json: { since } }];"
+      },
+      "id": "compute-since",
+      "name": "Compute 24h Cutoff",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [220, 0]
+    },
+    {
+      "parameters": {
+        "url": "https://yywqafhycdpahtropqam.supabase.co/rest/v1/jobs",
+        "authentication": "none",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "apikey", "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl5d3FhZmh5Y2RwYWh0cm9wcWFtIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4Mjg5MDYyMiwiZXhwIjoyMDk4NDY2NjIyfQ.kkcFvrgM9nzp-Tcj5t7IEly0k417_LcKXOzXqnSiYU0" },
+            { "name": "Authorization", "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl5d3FhZmh5Y2RwYWh0cm9wcWFtIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4Mjg5MDYyMiwiZXhwIjoyMDk4NDY2NjIyfQ.kkcFvrgM9nzp-Tcj5t7IEly0k417_LcKXOzXqnSiYU0" }
+          ]
+        },
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            { "name": "score", "value": "gt.60" },
+            { "name": "flagged_suspicious", "value": "eq.false" },
+            { "name": "posted_at", "value": "=gte.{{$json.since}}" },
+            { "name": "select", "value": "*" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "query-jobs",
+      "name": "Query Top Jobs (score > 60, last 24h)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [440, 0]
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.all();"
+      },
+      "id": "split-jobs",
+      "name": "Split Rows",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [660, 0]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "SET_ME_GOOGLE_SHEET_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "SET_ME_SHEET_NAME_OR_GID",
+          "mode": "id"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "title": "={{$json.title}}",
+            "company": "={{$json.company}}",
+            "location": "={{$json.location}}",
+            "remote_type": "={{$json.remote_type}}",
+            "apply_url": "={{$json.apply_url}}",
+            "source": "={{$json.source}}",
+            "posted_at": "={{$json.posted_at}}",
+            "entry_level": "={{$json.entry_level}}",
+            "flagged_suspicious": "={{$json.flagged_suspicious}}",
+            "score": "={{$json.score}}",
+            "created_at": "={{$json.created_at}}"
+          }
+        },
+        "options": {}
+      },
+      "id": "append-sheet",
+      "name": "Append To Google Sheet",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [880, 0],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "SET_ME",
+          "name": "Google Sheets - Admin Export"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Every Day at 8am": {
+      "main": [[{ "node": "Compute 24h Cutoff", "type": "main", "index": 0 }]]
+    },
+    "Compute 24h Cutoff": {
+      "main": [[{ "node": "Query Top Jobs (score > 60, last 24h)", "type": "main", "index": 0 }]]
+    },
+    "Query Top Jobs (score > 60, last 24h)": {
+      "main": [[{ "node": "Split Rows", "type": "main", "index": 0 }]]
+    },
+    "Split Rows": {
+      "main": [[{ "node": "Append To Google Sheet", "type": "main", "index": 0 }]]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

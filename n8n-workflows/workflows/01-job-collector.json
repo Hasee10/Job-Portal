@@ -1,0 +1,467 @@
+{
+  "name": "Job Collector - Core (Remotive + Arbeitnow + The Muse + Adzuna + Jooble + RemoteOK + WeWorkRemotely + Himalayas + Jobicy)",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 6
+            }
+          ]
+        }
+      },
+      "id": "cron-trigger",
+      "name": "Every 6 Hours",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [0, 400]
+    },
+    {
+      "parameters": {
+        "url": "https://remotive.com/api/remote-jobs",
+        "options": {}
+      },
+      "id": "http-remotive",
+      "name": "Fetch Remotive Jobs",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [220, 0]
+    },
+    {
+      "parameters": {
+        "jsCode": "const jobs = $input.first().json.jobs || [];\nreturn jobs.map(job => ({\n  json: {\n    title: (job.title || '').trim(),\n    company: (job.company_name || '').trim(),\n    location: (job.candidate_required_location || '').trim() || null,\n    remote_type: 'remote',\n    apply_url: job.url,\n    source: 'remotive',\n    description: job.description || null,\n    posted_at: job.publication_date ? new Date(job.publication_date).toISOString() : null\n  }\n})).filter(item => item.json.title && item.json.apply_url);"
+      },
+      "id": "normalize-remotive",
+      "name": "Normalize Remotive",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [440, 0]
+    },
+    {
+      "parameters": {
+        "url": "https://www.arbeitnow.com/api/job-board-api",
+        "options": {}
+      },
+      "id": "http-arbeitnow",
+      "name": "Fetch Arbeitnow Jobs",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [220, 170]
+    },
+    {
+      "parameters": {
+        "jsCode": "const jobs = $input.first().json.data || [];\nreturn jobs.map(job => ({\n  json: {\n    title: (job.title || '').trim(),\n    company: (job.company_name || '').trim(),\n    location: (job.location || '').trim() || null,\n    remote_type: job.remote ? 'remote' : 'onsite',\n    apply_url: job.url,\n    source: 'arbeitnow',\n    description: job.description || null,\n    posted_at: job.created_at ? new Date(job.created_at * 1000).toISOString() : null\n  }\n})).filter(item => item.json.title && item.json.apply_url);"
+      },
+      "id": "normalize-arbeitnow",
+      "name": "Normalize Arbeitnow",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [440, 170]
+    },
+    {
+      "parameters": {
+        "url": "https://www.themuse.com/api/public/jobs?page=0",
+        "options": {}
+      },
+      "id": "http-muse-0",
+      "name": "Fetch The Muse Page 0",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [220, 340]
+    },
+    {
+      "parameters": {
+        "url": "https://www.themuse.com/api/public/jobs?page=1",
+        "options": {}
+      },
+      "id": "http-muse-1",
+      "name": "Fetch The Muse Page 1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [220, 470]
+    },
+    {
+      "parameters": {
+        "url": "https://www.themuse.com/api/public/jobs?page=2",
+        "options": {}
+      },
+      "id": "http-muse-2",
+      "name": "Fetch The Muse Page 2",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [220, 600]
+    },
+    {
+      "parameters": {
+        "mode": "append",
+        "numberInputs": 3
+      },
+      "id": "merge-muse-pages",
+      "name": "Merge Muse Pages",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [440, 470]
+    },
+    {
+      "parameters": {
+        "jsCode": "const out = [];\nfor (const item of $input.all()) {\n  const results = item.json.results || [];\n  for (const job of results) {\n    const locationText = (job.locations || []).map(l => l.name).join(', ');\n    const text = `${job.name || ''} ${locationText}`.toLowerCase();\n    out.push({\n      json: {\n        title: (job.name || '').trim(),\n        company: (job.company && job.company.name || '').trim(),\n        location: locationText || null,\n        remote_type: (text.includes('flexible') || text.includes('remote')) ? 'remote' : 'onsite',\n        apply_url: job.refs && job.refs.landing_page,\n        source: 'themuse',\n        description: job.contents || null,\n        posted_at: job.publication_date ? new Date(job.publication_date).toISOString() : null\n      }\n    });\n  }\n}\nreturn out.filter(item => item.json.title && item.json.apply_url);"
+      },
+      "id": "normalize-muse",
+      "name": "Normalize The Muse",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [660, 470]
+    },
+    {
+      "parameters": {
+        "amount": 3,
+        "unit": "seconds"
+      },
+      "id": "wait-before-adzuna",
+      "name": "Throttle Before Adzuna",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [220, 730],
+      "notes": "Adzuna default limits: 25 req/min, 250/day. This run only makes one call, but the wait keeps it from firing in the same instant as the other source requests."
+    },
+    {
+      "parameters": {
+        "url": "https://api.adzuna.com/v1/api/jobs/gb/search/1?app_id=b913bbb1&app_key=88cb4822c144b8ce2bac89c771722200&results_per_page=50&content-type=application/json",
+        "options": {}
+      },
+      "id": "http-adzuna",
+      "name": "Fetch Adzuna Jobs",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [440, 730]
+    },
+    {
+      "parameters": {
+        "jsCode": "const jobs = $input.first().json.results || [];\nreturn jobs.map(job => {\n  const text = `${job.title || ''} ${job.description || ''}`.toLowerCase();\n  return {\n    json: {\n      title: (job.title || '').trim(),\n      company: (job.company && job.company.display_name || '').trim(),\n      location: (job.location && job.location.display_name || '').trim() || null,\n      remote_type: text.includes('remote') ? 'remote' : (text.includes('hybrid') ? 'hybrid' : 'onsite'),\n      apply_url: job.redirect_url,\n      source: 'adzuna',\n      description: job.description || null,\n      posted_at: job.created ? new Date(job.created).toISOString() : null\n    }\n  };\n}).filter(item => item.json.title && item.json.apply_url);"
+      },
+      "id": "normalize-adzuna",
+      "name": "Normalize Adzuna",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [660, 730]
+    },
+    {
+      "parameters": {
+        "amount": 3,
+        "unit": "seconds"
+      },
+      "id": "wait-before-jooble",
+      "name": "Throttle Before Jooble",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [220, 900]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://jooble.org/api/e43d808a-f73c-4e2d-9f26-dd004e8a1f4a",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Content-Type", "value": "application/json" },
+            { "name": "User-Agent", "value": "Mozilla/5.0 (compatible; JobPortalCollector/1.0)" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { keywords: \"developer\", location: \"\" } }}",
+        "options": {}
+      },
+      "id": "http-jooble",
+      "name": "Fetch Jooble Jobs",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [440, 900]
+    },
+    {
+      "parameters": {
+        "jsCode": "const jobs = $input.first().json.jobs || [];\nreturn jobs.map(job => {\n  const text = `${job.title || ''} ${job.snippet || ''}`.toLowerCase();\n  return {\n    json: {\n      title: (job.title || '').trim(),\n      company: (job.company || '').trim(),\n      location: (job.location || '').trim() || null,\n      remote_type: text.includes('remote') ? 'remote' : (text.includes('hybrid') ? 'hybrid' : 'onsite'),\n      apply_url: job.link,\n      source: 'jooble',\n      description: job.snippet || null,\n      posted_at: job.updated ? new Date(job.updated).toISOString() : null\n    }\n  };\n}).filter(item => item.json.title && item.json.apply_url);"
+      },
+      "id": "normalize-jooble",
+      "name": "Normalize Jooble",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [660, 900]
+    },
+    {
+      "parameters": {
+        "url": "https://remoteok.com/api",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "User-Agent", "value": "Mozilla/5.0 (compatible; JobPortalCollector/1.0)" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "http-remoteok",
+      "name": "Fetch RemoteOK Jobs",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [220, 1070]
+    },
+    {
+      "parameters": {
+        "jsCode": "const arr = $input.first().json;\nconst jobs = Array.isArray(arr) ? arr.filter(j => j && j.id) : [];\nreturn jobs.map(job => ({\n  json: {\n    title: (job.position || '').trim(),\n    company: (job.company || '').trim(),\n    location: (job.location || '').trim() || null,\n    remote_type: 'remote',\n    apply_url: job.url,\n    source: 'remoteok',\n    description: job.description || null,\n    posted_at: job.date ? new Date(job.date).toISOString() : null\n  }\n})).filter(item => item.json.title && item.json.apply_url);"
+      },
+      "id": "normalize-remoteok",
+      "name": "Normalize RemoteOK",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [440, 1070]
+    },
+    {
+      "parameters": {
+        "url": "https://weworkremotely.com/categories/remote-programming-jobs.rss"
+      },
+      "id": "rss-wwr",
+      "name": "Fetch WeWorkRemotely RSS",
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.1,
+      "position": [220, 1220]
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.all().map(item => {\n  const raw = item.json;\n  const titleFull = raw.title || '';\n  const splitIdx = titleFull.indexOf(':');\n  const company = splitIdx > -1 ? titleFull.slice(0, splitIdx).trim() : null;\n  const title = splitIdx > -1 ? titleFull.slice(splitIdx + 1).trim() : titleFull.trim();\n  return {\n    json: {\n      title,\n      company,\n      location: raw.region || null,\n      remote_type: 'remote',\n      apply_url: raw.link,\n      source: 'weworkremotely',\n      description: raw.contentSnippet || raw.content || raw.summary || null,\n      posted_at: raw.pubDate ? new Date(raw.pubDate).toISOString() : (raw.isoDate || null)\n    }\n  };\n}).filter(item => item.json.title && item.json.apply_url);"
+      },
+      "id": "normalize-wwr",
+      "name": "Normalize WeWorkRemotely",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [440, 1220]
+    },
+    {
+      "parameters": {
+        "url": "https://himalayas.app/jobs/api",
+        "options": {}
+      },
+      "id": "http-himalayas",
+      "name": "Fetch Himalayas Jobs",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [220, 1370],
+      "notes": "Schema inferred, not hand-verified against a live response (site blocks headless fetch). Check the Normalize Himalayas node's output on first real execution and adjust field names if they don't match."
+    },
+    {
+      "parameters": {
+        "jsCode": "const jobs = $input.first().json.jobs || $input.first().json.data || [];\nreturn jobs.map(job => {\n  const location = Array.isArray(job.locationRestrictions) ? job.locationRestrictions.join(', ') : (job.locationRestrictions || null);\n  return {\n    json: {\n      title: (job.title || '').trim(),\n      company: (job.companyName || '').trim(),\n      location: location || null,\n      remote_type: 'remote',\n      apply_url: job.applicationLink || job.guid || null,\n      source: 'himalayas',\n      description: job.description || job.excerpt || null,\n      posted_at: job.pubDate ? new Date(typeof job.pubDate === 'number' ? job.pubDate * 1000 : job.pubDate).toISOString() : null\n    }\n  };\n}).filter(item => item.json.title && item.json.apply_url);"
+      },
+      "id": "normalize-himalayas",
+      "name": "Normalize Himalayas",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [440, 1370]
+    },
+    {
+      "parameters": {
+        "url": "https://jobicy.com/api/v2/remote-jobs?count=50",
+        "options": {}
+      },
+      "id": "http-jobicy",
+      "name": "Fetch Jobicy Jobs",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [220, 1520]
+    },
+    {
+      "parameters": {
+        "jsCode": "const jobs = $input.first().json.jobs || [];\nreturn jobs.map(job => ({\n  json: {\n    title: (job.jobTitle || '').trim(),\n    company: (job.companyName || '').trim(),\n    location: (job.jobGeo || '').trim() || null,\n    remote_type: 'remote',\n    apply_url: job.url,\n    source: 'jobicy',\n    description: job.jobDescription || job.jobExcerpt || null,\n    posted_at: job.pubDate ? new Date(job.pubDate).toISOString() : null\n  }\n})).filter(item => item.json.title && item.json.apply_url);"
+      },
+      "id": "normalize-jobicy",
+      "name": "Normalize Jobicy",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [440, 1520]
+    },
+    {
+      "parameters": {
+        "mode": "append",
+        "numberInputs": 9
+      },
+      "id": "merge-sources",
+      "name": "Merge Sources",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [900, 750]
+    },
+    {
+      "parameters": {
+        "jsCode": "function stripHtml(html) {\n  if (!html) return null;\n  return html\n    .replace(/<[^>]*>/g, ' ')\n    .replace(/&nbsp;/g, ' ')\n    .replace(/&amp;/g, '&')\n    .replace(/&lt;/g, '<')\n    .replace(/&gt;/g, '>')\n    .replace(/&quot;/g, '\"')\n    .replace(/&#0?39;/g, \"'\")\n    .replace(/\\s+/g, ' ')\n    .trim() || null;\n}\n\nreturn $input.all().map(item => ({\n  json: { ...item.json, description: stripHtml(item.json.description) }\n}));"
+      },
+      "id": "clean-description",
+      "name": "Strip HTML From Description",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1010, 750]
+    },
+    {
+      "parameters": {
+        "jsCode": "const includeKeywords = ['intern', 'graduate', 'junior', 'entry level', 'associate', '0-1 years', '0-2 years', 'no experience', 'trainee'];\nconst excludeKeywords = ['5+ years', 'senior only', 'unpaid', 'commission-only', 'commission only'];\n\nconst out = [];\nfor (const item of $input.all()) {\n  const text = `${item.json.title || ''} ${item.json.description || ''}`.toLowerCase();\n\n  const isExcluded = excludeKeywords.some(k => text.includes(k));\n  if (isExcluded) continue;\n\n  const entryLevel = includeKeywords.some(k => text.includes(k));\n  out.push({ json: { ...item.json, entry_level: entryLevel } });\n}\nreturn out;"
+      },
+      "id": "entry-level-filter",
+      "name": "Entry-Level Filter",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1120, 450]
+    },
+    {
+      "parameters": {
+        "jsCode": "const suspiciousKeywords = [\n  'pay to apply', 'training fee', 'registration fee', 'whatsapp only', 'whatsapp-only',\n  'crypto', 'trading platform', 'forex', 'investment opportunity'\n];\n\nreturn $input.all().map(item => {\n  const text = `${item.json.title || ''} ${item.json.description || ''}`.toLowerCase();\n  const noCompanyName = !item.json.company || item.json.company.trim().length === 0;\n  const keywordHit = suspiciousKeywords.some(k => text.includes(k));\n  const unrealisticSalary = /\\$\\s?\\d{4,}\\s*\\/\\s*(day|hour)/i.test(text) || /earn\\s+\\$?\\d{3,}[,\\d]*\\s+per\\s+week/i.test(text);\n\n  return {\n    json: {\n      ...item.json,\n      flagged_suspicious: keywordHit || noCompanyName || unrealisticSalary\n    }\n  };\n});"
+      },
+      "id": "quality-check",
+      "name": "Quality Check",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1340, 450]
+    },
+    {
+      "parameters": {
+        "jsCode": "const hasSalaryMention = text => /\\$|salary|per annum|per year|per month|\\bpkr\\b|\\busd\\b|k\\/year/i.test(text);\n\nreturn $input.all().map(item => {\n  const j = item.json;\n  const text = `${j.title || ''} ${j.description || ''}`;\n  let score = 0;\n\n  if (hasSalaryMention(text)) score += 20;\n\n  if (j.posted_at) {\n    const daysOld = (Date.parse(j.posted_at) ? (new Date() - new Date(j.posted_at)) / (1000 * 60 * 60 * 24) : 999);\n    if (daysOld <= 7) score += 20;\n  }\n\n  if (j.remote_type === 'remote' || j.remote_type === 'hybrid') score += 15;\n  if (j.entry_level) score += 15;\n  if (j.apply_url) score += 10;\n\n  if (j.flagged_suspicious) score -= 50;\n  if (!hasSalaryMention(text) && !j.description) score -= 10;\n\n  score = Math.max(0, Math.min(100, score));\n\n  return { json: { ...j, score } };\n});"
+      },
+      "id": "scoring",
+      "name": "Score Jobs",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1560, 450]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://yywqafhycdpahtropqam.supabase.co/rest/v1/jobs?on_conflict=apply_url",
+        "authentication": "none",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "apikey", "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl5d3FhZmh5Y2RwYWh0cm9wcWFtIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4Mjg5MDYyMiwiZXhwIjoyMDk4NDY2NjIyfQ.kkcFvrgM9nzp-Tcj5t7IEly0k417_LcKXOzXqnSiYU0" },
+            { "name": "Authorization", "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl5d3FhZmh5Y2RwYWh0cm9wcWFtIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4Mjg5MDYyMiwiZXhwIjoyMDk4NDY2NjIyfQ.kkcFvrgM9nzp-Tcj5t7IEly0k417_LcKXOzXqnSiYU0" },
+            { "name": "Prefer", "value": "resolution=merge-duplicates,return=minimal" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { title: $json.title, company: $json.company, location: $json.location, remote_type: $json.remote_type, apply_url: $json.apply_url, source: $json.source, description: $json.description, posted_at: $json.posted_at, entry_level: $json.entry_level, flagged_suspicious: $json.flagged_suspicious, score: $json.score } }}",
+        "options": {}
+      },
+      "id": "upsert-supabase",
+      "name": "Upsert Into Supabase (dedupe by apply_url)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1780, 450]
+    }
+  ],
+  "connections": {
+    "Every 6 Hours": {
+      "main": [
+        [
+          { "node": "Fetch Remotive Jobs", "type": "main", "index": 0 },
+          { "node": "Fetch Arbeitnow Jobs", "type": "main", "index": 0 },
+          { "node": "Fetch The Muse Page 0", "type": "main", "index": 0 },
+          { "node": "Fetch The Muse Page 1", "type": "main", "index": 0 },
+          { "node": "Fetch The Muse Page 2", "type": "main", "index": 0 },
+          { "node": "Throttle Before Adzuna", "type": "main", "index": 0 },
+          { "node": "Throttle Before Jooble", "type": "main", "index": 0 },
+          { "node": "Fetch RemoteOK Jobs", "type": "main", "index": 0 },
+          { "node": "Fetch WeWorkRemotely RSS", "type": "main", "index": 0 },
+          { "node": "Fetch Himalayas Jobs", "type": "main", "index": 0 },
+          { "node": "Fetch Jobicy Jobs", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "Fetch Remotive Jobs": {
+      "main": [[{ "node": "Normalize Remotive", "type": "main", "index": 0 }]]
+    },
+    "Normalize Remotive": {
+      "main": [[{ "node": "Merge Sources", "type": "main", "index": 0 }]]
+    },
+    "Fetch Arbeitnow Jobs": {
+      "main": [[{ "node": "Normalize Arbeitnow", "type": "main", "index": 0 }]]
+    },
+    "Normalize Arbeitnow": {
+      "main": [[{ "node": "Merge Sources", "type": "main", "index": 1 }]]
+    },
+    "Fetch The Muse Page 0": {
+      "main": [[{ "node": "Merge Muse Pages", "type": "main", "index": 0 }]]
+    },
+    "Fetch The Muse Page 1": {
+      "main": [[{ "node": "Merge Muse Pages", "type": "main", "index": 1 }]]
+    },
+    "Fetch The Muse Page 2": {
+      "main": [[{ "node": "Merge Muse Pages", "type": "main", "index": 2 }]]
+    },
+    "Merge Muse Pages": {
+      "main": [[{ "node": "Normalize The Muse", "type": "main", "index": 0 }]]
+    },
+    "Normalize The Muse": {
+      "main": [[{ "node": "Merge Sources", "type": "main", "index": 2 }]]
+    },
+    "Throttle Before Adzuna": {
+      "main": [[{ "node": "Fetch Adzuna Jobs", "type": "main", "index": 0 }]]
+    },
+    "Fetch Adzuna Jobs": {
+      "main": [[{ "node": "Normalize Adzuna", "type": "main", "index": 0 }]]
+    },
+    "Normalize Adzuna": {
+      "main": [[{ "node": "Merge Sources", "type": "main", "index": 3 }]]
+    },
+    "Throttle Before Jooble": {
+      "main": [[{ "node": "Fetch Jooble Jobs", "type": "main", "index": 0 }]]
+    },
+    "Fetch Jooble Jobs": {
+      "main": [[{ "node": "Normalize Jooble", "type": "main", "index": 0 }]]
+    },
+    "Normalize Jooble": {
+      "main": [[{ "node": "Merge Sources", "type": "main", "index": 4 }]]
+    },
+    "Fetch RemoteOK Jobs": {
+      "main": [[{ "node": "Normalize RemoteOK", "type": "main", "index": 0 }]]
+    },
+    "Normalize RemoteOK": {
+      "main": [[{ "node": "Merge Sources", "type": "main", "index": 5 }]]
+    },
+    "Fetch WeWorkRemotely RSS": {
+      "main": [[{ "node": "Normalize WeWorkRemotely", "type": "main", "index": 0 }]]
+    },
+    "Normalize WeWorkRemotely": {
+      "main": [[{ "node": "Merge Sources", "type": "main", "index": 6 }]]
+    },
+    "Fetch Himalayas Jobs": {
+      "main": [[{ "node": "Normalize Himalayas", "type": "main", "index": 0 }]]
+    },
+    "Normalize Himalayas": {
+      "main": [[{ "node": "Merge Sources", "type": "main", "index": 7 }]]
+    },
+    "Fetch Jobicy Jobs": {
+      "main": [[{ "node": "Normalize Jobicy", "type": "main", "index": 0 }]]
+    },
+    "Normalize Jobicy": {
+      "main": [[{ "node": "Merge Sources", "type": "main", "index": 8 }]]
+    },
+    "Merge Sources": {
+      "main": [[{ "node": "Strip HTML From Description", "type": "main", "index": 0 }]]
+    },
+    "Strip HTML From Description": {
+      "main": [[{ "node": "Entry-Level Filter", "type": "main", "index": 0 }]]
+    },
+    "Entry-Level Filter": {
+      "main": [[{ "node": "Quality Check", "type": "main", "index": 0 }]]
+    },
+    "Quality Check": {
+      "main": [[{ "node": "Score Jobs", "type": "main", "index": 0 }]]
+    },
+    "Score Jobs": {
+      "main": [[{ "node": "Upsert Into Supabase (dedupe by apply_url)", "type": "main", "index": 0 }]]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  }
+}
