@@ -10,6 +10,7 @@ import type {
 } from 'schema-dts';
 import config from '@/config';
 import type { Job, Salary } from '@/lib/db/airtable';
+import { safeJsonLdStringify } from '@/lib/utils/json-ld';
 
 // Utility functions for schema formatting
 function formatJobLocationType(job: Job): string | null {
@@ -372,7 +373,7 @@ export function JobSchema({ job, slug }: JobSchemaProps) {
   return (
     <Script
       dangerouslySetInnerHTML={{
-        __html: JSON.stringify(schemaData),
+        __html: safeJsonLdStringify(schemaData),
       }}
       id="job-schema"
       type="application/ld+json"

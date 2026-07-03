@@ -27,6 +27,7 @@ import {
 import type { CareerLevel } from '@/lib/db/airtable';
 import { getJobs } from '@/lib/db/airtable.server';
 import { resolveColor } from '@/lib/utils/colors';
+import { safeJsonLdStringify } from '@/lib/utils/json-ld';
 import { generateMetadata } from '@/lib/utils/metadata';
 
 // Constants for display limits
@@ -212,7 +213,7 @@ export default async function JobsDirectoryPage() {
       ] as ListItem[],
     };
 
-    return JSON.stringify(itemListSchema);
+    return safeJsonLdStringify(itemListSchema);
   };
 
   return (

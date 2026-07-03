@@ -7,6 +7,7 @@ import type {
   WithContext,
 } from 'schema-dts';
 import config from '@/config';
+import { safeJsonLdStringify } from '@/lib/utils/json-ld';
 
 export function WebsiteSchema() {
   // We won't have an explicit disable option, so always render unless
@@ -138,7 +139,7 @@ export function WebsiteSchema() {
   return (
     <Script
       dangerouslySetInnerHTML={{
-        __html: JSON.stringify(schemaData),
+        __html: safeJsonLdStringify(schemaData),
       }}
       id="website-schema"
       type="application/ld+json"

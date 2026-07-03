@@ -3,6 +3,7 @@
 import type { FC } from 'react';
 import type { AboutPage, WithContext } from 'schema-dts';
 import config from '@/config';
+import { safeJsonLdStringify } from '@/lib/utils/json-ld';
 
 type AboutSchemaProps = {
   companyName?: string;
@@ -37,7 +38,7 @@ export const AboutSchema: FC<AboutSchemaProps> = ({
 
   return (
     <script
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(aboutSchema) }}
+      dangerouslySetInnerHTML={{ __html: safeJsonLdStringify(aboutSchema) }}
       type="application/ld+json"
     />
   );

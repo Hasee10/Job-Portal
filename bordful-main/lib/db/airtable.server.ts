@@ -272,6 +272,25 @@ function mapRemoteTypeToWorkplace(value: unknown): string {
   }
 }
 
+// apply_url is rendered directly as an <a href> in several places. It comes
+// from external, scraped job boards, so a listing with a 'javascript:' or
+// 'data:' URL would execute in the visitor's browser on click. Only allow
+// http(s) links through; anything else becomes '' (falsy, so the templates
+// that already gate on `job.apply_url &&` simply hide the Apply button).
+function sanitizeApplyUrl(value: unknown): string {
+  if (typeof value !== 'string') {
+    return '';
+  }
+  try {
+    const parsed = new URL(value);
+    return parsed.protocol === 'http:' || parsed.protocol === 'https:'
+      ? value
+      : '';
+  } catch {
+    return '';
+  }
+}
+
 // Assemble a Supabase row into the Job shape. Kept in one place so getJobs and
 // getJob can't drift apart (the Airtable version duplicated this inline).
 function rowToJob(row: Record<string, unknown>): Job {
@@ -294,7 +313,7 @@ function rowToJob(row: Record<string, unknown>): Job {
     application_requirements: normalizeApplicationRequirements(
       row.application_requirements
     ),
-    apply_url: row.apply_url as string,
+    apply_url: sanitizeApplyUrl(row.apply_url),
     // Supabase stores this as posted_at (timestamptz); the Job type calls it
     // posted_date. PostgREST returns it as an ISO string.
     posted_date: row.posted_at as string,

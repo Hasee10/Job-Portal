@@ -406,7 +406,13 @@ export function Nav() {
                   ? 'bg-zinc-100 text-zinc-900'
                   : 'text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900'
               } transition-colors`}
-              onClick={() => toggleDropdown(item.label)}
+              onClick={() => {
+                // A real mouse click always fires onMouseEnter first (opening
+                // the dropdown via hover), so toggling here would instantly
+                // flip it back closed. Force-open instead - this also covers
+                // touch/keyboard activation, which never fires onMouseEnter.
+                handleDropdownMouseEnter(item.label);
+              }}
             >
               {item.label}
               <ChevronDown aria-hidden="true" className="ml-1 h-3 w-3" />

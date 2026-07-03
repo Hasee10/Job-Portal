@@ -66,7 +66,7 @@ export async function GET(
     const ogJobConfig = config.og?.jobs || {};
     const logoConfig = ogJobConfig.logo || {};
     const logoDataUri =
-      logoConfig.show !== false && logoConfig.src
+      (logoConfig.show as boolean) !== false && logoConfig.src
         ? await fetchImageAsDataURI(logoConfig.src, config.url)
         : '';
 

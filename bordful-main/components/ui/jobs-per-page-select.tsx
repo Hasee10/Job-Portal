@@ -30,8 +30,10 @@ export function JobsPerPageSelect() {
   const labelText =
     config.jobListings?.labels?.perPage?.text || 'Jobs per page:';
 
-  // Ensure perPage is a valid option
-  const validPerPage = perPageOptions.includes(perPage)
+  // Ensure perPage is a valid option (perPage comes from the URL query
+  // string as a plain number, so it won't automatically narrow to the
+  // options tuple's literal union - widen the tuple just for this check).
+  const validPerPage = (perPageOptions as readonly number[]).includes(perPage)
     ? perPage
     : defaultPerPage;
 

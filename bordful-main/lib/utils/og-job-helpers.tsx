@@ -17,6 +17,7 @@ import {
 export interface JobProcessedOGConfig extends ProcessedOGConfig {
   jobTitle: string;
   companyName: string;
+  companyColor: string;
   workplaceType: string;
 }
 
@@ -39,8 +40,8 @@ export function createJobOGConfig(job: MinimalJob): JobProcessedOGConfig {
     backgroundImage: ogJobConfig.backgroundImage || null,
     titleColor: ogJobConfig.titleColor || config.ui.heroTitleColor || '#FFFFFF',
     descriptionColor:
-      ogJobConfig.descriptionColor || config.ui.heroSubtitleColor || '#FFFFFF',
-    gradientEnabled: ogJobConfig.gradient?.enabled !== false,
+      ogJobConfig.detailsColor || config.ui.heroSubtitleColor || '#FFFFFF',
+    gradientEnabled: (ogJobConfig.gradient?.enabled as boolean) !== false,
     gradientColor:
       ogJobConfig.gradient?.color ||
       ogJobConfig.backgroundColor || config.ui.heroBackgroundColor ||
@@ -59,6 +60,8 @@ export function createJobOGConfig(job: MinimalJob): JobProcessedOGConfig {
         : 1,
     jobTitle: job.title,
     companyName: job.company,
+    companyColor:
+      ogJobConfig.companyColor || config.ui.heroTitleColor || '#FFFFFF',
     workplaceType: job.workplace_type,
   };
 }
@@ -219,7 +222,7 @@ export async function createJobOGImageResponse(
             style={{
               fontSize: `${SHARED_STYLES.FONTS.DESCRIPTION_SIZE}px`,
               fontWeight: SHARED_STYLES.FONTS.DESCRIPTION_WEIGHT,
-              color: config.titleColor,
+              color: config.companyColor,
               margin: '0 0 20px 0',
               lineHeight: SHARED_STYLES.FONTS.DESCRIPTION_LINE_HEIGHT,
               textAlign: 'left',

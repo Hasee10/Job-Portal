@@ -18,6 +18,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import config from '@/config';
 import { resolveColor } from '@/lib/utils/colors';
+import { safeJsonLdStringify } from '@/lib/utils/json-ld';
 import { slugify } from '@/lib/utils/slugify';
 
 // Define the types based on the config
@@ -171,7 +172,7 @@ export function FAQContent({ categories }: FAQContentProps) {
       ),
     };
 
-    return JSON.stringify(faqSchema);
+    return safeJsonLdStringify(faqSchema);
   };
 
   // Scroll to category - keeping this for potential future use

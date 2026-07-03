@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import type { BreadcrumbList, ListItem, WithContext } from 'schema-dts';
 import config from '@/config';
+import { safeJsonLdStringify } from '@/lib/utils/json-ld';
 
 type OpenGraphType =
   | 'website'
@@ -127,5 +128,5 @@ export function generateBreadcrumbSchema(items: BreadcrumbItem[]): string {
     }),
   };
 
-  return JSON.stringify(breadcrumbSchema);
+  return safeJsonLdStringify(breadcrumbSchema);
 }

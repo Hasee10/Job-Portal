@@ -45,8 +45,10 @@ export function SupportChannelCard({
   // Check if it's Twitter icon
   const isTwitterIcon = icon === 'Twitter';
 
-  // Get the icon component or use HelpCircle as fallback
-  const IconComponent = isTwitterIcon ? null : iconMap[icon] || HelpCircle;
+  // Get the icon component or use HelpCircle as fallback. Only rendered when
+  // isTwitterIcon is false (see JSX below), so this is never actually used
+  // for the Twitter case, but keeping it non-nullable keeps the type honest.
+  const IconComponent = iconMap[icon] || HelpCircle;
 
   const isExternalLink =
     buttonLink.startsWith('http') || buttonLink.startsWith('mailto');

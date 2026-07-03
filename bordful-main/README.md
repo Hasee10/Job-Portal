@@ -1,336 +1,217 @@
-# Bordful: Open-Source Job Board Software
+# Joblo: Job Board Powered by Next.js, Supabase & n8n
 
-Bordful is a modern, minimal job board software built with Next.js, Tailwind CSS, and 
-Airtable. Features static generation, client-side search, and a clean customizable UI.
+Joblo is a modern, minimal job board built with Next.js, Tailwind CSS, and Supabase. Job
+listings aren't entered by hand — a set of [n8n](https://n8n.io) workflows (in the sibling
+[`n8n-workflows/`](../n8n-workflows/README.md) directory) automatically scrapes, normalizes,
+scores, and upserts postings from 9 external job sources into a Supabase `jobs` table every
+6 hours. This portal reads that table and renders it as a searchable, filterable job board.
 
-**Create a professional job board in 5 minutes** - no coding experience required! Bordful lets you build a job board like Indeed or AngelList, customized for your brand.
+Joblo started life as [Bordful](https://github.com/craftled/bordful), an open-source Next.js
+job board template originally built on Airtable. The frontend, theming system, and SEO
+tooling are still Bordful's — the data layer has been swapped for Supabase, and the
+collection pipeline (n8n) is new.
 
-**Perfect for:** Startups, agencies, communities, or anyone who needs to hire people.
+## Architecture
 
-## What You'll Build
+```
+n8n-workflows/                         bordful-main/ (this app)
+┌─────────────────────────┐            ┌──────────────────────────┐
+│ 01-job-collector          │            │ Next.js (App Router)     │
+│  9 sources → normalize →  │  writes    │  getJobs() / getJob(id)  │
+│  score → upsert           │ ─────────► │  reads via Supabase      │
+│                            │  Supabase  │  anon key (server-only)  │
+│ 07-stale-job-sweeper       │  `jobs`    │                          │
+│  polls apply_url, marks    │  table     │  Home, Jobs, job detail, │
+│  dead postings inactive    │            │  RSS/Atom/JSON feeds,    │
+│                            │            │  sitemap, OG images      │
+│ 06-daily-sheet-export      │            │                          │
+│  (admin reporting only,    │            │                          │
+│  not read by the portal)   │            │                          │
+└─────────────────────────┘            └──────────────────────────┘
+```
 
-By following this guide, you'll have a fully functional job board website with:
-- Job listings with search and filters
-- Mobile-responsive design
-- SEO optimization for Google visibility
-- Admin dashboard through Airtable
+- **n8n writes** with the Supabase `service_role` key (bypasses Row Level Security).
+- **The portal reads** with the Supabase `anon` key, so a public read policy (RLS) must
+  exist on the `jobs` table, or every page will silently render zero jobs.
+- The portal never talks to n8n directly and has no admin UI of its own — all job data
+  management happens through the n8n workflows and the Supabase table.
 
-**Live Demo:** [See Bordful in action](https://demo.bordful.com)
+See [`n8n-workflows/README.md`](../n8n-workflows/README.md) for the full collector
+pipeline, migrations, and verification checklist.
 
-![Bordful Job Board Demo](public/bordful-job-board-software-demo.jpg)
+## What You Get
 
-## Why Bordful?
+- Job listings with search, filters (type, career level, location, language), and sorting
+- Automatic employment type, salary, remote region, and career-level enrichment from raw
+  scraped data (see `Derive Portal Fields` in the collector workflow)
+- Automatic staleness detection — dead `apply_url`s get marked inactive and drop off the
+  site on their own
+- Mobile-responsive design, SEO-optimized (schema.org JobPosting, sitemap, robots.txt)
+- RSS, Atom, and JSON feeds
+- Job alert email subscriptions (Encharge by default)
+- Security headers (CSP, HSTS, X-Frame-Options, etc.) and XSS-hardened rendering of
+  externally-scraped job data (see [Security](#security) below)
 
-- **Modern Tech Stack:** Built with Next.js, Tailwind CSS, Airtable, and Ultracite for a fast, flexible, and easy-to-manage job board with lightning-fast linting and formatting.
-- **Comprehensive SEO:** Rich schema.org JobPosting data, automatic XML sitemaps, and more to maximize visibility.
-- **Highly Customizable:** Easily tailor the theme, layout, navigation, hero section, and every other aspect to match your brand.
-- **Real-time Updates:** Leverages Next.js Incremental Static Regeneration (ISR) to keep job listings fresh without manual rebuilds.
-- **User-Friendly:** Clean UI with customizable fonts, client-side search, rich text support for job descriptions, and smart pagination.
-- **Full-Featured:** Packed with features like job alerts, multi-currency salary support, advanced filtering, and RSS feeds.
-
-Explore all features in detail in our [Bordful Features Guide](/docs/guides/features.md).
+**Live dev server:** once running, visit [http://localhost:3000](http://localhost:3000)
 
 ## Getting Started
 
-### 5-Minute Quick Start
+### Prerequisites
 
-Get your Bordful job board up and running in just 5 minutes with this step-by-step guide:
+- **Node.js 18+** (or [Bun](https://bun.sh) — `package.json` scripts assume Bun, but
+  everything works with plain `npm`/`npx` too; that's what these instructions use)
+- A **Supabase project** — either your own, or the one already wired up for this
+  deployment (ask whoever set up the n8n workflows for the project URL and anon key)
+- (Optional, only if you're changing what jobs get collected) An **n8n instance** — see
+  [`n8n-workflows/README.md`](../n8n-workflows/README.md)
 
-#### Prerequisites (2 minutes)
-
-**1. Install an AI Code Editor (Highly Recommended)**
-- **[Cursor](https://cursor.com/)** - AI-powered code editor with built-in chat
-- **[Windsurf](https://windsurf.com/refer?referral_code=d886df4b0e)** - Agentic AI coding assistant
-- **Why?** These editors will help you customize your job board with AI assistance, even if you're not a developer!
-
-**2. Install Node.js OR Bun (Required)**
-
-**Option A: Install Bun (Recommended - Faster)**
-```bash
-# Install Bun (all platforms)
-curl -fsSL https://bun.sh/install | bash
-```
-
-**Option B: Install Node.js**
-1. Go to [nodejs.org](https://nodejs.org/)
-2. Download the LTS version (recommended for most users)
-3. Run the installer and follow the prompts
-
-![Download Node.js](public/download-nodejs.jpg)
-
-**Advanced Method - Command Line:**
-```bash
-# On macOS (if you have Homebrew)
-brew install node
-
-# On Windows (if you have Chocolatey)
-choco install nodejs
-```
-
-**3. Verify Installation**
-Open your Terminal (Mac) or Command Prompt (Windows) and run:
-
-![Check Node and Bun Versions](public/check-node-and-bun-versions.jpg)
+### Step 1: Install dependencies
 
 ```bash
-# If you installed Bun
-bun --version   # Should show v1.0+ or higher
-
-# If you installed Node.js
-node --version  # Should show v18+ or higher
-bun --version   # Should show v1.0+ or higher
+cd bordful-main
+npm install
 ```
 
-✅ **Success Check:** If you see version numbers, you're ready to continue!
+### Step 2: Set up the Supabase database
 
-#### Step 1: Get the Code (1 minute)
+If the Supabase project doesn't already have the `jobs` table:
 
-**Option A: Using GitHub's Web Interface (No Command Line Required)**
-1. Go to [GitHub Import](https://github.com/new/import)
-2. Enter repository URL: `https://github.com/craftled/bordful`
-3. Choose your username and repository name (e.g., `my-job-board`)
-4. Set visibility to "Private" (recommended)
-5. Click "Begin import"
-6. Once complete, click "Clone or download" → "Download ZIP"
-7. Extract the ZIP file to your desired folder
-8. Open Terminal/Command Prompt in that folder and run: `bun install`
+1. In the Supabase SQL editor, run every file in
+   [`n8n-workflows/migrations/`](../n8n-workflows/migrations/) in numeric order
+   (`001` → `006`). Each is additive (`add column if not exists`), so it's safe to re-run.
+2. Add a public read policy so the portal's `anon` key can actually see rows:
+   ```sql
+   alter table public.jobs enable row level security;
 
-✅ **Benefits**: Private by default, no Git knowledge required, ready for Vercel deployment
+   create policy "Public can read jobs"
+     on public.jobs for select
+     using (true);
+   ```
+   (n8n writes with the `service_role` key, which bypasses RLS — this policy only affects
+   the portal's read path.)
 
-**Option B: Using Command Line (For Developers)**
+### Step 3: Get job data flowing (n8n)
+
+If jobs aren't being collected yet, import and activate the workflows described in
+[`n8n-workflows/README.md`](../n8n-workflows/README.md):
+
+- `01-job-collector.json` — scrapes 9 sources every 6 hours, enriches, scores, upserts
+- `07-stale-job-sweeper.json` — every 3 hours, marks dead postings inactive
+- `06-daily-sheet-export.json` — optional admin-only Google Sheets digest, not required
+  for the portal to work
+
+**Workflows import with their schedule trigger turned off.** After importing each one,
+flip the **Active** toggle in the n8n editor, or it will only ever run when you manually
+click "Execute workflow."
+
+### Step 4: Configure environment variables
+
 ```bash
-# Clone the repository
-git clone https://github.com/craftled/bordful
-cd bordful
-
-# Install dependencies
-bun install
+cp .env.example .env.local
 ```
 
-> 💡 **Tip**: Option A is perfect if you're not comfortable with Git or want to keep your code private from the start.
-
-#### Step 2: Set Up Airtable Database (2 minutes)
-
-**What is Airtable?** It's like a smart spreadsheet that will store your job listings. Think of it as your job board's database, but easier to use than Excel.
-
-**Option A: Use Our Template (Recommended)**
-1. Click this link: [Bordful Airtable Template](https://airtable.com/apprhCjWTxfG3JX5p/shrLqfxgbensCY393)
-2. Click "Use this data" to add it to your Airtable workspace
-3. **Find your Base ID:** Look at the URL in your browser - it will look like `https://airtable.com/appABC123DEFGHIJK/...`
-4. Copy the part that starts with `app` (e.g., `appABC123DEFGHIJK`) - this is your Base ID
-
-![Copy Airtable Base ID](public/copy-airtable-base-id.jpg)
-
-✅ **Success Check:** You should see a table with sample job listings and fields like "Title", "Company", "Status", etc.
-
-**Option B: Create Your Own**
-- See our [Airtable Setup Guide](/docs/getting-started/airtable-setup.md) for detailed instructions
-
-#### Step 3: Get Your Airtable API Token (1 minute)
-
-1. Go to [Airtable Tokens](https://airtable.com/create/tokens)
-2. Click "Create new token"
-3. Give it a name like "Bordful Job Board"
-4. Add these scopes: `data.records:read`, `data.records:write`
-5. Add your base from Step 2
-6. Click "Create token" and copy the token (starts with `pat...`)
-
-#### Step 4: Configure Environment Variables (1 minute)
-
-**What are environment variables?** They're like secret settings that tell your job board how to connect to Airtable. Think of them as your app's private configuration.
-
-**Step 4a: Copy the template file**
-```bash
-# Copy the example file to create your environment file
-cp .env.example .env
-```
-
-**Step 4b: Edit your settings**
-You need to edit the `.env` file with your actual values. Here's how:
-
-**On Mac:** Open the file with TextEdit or your AI editor (Cursor/Windsurf)
-**On Windows:** Open the file with Notepad or your AI editor (Cursor/Windsurf)
-
-Replace the placeholder values with your real information:
+Edit `.env.local`:
 
 ```env
-# REQUIRED: Your application URL
+# Supabase (job data source) — read with the anon/public key, never service_role
+SUPABASE_URL=https://your-project-ref.supabase.co
+SUPABASE_ANON_KEY=your_supabase_anon_key_here
+
+# Site URL
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 
-# REQUIRED: Airtable credentials (from steps 2 & 3)
-AIRTABLE_ACCESS_TOKEN=pat_your_actual_token_here
-AIRTABLE_BASE_ID=app_your_actual_base_id_here
-AIRTABLE_TABLE_NAME=Jobs
-
-# OPTIONAL: Email provider for job alerts (you can add this later)
+# Optional: job alert emails
 EMAIL_PROVIDER=encharge
-ENCHARGE_WRITE_KEY=your_encharge_key_here
+ENCHARGE_WRITE_KEY=your_encharge_write_key_here
 ```
 
-✅ **Success Check:** Your `.env` file should have real values (starting with `pat_` and `app_`) instead of placeholder text.
+> ⚠️ Never commit `.env.local` or share it — it's already excluded via `.gitignore`.
+> Without `SUPABASE_URL`/`SUPABASE_ANON_KEY` set, the app still runs, it just renders zero
+> jobs (the data layer fails gracefully rather than crashing).
 
-> ⚠️ **IMPORTANT**: Never share your `.env` file or commit it to Git! It contains your secret keys.
-
-#### Step 5: Start Your Job Board (30 seconds)
+### Step 5: Run the dev server
 
 ```bash
-# Start the development server
-bun run dev
+npx next dev -p 3000
 ```
 
-🎉 **That's it!** Visit [http://localhost:3000](http://localhost:3000) to see your job board in action.
+Visit [http://localhost:3000](http://localhost:3000). If Supabase is wired up correctly and
+n8n has run at least once, you should see real job listings with salary, location, and
+type populated.
 
-**What you should see:**
-- A homepage with job listings (from your Airtable template)
-- Search and filter functionality
-- Clean, professional design
+**Not seeing jobs?**
+- Confirm the RLS policy from Step 2 exists — a missing policy is the most common cause of
+  an empty site with valid credentials.
+- Confirm at least one n8n workflow run has completed and the `jobs` table has rows with
+  `is_active = true`.
+- Check the browser network tab / server logs for Supabase request failures.
 
-![Bordful Job Board Running](public/bordful-localhost.jpg)
+## Security
 
-✅ **Success Check:** If you see job listings on your homepage, congratulations! Your job board is working.
+This site renders job data scraped from 9 external, untrusted sources, which shapes a few
+deliberate hardening choices:
 
-❌ **Not working?** Jump to [Troubleshooting](#troubleshooting) below.
+- **JSON-LD injection guard** (`lib/utils/json-ld.ts`) — every `<script type="application/
+  ld+json">` schema.org block is serialized through `safeJsonLdStringify`, which escapes
+  `<` so a scraped job title containing `</script>` can't break out of the tag.
+- **`apply_url` scheme allowlist** (`lib/db/airtable.server.ts`) — only `http:`/`https:`
+  URLs are ever rendered as a clickable link; anything else (e.g. a `javascript:` URI from
+  a malicious listing) is dropped to an empty string.
+- **No raw HTML in markdown** — job descriptions render through `react-markdown` without
+  `rehype-raw`, so embedded HTML tags are escaped, not executed.
+- **Security headers** (`next.config.ts`) — `Content-Security-Policy`, `X-Frame-Options`,
+  `X-Content-Type-Options`, `Strict-Transport-Security`, `Referrer-Policy`, and
+  `Permissions-Policy` are set on every route.
+- **`service_role` vs `anon`** — the portal only ever holds the `anon` key. The
+  `service_role` key lives only in the n8n workflow JSON files, which are excluded from
+  git via `.gitignore`.
 
-### What You Get Out of the Box
+## Branding
 
-- ✅ Fully functional job board with search and filtering
-- ✅ Responsive design that works on all devices
-- ✅ SEO-optimized with automatic sitemaps
-- ✅ RSS feeds for job listings
-- ✅ Admin-friendly Airtable interface for managing jobs
-- ✅ AI-assisted customization with Cursor/Windsurf editors
+The site is branded **Joblo**, with a custom logo (`public/joblo.svg` / `joblo-light.svg`)
+in the site config at `config/config.example.ts`. Social links (GitHub, LinkedIn, X,
+Bluesky, Reddit) are currently disabled (`show: false`) in the nav config — set `show: true`
+and add a URL under `config.nav.<platform>` when you're ready to link real accounts.
 
-### Next Steps
+## Pricing
 
-1. **Add Your First Job**: 
-   - Go to your Airtable base
-   - Click the "+" button to add a new row
-   - Fill in: Title, Company, Description, Status (set to "Published")
-   - Refresh your job board to see it appear!
+Configured in `config/config.example.ts` (`pricing.plans`):
 
-![Airtable Add New Job](public/airtable-add-new-job.jpg)
+| Plan | Price | Billing |
+|---|---|---|
+| Free | Free | forever |
+| Pro | $19 | per job posting |
+| Business | $149 | per year |
 
-2. **Customize Your Brand**: 
-   - Copy `config/config.example.ts` to `config/config.ts` and customize
-   - 💡 **Pro Tip**: Open the project in Cursor/Windsurf and ask the AI: "Help me customize the colors and branding for my job board"
-3. **Set Up Job Alerts**: Add email provider credentials to enable job alert subscriptions
-4. **Deploy to Production**: See our [Deployment Guide](#deployment-to-vercel) below
+## Environment Variables
 
-### Deployment to Vercel (Production)
+| Variable | Required | Description |
+| --- | --- | --- |
+| `SUPABASE_URL` | ✅ Yes | Your Supabase project URL |
+| `SUPABASE_ANON_KEY` | ✅ Yes | Supabase anon/public API key (read-only, safe for server-side use — never the `service_role` key) |
+| `NEXT_PUBLIC_APP_URL` | ✅ Yes | Your site's public URL |
+| `EMAIL_PROVIDER` | No | Email service for job alerts. Only `encharge` is implemented today — any other value throws a clear error rather than silently misrouting subscriptions |
+| `ENCHARGE_WRITE_KEY` | No | Required if `EMAIL_PROVIDER=encharge` and job alerts are enabled |
+| `AIRTABLE_ACCESS_TOKEN` / `AIRTABLE_BASE_ID` / `AIRTABLE_TABLE_NAME` | No | Deprecated — no longer read by the app; kept in `.env.example` only for historical reference |
 
-Ready to go live? Deploy to Vercel in 3 steps:
-
-#### Step 1: Prepare for Deployment
-
-```bash
-# Test your build locally first
-bun run build && bun run start
-```
-
-#### Step 2: Deploy to Vercel
-
-**If you used Option A (GitHub Import) in Step 1:**
-1. Your code is already on GitHub - skip to step 2!
-
-**If you used Option B (Command Line) in Step 1:**
-1. Push your code to GitHub (without the `.env` file, `.gitignore` file already ignores it)
-
-**For everyone:**
-2. Go to [Vercel](https://vercel.com) and sign in with GitHub
-3. Click "New Project" and import your GitHub repository
-4. Vercel will auto-detect it's a Next.js project
-
-#### Step 3: Add Environment Variables to Vercel
-
-1. In your Vercel project dashboard, go to "Settings" → "Environment Variables"
-2. Add these variables one by one:
-
-```
-NEXT_PUBLIC_APP_URL = https://your-domain.vercel.app
-AIRTABLE_ACCESS_TOKEN = pat_your_token_here
-AIRTABLE_BASE_ID = app_your_base_id_here
-AIRTABLE_TABLE_NAME = Jobs
-```
-
-3. Click "Deploy" and your job board will be live!
-
-### Troubleshooting
-
-**Jobs not showing up?**
-- Check your Airtable base has jobs with `status` field set to "Published"
-- Verify your `AIRTABLE_ACCESS_TOKEN` and `AIRTABLE_BASE_ID` are correct in `.env`
-
-**Package installation not working?**
-- Make sure Bun is installed: run `bun --version`
-- Navigate to the correct folder before running the command
-- On Windows, try running Command Prompt as Administrator
-
-**Can't open Terminal/Command Prompt?**
-- **Mac:** Press `Cmd + Space`, type "Terminal", press Enter
-- **Windows:** Press `Windows key`, type "Command Prompt", press Enter
-
-**Need help?** Check our [Installation Guide](/docs/getting-started/installation.md) for detailed instructions.
-
-### AI-Powered Customization
-
-With [Cursor](https://cursor.com/) or [Windsurf](https://windsurf.com/refer?referral_code=d886df4b0e) AI editors, you can easily customize your job board.
-
-![Use Cursor to Customize Your Job Board Using Natural Language](public/use-cursor-to-customize-your-job-board-using-natural-language.jpg)
-
-Try these prompts:
-
-**🎨 Change Colors:**
-```
-"Help me change the primary color scheme to match my company brand. 
-My brand colors are [your colors]. Show me which files to edit."
-```
-
-**📝 Update Content:**
-```
-"I want to change the homepage hero text and add my company name. 
-Can you help me find and update the relevant text?"
-```
-
-**🚀 Fix Deployment Issues:**
-```
-"I'm getting this error when deploying to Vercel: [paste error].
-Can you help me fix it?"
-```
-
-**🔧 Code Quality & Linting:**
-```
-"I'm getting linting errors with Ultracite/Biome. Can you help me fix: [describe the error]?"
-```
-
-**⚡ Performance Optimization:**
-```
-"How can I optimize this code for better performance? Any suggestions for [specific area]?"
-```
-
-> 💡 **Pro Tip:** Always describe what you want to achieve rather than asking for specific code!
-
-### Environment Variables Explained
-
-| Variable                | Required | Description              | Example                    |
-| ----------------------- | -------- | ------------------------ | -------------------------- |
-| `NEXT_PUBLIC_APP_URL`   | ✅ Yes    | Your website URL         | `https://jobs.company.com` |
-| `AIRTABLE_ACCESS_TOKEN` | ✅ Yes    | Your Airtable API token  | `pat_abc123...`            |
-| `AIRTABLE_BASE_ID`      | ✅ Yes    | Your Airtable base ID    | `appABC123...`             |
-| `AIRTABLE_TABLE_NAME`   | No       | Table name in Airtable   | `Jobs` (default)           |
-| `EMAIL_PROVIDER`        | No       | Email service for alerts | `encharge`, `mailchimp`    |
-| `ENCHARGE_WRITE_KEY`    | No       | Encharge API key         | For job alert emails       |
-
-For a complete list of all supported environment variables, see the [Environment Variables Guide](/docs/reference/environment-variables.md).
+For the full list including feature-specific overrides, see
+[Environment Variables Guide](/docs/reference/environment-variables.md) (note: that doc
+still reflects the original Airtable-based template in places — the table above is the
+accurate, current version for this deployment).
 
 ## Dive Deeper: Features & Documentation
 
-Bordful is packed with features. Explore the documentation to learn more:
+- **n8n collection pipeline:** [`n8n-workflows/README.md`](../n8n-workflows/README.md) —
+  sources, field scoring, migrations, verification checklist
+- **Core Functionality & Guides:** ([Features](/docs/guides/features.md), [All Guides](/docs/guides/index.md))
+- **Customization:** ([Customization Guide](/docs/guides/customization.md), [Theming](/docs/guides/theming-customization.md), [Hero Section](/docs/guides/hero-section.md), [Navigation](/docs/guides/navigation.md), [Footer](/docs/guides/footer.md))
+- **SEO & Content:** ([Schema Implementation](/docs/advanced/schema-implementation.md), [Sitemaps](/docs/reference/sitemap-generation.md), [Robots.txt](/docs/reference/robots-generation.md), [RSS Feeds](/docs/reference/rss-feed-system.md), [FAQ System](/docs/reference/faq-system.md))
+- **Advanced Topics:** ([Script Management](/docs/advanced/script-management.md), [Email Integration](/docs/guides/email-integration.md), [Salary Structure](/docs/reference/salary-structure.md), [Language Support](/docs/reference/language-system.md))
 
-- **Core Functionality & Guides:** Understand Bordful's capabilities. ([Features](/docs/guides/features.md), [All Guides](/docs/guides/index.md))
-- **Customization:** Tailor the look, feel, and functionality. ([Customization Guide](/docs/guides/customization.md), [Theming](/docs/guides/theming-customization.md), [Hero Section](/docs/guides/hero-section.md), [Navigation](/docs/guides/navigation.md), [Footer](/docs/guides/footer.md))
-- **SEO & Content:** Maximize visibility with built-in SEO tools. ([Schema Implementation](/docs/advanced/schema-implementation.md), [Sitemaps](/docs/reference/sitemap-generation.md), [Robots.txt](/docs/reference/robots-generation.md), [RSS Feeds](/docs/reference/rss-feed-system.md), [FAQ System](/docs/reference/faq-system.md))
-- **Data & Backend:** Learn about Airtable integration and data handling. ([Airtable Setup](/docs/getting-started/airtable-setup.md), [Data Revalidation (ISR)](/docs/advanced/data-revalidation.md))
-- **Advanced Topics:** For developers looking to extend Bordful. ([Script Management](/docs/advanced/script-management.md), [Email Integration](/docs/guides/email-integration.md), [Salary Structure](/docs/reference/salary-structure.md), [Language Support](/docs/reference/language-system.md))
+> Note: most of `/docs` documents the original Bordful/Airtable template and hasn't been
+> rewritten for the Supabase + n8n data pipeline. Treat it as accurate for anything
+> unrelated to *where job data comes from* (theming, SEO, feeds, filtering, etc.) and defer
+> to this README and `n8n-workflows/README.md` for data-source specifics.
 
 For a full overview of all documentation, visit the [Documentation Hub](/docs/README.md).
 
@@ -339,217 +220,153 @@ For a full overview of all documentation, visit the [Documentation Hub](/docs/RE
 ```
 app/
   layout.tsx              # Root layout with configurable fonts (Geist, Inter, IBM Plex Serif)
-  page.tsx               # Home page with job listings
-  globals.css            # Global styles
-  sitemap.ts             # Dynamic sitemap generation
-  robots.ts              # Dynamic robots.txt generation
-  not-found.tsx          # 404 page
-  favicon.ico            # Favicon route handler
+  page.tsx                # Home page with job listings
+  globals.css             # Global styles
+  sitemap.ts              # Dynamic sitemap generation
+  robots.ts               # Dynamic robots.txt generation
+  not-found.tsx           # 404 page
+  favicon.ico             # Favicon route handler
   jobs/
-    [slug]/
-      page.tsx           # Individual job page (SEO-friendly URLs)
-    [category]/          # Category-based job listings
-    language/[language]/ # Language-filtered job listings
-    level/[level]/       # Experience level filtered listings
-    location/[location]/ # Location-filtered job listings
-    type/[type]/         # Job type filtered listings
-    page.tsx             # Main jobs listing page
-    not-found.tsx        # Jobs-specific 404 page
+    [slug]/page.tsx        # Individual job page (SEO-friendly URLs)
+    language/[language]/   # Language-filtered job listings
+    level/[level]/         # Experience level filtered listings
+    location/[location]/   # Location-filtered job listings
+    type/[type]/           # Job type filtered listings
+    page.tsx               # Main jobs directory (category browse) page
+    not-found.tsx          # Jobs-specific 404 page
   api/
-    subscribe/
-      route.ts           # Job alerts subscription endpoint
-    og/
-      route.tsx          # General Open Graph image generation
-      jobs/[slug]/
-        route.tsx        # Individual job OG image generation
-  about/
-    page.tsx             # About page
-  contact/
-    page.tsx             # Contact page
-  faq/
-    page.tsx             # FAQ page
-  pricing/
-    page.tsx             # Pricing page
-  job-alerts/
-    page.tsx             # Job alerts subscription page
-  changelog/
-    page.tsx             # Changelog page
-  terms/
-    page.tsx             # Terms of service
-  privacy/
-    page.tsx             # Privacy policy
-  feed.xml/
-    route.ts             # RSS feed generation
-  atom.xml/
-    route.ts             # Atom feed generation
-  feed.json/
-    route.ts             # JSON feed generation
+    subscribe/route.ts      # Job alerts subscription endpoint (rate-limited)
+    og/route.tsx            # General Open Graph image generation
+    og/jobs/[slug]/route.tsx # Individual job OG image generation
+  about/, contact/, faq/, pricing/, job-alerts/, changelog/, terms/, privacy/
+  feed.xml/, atom.xml/, feed.json/   # RSS/Atom/JSON feed routes (feed-utils.ts)
 
 lib/
-  utils.ts               # Main utility functions
   db/
-    airtable.ts          # Airtable integration and salary formatting
+    airtable.ts             # Job/Salary types + formatting helpers (name is historical)
+    airtable.server.ts      # Supabase data layer: getJobs()/getJob()/testConnection()
+                             # (reads via PostgREST with the anon key; despite the
+                             # filename, this is the Supabase integration, not Airtable)
   utils/
-    formatDate.ts        # Date formatting utilities
-    markdown.ts          # Markdown processing
-    metadata.ts          # SEO metadata generation
-    slugify.ts           # URL slug generation
-    colors.ts            # Color utilities
-    fonts.ts             # Font utilities
-    filter-jobs.ts       # Job filtering logic
-  config/
-    routes.ts            # Route configuration
-    index.ts             # Main configuration exports
-  constants/             # Application constants
+    json-ld.ts              # XSS-safe JSON-LD serialization for schema.org scripts
+    formatDate.ts, markdown.ts, metadata.ts, slugify.ts, colors.ts, fonts.ts, filter-jobs.ts
+    feed-utils.ts, og-config.ts, og-job-helpers.tsx, font-utils.ts, image-utils.ts
+    job-validation.ts       # slug → job lookup for OG image + metadata routes
   email/
-    index.ts             # Email provider exports
-    types.ts             # Email type definitions
-    providers/           # Email provider integrations
-  hooks/                 # Custom React hooks
-  providers/             # Context providers
+    index.ts                # Selects the configured provider (EMAIL_PROVIDER); throws
+                             # clearly if an unimplemented provider is chosen
+    types.ts, providers/encharge.ts
 
 components/
-  ui/
-    job-details-sidebar.tsx    # Job details sidebar
-    post-job-banner.tsx       # Post job promotion banner
-    similar-jobs.tsx          # Similar jobs suggestions
-    job-filters.tsx           # Job search and filter UI
-    job-search-input.tsx      # Search input component
-    job-badge.tsx             # Job category/type badges
-    pagination-control.tsx    # Pagination controls
-    nav.tsx                   # Navigation component
-    footer.tsx                # Footer component
-    hero-section.tsx          # Homepage hero section
-    breadcrumb.tsx            # Breadcrumb navigation
-    # ... and many more UI components
-  jobs/
-    JobCard.tsx               # Job listing card
-    JobsLayout.tsx            # Jobs page layout
-    JobListings.tsx           # Job listings container
-    CompactJobCard.tsx        # Compact job card variant
-  home/                       # Homepage-specific components
-  contact/                    # Contact page components
-  job-alerts/                 # Job alerts components
-  analytics/                  # Analytics components
-  server/                     # Server-side components
+  ui/                       # nav, footer, breadcrumb, schema (JobPosting/FAQ/About/
+                             # Contact/Website), hero section, job badges, etc.
+  jobs/                     # JobCard, JobCardList, CompactJobCard, JobListings
+  home/, contact/, job-alerts/, analytics/, server/
 
 config/
-  config.example.ts           # Example configuration file
-  index.ts                    # Configuration exports
-  README.md                   # Configuration documentation
+  config.example.ts         # The actual live configuration (site title, nav, footer,
+                             # pricing, FAQ copy, OG images, email provider, etc.)
+  config.ts                 # Empty override — merges on top of config.example.ts
+  index.ts                  # Merges config.ts over config.example.ts
 
-biome.jsonc                  # Ultracite/Biome configuration
-AGENTS.md                    # AI assistant rules for Ultracite
-.cursor/rules/               # Cursor AI editor rules
-.vscode/settings.json        # VS Code Ultracite configuration
-
-hooks/
-  use-toast.ts                # Toast notification hook
+n8n-workflows/               # Sibling directory (outside bordful-main) — see its own README
+  migrations/                # SQL migrations for the Supabase `jobs` table (001-006)
+  workflows/                 # n8n workflow JSON exports (excluded from git — contain
+                              # live Supabase service_role + source API keys)
 
 public/
-  assets/                     # Static assets
-    social/                   # Social media assets
-  images/                     # Image files
-  og-images/                  # Open Graph images
-  avatars/                    # User avatar images
-  # Various image files and SVG icons
+  joblo.svg, joblo-light.svg # Site logo (nav / footer)
+  assets/social/              # Social icon assets (icons currently disabled in nav)
 ```
 
 ## Salary Structure
 
-Bordful includes a sophisticated salary handling system with multiple currencies and formats:
+Joblo includes a sophisticated salary handling system with multiple currencies and formats:
 
 - Support for 50+ global currencies and cryptocurrencies with proper symbols (₿, Ξ)
 - Smart currency display with intelligent spacing based on currency type
 - Consistent and readable salary ranges with compact formatting (e.g., "$50k - $75k")
 - Multiple time units (hour, day, week, month, year, project)
-- Optional currency code display for international clarity
-- Intelligent salary sorting with normalization across currencies and time periods
-- Customizable display options and formatting preferences
+- Salary is populated automatically for scraped jobs where the source provides it, or
+  parsed from the description text as a best-effort fallback (see the collector's
+  `Derive Portal Fields` step) — it's not entered manually
 
 For detailed documentation on the salary structure, see [Salary Structure](/docs/reference/salary-structure.md).
 
 ## Pagination, Sorting, and URL Parameters
 
-Bordful includes a comprehensive pagination and sorting system with powerful URL parameter support:
-
 - URL-based pagination for better UX and SEO
-- Configurable items per page (10, 25, 50, 100)
+- Configurable items per page (5, 10, 25, 50, 100)
 - Multiple sorting options (newest, oldest, salary)
 - Comprehensive URL parameter system for all filters and settings
-- Elegant pagination UI with intelligent page number display
-- Complete state persistence through URL parameters
 
-For detailed documentation on pagination, sorting, and URL parameters, see [Pagination, Sorting, and URL Parameters](/docs/reference/pagination-sorting.md).
+For detailed documentation, see [Pagination, Sorting, and URL Parameters](/docs/reference/pagination-sorting.md).
 
-## Sitemap Generation
+## Sitemap & Robots.txt
 
-Bordful automatically generates a comprehensive XML sitemap at `/sitemap.xml` that enhances your job board's visibility to search engines:
-
-- SEO-friendly URLs with descriptive slugs for all job listings
-- Dynamic updates through Incremental Static Regeneration (ISR)
-- Intelligent priority levels (1.0 for homepage, 0.9 for featured jobs, etc.)
-- Appropriate change frequencies for different content types
-- Automatic inclusion of all job listings and category pages
-- Zero-maintenance implementation with 5-minute revalidation
-
-For detailed documentation on sitemap generation, see [Sitemap Generation](/docs/reference/sitemap-generation.md).
+Both are generated dynamically via Next.js's Metadata API (`app/sitemap.ts`,
+`app/robots.ts`), revalidating every 5 minutes so newly-collected jobs show up without a
+rebuild. See [Sitemap Generation](/docs/reference/sitemap-generation.md) and
+[Robots.txt Generation](/docs/reference/robots-generation.md).
 
 ## RSS Feed System
 
-Bordful includes a comprehensive RSS feed system that allows users to subscribe to job listings in multiple formats:
+- RSS 2.0 (`/feed.xml`), Atom (`/atom.xml`), and JSON Feed (`/feed.json`)
+- Rich job content with configurable preview length
+- Auto-discovery links for feed readers, navigation and footer integration
 
-- Support for RSS 2.0, Atom, and JSON Feed formats
-- Rich job content with customizable preview length
-- Auto-discovery links for feed readers
-- Navigation and footer integration
-- Full configuration control via config file
-
-For detailed documentation on the RSS Feed System, see [RSS Feed System](/docs/reference/rss-feed-system.md).
-
-## Robots.txt Generation
-
-Bordful automatically generates a comprehensive robots.txt file at `/robots.txt` that helps search engines understand which parts of your site to crawl:
-
-- Dynamic generation using Next.js's Metadata API
-- Customizable crawling rules for different user agents
-- Protected routes to prevent crawling of admin and private areas
-- Automatic sitemap integration for better indexing
-- Canonical host definition to prevent duplicate content issues
-
-For detailed documentation on robots.txt generation, see [Robots.txt Generation](/docs/reference/robots-generation.md).
+For detailed documentation, see [RSS Feed System](/docs/reference/rss-feed-system.md).
 
 ## Email Provider Integration
 
-Bordful includes a flexible email provider system for handling job alert subscriptions. This allows users to subscribe to receive notifications when new jobs are posted.
+- Server-side, rate-limited API route (`/api/subscribe`) for job alert subscriptions
+- Provider selection via `EMAIL_PROVIDER` / `config.email.provider` — **only `encharge` is
+  implemented today**; selecting anything else throws a clear configuration error instead
+  of silently falling back
+- To add a new provider: implement `lib/email/providers/<name>.ts` against the
+  `EmailProvider` interface in `lib/email/types.ts`, then add it to the switch in
+  `lib/email/index.ts`
 
-- Server-side API route for secure handling of subscription data
-- Multiple configuration options (environment variables or config file)
-- Enhanced data collection for better targeting
-- Support for Encharge with more providers planned
-- Rich segmentation data for targeted email campaigns
-
-For comprehensive documentation on email provider integration, see [Email Provider Integration](/docs/guides/email-integration.md).
+For more, see [Email Provider Integration](/docs/guides/email-integration.md).
 
 ## Customization
 
-Bordful is designed to be highly customizable, allowing you to tailor your job board to match your brand identity and specific requirements.
+Key customization options:
 
-Key customization options include:
+- **Styling**: Tailwind CSS theme, global styles, component-specific styling
+- **Script Management**: analytics/tracking scripts with optimized loading strategies
+- **Data Source**: the Supabase integration lives entirely in `lib/db/airtable.server.ts` —
+  swap it out if you want a different backend, or feed the `jobs` table from something
+  other than the bundled n8n workflows
+- **Theme Customization**: colors, typography, design tokens via `config/config.example.ts`
+- **Component Customization**: modify specific components to match your requirements
 
-- **Styling**: Configure Tailwind CSS theme, global styles, and component-specific styling.
-- **Script Management**: Add analytics, tracking, or any third-party scripts with optimized loading strategies.
-- **Data Source**: Modify or replace the Airtable implementation with your preferred database.
-- **Theme Customization**: Set colors, typography, and other design elements through configuration.
-- **Component Customization**: Modify specific components to match your requirements.
-
-For comprehensive customization documentation, including detailed examples and best practices, see our [Customization Guide](/docs/guides/customization.md).
+For comprehensive customization documentation, see our [Customization Guide](/docs/guides/customization.md).
 
 ## Deployment
 
-Bordful can be deployed to various platforms, with Vercel being the recommended option due to its excellent support for Next.js applications.
+Recommended: Vercel (best Next.js support).
 
-For comprehensive deployment instructions, including local build verification and platform-specific guides for Vercel, Netlify, and Docker, see our [Deployment Guide](/docs/getting-started/deployment.md).
+1. **Build locally first** to catch issues before deploying:
+   ```bash
+   npx next build
+   ```
+2. Push to GitHub (`.env.local` is already gitignored) and import the repo in Vercel.
+3. In Vercel → Settings → Environment Variables, add:
+   ```
+   SUPABASE_URL = https://your-project-ref.supabase.co
+   SUPABASE_ANON_KEY = your_supabase_anon_key
+   NEXT_PUBLIC_APP_URL = https://your-domain.vercel.app
+   EMAIL_PROVIDER = encharge
+   ENCHARGE_WRITE_KEY = your_encharge_write_key
+   ```
+4. Deploy.
+
+n8n and Supabase are independent of this deployment step — the portal will start rendering
+real jobs as soon as its Supabase credentials are valid and the `jobs` table has active
+rows, regardless of where/when n8n runs.
+
+For platform-specific guides (Vercel, Netlify, Docker), see our [Deployment Guide](/docs/getting-started/deployment.md) (Airtable references in that doc are outdated; use the environment variables above instead).
 
 ## Contributing
 
@@ -559,10 +376,8 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 MIT License - feel free to use this for your own job board! 100% free for personal and commercial use.
 
-## Support
-
-If you find this helpful, please ⭐️ this repository!
-
 ## Credits
 
-Built by [Craftled](https://craftled.com)
+Frontend originally built by [Craftled](https://craftled.com) as
+[Bordful](https://github.com/craftled/bordful); adapted here to run on Supabase with an
+n8n-based collection pipeline.

@@ -20,10 +20,6 @@ export class EnchargeProvider implements EmailProvider {
       enchargeConfig.writeKey || process.env.ENCHARGE_WRITE_KEY || '';
     this.defaultTags = enchargeConfig.defaultTags || 'job-alerts-subscriber';
     this.eventName = enchargeConfig.eventName || 'Job Alert Subscription';
-
-    if (!this.writeKey && process.env.NODE_ENV === 'production') {
-      throw new Error('Encharge write key is required in production');
-    }
   }
 
   async subscribe(data: SubscriberData) {
@@ -31,6 +27,19 @@ export class EnchargeProvider implements EmailProvider {
       // In development without a key, simulate success
       if (!this.writeKey && process.env.NODE_ENV === 'development') {
         return { success: true };
+      }
+
+      // Checked here (at request time) rather than in the constructor:
+      // the constructor runs at module-import time, which Next.js also
+      // evaluates during production builds (collecting page data for
+      // /api/subscribe) - throwing there broke `next build` entirely for
+      // any deployment that hadn't set the key yet, even with job alerts
+      // disabled in config.
+      if (!this.writeKey && process.env.NODE_ENV === 'production') {
+        throw new EmailProviderError(
+          'Encharge write key is required in production',
+          'encharge'
+        );
       }
 
       // Format the payload for Encharge

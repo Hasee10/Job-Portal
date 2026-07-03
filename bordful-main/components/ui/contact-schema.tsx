@@ -3,6 +3,7 @@
 import type { FC } from 'react';
 import type { ContactPage, WithContext } from 'schema-dts';
 import config from '@/config';
+import { safeJsonLdStringify } from '@/lib/utils/json-ld';
 
 type ContactSchemaProps = {
   companyName?: string;
@@ -46,7 +47,7 @@ export const ContactSchema: FC<ContactSchemaProps> = ({
 
   return (
     <script
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(contactSchema) }}
+      dangerouslySetInnerHTML={{ __html: safeJsonLdStringify(contactSchema) }}
       type="application/ld+json"
     />
   );
