@@ -464,7 +464,7 @@ export function Footer() {
                 </h2>
                 <p className="max-w-[520px] text-sm" style={textStyle}>
                   {config.footer.postJob.description ||
-                    'Join over 4,000+ startups already growing with Bordful.'}
+                    'Join over 4,000+ startups already growing with Joblo.'}
                 </p>
               </div>
               <div className="flex flex-col gap-3 sm:flex-row">

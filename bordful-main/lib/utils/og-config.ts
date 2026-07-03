@@ -62,7 +62,7 @@ export type ProcessedOGConfig = {
  */
 export function parseOGConfig(ogConfig: OGConfig = {}): ProcessedOGConfig {
   const fontFamily = ogConfig.font?.family || config.font.family || 'geist';
-  const siteTitle = ogConfig.title || config.title || 'Bordful';
+  const siteTitle = ogConfig.title || config.title || 'Joblo';
   const siteDescription =
     ogConfig.description || config.description || 'Find your dream job today!';
   const backgroundColor =

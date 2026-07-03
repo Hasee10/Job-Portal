@@ -54,7 +54,7 @@ export function createFeed(baseUrl: string, feedConfig: FeedConfig): Feed {
     favicon: `${baseUrl}/favicon.ico`,
     copyright: `All rights reserved ${new Date().getFullYear()}`,
     updated: new Date(),
-    generator: 'Bordful Job Board',
+    generator: 'Joblo Job Board',
     feedLinks: {
       rss2: `${baseUrl}/feed.xml`,
       json: `${baseUrl}/feed.json`,

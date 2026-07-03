@@ -78,7 +78,7 @@ export default async function JobAlertsPage() {
             </h2>
             <p className="mb-6 text-sm text-zinc-600">
               {config.jobAlerts.form?.description ||
-                "Get notified when new jobs are posted. We'll also subscribe you to Bordful newsletter."}
+                "Get notified when new jobs are posted. We'll also subscribe you to Joblo newsletter."}
             </p>
             <JobAlertsForm />
           </div>

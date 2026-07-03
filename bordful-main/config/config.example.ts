@@ -391,7 +391,7 @@ export const config = {
 
       // Description text under the heading
       description:
-        "Get notified when new jobs are posted. We'll also subscribe you to Bordful newsletter.",
+        "Get notified when new jobs are posted. We'll also subscribe you to Joblo newsletter.",
 
       // Form fields configuration
       fields: {
@@ -607,14 +607,14 @@ export const config = {
         title: 'General Questions',
         items: [
           {
-            question: 'What is Bordful?',
+            question: 'What is Joblo?',
             answer:
-              'Bordful is a modern, minimal job board built with Next.js, Tailwind CSS, and Supabase. It features static generation, client-side search, and a clean UI with Geist font.',
+              'Joblo is a modern, minimal job board built with Next.js, Tailwind CSS, and Supabase. It features static generation, client-side search, and a clean UI with Geist font.',
           },
           {
-            question: 'Is Bordful free to use?',
+            question: 'Is Joblo free to use?',
             answer:
-              'Yes, Bordful is an open-source project available under the MIT license. You can use it for free for both personal and commercial projects.',
+              'Yes, browsing jobs on Joblo is always free. Joblo is built on Bordful, an open-source project available under the MIT license.',
           },
           {
             question: 'How often are job listings updated?',
@@ -667,27 +667,27 @@ export const config = {
         title: 'Technical Questions',
         items: [
           {
-            question: 'What technologies does Bordful use?',
+            question: 'What technologies does Joblo use?',
             answer:
-              'Bordful is built with Next.js, Tailwind CSS, and uses Supabase as the backend.\n\n## Core Technologies\n\n* **Next.js**: For server-side rendering and static site generation\n* **Tailwind CSS**: For utility-first styling\n* **Supabase**: As a flexible backend database\n* **TypeScript**: For type safety and better developer experience\n\nIt also features Incremental Static Regeneration (ISR) for real-time updates and client-side search with memoization.',
+              'Joblo is built with Next.js, Tailwind CSS, and uses Supabase as the backend.\n\n## Core Technologies\n\n* **Next.js**: For server-side rendering and static site generation\n* **Tailwind CSS**: For utility-first styling\n* **Supabase**: As a flexible backend database\n* **TypeScript**: For type safety and better developer experience\n\nIt also features Incremental Static Regeneration (ISR) for real-time updates and client-side search with memoization.',
             isRichText: true,
           },
           {
-            question: 'Can I customize Bordful for my own job board?',
+            question: 'Can I customize Joblo for my own job board?',
             answer:
-              'Yes, Bordful is designed to be easily customizable. You can modify the configuration file to change the branding, navigation, and other aspects of the job board.\n\n### Key customization options:\n\n- **Branding**: Change the logo, colors, and text\n- **Navigation**: Add or remove menu items\n- **Features**: Enable or disable features like job alerts and RSS feeds\n- **Layout**: Modify the layout and styling\n\nFor more advanced customization, you can extend the codebase to add new features.\n\n```typescript\n// Example config customization\nconst config = {\n  title: "My Custom Job Board",\n  description: "Find your dream job here",\n  // ... more configuration\n};\n```',
+              'Yes, Joblo is designed to be easily customizable. You can modify the configuration file to change the branding, navigation, and other aspects of the job board.\n\n### Key customization options:\n\n- **Branding**: Change the logo, colors, and text\n- **Navigation**: Add or remove menu items\n- **Features**: Enable or disable features like job alerts and RSS feeds\n- **Layout**: Modify the layout and styling\n\nFor more advanced customization, you can extend the codebase to add new features.\n\n```typescript\n// Example config customization\nconst config = {\n  title: "My Custom Job Board",\n  description: "Find your dream job here",\n  // ... more configuration\n};\n```',
             isRichText: true,
           },
           {
-            question: 'Is Bordful SEO-friendly?',
+            question: 'Is Joblo SEO-friendly?',
             answer:
-              'Yes, Bordful includes comprehensive SEO features such as:\n\n1. Automatic XML sitemap generation\n2. Programmatic robots.txt\n3. SEO-friendly URLs with descriptive job slugs\n4. Dynamic sitemap updates every 5 minutes\n5. Structured data for job postings\n\n> "SEO is not just about being search engine-friendly, but also about creating a better user experience."',
+              'Yes, Joblo includes comprehensive SEO features such as:\n\n1. Automatic XML sitemap generation\n2. Programmatic robots.txt\n3. SEO-friendly URLs with descriptive job slugs\n4. Dynamic sitemap updates every 5 minutes\n5. Structured data for job postings\n\n> "SEO is not just about being search engine-friendly, but also about creating a better user experience."',
             isRichText: true,
           },
           {
-            question: 'How do I deploy my Bordful job board?',
+            question: 'How do I deploy my Joblo job board?',
             answer:
-              'Bordful can be deployed to various platforms, with Vercel being the recommended option.\n\n## Deployment Steps\n\n1. Fork the Bordful repository\n2. Create your `config.ts` file\n3. Connect your repository to Vercel\n4. Configure environment variables\n5. Deploy!\n\n### Environment Variables\n\n| Variable | Description | Required |\n|----------|-------------|----------|\n| `SUPABASE_URL` | Your Supabase project URL | Yes |\n| `SUPABASE_ANON_KEY` | Your Supabase anon/public API key | Yes |\n| `NEXT_PUBLIC_APP_URL` | Your site URL | Yes |\n\nFor more detailed instructions, please refer to the [deployment documentation](https://github.com/yourusername/bordful).',
+              'Joblo can be deployed to various platforms, with Vercel being the recommended option.\n\n## Deployment Steps\n\n1. Fork the Bordful repository\n2. Create your `config.ts` file\n3. Connect your repository to Vercel\n4. Configure environment variables\n5. Deploy!\n\n### Environment Variables\n\n| Variable | Description | Required |\n|----------|-------------|----------|\n| `SUPABASE_URL` | Your Supabase project URL | Yes |\n| `SUPABASE_ANON_KEY` | Your Supabase anon/public API key | Yes |\n| `NEXT_PUBLIC_APP_URL` | Your site URL | Yes |\n\nFor more detailed instructions, please refer to the [deployment documentation](https://github.com/yourusername/bordful).',
             isRichText: true,
           },
         ],
@@ -736,33 +736,33 @@ export const config = {
 
   // Navigation
   nav: {
-    title: 'Bordful', // The text shown in the navigation bar
+    title: 'Joblo', // The text shown in the navigation bar
     logo: {
       enabled: true, // Set to true to use a custom logo instead of icon + text
-      src: '/bordful.svg', // Path to your logo image (place it in the public directory)
-      width: 67, // Width of the logo in pixels
-      height: 20, // Height of the logo in pixels
-      alt: 'Bordful', // Alt text for the logo
+      src: '/joblo.svg', // Path to your logo image (place it in the public directory)
+      width: 81, // Width of the logo in pixels
+      height: 30, // Height of the logo in pixels
+      alt: 'Joblo', // Alt text for the logo
     },
     github: {
-      show: true, // Whether to show the GitHub button
-      url: 'https://github.com/craftled/bordful', // Your GitHub repository URL
+      show: false, // GitHub removed for now — add your own repo link later
+      url: '',
     },
     linkedin: {
-      show: true,
-      url: 'https://www.linkedin.com/company/bordful/',
+      show: false, // Add your own LinkedIn link later
+      url: '',
     },
     twitter: {
-      show: true,
-      url: 'https://x.com/bordful',
+      show: false, // Add your own X/Twitter link later
+      url: '',
     },
     bluesky: {
-      show: true,
-      url: 'https://bsky.app/profile/bordful.com',
+      show: false, // Add your own Bluesky link later
+      url: '',
     },
     reddit: {
-      show: true,
-      url: 'https://reddit.com/r/bordful',
+      show: false, // Add your own Reddit link later
+      url: '',
     },
     postJob: {
       show: true, // Whether to show the Post Job button
@@ -810,10 +810,10 @@ export const config = {
       logo: {
         enabled: true,
         // Use different image from navbar if needed (e.g., light logo for dark footer)
-        src: '/bordful-light.svg', // Path to footer-specific logo (light version)
-        width: 67,
-        height: 20,
-        alt: 'Bordful',
+        src: '/joblo-light.svg', // Path to footer-specific logo (light version)
+        width: 81,
+        height: 30,
+        alt: 'Joblo',
       },
     },
 
@@ -875,11 +875,6 @@ export const config = {
             link: '/terms',
             external: false,
           },
-          {
-            label: 'License',
-            link: 'https://github.com/craftled/bordful/blob/main/LICENSE',
-            external: true,
-          },
         ],
       },
     ],
@@ -907,7 +902,7 @@ export const config = {
     copyright: {
       show: true,
       startYear: 2024,
-      text: 'Bordful - An open-source Next.js job board template. Standing on the shoulders of giants.',
+      text: 'Joblo - built with the open-source Bordful job board template.',
     },
 
     // Built with section
@@ -1187,8 +1182,8 @@ export const config = {
     contactInfo: {
       title: 'Contact Information',
       description: "Here's how you can reach us directly.",
-      companyName: 'Bordful Inc.',
-      email: 'hello@bordful.com',
+      companyName: 'Joblo Inc.',
+      email: 'hello@joblo.com',
       phone: '+1 (555) 123-4567',
       address: '123 Main Street, San Francisco, CA 94105',
     },
@@ -1223,7 +1218,7 @@ export const config = {
     // Badge text for the about hero
     badge: 'About Us',
     // Title for the about page hero section
-    title: 'About Bordful',
+    title: 'About Joblo',
     // Description for the about page
     description:
       'Learn more about our mission to connect talent with opportunity.',
@@ -1273,7 +1268,7 @@ export const config = {
     // Schema.org structured data customization
     schema: {
       // Company name for the schema
-      companyName: 'Bordful',
+      companyName: 'Joblo',
       // Description for the schema
       description:
         'Connect talented professionals with meaningful opportunities',
