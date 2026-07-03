@@ -609,7 +609,7 @@ export const config = {
           {
             question: 'What is Bordful?',
             answer:
-              'Bordful is a modern, minimal job board built with Next.js, Tailwind CSS, and Airtable. It features static generation, client-side search, and a clean UI with Geist font.',
+              'Bordful is a modern, minimal job board built with Next.js, Tailwind CSS, and Supabase. It features static generation, client-side search, and a clean UI with Geist font.',
           },
           {
             question: 'Is Bordful free to use?',
@@ -669,7 +669,7 @@ export const config = {
           {
             question: 'What technologies does Bordful use?',
             answer:
-              'Bordful is built with Next.js, Tailwind CSS, and uses Airtable as the backend.\n\n## Core Technologies\n\n* **Next.js**: For server-side rendering and static site generation\n* **Tailwind CSS**: For utility-first styling\n* **Airtable**: As a flexible backend database\n* **TypeScript**: For type safety and better developer experience\n\nIt also features Incremental Static Regeneration (ISR) for real-time updates and client-side search with memoization.',
+              'Bordful is built with Next.js, Tailwind CSS, and uses Supabase as the backend.\n\n## Core Technologies\n\n* **Next.js**: For server-side rendering and static site generation\n* **Tailwind CSS**: For utility-first styling\n* **Supabase**: As a flexible backend database\n* **TypeScript**: For type safety and better developer experience\n\nIt also features Incremental Static Regeneration (ISR) for real-time updates and client-side search with memoization.',
             isRichText: true,
           },
           {
@@ -687,7 +687,7 @@ export const config = {
           {
             question: 'How do I deploy my Bordful job board?',
             answer:
-              'Bordful can be deployed to various platforms, with Vercel being the recommended option.\n\n## Deployment Steps\n\n1. Fork the Bordful repository\n2. Create your `config.ts` file\n3. Connect your repository to Vercel\n4. Configure environment variables\n5. Deploy!\n\n### Environment Variables\n\n| Variable | Description | Required |\n|----------|-------------|----------|\n| `AIRTABLE_ACCESS_TOKEN` | Your Airtable API token | Yes |\n| `AIRTABLE_BASE_ID` | Your Airtable base ID | Yes |\n| `NEXT_PUBLIC_APP_URL` | Your site URL | Yes |\n\nFor more detailed instructions, please refer to the [deployment documentation](https://github.com/yourusername/bordful).',
+              'Bordful can be deployed to various platforms, with Vercel being the recommended option.\n\n## Deployment Steps\n\n1. Fork the Bordful repository\n2. Create your `config.ts` file\n3. Connect your repository to Vercel\n4. Configure environment variables\n5. Deploy!\n\n### Environment Variables\n\n| Variable | Description | Required |\n|----------|-------------|----------|\n| `SUPABASE_URL` | Your Supabase project URL | Yes |\n| `SUPABASE_ANON_KEY` | Your Supabase anon/public API key | Yes |\n| `NEXT_PUBLIC_APP_URL` | Your site URL | Yes |\n\nFor more detailed instructions, please refer to the [deployment documentation](https://github.com/yourusername/bordful).',
             isRichText: true,
           },
         ],
@@ -1020,7 +1020,7 @@ export const config = {
       },
       {
         name: 'Pro',
-        price: 99,
+        price: 19,
         billingTerm: 'job posting',
         description:
           'Great for occasional hiring needs with better visibility.',
@@ -1045,7 +1045,7 @@ export const config = {
       },
       {
         name: 'Business',
-        price: 999,
+        price: 149,
         billingTerm: 'year',
         description:
           'Unlimited jobs postings for one year for serious recruiters.',
