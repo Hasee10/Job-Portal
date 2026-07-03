@@ -31,7 +31,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const jobs = $input.first().json.jobs || [];\nreturn jobs.map(job => ({\n  json: {\n    title: (job.title || '').trim(),\n    company: (job.company_name || '').trim(),\n    location: (job.candidate_required_location || '').trim() || null,\n    remote_type: 'remote',\n    apply_url: job.url,\n    source: 'remotive',\n    description: job.description || null,\n    posted_at: job.publication_date ? new Date(job.publication_date).toISOString() : null\n  }\n})).filter(item => item.json.title && item.json.apply_url);"
+        "jsCode": "const jobs = $input.first().json.jobs || [];\nreturn jobs.map(job => ({\n  json: {\n    title: (job.title || '').trim(),\n    company: (job.company_name || '').trim(),\n    location: (job.candidate_required_location || '').trim() || null,\n    remote_type: 'remote',\n    apply_url: job.url,\n    source: 'remotive',\n    description: job.description ? (job.salary ? `${job.description} Salary: ${job.salary}` : job.description) : (job.salary ? `Salary: ${job.salary}` : null),\n    posted_at: job.publication_date ? new Date(job.publication_date).toISOString() : null\n  }\n})).filter(item => item.json.title && item.json.apply_url);"
       },
       "id": "normalize-remotive",
       "name": "Normalize Remotive",
@@ -139,7 +139,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const jobs = $input.first().json.results || [];\nreturn jobs.map(job => {\n  const text = `${job.title || ''} ${job.description || ''}`.toLowerCase();\n  return {\n    json: {\n      title: (job.title || '').trim(),\n      company: (job.company && job.company.display_name || '').trim(),\n      location: (job.location && job.location.display_name || '').trim() || null,\n      remote_type: text.includes('remote') ? 'remote' : (text.includes('hybrid') ? 'hybrid' : 'onsite'),\n      apply_url: job.redirect_url,\n      source: 'adzuna',\n      description: job.description || null,\n      posted_at: job.created ? new Date(job.created).toISOString() : null\n    }\n  };\n}).filter(item => item.json.title && item.json.apply_url);"
+        "jsCode": "const jobs = $input.first().json.results || [];\nreturn jobs.map(job => {\n  const text = `${job.title || ''} ${job.description || ''}`.toLowerCase();\n  return {\n    json: {\n      title: (job.title || '').trim(),\n      company: (job.company && job.company.display_name || '').trim(),\n      location: (job.location && job.location.display_name || '').trim() || null,\n      remote_type: text.includes('remote') ? 'remote' : (text.includes('hybrid') ? 'hybrid' : 'onsite'),\n      apply_url: job.redirect_url,\n      source: 'adzuna',\n      description: job.description || null,\n      posted_at: job.created ? new Date(job.created).toISOString() : null,\n      salary_min: job.salary_min || null,\n      salary_max: job.salary_max || null,\n      adzuna_contract_time: job.contract_time || null,\n      adzuna_contract_type: job.contract_type || null\n    }\n  };\n}).filter(item => item.json.title && item.json.apply_url);"
       },
       "id": "normalize-adzuna",
       "name": "Normalize Adzuna",
@@ -182,7 +182,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const jobs = $input.first().json.jobs || [];\nreturn jobs.map(job => {\n  const text = `${job.title || ''} ${job.snippet || ''}`.toLowerCase();\n  return {\n    json: {\n      title: (job.title || '').trim(),\n      company: (job.company || '').trim(),\n      location: (job.location || '').trim() || null,\n      remote_type: text.includes('remote') ? 'remote' : (text.includes('hybrid') ? 'hybrid' : 'onsite'),\n      apply_url: job.link,\n      source: 'jooble',\n      description: job.snippet || null,\n      posted_at: job.updated ? new Date(job.updated).toISOString() : null\n    }\n  };\n}).filter(item => item.json.title && item.json.apply_url);"
+        "jsCode": "const jobs = $input.first().json.jobs || [];\nreturn jobs.map(job => {\n  const text = `${job.title || ''} ${job.snippet || ''}`.toLowerCase();\n  return {\n    json: {\n      title: (job.title || '').trim(),\n      company: (job.company || '').trim(),\n      location: (job.location || '').trim() || null,\n      remote_type: text.includes('remote') ? 'remote' : (text.includes('hybrid') ? 'hybrid' : 'onsite'),\n      apply_url: job.link,\n      source: 'jooble',\n      description: job.snippet ? (job.salary ? `${job.snippet} Salary: ${job.salary}` : job.snippet) : (job.salary ? `Salary: ${job.salary}` : null),\n      posted_at: job.updated ? new Date(job.updated).toISOString() : null\n    }\n  };\n}).filter(item => item.json.title && item.json.apply_url);"
       },
       "id": "normalize-jooble",
       "name": "Normalize Jooble",
@@ -303,6 +303,17 @@
     },
     {
       "parameters": {
+        "jsCode": "const inferEmploymentType = (title, description, adzunaContractTime, adzunaContractType) => {\n  if (adzunaContractTime === 'part_time') return 'Part-time';\n  if (adzunaContractType === 'contract') return 'Contract';\n  const text = `${title || ''} ${description || ''}`.toLowerCase();\n  if (/freelance/.test(text)) return 'Freelance';\n  if (/part[\\s-]?time/.test(text)) return 'Part-time';\n  if (/\\bcontract(or)?\\b/.test(text)) return 'Contract';\n  return 'Full-time';\n};\n\nconst inferRemoteRegion = (locationText, remoteType) => {\n  if (remoteType !== 'remote') return null;\n  const loc = (locationText || '').toLowerCase();\n  if (!loc) return null;\n  if (/worldwide|anywhere|global/.test(loc)) return 'Worldwide';\n  if (/\\beu\\b|european union/.test(loc)) return 'EU Only';\n  if (/\\buk\\b|united kingdom|britain/.test(loc)) return 'UK/EU Only';\n  if (/europe/.test(loc)) return 'Europe Only';\n  const hasUS = /\\busa?\\b|united states/.test(loc);\n  const hasCanada = /canada/.test(loc);\n  if (hasUS && hasCanada) return 'US/Canada Only';\n  if (hasUS) return 'US Only';\n  if (/asia|apac/.test(loc)) return 'Asia-Pacific Only';\n  if (/americas/.test(loc)) return 'Americas Only';\n  return null;\n};\n\nconst inferWorkplaceLocation = (locationText, remoteType) => {\n  if (remoteType === 'remote') return { city: null, country: null };\n  const parts = (locationText || '').split(',').map(s => s.trim()).filter(Boolean);\n  return {\n    city: parts[0] || null,\n    country: parts.length > 1 ? parts[parts.length - 1] : null\n  };\n};\n\nconst inferCareerLevel = (title) => {\n  const t = (title || '').toLowerCase();\n  const levels = [];\n  if (/\\bintern(ship)?\\b/.test(t)) levels.push('Internship');\n  if (/entry[\\s-]?level|no experience|\\bgraduate\\b|\\btrainee\\b/.test(t)) levels.push('EntryLevel');\n  if (/\\bjunior\\b/.test(t)) levels.push('Junior');\n  if (/\\bassociate\\b/.test(t)) levels.push('Associate');\n  if (/mid[\\s-]?level/.test(t)) levels.push('MidLevel');\n  if (/senior director/.test(t)) levels.push('SeniorDirector');\n  else if (/\\bdirector\\b/.test(t)) levels.push('Director');\n  if (/senior manager/.test(t)) levels.push('SeniorManager');\n  else if (/\\bmanager\\b/.test(t)) levels.push('Manager');\n  if (/\\bstaff\\b/.test(t)) levels.push('Staff');\n  if (/\\bprincipal\\b/.test(t)) levels.push('Principal');\n  if (/\\blead\\b/.test(t)) levels.push('Lead');\n  if (/\\bsenior\\b/.test(t) && !/senior (director|manager)/.test(t)) levels.push('Senior');\n  if (/\\bsvp\\b|senior vice president/.test(t)) levels.push('SVP');\n  else if (/\\bevp\\b|executive vice president/.test(t)) levels.push('EVP');\n  else if (/\\bvp\\b|vice president/.test(t)) levels.push('VP');\n  if (/chief (executive|technology|operating|financial) officer|\\bcto\\b|\\bceo\\b|\\bcfo\\b|\\bcoo\\b/.test(t)) levels.push('CLevel');\n  if (/founder/.test(t)) levels.push('Founder');\n  return levels.length ? Array.from(new Set(levels)) : ['NotSpecified'];\n};\n\nconst CURRENCY_SYMBOLS = { '$': 'USD', '£': 'GBP', '€': 'EUR' };\n\nconst parseSalaryFromText = (text) => {\n  const match = /([$£€])\\s?([\\d,]{3,7})(k)?(?:\\s?(?:-|–|to)\\s?[$£€]?\\s?([\\d,]{3,7})(k)?)?/i.exec(text || '');\n  if (!match) return null;\n  const currency = CURRENCY_SYMBOLS[match[1]] || 'USD';\n  const toNumber = (raw, isK) => {\n    const n = parseFloat(raw.replace(/,/g, ''));\n    return isK ? n * 1000 : n;\n  };\n  const first = toNumber(match[2], !!match[3]);\n  if (first < 1000 && !match[3]) return null;\n  const second = match[4] ? toNumber(match[4], !!match[5]) : null;\n  const min = second ? Math.min(first, second) : first;\n  const max = second ? Math.max(first, second) : first;\n  let unit = 'year';\n  if (/\\/\\s?(hour|hr)\\b|per hour/i.test(text)) unit = 'hour';\n  else if (/\\/\\s?day\\b|per day/i.test(text)) unit = 'day';\n  else if (/\\/\\s?week\\b|per week/i.test(text)) unit = 'week';\n  else if (/\\/\\s?month\\b|per month/i.test(text)) unit = 'month';\n  return { min, max, currency, unit };\n};\n\nreturn $input.all().map(item => {\n  const j = item.json;\n  const type = inferEmploymentType(j.title, j.description, j.adzuna_contract_time, j.adzuna_contract_type);\n  const remote_region = inferRemoteRegion(j.location, j.remote_type);\n  const { city, country } = inferWorkplaceLocation(j.location, j.remote_type);\n  const career_level = inferCareerLevel(j.title);\n\n  let salary = null;\n  if (j.source === 'adzuna' && (j.salary_min || j.salary_max)) {\n    salary = { min: j.salary_min || null, max: j.salary_max || null, currency: 'GBP', unit: 'year' };\n  } else {\n    salary = parseSalaryFromText(`${j.title || ''} ${j.description || ''}`);\n  }\n\n  return {\n    json: {\n      ...j,\n      type,\n      remote_region,\n      workplace_city: city,\n      workplace_country: country,\n      career_level,\n      salary_min: salary ? salary.min : null,\n      salary_max: salary ? salary.max : null,\n      salary_currency: salary ? salary.currency : 'USD',\n      salary_unit: salary ? salary.unit : 'year'\n    }\n  };\n});"
+      },
+      "id": "derive-portal-fields",
+      "name": "Derive Portal Fields",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1065, 600],
+      "notes": "Bridges the raw scraper output to what the Bordful portal actually renders: employment type, salary (structured for Adzuna, best-effort regex for the rest), remote_region / workplace_city / workplace_country, and career_level. Without this, every job upserted showed the DB defaults (Full-time, no salary, no location breakdown) regardless of what the source actually provided."
+    },
+    {
+      "parameters": {
         "jsCode": "const includeKeywords = ['intern', 'graduate', 'junior', 'entry level', 'associate', '0-1 years', '0-2 years', 'no experience', 'trainee'];\nconst excludeKeywords = ['5+ years', 'senior only', 'unpaid', 'commission-only', 'commission only'];\n\nconst out = [];\nfor (const item of $input.all()) {\n  const text = `${item.json.title || ''} ${item.json.description || ''}`.toLowerCase();\n\n  const isExcluded = excludeKeywords.some(k => text.includes(k));\n  if (isExcluded) continue;\n\n  const entryLevel = includeKeywords.some(k => text.includes(k));\n  out.push({ json: { ...item.json, entry_level: entryLevel } });\n}\nreturn out;"
       },
       "id": "entry-level-filter",
@@ -347,7 +358,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ { title: $json.title, company: $json.company, location: $json.location, remote_type: $json.remote_type, apply_url: $json.apply_url, source: $json.source, description: $json.description, posted_at: $json.posted_at, entry_level: $json.entry_level, flagged_suspicious: $json.flagged_suspicious, score: $json.score } }}",
+        "jsonBody": "={{ { title: $json.title, company: $json.company, location: $json.location, remote_type: $json.remote_type, apply_url: $json.apply_url, source: $json.source, description: $json.description, posted_at: $json.posted_at, entry_level: $json.entry_level, flagged_suspicious: $json.flagged_suspicious, score: $json.score, type: $json.type, salary_min: $json.salary_min, salary_max: $json.salary_max, salary_currency: $json.salary_currency, salary_unit: $json.salary_unit, workplace_city: $json.workplace_city, workplace_country: $json.workplace_country, remote_region: $json.remote_region, career_level: $json.career_level } }}",
         "options": {}
       },
       "id": "upsert-supabase",
@@ -448,6 +459,9 @@
       "main": [[{ "node": "Strip HTML From Description", "type": "main", "index": 0 }]]
     },
     "Strip HTML From Description": {
+      "main": [[{ "node": "Derive Portal Fields", "type": "main", "index": 0 }]]
+    },
+    "Derive Portal Fields": {
       "main": [[{ "node": "Entry-Level Filter", "type": "main", "index": 0 }]]
     },
     "Entry-Level Filter": {
