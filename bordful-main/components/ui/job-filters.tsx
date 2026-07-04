@@ -207,20 +207,31 @@ export function JobFilters({
   ]);
 
   // Generic handler for array-based filters
+  //
+  // onFilterChange (the callback that actually re-filters the job list) runs
+  // FIRST and synchronously, before the nuqs URL sync. The URL update is a
+  // bookmarkable-link nicety, not something the actual filtering depends on -
+  // it used to run first via `await setter(...)`, which meant a throw or
+  // rejection from the URL sync (nuqs internally calls the Next.js router,
+  // which can reject) would silently skip the onFilterChange call entirely
+  // and the checkbox would look like it did nothing.
   const createArrayFilterHandler = useCallback(
     (
       filterType: Extract<FilterType, 'type' | 'role' | 'salary' | 'language'>,
       currentValues: string[],
       setter: (value: string[] | null) => Promise<URLSearchParams>
     ) => {
-      return async (checked: boolean, value: string) => {
+      return (checked: boolean, value: string) => {
         const newValues = checked
           ? [...currentValues, value]
           : currentValues.filter((item) => item !== value);
 
-        // Remove parameter from URL if empty but ensure we pass [] to filters
-        await setter(newValues.length ? newValues : null);
         onFilterChange(filterType, newValues);
+
+        // Remove parameter from URL if empty but ensure we pass [] to filters
+        setter(newValues.length ? newValues : null).catch((err) => {
+          console.error('Failed to sync filter to URL:', err);
+        });
       };
     },
     [onFilterChange]
@@ -232,9 +243,11 @@ export function JobFilters({
       filterType: Extract<FilterType, 'remote' | 'visa'>,
       setter: (value: boolean | null) => Promise<URLSearchParams>
     ) => {
-      return async (checked: boolean) => {
-        await setter(checked || null);
+      return (checked: boolean) => {
         onFilterChange(filterType, checked);
+        setter(checked || null).catch((err) => {
+          console.error('Failed to sync filter to URL:', err);
+        });
       };
     },
     [onFilterChange]
@@ -246,9 +259,11 @@ export function JobFilters({
       filterType: Extract<FilterType, 'type' | 'role' | 'salary' | 'language'>,
       setter: (value: null) => Promise<URLSearchParams>
     ) => {
-      return async () => {
-        await setter(null);
+      return () => {
         onFilterChange(filterType, []);
+        setter(null).catch((err) => {
+          console.error('Failed to sync filter to URL:', err);
+        });
       };
     },
     [onFilterChange]
@@ -260,9 +275,11 @@ export function JobFilters({
       filterType: Extract<FilterType, 'remote' | 'visa'>,
       setter: (value: null) => Promise<URLSearchParams>
     ) => {
-      return async () => {
-        await setter(null);
+      return () => {
         onFilterChange(filterType, false);
+        setter(null).catch((err) => {
+          console.error('Failed to sync filter to URL:', err);
+        });
       };
     },
     [onFilterChange]

@@ -14,6 +14,13 @@
       "runtimeArgs": ["next", "start", "-p", "3052"],
       "cwd": "bordful-main",
       "port": 3052
+    },
+    {
+      "name": "dev2",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["next", "dev", "-p", "3053"],
+      "cwd": "bordful-main",
+      "port": 3053
     }
   ]
 }
