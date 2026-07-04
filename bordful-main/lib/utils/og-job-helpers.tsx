@@ -1,12 +1,5 @@
 import { ImageResponse } from 'next/og';
 import config from '@/config';
-import {
-  getFontFamilyCSS,
-  getFontInfo,
-  loadGoogleFontData,
-  prepareImageResponseFonts,
-} from '@/lib/utils/font-utils';
-import { fetchImageAsDataURI } from '@/lib/utils/image-utils';
 import type { MinimalJob } from '@/lib/utils/job-validation';
 import {
   createLinearGradient,
