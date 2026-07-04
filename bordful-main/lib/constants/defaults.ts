@@ -28,6 +28,15 @@ export const SORT_TRIGGER_WIDTH_SM = 110;
 export const DEFAULT_PER_PAGE = 10;
 export const PER_PAGE_OPTIONS = [5, 10, 25, 50, 100] as const;
 
+// The homepage ships every job it's given to the browser as hydration data
+// for client-side filtering/sorting/search - with the scraper adding
+// thousands of jobs, sending the *entire* active table (which crossed
+// 5,000+ rows and produced a 5MB+ page) risks slow loads and server-side
+// OOM/timeouts. Cap it to the most recent N (getJobs() already returns
+// newest-first); the full set is still reachable via the /jobs directory
+// pages, which are server-rendered and don't ship raw job data to the client.
+export const HOMEPAGE_JOBS_LIMIT = 500;
+
 // ARIA label constants
 export const MIN_WIDTH_SELECT = 90;
 

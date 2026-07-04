@@ -1,7 +1,8 @@
 import type { Metadata } from 'next';
 import { HomePage } from '@/components/home/HomePage';
 import config from '@/config';
-import { getJobs } from '@/lib/db/airtable.server';
+import { HOMEPAGE_JOBS_LIMIT } from '@/lib/constants/defaults';
+import { getActiveJobsCount, getJobs } from '@/lib/db/airtable.server';
 import { generateMetadata } from '@/lib/utils/metadata';
 
 // Add metadata for SEO
@@ -26,6 +27,9 @@ export const metadata: Metadata = generateMetadata({
 export const revalidate = 300;
 
 export default async function Home() {
-  const jobs = await getJobs();
-  return <HomePage initialJobs={jobs} />;
+  const [jobs, totalActiveJobs] = await Promise.all([
+    getJobs({ limit: HOMEPAGE_JOBS_LIMIT }),
+    getActiveJobsCount(),
+  ]);
+  return <HomePage initialJobs={jobs} totalActiveJobs={totalActiveJobs} />;
 }

@@ -453,28 +453,62 @@ const JOBS_LIST_COLUMNS = [
   'languages',
 ].join(',');
 
-export const getJobs = cache(async (): Promise<Job[]> => {
+export const getJobs = cache(
+  async (options?: { limit?: number }): Promise<Job[]> => {
+    const config = getSupabaseConfig();
+    if (!config) {
+      return [];
+    }
+
+    try {
+      // status = 'active' -> is_active = true; posted_date desc -> posted_at desc.
+      // Projects a reduced column set (see JOBS_LIST_COLUMNS) since this feeds
+      // listing/search/slug-lookup, none of which render the heavy text
+      // fields - keeps both the per-page response size and the per-row
+      // normalization cost down as the table grows.
+      const queryString = `select=${JOBS_LIST_COLUMNS}&is_active=eq.true&order=posted_at.desc.nullslast`;
+
+      // With a limit, a single bounded request is both cheaper and faster
+      // than paginating through queryAllJobs and throwing away everything
+      // past the limit (e.g. the homepage only ever renders its most recent
+      // HOMEPAGE_JOBS_LIMIT jobs - no reason to fetch all 5,000+ to get
+      // there). Without one, callers that need the complete active set
+      // (the /jobs directory's category counts, RSS/sitemap, slug lookup)
+      // still get every row via queryAllJobs, matching Airtable's .all().
+      const rows = options?.limit
+        ? (
+            await queryJobs(config, queryString, {
+              range: { offset: 0, limit: options.limit },
+            })
+          ).rows
+        : await queryAllJobs(config, queryString);
+
+      return rows.map((row) => rowToJob(row, { lite: true }));
+    } catch {
+      return [];
+    }
+  }
+);
+
+// Cheap count of active jobs - a single request for 1 row with
+// `Prefer: count=exact`, used where only the total matters (e.g. the
+// homepage's "Open Jobs" stat) so it stays accurate even when getJobs() is
+// called with a limit that caps the actual row data returned.
+export const getActiveJobsCount = cache(async (): Promise<number> => {
   const config = getSupabaseConfig();
   if (!config) {
-    return [];
+    return 0;
   }
 
   try {
-    // status = 'active' -> is_active = true; posted_date desc -> posted_at desc.
-    // Paginated (see queryAllJobs) - still returns every matching row,
-    // matching Airtable's .all(), just not in a single oversized response.
-    // Projects a reduced column set (see JOBS_LIST_COLUMNS) since this feeds
-    // listing/search/slug-lookup, none of which render the heavy text
-    // fields - keeps both the per-page response size and the per-row
-    // normalization cost down as the table grows.
-    const rows = await queryAllJobs(
-      config,
-      `select=${JOBS_LIST_COLUMNS}&is_active=eq.true&order=posted_at.desc.nullslast`
-    );
+    const { rows, total } = await queryJobs(config, 'select=id&is_active=eq.true', {
+      range: { offset: 0, limit: 1 },
+      countExact: true,
+    });
 
-    return rows.map((row) => rowToJob(row, { lite: true }));
+    return total ?? rows.length;
   } catch {
-    return [];
+    return 0;
   }
 });
 

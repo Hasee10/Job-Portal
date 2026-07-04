@@ -12,5 +12,14 @@
   "ashby": [
     "ramp", "notion", "linear", "vercel", "openai", "retool",
     "replit", "runwayml"
+  ],
+  "smartrecruiters": [
+    "Visa", "DeliveryHero"
+  ],
+  "recruitee": [
+    "bunq", "livestorm", "channable"
+  ],
+  "personio": [
+    "personio"
   ]
 }

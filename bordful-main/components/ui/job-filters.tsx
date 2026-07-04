@@ -5,7 +5,7 @@ import {
   parseAsString,
   useQueryState,
 } from 'nuqs';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
@@ -161,9 +161,28 @@ export function JobFilters({
     parseAsBoolean.withDefault(false)
   );
 
-  // Initialize URL state with initialFilters when there are no URL params
+  // Initialize URL state with initialFilters when there are no URL params.
+  // Mount-only by design (see the ref guard): `initialFilters` is a plain
+  // object literal recomputed on every render of the parent (HomePageContent
+  // builds it fresh from useSearchParams() each time, not memoized), so it
+  // gets a new object reference on every render. With that in the dependency
+  // array, this effect re-ran on every render, not just mount - and since the
+  // parent's searchParams snapshot can still reflect the *previous* URL for
+  // a render or two after a nuqs update (the URL write and this component's
+  // re-render aren't perfectly synchronous), unchecking a filter could
+  // re-trigger this effect with a stale "the URL still says checked" value
+  // and immediately re-check the box the user just unchecked. Running this
+  // exactly once, using whatever initialFilters was at first mount, removes
+  // that race entirely - the whole point of this effect is a one-time seed
+  // from the initial URL, not an ongoing sync.
+  const hasInitializedFromUrl = useRef(false);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: mount-only initialization (see comment above), not an ongoing sync
   useEffect(() => {
-    // Only set initial values if URL params are empty
+    if (hasInitializedFromUrl.current) {
+      return;
+    }
+    hasInitializedFromUrl.current = true;
+
     if (typesParam.length === 0 && initialFilters.types.length > 0) {
       setTypesParam(initialFilters.types);
     }
@@ -190,21 +209,7 @@ export function JobFilters({
     if (!visaParam && initialFilters.visa) {
       setVisaParam(initialFilters.visa);
     }
-  }, [
-    initialFilters,
-    typesParam.length,
-    rolesParam.length,
-    salaryRangesParam.length,
-    languagesParam.length,
-    remoteParam,
-    visaParam,
-    setTypesParam,
-    setRolesParam,
-    setSalaryRangesParam,
-    setLanguagesParam,
-    setRemoteParam,
-    setVisaParam,
-  ]);
+  }, []);
 
   // NOTE ON WHY THESE ARE PLAIN FUNCTIONS, NOT useCallback:
   //

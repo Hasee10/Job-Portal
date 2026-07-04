@@ -39,7 +39,13 @@ type FilterType =
   | 'clear';
 type FilterValue = string[] | boolean | CareerLevel[] | LanguageCode[] | true;
 
-function HomePageContent({ initialJobs }: { initialJobs: Job[] }) {
+function HomePageContent({
+  initialJobs,
+  totalActiveJobs,
+}: {
+  initialJobs: Job[];
+  totalActiveJobs: number;
+}) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { searchTerm } = useJobSearch();
@@ -403,7 +409,7 @@ function HomePageContent({ initialJobs }: { initialJobs: Job[] }) {
                       <span className="pulse-dot mr-1.5 inline-block h-1.5 w-1.5 rounded-full bg-green-500" />
                     )}
                   <span /* Value inherits color from parent div */>
-                    {initialJobs.length.toLocaleString()}
+                    {totalActiveJobs.toLocaleString()}
                   </span>
                   {(config.quickStats?.sections?.openJobs
                     ?.showNewJobsIndicator ??
@@ -543,10 +549,19 @@ function HomePageContent({ initialJobs }: { initialJobs: Job[] }) {
   );
 }
 
-export function HomePage({ initialJobs }: { initialJobs: Job[] }) {
+export function HomePage({
+  initialJobs,
+  totalActiveJobs,
+}: {
+  initialJobs: Job[];
+  totalActiveJobs: number;
+}) {
   return (
     <Suspense>
-      <HomePageContent initialJobs={initialJobs} />
+      <HomePageContent
+        initialJobs={initialJobs}
+        totalActiveJobs={totalActiveJobs}
+      />
     </Suspense>
   );
 }
