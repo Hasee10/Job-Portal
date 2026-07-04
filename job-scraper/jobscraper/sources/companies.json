@@ -1,0 +1,16 @@
+{
+  "_comment": "Company board tokens for the public Greenhouse/Lever/Ashby JSON APIs. These are open, unauthenticated, and explicitly meant for public consumption (they power each company's own careers page) - no ToS risk like Indeed/LinkedIn scraping. Add more via ATS_EXTRA_BOARDS in .env (format: token or token:platform), or add directly here.",
+  "greenhouse": [
+    "stripe", "airbnb", "coinbase", "doordash", "robinhood", "figma",
+    "gitlab", "elastic", "cloudflare", "asana", "reddit", "pinterest",
+    "affirm", "grammarly", "instacart"
+  ],
+  "lever": [
+    "netflix", "shopify", "brex", "attentive", "plaid",
+    "rippling", "mixpanel", "eventbrite"
+  ],
+  "ashby": [
+    "ramp", "notion", "linear", "vercel", "openai", "retool",
+    "replit", "runwayml"
+  ]
+}

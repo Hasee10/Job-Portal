@@ -223,20 +223,33 @@ const SOCIAL_PLATFORMS: SocialPlatformConfig[] = [
 ];
 
 // Custom hook for dropdown management
+//
+// Click-only by design (no hover-to-open): a real mouse click always fires a
+// hover/mouseenter first, so a hover-opens + click-toggles combination opens
+// then immediately closes again on every click - a self-canceling race that
+// made the dropdown look permanently broken. Click-to-toggle plus
+// click-outside-to-close is unambiguous and works identically for mouse,
+// touch, and keyboard activation.
 function useDropdownMenu() {
   const [openDropdowns, setOpenDropdowns] = useState<Record<string, boolean>>(
     {}
   );
-  const dropdownTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const dropdownRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const dropdownRefSetters = useRef<
+    Record<string, (el: HTMLDivElement | null) => void>
+  >({});
 
-  // Register dropdown refs for click outside detection
-  const registerDropdownRef = useCallback(
-    (label: string, ref: HTMLDivElement | null) => {
-      dropdownRefs.current[label] = ref;
-    },
-    []
-  );
+  // Register dropdown refs for click outside detection. Returns a ref
+  // callback stable across renders (cached per label) so React doesn't
+  // needlessly null-then-reattach the ref on every re-render of Nav.
+  const registerDropdownRef = useCallback((label: string) => {
+    if (!dropdownRefSetters.current[label]) {
+      dropdownRefSetters.current[label] = (el: HTMLDivElement | null) => {
+        dropdownRefs.current[label] = el;
+      };
+    }
+    return dropdownRefSetters.current[label];
+  }, []);
 
   // Toggle dropdown open/closed
   const toggleDropdown = useCallback((label: string) => {
@@ -244,30 +257,6 @@ function useDropdownMenu() {
       ...prev,
       [label]: !prev[label],
     }));
-  }, []);
-
-  // Handle mouse enter on dropdown
-  const handleDropdownMouseEnter = useCallback((label: string) => {
-    if (dropdownTimeoutRef.current) {
-      clearTimeout(dropdownTimeoutRef.current);
-      dropdownTimeoutRef.current = null;
-    }
-
-    setOpenDropdowns((prev) => ({
-      ...prev,
-      [label]: true,
-    }));
-  }, []);
-
-  // Handle mouse leave on dropdown
-  const handleDropdownMouseLeave = useCallback((label: string) => {
-    // Add delay before closing to prevent accidental closures
-    dropdownTimeoutRef.current = setTimeout(() => {
-      setOpenDropdowns((prev) => ({
-        ...prev,
-        [label]: false,
-      }));
-    }, 300); // 300ms delay
   }, []);
 
   // Close dropdown when clicking outside
@@ -286,10 +275,6 @@ function useDropdownMenu() {
     document.addEventListener('mousedown', handleClickOutside);
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
-      // Clear any pending timeout when unmounting
-      if (dropdownTimeoutRef.current) {
-        clearTimeout(dropdownTimeoutRef.current);
-      }
     };
   }, []);
 
@@ -297,8 +282,6 @@ function useDropdownMenu() {
     openDropdowns,
     registerDropdownRef,
     toggleDropdown,
-    handleDropdownMouseEnter,
-    handleDropdownMouseLeave,
   };
 }
 
@@ -307,13 +290,8 @@ export function Nav() {
   const pathname = usePathname();
 
   // Use our custom hook for dropdown functionality
-  const {
-    openDropdowns,
-    registerDropdownRef,
-    toggleDropdown,
-    handleDropdownMouseEnter,
-    handleDropdownMouseLeave,
-  } = useDropdownMenu();
+  const { openDropdowns, registerDropdownRef, toggleDropdown } =
+    useDropdownMenu();
 
   // Use menu items directly from config
   const menuItems = config.nav.menu || [];
@@ -395,9 +373,7 @@ export function Nav() {
           <div
             className="relative"
             key={item.link}
-            onMouseEnter={() => handleDropdownMouseEnter(item.label)}
-            onMouseLeave={() => handleDropdownMouseLeave(item.label)}
-            ref={(ref) => registerDropdownRef(item.label, ref)}
+            ref={registerDropdownRef(item.label)}
           >
             <button
               aria-expanded={isDropdownOpen}
@@ -406,24 +382,14 @@ export function Nav() {
                   ? 'bg-zinc-100 text-zinc-900'
                   : 'text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900'
               } transition-colors`}
-              onClick={() => {
-                // A real mouse click always fires onMouseEnter first (opening
-                // the dropdown via hover), so toggling here would instantly
-                // flip it back closed. Force-open instead - this also covers
-                // touch/keyboard activation, which never fires onMouseEnter.
-                handleDropdownMouseEnter(item.label);
-              }}
+              onClick={() => toggleDropdown(item.label)}
             >
               {item.label}
               <ChevronDown aria-hidden="true" className="ml-1 h-3 w-3" />
             </button>
 
             {isDropdownOpen && (
-              <div
-                className="absolute left-0 z-50 mt-1 w-40 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5"
-                onMouseEnter={() => handleDropdownMouseEnter(item.label)}
-                onMouseLeave={() => handleDropdownMouseLeave(item.label)}
-              >
+              <div className="absolute left-0 z-50 mt-1 w-40 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5">
                 <div aria-orientation="vertical" className="py-1" role="menu">
                   {item.items.map((subItem) => (
                     <DropdownItem

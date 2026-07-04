@@ -1,5 +1,13 @@
 # n8n Job Platform Workflows
 
+> **Superseded.** Workflows 1 (collector) and 7 (stale sweeper) have been
+> reimplemented in pure Python at [`../job-scraper/`](../job-scraper/README.md),
+> which also adds several new sources and runs on a Windows Scheduled Task
+> every 12 hours — no n8n instance required. This folder is kept for
+> reference/history; nothing currently depends on it running. Workflow 6
+> (daily Google Sheets export) has no Python equivalent and can still be run
+> from here manually if you want it.
+
 All six workflows are built. **Import and verify in order anyway** — each one depends on
 the previous migration/columns existing, and it's much easier to spot a broken node when
 you're only looking at what just changed.

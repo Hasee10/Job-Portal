@@ -1,0 +1,11 @@
+# env files
+.env*
+!.env.example
+
+# runtime state (sweeper's two-strike confirmation tracking)
+sweeper_state.json
+
+__pycache__/
+*.pyc
+.venv/
+venv/
