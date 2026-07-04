@@ -27,11 +27,19 @@ logger = logging.getLogger(__name__)
 # a large fraction of genuinely active jobs.
 CONFIRMED_DEAD_CODES = {404, 410}
 
-# 400/403/451 are ambiguous (could be bot-blocking OR a real removal). A job
-# only gets deactivated for one of these once it's been seen with the same
-# ambiguous status on two separate sweep runs - a transient block rarely
-# survives a second run 12+ hours later, a real removal does.
-AMBIGUOUS_DEAD_CODES = {400, 403, 451}
+# 400/403/406/451 are ambiguous (could be bot-blocking OR a real removal).
+# 406 confirmed via a real case: a job-boards.greenhouse.io posting that had
+# already been closed on Reddit's end (its content never refreshed across
+# several scrape runs, unlike every other Reddit posting) returned a bare
+# "406 Not Acceptable" from nginx when visited directly - almost certainly
+# Greenhouse's signal for "this posting no longer exists" rather than a bot
+# block (their board API doesn't otherwise show anti-bot behavior), but
+# treated as ambiguous rather than confirmed-dead out of the same caution
+# that applies to 400/403/451 below. A job only gets deactivated for one of
+# these once it's been seen with the same ambiguous status on two separate
+# sweep runs - a transient block rarely survives a second run 12+ hours
+# later, a real removal does.
+AMBIGUOUS_DEAD_CODES = {400, 403, 406, 451}
 
 STATE_FILE = Path(__file__).parent.parent / "sweeper_state.json"
 

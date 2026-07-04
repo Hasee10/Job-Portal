@@ -23,6 +23,7 @@ here rather than downstream:
    headings/lists/bold/paragraphs to real Markdown syntax instead.
 """
 
+import html
 import re
 
 from bs4 import BeautifulSoup
@@ -31,12 +32,34 @@ from markdownify import markdownify
 _STRIP_TAGS = ("script", "style", "iframe", "object", "embed", "noscript")
 _EXCESS_BLANK_LINES_RE = re.compile(r"\n{3,}")
 _TRAILING_SPACES_RE = re.compile(r"[ \t]+\n")
+_MAX_UNESCAPE_PASSES = 3
+
+
+def _fully_unescape(value: str) -> str:
+    """Some sources (confirmed: a Reddit/Greenhouse posting whose content was
+    pasted in from Slack) return `description`/`content` that's been HTML-
+    entity-encoded twice - the field's actual value is the literal text
+    "&lt;div class=&quot;...&quot;&gt;" rather than a real "<div>" tag. A
+    single html.unescape() call turns that into real markup; parsing it
+    without unescaping first left BeautifulSoup with no actual tags to find,
+    so the "cleaned" output was just the entity-decoded text dumped back out
+    verbatim - literal "<div class=...>" showing up on the job page. Loop
+    (bounded) since there's no way to know the encoding depth in advance,
+    but real HTML converges after one pass and further calls become no-ops.
+    """
+    for _ in range(_MAX_UNESCAPE_PASSES):
+        unescaped = html.unescape(value)
+        if unescaped == value:
+            break
+        value = unescaped
+    return value
 
 
 def clean_description(value: str | None) -> str | None:
     if not value:
         return value
 
+    value = _fully_unescape(value)
     soup = BeautifulSoup(value, "lxml")
     for tag in soup.find_all(_STRIP_TAGS):
         tag.decompose()
