@@ -164,6 +164,20 @@ open the search URL in a real browser, inspect a job card, and update the
      `SCRAPER_PROXY` to a residential proxy. The 9 plain API sources and the
      Greenhouse/Lever/Ashby boards are unaffected either way.
 
+7. **Bound database growth long-term** — the sweeper only ever sets
+   `is_active=false` on a dead posting, it never deletes anything. Left
+   alone forever, the table grows without bound even though most of that
+   growth is jobs nobody can apply to anymore. Supabase's free tier caps
+   the whole database at 500MB. Run this occasionally (weekly/monthly is
+   plenty - it's not part of the 12h collector run):
+   ```
+   python retention_cleanup.py --dry-run   # see what would be deleted first
+   python retention_cleanup.py             # actually delete
+   ```
+   Deletes jobs discontinued more than `RETENTION_DAYS` (default 90, set in
+   `.env`) days ago. Override per-run with `--days N`. Never touches active
+   jobs or ones discontinued more recently than the window.
+
 ## What each run does
 
 ```

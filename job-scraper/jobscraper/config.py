@@ -26,6 +26,14 @@ SCRAPER_PROXY = os.environ.get("SCRAPER_PROXY", "") or None
 
 LOG_LEVEL = os.environ.get("LOG_LEVEL", "INFO")
 
+# How long a job stays in the table after being marked discontinued before
+# retention_cleanup.py permanently deletes it. Supabase's free tier caps the
+# database at 500MB total; the sweeper only ever sets is_active=false, so
+# without this the table grows forever even for jobs that have been dead for
+# a year. 90 days keeps plenty of history for review while still bounding
+# growth long-term.
+RETENTION_DAYS = int(os.environ.get("RETENTION_DAYS", "90"))
+
 HTTP_TIMEOUT = 30.0
 HTTP_USER_AGENT = "Mozilla/5.0 (compatible; JobPortalCollector/1.0)"
 
