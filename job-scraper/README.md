@@ -60,9 +60,19 @@ and reading the board token out of its URL.
 | hiring.cafe | https://hiring.cafe | No scraping prohibition found; SSR HTML, no login wall |
 | Indeed | https://www.indeed.com | **Prohibits automated scraping in its ToS** |
 | Glassdoor | https://www.glassdoor.com | **Prohibits automated scraping**; paywalls most results behind login |
-| Naukri.com | https://www.naukri.com | **Prohibits automated scraping** |
-| ZipRecruiter | https://www.ziprecruiter.com | **Prohibits automated scraping**; frequent bot interstitials |
-| Jobright.ai | https://jobright.ai | Public listings are limited/likely login-gated; best-effort only |
+| Naukri.com | https://www.naukri.com | **Prohibits automated scraping**; currently blocked at Akamai's WAF - needs `SCRAPER_PROXY` (residential) to have any chance of getting through |
+| ZipRecruiter | https://www.ziprecruiter.com | **Prohibits automated scraping**; frequent bot interstitials, and its results are a click-only SPA with no stable per-job link - currently yields 0 jobs |
+| Dice | https://www.dice.com/jobs | ToS not successfully checked (fetch attempts blocked). Listings are real and detailed (~95k+ live), but confirmed by hand: "Apply Now" forces a free Dice account signup/login before the application even starts - there's no way to reach the employer directly |
+| Levels.fyi | https://www.levels.fyi/jobs | ToS not successfully checked. High credibility - every listing carries salary-band data, and confirmed by hand: "Apply Now" goes straight to the real employer's ATS (e.g. a `grnh.se` Greenhouse short link), no login wall |
+
+**Dropped:** Jobright.ai turned out to be a genuine "Sign In / Join Now"
+gated AI job-matching product with no public listings at all - not a
+bot-blocking problem CloakBrowser could work around. The module is still in
+`jobscraper/sources/browser/jobright.py` for reference but isn't wired into
+`BROWSER_SOURCES`. Automating a login with a real personal account was
+considered and rejected - see the conversation history for the reasoning
+(Google actively blocks automated sign-in, and it would mean storing a real
+account password in `.env`/GitHub secrets).
 
 **Read this before enabling the ToS-restricted sources.** Indeed, Glassdoor,
 Naukri, and ZipRecruiter all explicitly forbid automated access in their
