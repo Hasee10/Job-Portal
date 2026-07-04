@@ -1,5 +1,6 @@
 import 'server-only';
 
+import { Pool } from 'pg';
 import { cache } from 'react';
 import {
   CURRENCY_CODES,
@@ -16,124 +17,65 @@ import { normalizeMarkdown } from '@/lib/utils/markdown';
 import type { CareerLevel, Job, SalaryUnit } from '@/lib/db/airtable';
 
 // ---------------------------------------------------------------------------
-// Supabase data source
+// CockroachDB data source
 //
-// This module replaces the previous Airtable integration. The exported
-// functions (getJobs, getJob, testConnection) keep identical signatures and
-// return shapes, and every normalizer below is unchanged from the Airtable
-// version — they are data-shape guards, not Airtable-specific logic.
+// Cut over from Supabase/PostgREST to a direct SQL connection - CockroachDB
+// has no auto-generated REST API to read through. The exported functions
+// (getJobs, getJob, testConnection) keep identical signatures and return
+// shapes, and every normalizer below is unchanged from the Supabase/Airtable
+// version - they are data-shape guards, independent of the transport.
 //
-// Reads go through PostgREST with the anon key (this is a server-only module,
-// so the key never reaches the client). Behavior mirrors Airtable exactly:
-//   getJobs()  -> all rows where is_active = true, newest posted first
-//   getJob(id) -> single row, or null if missing/inactive
-// No server-side pagination is added — the full active set is loaded at once,
-// matching the previous Airtable `.all()` behavior.
+// IMPORTANT: this connects with the same single credential used for writes
+// (COCKROACH_DATABASE_URL) - there's no RLS/anon-key equivalent in
+// CockroachDB to enforce read-only access the way Supabase's anon key did.
+// A dedicated read-only SQL user is worth setting up before this goes to
+// production; nothing here currently prevents this pool from writing.
 // ---------------------------------------------------------------------------
 
-type SupabaseConfig = { url: string; key: string };
+// A fresh Pool per request (or per Next.js hot-reload in dev) would exhaust
+// CockroachDB's connection limit - stash a singleton on `globalThis`, the
+// standard workaround for Next.js dev's module-reload behavior recreating
+// module-scope state on every file change.
+declare global {
+  // eslint-disable-next-line no-var
+  var __cockroachPool: Pool | undefined;
+}
 
-const getSupabaseConfig = cache((): SupabaseConfig | null => {
-  const url = process.env.SUPABASE_URL;
-  const key = process.env.SUPABASE_ANON_KEY;
-
-  if (!url || !key) {
+function getPool(): Pool | null {
+  const connectionString = process.env.COCKROACH_DATABASE_URL;
+  if (!connectionString) {
     return null;
   }
 
-  return { url: url.replace(/\/$/, ''), key };
-});
-
-// Low-level PostgREST GET against the jobs table. Returns parsed rows plus
-// the parsed Content-Range header (when Supabase sends one, via
-// `Prefer: count=exact`), or throws so the callers below can fall back to
-// their empty/null defaults - exactly like the Airtable try/catch did.
-async function queryJobs(
-  config: SupabaseConfig,
-  queryString: string,
-  options?: { range?: { offset: number; limit: number }; countExact?: boolean }
-): Promise<{ rows: Record<string, unknown>[]; total: number | null }> {
-  const headers: Record<string, string> = {
-    apikey: config.key,
-    Authorization: `Bearer ${config.key}`,
-    Accept: 'application/json',
-  };
-  if (options?.range) {
-    headers['Range-Unit'] = 'items';
-    headers.Range = `${options.range.offset}-${options.range.offset + options.range.limit - 1}`;
-  }
-  if (options?.countExact) {
-    headers.Prefer = 'count=exact';
+  if (!globalThis.__cockroachPool) {
+    globalThis.__cockroachPool = new Pool({
+      connectionString,
+      // CockroachDB Cloud requires TLS; verify against Node's own bundled
+      // root CAs (equivalent to what `certifi` provided on the Python side -
+      // both are the Mozilla trusted-root list, just packaged differently).
+      ssl: { rejectUnauthorized: true },
+      max: 10,
+    });
   }
 
-  const response = await fetch(`${config.url}/rest/v1/jobs?${queryString}`, {
-    headers,
-    // Job data is refreshed by the scraper on a schedule; don't cache at the
-    // fetch layer (React's cache() already dedupes within a request).
-    cache: 'no-store',
-  });
-
-  if (!response.ok) {
-    throw new Error(`Supabase request failed: ${response.status}`);
-  }
-
-  const contentRange = response.headers.get('content-range');
-  const total = contentRange?.includes('/')
-    ? Number(contentRange.split('/')[1])
-    : null;
-
-  return {
-    rows: (await response.json()) as Record<string, unknown>[],
-    total: Number.isFinite(total) ? total : null,
-  };
+  return globalThis.__cockroachPool;
 }
 
-// PostgREST (and the Cloudflare/Supabase edge in front of it) caps how much
-// a single response can carry - full job rows include large raw-HTML
-// description/benefits columns from scraped sources, so even a few hundred
-// rows can produce a multi-megabyte response and get the connection reset
-// mid-transfer (observed directly: "fetch failed" / "other side closed" /
-// bare 500s once a single page's response passed roughly 3-4MB - reproduced
-// with a 500-row page size once the table grew past ~4,000 rows; a 100-row
-// page size stayed reliable at every offset tested up to 5,300+ rows). Page
-// through in bounded chunks instead of asking for everything in one
-// unbounded `select=*` request, and fire the pages concurrently (bounded
-// batch size) instead of one at a time so this doesn't become a 50+ second
-// sequential waterfall as the table grows.
-const JOBS_PAGE_SIZE = 100;
-const JOBS_CONCURRENT_BATCH = 8;
-
-async function queryAllJobs(
-  config: SupabaseConfig,
-  queryString: string
+// Job data is refreshed by the scraper on a schedule - every query below
+// reads live, no query-level caching (React's cache() already dedupes
+// identical calls within a single request).
+async function queryJobs(
+  pool: Pool,
+  whereClause: string,
+  params: unknown[],
+  options?: { columns?: string; limit?: number }
 ): Promise<Record<string, unknown>[]> {
-  const first = await queryJobs(config, queryString, {
-    range: { offset: 0, limit: JOBS_PAGE_SIZE },
-    countExact: true,
-  });
-
-  const rows = [...first.rows];
-  const total = first.total ?? rows.length;
-
-  const remainingOffsets: number[] = [];
-  for (let offset = JOBS_PAGE_SIZE; offset < total; offset += JOBS_PAGE_SIZE) {
-    remainingOffsets.push(offset);
-  }
-
-  for (let i = 0; i < remainingOffsets.length; i += JOBS_CONCURRENT_BATCH) {
-    const batch = remainingOffsets.slice(i, i + JOBS_CONCURRENT_BATCH);
-    const pages = await Promise.all(
-      batch.map((offset) =>
-        queryJobs(config, queryString, {
-          range: { offset, limit: JOBS_PAGE_SIZE },
-        })
-      )
-    );
-    for (const page of pages) {
-      rows.push(...page.rows);
-    }
-  }
-
+  const columns = options?.columns ?? '*';
+  const limitClause = options?.limit ? ` limit ${Number(options.limit)}` : '';
+  const { rows } = await pool.query(
+    `select ${columns} from public.jobs ${whereClause}${limitClause}`,
+    params
+  );
   return rows;
 }
 
@@ -455,33 +397,24 @@ const JOBS_LIST_COLUMNS = [
 
 export const getJobs = cache(
   async (options?: { limit?: number }): Promise<Job[]> => {
-    const config = getSupabaseConfig();
-    if (!config) {
+    const pool = getPool();
+    if (!pool) {
       return [];
     }
 
     try {
-      // status = 'active' -> is_active = true; posted_date desc -> posted_at desc.
       // Projects a reduced column set (see JOBS_LIST_COLUMNS) since this feeds
       // listing/search/slug-lookup, none of which render the heavy text
-      // fields - keeps both the per-page response size and the per-row
-      // normalization cost down as the table grows.
-      const queryString = `select=${JOBS_LIST_COLUMNS}&is_active=eq.true&order=posted_at.desc.nullslast`;
-
-      // With a limit, a single bounded request is both cheaper and faster
-      // than paginating through queryAllJobs and throwing away everything
-      // past the limit (e.g. the homepage only ever renders its most recent
-      // HOMEPAGE_JOBS_LIMIT jobs - no reason to fetch all 5,000+ to get
-      // there). Without one, callers that need the complete active set
-      // (the /jobs directory's category counts, RSS/sitemap, slug lookup)
-      // still get every row via queryAllJobs, matching Airtable's .all().
-      const rows = options?.limit
-        ? (
-            await queryJobs(config, queryString, {
-              range: { offset: 0, limit: options.limit },
-            })
-          ).rows
-        : await queryAllJobs(config, queryString);
+      // fields - keeps both the per-row size and normalization cost down as
+      // the table grows. With a limit (e.g. the homepage's most-recent-N
+      // view), a single bounded query is both cheaper and faster than
+      // fetching every active row and throwing most of it away.
+      const rows = await queryJobs(
+        pool,
+        'where is_active = true order by posted_at desc nulls last',
+        [],
+        { columns: JOBS_LIST_COLUMNS, limit: options?.limit }
+      );
 
       return rows.map((row) => rowToJob(row, { lite: true }));
     } catch {
@@ -490,46 +423,40 @@ export const getJobs = cache(
   }
 );
 
-// Cheap count of active jobs - a single request for 1 row with
-// `Prefer: count=exact`, used where only the total matters (e.g. the
+// Cheap count of active jobs, used where only the total matters (e.g. the
 // homepage's "Open Jobs" stat) so it stays accurate even when getJobs() is
 // called with a limit that caps the actual row data returned.
 export const getActiveJobsCount = cache(async (): Promise<number> => {
-  const config = getSupabaseConfig();
-  if (!config) {
+  const pool = getPool();
+  if (!pool) {
     return 0;
   }
 
   try {
-    const { rows, total } = await queryJobs(config, 'select=id&is_active=eq.true', {
-      range: { offset: 0, limit: 1 },
-      countExact: true,
-    });
-
-    return total ?? rows.length;
+    const { rows } = await pool.query(
+      'select count(*)::int as count from public.jobs where is_active = true'
+    );
+    return (rows[0]?.count as number) ?? 0;
   } catch {
     return 0;
   }
 });
 
 export const getJob = cache(async (id: string): Promise<Job | null> => {
-  const config = getSupabaseConfig();
-  if (!config) {
+  const pool = getPool();
+  if (!pool) {
     return null;
   }
 
   try {
-    const { rows } = await queryJobs(
-      config,
-      `select=*&id=eq.${encodeURIComponent(id)}&limit=1`
-    );
+    const rows = await queryJobs(pool, 'where id = $1', [id], { limit: 1 });
 
     const row = rows[0];
     if (!row) {
       return null;
     }
 
-    // Mirror Airtable's getJob: only return active postings.
+    // Mirror the previous behavior: only return active postings.
     if (!row.is_active) {
       return null;
     }
@@ -541,13 +468,13 @@ export const getJob = cache(async (id: string): Promise<Job | null> => {
 });
 
 export async function testConnection(): Promise<boolean> {
-  const config = getSupabaseConfig();
-  if (!config) {
+  const pool = getPool();
+  if (!pool) {
     return false;
   }
 
   try {
-    await queryJobs(config, 'select=id&limit=1');
+    await pool.query('select 1');
     return true;
   } catch {
     return false;
