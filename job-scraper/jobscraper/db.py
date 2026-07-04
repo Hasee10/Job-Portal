@@ -28,6 +28,39 @@ def _headers(extra: dict | None = None) -> dict:
     return headers
 
 
+def _dedupe_by_apply_url(jobs: list[dict]) -> list[dict]:
+    """PostgREST's bulk upsert runs as a single INSERT...ON CONFLICT DO
+    UPDATE statement per batch - Postgres rejects that outright if the same
+    batch tries to touch the same conflict key (apply_url) twice ("ON
+    CONFLICT DO UPDATE command cannot affect row a second time"), which was
+    silently dropping ~200 rows at a time whenever two sources (or the same
+    source twice) produced the same apply_url. Last one wins.
+    """
+    deduped: dict[str, dict] = {}
+    skipped = 0
+    for job in jobs:
+        apply_url = job.get("apply_url")
+        if apply_url in deduped:
+            skipped += 1
+        deduped[apply_url] = job
+    if skipped:
+        logger.info("upsert: deduped %d jobs sharing an apply_url with another job", skipped)
+    return list(deduped.values())
+
+
+def _normalize_keys(jobs: list[dict]) -> list[dict]:
+    """PostgREST's bulk insert requires every object in the same request to
+    have identical keys ("All object keys must match", PGRST102) - different
+    sources produce dicts with different optional fields (e.g. only Adzuna
+    sets salary_min/salary_max), which was silently failing whole batches
+    that mixed sources. Fill every job out to the same key set first.
+    """
+    all_keys: set[str] = set()
+    for job in jobs:
+        all_keys.update(job.keys())
+    return [{key: job.get(key) for key in all_keys} for job in jobs]
+
+
 def upsert_jobs(jobs: list[dict]) -> int:
     """Upsert jobs, deduping on the `apply_url` unique index.
 
@@ -36,6 +69,8 @@ def upsert_jobs(jobs: list[dict]) -> int:
     """
     if not jobs:
         return 0
+
+    jobs = _normalize_keys(_dedupe_by_apply_url(jobs))
 
     config.require_supabase()
     url = f"{config.SUPABASE_URL}/rest/v1/jobs?on_conflict=apply_url"
