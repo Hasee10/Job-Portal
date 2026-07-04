@@ -5,7 +5,7 @@ import {
   parseAsString,
   useQueryState,
 } from 'nuqs';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
@@ -206,146 +206,71 @@ export function JobFilters({
     setVisaParam,
   ]);
 
-  // Generic handler for array-based filters
+  // NOTE ON WHY THESE ARE PLAIN FUNCTIONS, NOT useCallback:
   //
-  // onFilterChange (the callback that actually re-filters the job list) runs
-  // FIRST and synchronously, before the nuqs URL sync. The URL update is a
-  // bookmarkable-link nicety, not something the actual filtering depends on -
-  // it used to run first via `await setter(...)`, which meant a throw or
-  // rejection from the URL sync (nuqs internally calls the Next.js router,
-  // which can reject) would silently skip the onFilterChange call entirely
-  // and the checkbox would look like it did nothing.
-  const createArrayFilterHandler = useCallback(
-    (
-      filterType: Extract<FilterType, 'type' | 'role' | 'salary' | 'language'>,
-      currentValues: string[],
-      setter: (value: string[] | null) => Promise<URLSearchParams>
-    ) => {
-      return (checked: boolean, value: string) => {
-        const newValues = checked
-          ? [...currentValues, value]
-          : currentValues.filter((item) => item !== value);
+  // The previous version wrapped each handler in
+  //   useCallback(createArrayFilterHandler('role', rolesParam, setRolesParam), [])
+  // with an EMPTY dependency array. Because the factory was called during
+  // render, `rolesParam` (etc.) was captured at *first* render - when it's
+  // always the default `[]` - and then frozen forever by the empty deps. So
+  // every click computed `newValues` from a stale empty array: you could
+  // never select a second value in a group (it replaced the first), and
+  // unchecking never worked (it filtered against []). That made the filters
+  // look broken.
+  //
+  // Defining them inline recreates the functions each render, which is fine
+  // for event handlers and guarantees they always read the *current* nuqs
+  // param values. onFilterChange (which actually re-filters the visible job
+  // list) is called first and synchronously; the nuqs URL sync runs after as
+  // a fire-and-forget side effect so a router rejection can't swallow the
+  // real filtering.
+  const syncToUrl = (promise: Promise<unknown>) => {
+    promise.catch((err) => {
+      console.error('Failed to sync filter to URL:', err);
+    });
+  };
 
-        onFilterChange(filterType, newValues);
+  const handleTypeChange = (checked: boolean, value: string) => {
+    const newValues = checked
+      ? [...typesParam, value]
+      : typesParam.filter((item) => item !== value);
+    onFilterChange('type', newValues);
+    syncToUrl(setTypesParam(newValues.length ? newValues : null));
+  };
 
-        // Remove parameter from URL if empty but ensure we pass [] to filters
-        setter(newValues.length ? newValues : null).catch((err) => {
-          console.error('Failed to sync filter to URL:', err);
-        });
-      };
-    },
-    [onFilterChange]
-  );
+  const handleLevelChange = (checked: boolean, value: string) => {
+    const newValues = checked
+      ? [...rolesParam, value]
+      : rolesParam.filter((item) => item !== value);
+    onFilterChange('role', newValues as CareerLevel[]);
+    syncToUrl(setRolesParam(newValues.length ? newValues : null));
+  };
 
-  // Generic handler for boolean filters
-  const createBooleanFilterHandler = useCallback(
-    (
-      filterType: Extract<FilterType, 'remote' | 'visa'>,
-      setter: (value: boolean | null) => Promise<URLSearchParams>
-    ) => {
-      return (checked: boolean) => {
-        onFilterChange(filterType, checked);
-        setter(checked || null).catch((err) => {
-          console.error('Failed to sync filter to URL:', err);
-        });
-      };
-    },
-    [onFilterChange]
-  );
+  const handleSalaryChange = (checked: boolean, value: string) => {
+    const newValues = checked
+      ? [...salaryRangesParam, value]
+      : salaryRangesParam.filter((item) => item !== value);
+    onFilterChange('salary', newValues);
+    syncToUrl(setSalaryRangesParam(newValues.length ? newValues : null));
+  };
 
-  // Generic reset function for array filters
-  const createArrayFilterReset = useCallback(
-    (
-      filterType: Extract<FilterType, 'type' | 'role' | 'salary' | 'language'>,
-      setter: (value: null) => Promise<URLSearchParams>
-    ) => {
-      return () => {
-        onFilterChange(filterType, []);
-        setter(null).catch((err) => {
-          console.error('Failed to sync filter to URL:', err);
-        });
-      };
-    },
-    [onFilterChange]
-  );
+  const handleLanguageChange = (checked: boolean, value: string) => {
+    const newValues = checked
+      ? [...languagesParam, value]
+      : languagesParam.filter((item) => item !== value);
+    onFilterChange('language', newValues as LanguageCode[]);
+    syncToUrl(setLanguagesParam(newValues.length ? newValues : null));
+  };
 
-  // Generic reset function for boolean filters
-  const createBooleanFilterReset = useCallback(
-    (
-      filterType: Extract<FilterType, 'remote' | 'visa'>,
-      setter: (value: null) => Promise<URLSearchParams>
-    ) => {
-      return () => {
-        onFilterChange(filterType, false);
-        setter(null).catch((err) => {
-          console.error('Failed to sync filter to URL:', err);
-        });
-      };
-    },
-    [onFilterChange]
-  );
+  const handleRemoteChange = (checked: boolean) => {
+    onFilterChange('remote', checked);
+    syncToUrl(setRemoteParam(checked || null));
+  };
 
-  // Create handlers using the generic functions
-  const handleTypeChange = useCallback(
-    createArrayFilterHandler('type', typesParam, setTypesParam),
-    []
-  );
-
-  const handleLevelChange = useCallback(
-    createArrayFilterHandler('role', rolesParam, setRolesParam),
-    []
-  );
-
-  const handleSalaryChange = useCallback(
-    createArrayFilterHandler('salary', salaryRangesParam, setSalaryRangesParam),
-    []
-  );
-
-  const handleLanguageChange = useCallback(
-    createArrayFilterHandler('language', languagesParam, setLanguagesParam),
-    []
-  );
-
-  const handleRemoteChange = useCallback(
-    createBooleanFilterHandler('remote', setRemoteParam),
-    []
-  );
-
-  const handleVisaChange = useCallback(
-    createBooleanFilterHandler('visa', setVisaParam),
-    []
-  );
-
-  // Create reset functions using the generic functions
-  const resetTypes = useCallback(
-    createArrayFilterReset('type', setTypesParam),
-    []
-  );
-
-  const resetLevels = useCallback(
-    createArrayFilterReset('role', setRolesParam),
-    []
-  );
-
-  const resetSalary = useCallback(
-    createArrayFilterReset('salary', setSalaryRangesParam),
-    []
-  );
-
-  const resetLanguages = useCallback(
-    createArrayFilterReset('language', setLanguagesParam),
-    []
-  );
-
-  const resetRemote = useCallback(
-    createBooleanFilterReset('remote', setRemoteParam),
-    []
-  );
-
-  const resetVisa = useCallback(
-    createBooleanFilterReset('visa', setVisaParam),
-    []
-  );
+  const handleVisaChange = (checked: boolean) => {
+    onFilterChange('visa', checked);
+    syncToUrl(setVisaParam(checked || null));
+  };
 
   // Toggle states for expandable sections
   const [showAllLevels, setShowAllLevels] = useState(false);
@@ -376,26 +301,21 @@ export function JobFilters({
     'Founder',
   ];
 
-  // Handle clearing all filters
-  const handleClearFilters = useCallback(async () => {
-    await Promise.all([
-      resetTypes(),
-      resetLevels(),
-      resetSalary(),
-      resetLanguages(),
-      resetRemote(),
-      resetVisa(),
-    ]);
+  // Handle clearing all filters - clears every nuqs param and tells the
+  // parent to reset the visible list in one go.
+  const handleClearFilters = () => {
     onFilterChange('clear', true);
-  }, [
-    onFilterChange,
-    resetTypes,
-    resetLevels,
-    resetSalary,
-    resetLanguages,
-    resetRemote,
-    resetVisa,
-  ]);
+    syncToUrl(
+      Promise.all([
+        setTypesParam(null),
+        setRolesParam(null),
+        setSalaryRangesParam(null),
+        setLanguagesParam(null),
+        setRemoteParam(null),
+        setVisaParam(null),
+      ])
+    );
+  };
 
   // Memoized counts and calculations
   const counts = useMemo(
