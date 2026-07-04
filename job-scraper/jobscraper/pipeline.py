@@ -6,6 +6,7 @@ from jobscraper.sources import API_SOURCES
 from jobscraper.sources.base import safe_fetch
 from jobscraper.sources.browser import BROWSER_SOURCES
 from jobscraper.sources.browser.session import browser_session
+from jobscraper.sources.browser.themuse_resolver import resolve_themuse_apply_urls
 
 logger = logging.getLogger(__name__)
 
@@ -17,13 +18,22 @@ def collect_api_sources() -> list[dict]:
     return jobs
 
 
-def collect_browser_sources() -> list[dict]:
+def collect_browser_sources(muse_jobs: list[dict]) -> list[dict]:
+    """Runs BROWSER_SOURCES, and - in the same browser session - resolves
+    The Muse's real apply URLs for the API-sourced jobs passed in (mutates
+    them in place; see themuse_resolver for why this needs a real browser).
+    """
     jobs: list[dict] = []
     try:
         with browser_session() as browser:
             for module in BROWSER_SOURCES:
                 name = module.__name__.rsplit(".", 1)[-1]
                 jobs.extend(safe_fetch(name, lambda m=module: m.fetch(browser)))
+
+            try:
+                resolve_themuse_apply_urls(browser, muse_jobs)
+            except Exception:
+                logger.exception("themuse apply-url resolution failed, keeping fallback URLs")
     except Exception:
         logger.exception(
             "browser session failed to start (CloakBrowser binary missing? "
@@ -37,7 +47,8 @@ def run(include_browser_sources: bool = True, run_sweeper: bool = True) -> None:
 
     all_jobs = collect_api_sources()
     if include_browser_sources:
-        all_jobs.extend(collect_browser_sources())
+        muse_jobs = [job for job in all_jobs if job.get("source") == "themuse"]
+        all_jobs.extend(collect_browser_sources(muse_jobs))
 
     logger.info("collected %d raw jobs before processing", len(all_jobs))
 

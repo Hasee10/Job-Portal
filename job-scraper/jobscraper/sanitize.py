@@ -1,10 +1,10 @@
-"""Strips scraped job descriptions down to plain text before they ever reach
-Supabase.
+"""Converts scraped job descriptions to clean Markdown before they ever
+reach Supabase.
 
 Every source in this project returns raw HTML for `description` (Remotive,
-Adzuna, Jooble, Greenhouse `content`, Ashby `descriptionPlain` is already
-plain but others aren't, etc). Two independent reasons to clean it here
-rather than downstream:
+Adzuna, Jooble, Greenhouse `content`, etc - Ashby's `descriptionPlain` is
+already plain text but most aren't). Two independent reasons to clean it up
+here rather than downstream:
 
 1. Defense in depth. The bordful-main frontend renders description through
    react-markdown *without* the rehype-raw plugin, which today means raw
@@ -12,15 +12,25 @@ rather than downstream:
    exploitable as-is. But that's one frontend config change away from
    becoming a stored-XSS hole for any of the 15+ external sources feeding
    this table, and the RSS/JSON feed output has no such protection at all.
-   Storing plain text removes the entire attack surface regardless of how
-   the frontend renders it later.
-2. Data quality. Un-stripped HTML shows up as literal "<div class=...>" text
-   in a markdown renderer, which looks broken to a real visitor.
+   Storing plain Markdown removes the entire attack surface regardless of
+   how the frontend renders it later.
+2. Data quality. The frontend renders description through ReactMarkdown, so
+   it needs real Markdown - not HTML (shows up as literal "<div class=...>"
+   text) and not flattened plain text either (an earlier version of this
+   function joined every line with a single "\n" and dropped blank lines,
+   which destroys the blank-line paragraph breaks Markdown requires,
+   producing a single unreadable wall of text). markdownify converts
+   headings/lists/bold/paragraphs to real Markdown syntax instead.
 """
 
+import re
+
 from bs4 import BeautifulSoup
+from markdownify import markdownify
 
 _STRIP_TAGS = ("script", "style", "iframe", "object", "embed", "noscript")
+_EXCESS_BLANK_LINES_RE = re.compile(r"\n{3,}")
+_TRAILING_SPACES_RE = re.compile(r"[ \t]+\n")
 
 
 def clean_description(value: str | None) -> str | None:
@@ -31,9 +41,8 @@ def clean_description(value: str | None) -> str | None:
     for tag in soup.find_all(_STRIP_TAGS):
         tag.decompose()
 
-    text = soup.get_text(separator="\n")
-    # Collapse the blank-line runs BeautifulSoup's block-tag separators leave
-    # behind without destroying intentional paragraph breaks.
-    lines = [line.strip() for line in text.splitlines()]
-    cleaned = "\n".join(line for line in lines if line)
-    return cleaned or None
+    md = markdownify(str(soup), heading_style="ATX", bullets="-")
+    md = _TRAILING_SPACES_RE.sub("\n", md)
+    md = _EXCESS_BLANK_LINES_RE.sub("\n\n", md)
+    md = md.strip()
+    return md or None

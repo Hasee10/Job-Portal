@@ -7,6 +7,27 @@ every 12 hours: scrapes every source below, upserts into Supabase, then
 sweeps and deactivates postings whose `apply_url` now 404s/410s/etc.
 (acquired, filled, or pulled listings).
 
+## Apply-link reality check
+
+A job board is only as useful as its "Apply" button. Several of the free
+API sources deliberately keep visitors on their own site rather than
+exposing a link to the employer's real application page. Verified by hand
+against each source's live API and website (2026-07):
+
+| Source | apply_url destination |
+|---|---|
+| Greenhouse / Lever / Ashby boards | **Direct** — these fields are already the real ATS, nothing to resolve |
+| Arbeitnow | **Resolved to the real employer page** — `{arbeitnow_url}/apply` 302-redirects to the actual ATS (e.g. join.com); `sources/arbeitnow.py` follows that redirect and stores the final URL |
+| The Muse | **Resolved when possible** — the API only gives a themuse.com page, but its "Apply on company site" button opens the real destination in a new tab; `sources/browser/themuse_resolver.py` clicks it via a real browser to capture that URL. Not every posting has this button (some use The Muse's own application flow) — those fall back to the themuse.com page |
+| Adzuna, Jooble | **Tracking redirect, but does reach the real site** — `redirect_url`/`link` are the providers' own click-tracking links, which do forward to the employer's page after the redirect (unlike the sources below, this isn't a dead end) |
+| RemoteOK | **No real link available** — confirmed by clicking their own "Apply" button in a real browser: it stays on remoteok.com, no external redirect exists |
+| Remotive, Jobicy | **Unverified** — both are behind a Cloudflare bot-check that the free CloakBrowser tier can't pass through; would need a residential proxy or CloakBrowser Pro license to check whether their web page (not just the API) exposes a real link the way Arbeitnow's did |
+| Himalayas | **No real link available** — confirmed directly: even Himalayas' own web page has no outbound application link, applying requires signing up on Himalayas itself |
+
+For the sources with no real link, `apply_url` points to the aggregator's
+own job page (which has its own apply flow) rather than failing to import
+the job at all.
+
 ## Sources & links
 
 ### Plain API/RSS sources (no browser, no ToS concerns — all built for programmatic use)
