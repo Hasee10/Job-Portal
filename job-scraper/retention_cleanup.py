@@ -18,60 +18,46 @@ Usage:
 import argparse
 import sys
 from datetime import datetime, timedelta, timezone
-from urllib.parse import quote
 
-import httpx
-
-from jobscraper import config
+from jobscraper import config, db
 from jobscraper.logging_conf import setup_logging
 
 PAGE_SIZE = 500
 
 
-def _headers() -> dict:
-    return {
-        "apikey": config.SUPABASE_SERVICE_ROLE_KEY,
-        "Authorization": f"Bearer {config.SUPABASE_SERVICE_ROLE_KEY}",
-    }
-
-
-def fetch_expired_ids(client: httpx.Client, cutoff_iso: str) -> list[str]:
+def fetch_expired_ids(cutoff: datetime) -> list[str]:
     """Jobs that are inactive AND were discontinued before the cutoff -
     never touches active jobs or ones without a discontinued_at yet."""
-    ids: list[str] = []
-    offset = 0
-    url = (
-        f"{config.SUPABASE_URL}/rest/v1/jobs"
-        f"?select=id&is_active=eq.false&discontinued_at=lt.{quote(cutoff_iso, safe='')}"
-    )
-    while True:
-        headers = {
-            **_headers(),
-            "Range-Unit": "items",
-            "Range": f"{offset}-{offset + PAGE_SIZE - 1}",
-        }
-        resp = client.get(url, headers=headers)
-        resp.raise_for_status()
-        page = resp.json()
-        ids.extend(row["id"] for row in page)
-        if len(page) < PAGE_SIZE:
-            break
-        offset += PAGE_SIZE
-    return ids
+    conn = db.get_connection()
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                "select id from public.jobs where is_active = false and discontinued_at < %s",
+                (cutoff,),
+            )
+            return [str(row[0]) for row in cur.fetchall()]
+    finally:
+        conn.close()
 
 
-def delete_jobs(client: httpx.Client, job_ids: list[str]) -> int:
-    """Deletes in chunks via id=in.(...) rather than one request per row."""
+def delete_jobs(job_ids: list[str]) -> int:
+    """Deletes in chunks via id = any(...) rather than one request per row."""
+    conn = db.get_connection()
     deleted = 0
-    for i in range(0, len(job_ids), PAGE_SIZE):
-        chunk = job_ids[i : i + PAGE_SIZE]
-        id_list = ",".join(chunk)
-        url = f"{config.SUPABASE_URL}/rest/v1/jobs?id=in.({id_list})"
-        resp = client.delete(url, headers={**_headers(), "Prefer": "return=minimal"})
-        if resp.status_code >= 300:
-            print(f"FAILED to delete a batch of {len(chunk)}: {resp.status_code} {resp.text[:300]}")
-            continue
-        deleted += len(chunk)
+    try:
+        with conn.cursor() as cur:
+            for i in range(0, len(job_ids), PAGE_SIZE):
+                chunk = job_ids[i : i + PAGE_SIZE]
+                try:
+                    cur.execute("delete from public.jobs where id = any(%s)", (chunk,))
+                    conn.commit()
+                    deleted += len(chunk)
+                except Exception as e:
+                    conn.rollback()
+                    print(f"FAILED to delete a batch of {len(chunk)}: {e}")
+                    continue
+    finally:
+        conn.close()
     return deleted
 
 
@@ -91,26 +77,24 @@ def main() -> int:
     args = parser.parse_args()
 
     setup_logging()
-    config.require_supabase()
+    config.require_database()
 
     cutoff = datetime.now(timezone.utc) - timedelta(days=args.days)
-    cutoff_iso = cutoff.isoformat()
-    print(f"Retention window: {args.days} days (cutoff: {cutoff_iso})")
+    print(f"Retention window: {args.days} days (cutoff: {cutoff.isoformat()})")
 
-    with httpx.Client(timeout=30.0) as client:
-        expired_ids = fetch_expired_ids(client, cutoff_iso)
-        print(f"Found {len(expired_ids)} jobs discontinued before the cutoff")
+    expired_ids = fetch_expired_ids(cutoff)
+    print(f"Found {len(expired_ids)} jobs discontinued before the cutoff")
 
-        if args.dry_run:
-            print("Dry run - nothing deleted")
-            return 0
+    if args.dry_run:
+        print("Dry run - nothing deleted")
+        return 0
 
-        if not expired_ids:
-            print("Nothing to delete")
-            return 0
+    if not expired_ids:
+        print("Nothing to delete")
+        return 0
 
-        deleted = delete_jobs(client, expired_ids)
-        print(f"Deleted {deleted}/{len(expired_ids)} rows")
+    deleted = delete_jobs(expired_ids)
+    print(f"Deleted {deleted}/{len(expired_ids)} rows")
 
     return 0
 

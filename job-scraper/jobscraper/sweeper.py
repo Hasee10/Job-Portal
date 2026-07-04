@@ -9,7 +9,6 @@ postings disappear from the portal instead of piling up.
 import asyncio
 import json
 import logging
-from datetime import datetime, timezone
 from pathlib import Path
 
 import httpx
@@ -100,39 +99,6 @@ async def _check_all(jobs: list[dict]) -> list[int | None]:
         )
 
 
-async def _mark_discontinued_async(job_ids: list[str]) -> int:
-    if not job_ids:
-        return 0
-
-    config.require_supabase()
-    now = datetime.now(timezone.utc).isoformat()
-    headers = {
-        "apikey": config.SUPABASE_SERVICE_ROLE_KEY,
-        "Authorization": f"Bearer {config.SUPABASE_SERVICE_ROLE_KEY}",
-        "Content-Type": "application/json",
-        "Prefer": "return=minimal",
-    }
-    semaphore = asyncio.Semaphore(CONCURRENCY)
-
-    async def patch_one(client: httpx.AsyncClient, job_id: str) -> bool:
-        async with semaphore:
-            url = f"{config.SUPABASE_URL}/rest/v1/jobs?id=eq.{job_id}"
-            try:
-                resp = await client.patch(
-                    url,
-                    headers=headers,
-                    json={"is_active": False, "discontinued_at": now},
-                    timeout=REQUEST_TIMEOUT,
-                )
-                return resp.status_code < 300
-            except httpx.HTTPError:
-                return False
-
-    async with httpx.AsyncClient() as client:
-        results = await asyncio.gather(*(patch_one(client, jid) for jid in job_ids))
-    return sum(results)
-
-
 def _source_of(job: dict) -> str:
     # "greenhouse:reddit" -> "greenhouse" - group by platform, not per-company
     # board, since the block behavior is a property of the platform.
@@ -206,7 +172,10 @@ def sweep() -> int:
     }
     _save_state(state)
 
-    marked = asyncio.run(_mark_discontinued_async(dead_ids))
+    # A single batched SQL UPDATE (db.mark_discontinued) - no longer needs
+    # its own async/concurrency handling now that this isn't one PostgREST
+    # PATCH request per job.
+    marked = db.mark_discontinued(dead_ids)
     logger.info(
         "sweeper: marked %d jobs discontinued (%d newly flagged as ambiguous, "
         "awaiting confirmation next run)",

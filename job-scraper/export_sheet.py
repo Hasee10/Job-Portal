@@ -12,41 +12,24 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
-import httpx
+import psycopg2.extras
 from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill
 from openpyxl.utils import get_column_letter
 
-from jobscraper import config
+from jobscraper import db
 
-PAGE_SIZE = 1000
-TRUNCATE_LONG_TEXT_AT = 400  # keep the sheet readable; full data stays in Supabase
+TRUNCATE_LONG_TEXT_AT = 400  # keep the sheet readable; full data stays in the database
 
 
 def fetch_all_jobs() -> list[dict]:
-    config.require_supabase()
-    url = f"{config.SUPABASE_URL}/rest/v1/jobs?select=*&order=created_at.desc"
-    headers = {
-        "apikey": config.SUPABASE_SERVICE_ROLE_KEY,
-        "Authorization": f"Bearer {config.SUPABASE_SERVICE_ROLE_KEY}",
-    }
-    jobs: list[dict] = []
-    offset = 0
-    with httpx.Client(timeout=60.0) as client:
-        while True:
-            page_headers = {
-                **headers,
-                "Range-Unit": "items",
-                "Range": f"{offset}-{offset + PAGE_SIZE - 1}",
-            }
-            resp = client.get(url, headers=page_headers)
-            resp.raise_for_status()
-            page = resp.json()
-            jobs.extend(page)
-            if len(page) < PAGE_SIZE:
-                break
-            offset += PAGE_SIZE
-    return jobs
+    conn = db.get_connection()
+    try:
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+            cur.execute("select * from public.jobs order by created_at desc")
+            return [dict(row) for row in cur.fetchall()]
+    finally:
+        conn.close()
 
 
 def _cell_value(value):
@@ -126,7 +109,7 @@ def build_workbook(jobs: list[dict]) -> Workbook:
 def main() -> int:
     out_path = Path(sys.argv[1]) if len(sys.argv) > 1 else Path(__file__).parent / "jobs_export.xlsx"
 
-    print("Fetching all jobs from Supabase...")
+    print("Fetching all jobs from CockroachDB...")
     jobs = fetch_all_jobs()
     print(f"Fetched {len(jobs)} rows across {len(jobs[0].keys()) if jobs else 0} columns")
 

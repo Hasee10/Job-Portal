@@ -1,14 +1,17 @@
-"""Thin Supabase REST (PostgREST) client - no supabase-py dependency needed.
-
-Mirrors exactly what the old n8n workflows did over HTTP: upsert jobs keyed
-on the `apply_url` unique index, and PATCH `is_active=false` for dead links.
+"""Thin CockroachDB SQL client (cut over from the previous Supabase
+PostgREST client - same upsert-by-apply_url dedup semantics, same
+is_active sweep pattern, just talking directly to CockroachDB over the
+Postgres wire protocol instead of an HTTP REST layer, since CockroachDB
+has no PostgREST-equivalent built in).
 """
 
 import logging
 from datetime import datetime, timezone
 from typing import Iterable
 
-import httpx
+import certifi
+import psycopg2
+import psycopg2.extras
 
 from jobscraper import config
 
@@ -17,24 +20,18 @@ logger = logging.getLogger(__name__)
 UPSERT_BATCH_SIZE = 200
 
 
-def _headers(extra: dict | None = None) -> dict:
-    headers = {
-        "apikey": config.SUPABASE_SERVICE_ROLE_KEY,
-        "Authorization": f"Bearer {config.SUPABASE_SERVICE_ROLE_KEY}",
-        "Content-Type": "application/json",
-    }
-    if extra:
-        headers.update(extra)
-    return headers
+def get_connection():
+    config.require_database()
+    # verify-full needs an explicit CA bundle on Windows - libpq/OpenSSL
+    # don't reliably find the default root cert path there. certifi ships
+    # the same Mozilla trusted-root list under a portable path.
+    return psycopg2.connect(config.COCKROACH_DATABASE_URL, sslrootcert=certifi.where())
 
 
 def _dedupe_by_apply_url(jobs: list[dict]) -> list[dict]:
-    """PostgREST's bulk upsert runs as a single INSERT...ON CONFLICT DO
-    UPDATE statement per batch - Postgres rejects that outright if the same
-    batch tries to touch the same conflict key (apply_url) twice ("ON
-    CONFLICT DO UPDATE command cannot affect row a second time"), which was
-    silently dropping ~200 rows at a time whenever two sources (or the same
-    source twice) produced the same apply_url. Last one wins.
+    """A single multi-row INSERT ... ON CONFLICT can't affect the same
+    conflict-key row twice in one statement (Postgres/CockroachDB both
+    enforce this) - dedupe within each batch first. Last one wins.
     """
     deduped: dict[str, dict] = {}
     skipped = 0
@@ -48,102 +45,103 @@ def _dedupe_by_apply_url(jobs: list[dict]) -> list[dict]:
     return list(deduped.values())
 
 
-def _normalize_keys(jobs: list[dict]) -> list[dict]:
-    """PostgREST's bulk insert requires every object in the same request to
-    have identical keys ("All object keys must match", PGRST102) - different
-    sources produce dicts with different optional fields (e.g. only Adzuna
-    sets salary_min/salary_max), which was silently failing whole batches
-    that mixed sources. Fill every job out to the same key set first.
+def _normalize_keys(jobs: list[dict]) -> tuple[list[dict], list[str]]:
+    """Every job dict in one batch needs the same key set for a single
+    multi-row INSERT statement - different sources produce dicts with
+    different optional fields (e.g. only Adzuna sets salary_min/salary_max).
+    Fill every job out to the same key set first. Returns the normalized
+    rows plus the resulting column list (every key here is a real job
+    field the scraper actually sets - never an unknown column - so it's
+    safe to use directly as a SQL column list).
     """
     all_keys: set[str] = set()
     for job in jobs:
         all_keys.update(job.keys())
-    return [{key: job.get(key) for key in all_keys} for job in jobs]
+    columns = sorted(all_keys)
+    return [{key: job.get(key) for key in columns} for job in jobs], columns
 
 
 def upsert_jobs(jobs: list[dict]) -> int:
     """Upsert jobs, deduping on the `apply_url` unique index.
 
-    Re-running never creates duplicates - it refreshes the row (including a
-    fresh score/posted_at) via `resolution=merge-duplicates`.
+    Re-running never creates duplicates - it refreshes every column present
+    in the batch. Columns never present in any job dict (id, created_at,
+    visa_sponsorship, etc.) are left alone on conflict and take their table
+    default on insert - matches the old PostgREST merge-duplicates behavior
+    exactly (it only ever touched columns present in the JSON body too).
     """
     if not jobs:
         return 0
 
-    jobs = _normalize_keys(_dedupe_by_apply_url(jobs))
-
-    config.require_supabase()
-    url = f"{config.SUPABASE_URL}/rest/v1/jobs?on_conflict=apply_url"
-    headers = _headers({"Prefer": "resolution=merge-duplicates,return=minimal"})
+    deduped = _dedupe_by_apply_url(jobs)
 
     written = 0
-    with httpx.Client(timeout=config.HTTP_TIMEOUT) as client:
-        for i in range(0, len(jobs), UPSERT_BATCH_SIZE):
-            batch = jobs[i : i + UPSERT_BATCH_SIZE]
-            resp = client.post(url, headers=headers, json=batch)
-            if resp.status_code >= 300:
-                logger.error(
-                    "Upsert batch failed (%s): %s", resp.status_code, resp.text[:500]
+    conn = get_connection()
+    try:
+        with conn.cursor() as cur:
+            for i in range(0, len(deduped), UPSERT_BATCH_SIZE):
+                batch = deduped[i : i + UPSERT_BATCH_SIZE]
+                normalized, columns = _normalize_keys(batch)
+                if "apply_url" not in columns:
+                    continue  # keep_valid() upstream should already guarantee this
+
+                col_list = ", ".join(columns)
+                update_clause = ", ".join(
+                    f"{c} = excluded.{c}" for c in columns if c != "apply_url"
                 )
-                continue
-            written += len(batch)
+                values = [tuple(job.get(c) for c in columns) for job in normalized]
+
+                sql = (
+                    f"insert into public.jobs ({col_list}) values %s "
+                    f"on conflict (apply_url) do update set {update_clause}"
+                )
+                try:
+                    psycopg2.extras.execute_values(cur, sql, values)
+                    conn.commit()
+                    written += len(batch)
+                except Exception:
+                    conn.rollback()
+                    logger.exception("Upsert batch failed (rows %d-%d)", i, i + len(batch))
+                    continue
+    finally:
+        conn.close()
     return written
 
 
-FETCH_PAGE_SIZE = 1000
-
-
 def fetch_active_jobs() -> list[dict]:
-    """Fetch every active job, paginated.
-
-    PostgREST caps a single response at 1000 rows by default - without
-    pagination this would silently only ever sweep the first 1000 active
-    jobs and leave everything past that permanently unchecked.
+    """Fetch every active job's id/apply_url/source for the sweeper - a
+    single query (no PostgREST-style pagination needed; that was only ever
+    working around PostgREST's default 1000-row response cap, which
+    doesn't apply to a direct SQL query).
     """
-    config.require_supabase()
-    url = f"{config.SUPABASE_URL}/rest/v1/jobs?select=id,apply_url,source&is_active=eq.true"
-
-    jobs: list[dict] = []
-    offset = 0
-    with httpx.Client(timeout=config.HTTP_TIMEOUT) as client:
-        while True:
-            headers = _headers(
-                {"Range-Unit": "items", "Range": f"{offset}-{offset + FETCH_PAGE_SIZE - 1}"}
-            )
-            resp = client.get(url, headers=headers)
-            resp.raise_for_status()
-            page = resp.json()
-            jobs.extend(page)
-            if len(page) < FETCH_PAGE_SIZE:
-                break
-            offset += FETCH_PAGE_SIZE
-    return jobs
+    conn = get_connection()
+    try:
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+            cur.execute("select id, apply_url, source from public.jobs where is_active = true")
+            return [dict(row) for row in cur.fetchall()]
+    finally:
+        conn.close()
 
 
 def mark_discontinued(job_ids: Iterable[str]) -> int:
-    """Mark jobs inactive (acquired/expired/removed by the source)."""
+    """Mark jobs inactive (acquired/expired/removed by the source) in one
+    batched UPDATE, rather than one request per job like the old PATCH-per-id
+    PostgREST version did.
+    """
     ids = list(job_ids)
     if not ids:
         return 0
 
-    config.require_supabase()
-    marked = 0
-    now = datetime.now(timezone.utc).isoformat()
-    with httpx.Client(timeout=config.HTTP_TIMEOUT) as client:
-        for job_id in ids:
-            url = f"{config.SUPABASE_URL}/rest/v1/jobs?id=eq.{job_id}"
-            resp = client.patch(
-                url,
-                headers=_headers({"Prefer": "return=minimal"}),
-                json={"is_active": False, "discontinued_at": now},
+    now = datetime.now(timezone.utc)
+    conn = get_connection()
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                "update public.jobs set is_active = false, discontinued_at = %s "
+                "where id = any(%s)",
+                (now, ids),
             )
-            if resp.status_code >= 300:
-                logger.error(
-                    "Failed to mark %s discontinued (%s): %s",
-                    job_id,
-                    resp.status_code,
-                    resp.text[:300],
-                )
-                continue
-            marked += 1
-    return marked
+            conn.commit()
+            return cur.rowcount
+    finally:
+        conn.close()

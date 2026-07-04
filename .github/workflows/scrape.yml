@@ -3,7 +3,15 @@ name: Job Scraper
 # Runs every 12 hours on GitHub's own cloud runners - independent of any
 # local machine being on. Complements (does not replace) the local Windows
 # Scheduled Task in job-scraper/install_task.ps1; both write to the same
-# Supabase table via idempotent upserts, so overlapping runs are harmless.
+# CockroachDB table via idempotent upserts, so overlapping runs are
+# harmless.
+#
+# Cut over from Supabase to CockroachDB - requires a COCKROACH_DATABASE_URL
+# repository secret (Settings -> Secrets and variables -> Actions -> New
+# repository secret), same connection string used locally in
+# job-scraper/.env. The old SUPABASE_URL/SUPABASE_SERVICE_ROLE_KEY secrets
+# are no longer read by this workflow and can be removed once you've
+# confirmed this is working - Supabase itself is untouched either way.
 on:
   schedule:
     - cron: "0 */12 * * *"
@@ -64,8 +72,7 @@ jobs:
 
       - name: Run scraper
         env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          COCKROACH_DATABASE_URL: ${{ secrets.COCKROACH_DATABASE_URL }}
           ADZUNA_APP_ID: ${{ secrets.ADZUNA_APP_ID }}
           ADZUNA_APP_KEY: ${{ secrets.ADZUNA_APP_KEY }}
           JOOBLE_API_KEY: ${{ secrets.JOOBLE_API_KEY }}

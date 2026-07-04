@@ -6,6 +6,15 @@ from dotenv import load_dotenv
 ROOT_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(ROOT_DIR / ".env")
 
+# CockroachDB - the live database as of the CockroachDB cutover. Same single
+# credential used for both reads and writes; there's no RLS/anon-key
+# equivalent in CockroachDB, so this connection can do anything the
+# underlying SQL user is allowed to do.
+COCKROACH_DATABASE_URL = os.environ.get("COCKROACH_DATABASE_URL", "")
+
+# Supabase - FROZEN. No longer read by db.py/sweeper.py/pipeline.py; kept
+# here only for reference / easy rollback. The Supabase project itself is
+# untouched.
 SUPABASE_URL = os.environ.get("SUPABASE_URL", "").rstrip("/")
 SUPABASE_SERVICE_ROLE_KEY = os.environ.get("SUPABASE_SERVICE_ROLE_KEY", "")
 
@@ -38,9 +47,9 @@ HTTP_TIMEOUT = 30.0
 HTTP_USER_AGENT = "Mozilla/5.0 (compatible; JobPortalCollector/1.0)"
 
 
-def require_supabase() -> None:
-    if not SUPABASE_URL or not SUPABASE_SERVICE_ROLE_KEY:
+def require_database() -> None:
+    if not COCKROACH_DATABASE_URL:
         raise RuntimeError(
-            "SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY must be set in "
+            "COCKROACH_DATABASE_URL must be set in "
             f"{ROOT_DIR / '.env'} before running the scraper."
         )

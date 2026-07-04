@@ -44,7 +44,7 @@ def collect_browser_sources(muse_jobs: list[dict]) -> list[dict]:
 
 
 def run(include_browser_sources: bool = True, run_sweeper: bool = True) -> None:
-    config.require_supabase()
+    config.require_database()
 
     all_jobs = collect_api_sources()
     if include_browser_sources:

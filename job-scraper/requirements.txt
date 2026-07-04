@@ -7,3 +7,5 @@ markdownify>=0.13
 cloakbrowser>=0.1
 playwright>=1.40
 openpyxl>=3.1
+psycopg2-binary>=2.9
+certifi>=2024.2.2
