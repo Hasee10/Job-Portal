@@ -41,6 +41,19 @@ CONFIRMED_DEAD_CODES = {404, 410}
 # later, a real removal does.
 AMBIGUOUS_DEAD_CODES = {400, 403, 406, 451}
 
+# Fix #3: the two-strike confirmation above assumes a block is *transient*
+# (won't survive a second run). That assumption breaks when a whole site
+# blocks every plain scripted request it gets, every time - a live check
+# found Indeed, Glassdoor, and Remotive at 100% wrongly deactivated and
+# Adzuna/Jooble/Himalayas/Jobicy between 76-88%, because their apply pages
+# consistently 403/406 a non-browser GET regardless of whether the job is
+# actually still open. Two consecutive sweeps both see the same block and
+# wrongly "confirm" it. If a large share of one source's jobs get the same
+# ambiguous code in a single run, that's a source-wide block, not evidence
+# about any individual job - skip ambiguous handling for that source this
+# run entirely rather than let it feed the confirmation counter.
+SOURCE_BLOCK_THRESHOLD = 0.4
+
 STATE_FILE = Path(__file__).parent.parent / "sweeper_state.json"
 
 # Fix #2: the original design checked 5 URLs, then slept 1s, sequentially -
@@ -120,6 +133,30 @@ async def _mark_discontinued_async(job_ids: list[str]) -> int:
     return sum(results)
 
 
+def _source_of(job: dict) -> str:
+    # "greenhouse:reddit" -> "greenhouse" - group by platform, not per-company
+    # board, since the block behavior is a property of the platform.
+    return (job.get("source") or "unknown").split(":")[0]
+
+
+def _find_blocked_sources(jobs: list[dict], statuses: list[int | None]) -> set[str]:
+    per_source_total: dict[str, int] = {}
+    per_source_code_count: dict[tuple[str, int], int] = {}
+
+    for job, status in zip(jobs, statuses):
+        source = _source_of(job)
+        per_source_total[source] = per_source_total.get(source, 0) + 1
+        if status in AMBIGUOUS_DEAD_CODES:
+            key = (source, status)
+            per_source_code_count[key] = per_source_code_count.get(key, 0) + 1
+
+    blocked = set()
+    for (source, _status), count in per_source_code_count.items():
+        if count / per_source_total[source] >= SOURCE_BLOCK_THRESHOLD:
+            blocked.add(source)
+    return blocked
+
+
 def sweep() -> int:
     jobs = db.fetch_active_jobs()
     logger.info(
@@ -134,11 +171,24 @@ def sweep() -> int:
 
     statuses = asyncio.run(_check_all(jobs))
 
+    blocked_sources = _find_blocked_sources(jobs, statuses)
+    if blocked_sources:
+        logger.info(
+            "sweeper: treating these sources as currently blocking scripted "
+            "requests site-wide, skipping ambiguous-status handling for them "
+            "this run: %s",
+            sorted(blocked_sources),
+        )
+
     for job, status in zip(jobs, statuses):
         job_id = job["id"]
+        source = _source_of(job)
+
         if status in CONFIRMED_DEAD_CODES:
             dead_ids.append(job_id)
         elif status in AMBIGUOUS_DEAD_CODES:
+            if source in blocked_sources:
+                continue
             seen_ambiguous_ids.add(job_id)
             if job_id in state:
                 dead_ids.append(job_id)

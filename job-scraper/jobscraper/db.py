@@ -101,7 +101,7 @@ def fetch_active_jobs() -> list[dict]:
     jobs and leave everything past that permanently unchecked.
     """
     config.require_supabase()
-    url = f"{config.SUPABASE_URL}/rest/v1/jobs?select=id,apply_url&is_active=eq.true"
+    url = f"{config.SUPABASE_URL}/rest/v1/jobs?select=id,apply_url,source&is_active=eq.true"
 
     jobs: list[dict] = []
     offset = 0

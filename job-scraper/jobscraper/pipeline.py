@@ -54,6 +54,14 @@ def run(include_browser_sources: bool = True, run_sweeper: bool = True) -> None:
 
     for job in all_jobs:
         job["description"] = clean_description(job.get("description"))
+        # Being freshly scraped IS proof of life - reactivate unconditionally.
+        # Without this, a job the sweeper wrongly (or rightly, then the
+        # posting got reopened) marked is_active=false would never come back
+        # even though the merge-duplicates upsert refreshes every other
+        # field, since is_active is never included in a source's own job
+        # dict and PostgREST's merge-duplicates only touches columns present
+        # in the payload.
+        job["is_active"] = True
 
     processed = scoring.process(all_jobs)
     written = db.upsert_jobs(processed)
