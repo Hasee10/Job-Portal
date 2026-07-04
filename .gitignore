@@ -1,5 +1,6 @@
 # Secrets — never commit these
 SUPABASE_DB_Password.txt
+cockroach_DB_password.txt
 *.env
 .env*
 
