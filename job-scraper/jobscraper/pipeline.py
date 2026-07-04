@@ -1,6 +1,7 @@
 import logging
 
 from jobscraper import config, db, scoring, sweeper
+from jobscraper.classify import classify_career_level, classify_employment_type
 from jobscraper.sanitize import clean_description
 from jobscraper.sources import API_SOURCES
 from jobscraper.sources.base import safe_fetch
@@ -62,6 +63,16 @@ def run(include_browser_sources: bool = True, run_sweeper: bool = True) -> None:
         # dict and PostgREST's merge-duplicates only touches columns present
         # in the payload.
         job["is_active"] = True
+        # No source set `type`/`career_level` before this - every job
+        # silently fell back to the database defaults ('Full-time' /
+        # ['NotSpecified']), which made the portal's Job Type and Career
+        # Level filters look broken (checking "Contract" or "Senior" showed
+        # ~0 results no matter how many such jobs actually existed).
+        job["type"] = classify_employment_type(job)
+        job["career_level"] = classify_career_level(job)
+        # employment_type_hint is classify_employment_type's input, not a
+        # real column - drop it so it doesn't reach the upsert payload.
+        job.pop("employment_type_hint", None)
 
     processed = scoring.process(all_jobs)
     written = db.upsert_jobs(processed)

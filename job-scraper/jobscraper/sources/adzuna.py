@@ -54,6 +54,10 @@ def fetch() -> list[dict]:
                 "posted_at": posted_at,
                 "salary_min": job.get("salary_min"),
                 "salary_max": job.get("salary_max"),
+                # contract_time: 'full_time'/'part_time'; contract_type:
+                # 'permanent'/'contract' - either maps cleanly in classify.py.
+                "employment_type_hint": job.get("contract_time")
+                or job.get("contract_type"),
             }
         )
     return keep_valid(out)

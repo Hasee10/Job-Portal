@@ -114,6 +114,7 @@ def _fetch_lever(token: str) -> list[dict]:
                 "source": f"lever:{token}",
                 "description": job.get("descriptionPlain") or job.get("description") or None,
                 "posted_at": posted_at,
+                "employment_type_hint": categories.get("commitment"),
             }
         )
     return out
