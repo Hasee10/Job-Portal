@@ -4,6 +4,7 @@
 
 # runtime state (sweeper's two-strike confirmation tracking)
 sweeper_state.json
+logs/
 
 __pycache__/
 *.pyc

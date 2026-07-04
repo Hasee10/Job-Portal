@@ -10,15 +10,30 @@ $ErrorActionPreference = "Stop"
 
 $TaskName = "JobPortal-Scraper"
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
-$PythonExe = (Get-Command python).Source
+$PythonExe = Join-Path $ScriptDir ".venv\Scripts\python.exe"
 $RunScript = Join-Path $ScriptDir "run.py"
 
-$Action = New-ScheduledTaskAction -Execute $PythonExe -Argument "`"$RunScript`"" -WorkingDirectory $ScriptDir
+if (-not (Test-Path $PythonExe)) {
+  throw "Virtual environment not found at $PythonExe. Run:`n  python -m venv .venv`n  .venv\Scripts\pip install -r requirements.txt`n  .venv\Scripts\python -m playwright install chromium`n  .venv\Scripts\python -m cloakbrowser install`nfrom job-scraper\, then re-run this script."
+}
 
-$Trigger1 = New-ScheduledTaskTrigger -Once -At (Get-Date) -RepetitionInterval (New-TimeSpan -Hours 12) -RepetitionDuration ([TimeSpan]::MaxValue)
+$LogDir = Join-Path $ScriptDir "logs"
+New-Item -ItemType Directory -Force -Path $LogDir | Out-Null
+$LogFile = Join-Path $LogDir "run.log"
+
+# Task Scheduler discards stdout/stderr unless explicitly redirected - route
+# through cmd.exe so every run's output (including tracebacks) is appended
+# to logs\run.log for later inspection.
+$Action = New-ScheduledTaskAction -Execute "cmd.exe" `
+  -Argument "/c `"`"$PythonExe`" `"$RunScript`" >> `"$LogFile`" 2>&1`"" `
+  -WorkingDirectory $ScriptDir
+
+$Trigger1 = New-ScheduledTaskTrigger -Once -At (Get-Date) -RepetitionInterval (New-TimeSpan -Hours 12) -RepetitionDuration (New-TimeSpan -Days 3650)
 $Trigger2 = New-ScheduledTaskTrigger -AtStartup
 
-$Settings = New-ScheduledTaskSettingsSet -StartWhenAvailable -DontStopOnIdleEnd -ExecutionTimeLimit (New-TimeSpan -Hours 2)
+$Settings = New-ScheduledTaskSettingsSet -StartWhenAvailable -DontStopOnIdleEnd `
+  -ExecutionTimeLimit (New-TimeSpan -Hours 2) -AllowStartIfOnBatteries `
+  -DontStopIfGoingOnBatteries
 
 Register-ScheduledTask -TaskName $TaskName `
   -Action $Action `

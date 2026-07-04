@@ -1,9 +1,9 @@
 """Glassdoor - https://www.glassdoor.com
 
 Glassdoor's Terms of Use prohibit scraping, and the site paywalls most
-listing detail behind a login after the first few results even for logged
--out users. Treat this as best-effort/low-volume; it is the most likely of
-all sources here to return 0 rows if Glassdoor has changed its interstitials.
+listing detail behind a login after the first page of results even for
+logged-out users. Selectors confirmed live 2026-07 against a remote
+"software engineer" search.
 """
 
 import logging
@@ -14,10 +14,10 @@ logger = logging.getLogger(__name__)
 
 SEARCH_URL = "https://www.glassdoor.com/Job/remote-software-engineer-jobs-SRCH_IL.0,6_IS11047_KO7,25.htm"
 
-CARD_SELECTORS = ["li.react-job-listing", 'li[data-test="jobListing"]']
-TITLE_SELECTORS = ["a.jobLink", 'a[data-test="job-link"]']
-COMPANY_SELECTORS = ["div.employerName", 'span[data-test="employer-name"]']
-LOCATION_SELECTORS = ["div.location", 'div[data-test="emp-location"]']
+CARD_SELECTORS = ['li[data-test="jobListing"]']
+TITLE_SELECTORS = ['a[data-test="job-title"]']
+COMPANY_SELECTORS = ['[class*="employerName" i]']
+LOCATION_SELECTORS = ['[class*="location" i]']
 
 
 def fetch(browser) -> list[dict]:
@@ -39,20 +39,18 @@ def fetch(browser) -> list[dict]:
 
         for card in cards:
             title_el = first_match(card, TITLE_SELECTORS)
-            href = attr_or_none(title_el, "href")
-            apply_url = (
-                href if href and href.startswith("http") else f"https://www.glassdoor.com{href}"
-                if href
-                else None
-            )
+            apply_url = attr_or_none(title_el, "href")
             title = text_or_none(title_el)
             if not title or not apply_url:
                 continue
 
+            company_raw = text_or_none(first_match(card, COMPANY_SELECTORS)) or ""
+            company = company_raw.splitlines()[0].strip() if company_raw else ""
+
             out.append(
                 {
                     "title": title,
-                    "company": text_or_none(first_match(card, COMPANY_SELECTORS)) or "",
+                    "company": company,
                     "location": text_or_none(first_match(card, LOCATION_SELECTORS)),
                     "remote_type": "unknown",
                     "apply_url": apply_url,

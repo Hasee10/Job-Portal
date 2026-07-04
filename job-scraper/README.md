@@ -99,14 +99,49 @@ open the search URL in a real browser, inspect a job card, and update the
    Run it a second time — the row count should not roughly double (that's
    the dedupe-by-`apply_url` check).
 
-5. **Install the 12-hour schedule** (Windows Task Scheduler — this machine
-   has no native cron):
+5. **Install the local 12-hour schedule** (Windows Task Scheduler — this
+   machine has no native cron). This uses a dedicated virtualenv so the task
+   doesn't depend on whatever `python` happens to resolve to on PATH:
    ```
-   powershell -ExecutionPolicy Bypass -File install_task.ps1
+   python -m venv .venv
+   .venv\Scripts\pip install -r requirements.txt
+   .venv\Scripts\python -m playwright install chromium
+   .venv\Scripts\python -m cloakbrowser install
+   .\install_task.ps1
    ```
-   This registers a task named `JobPortal-Scraper` that runs `run.py` every
-   12 hours and again at every system startup (covers a missed run if the
-   machine was off). Remove it with `uninstall_task.ps1`.
+   This registers a task named `JobPortal-Scraper` that runs every 12 hours
+   and again at every system startup (catches up a run that was missed
+   while the PC was off). Output is appended to `logs/run.log`. Remove it
+   with `.\uninstall_task.ps1`.
+
+   **Important limitation:** this only runs while the PC is powered on. If
+   the machine is off at the 12-hour mark, that run is skipped entirely (it
+   fires once at next boot instead, not retroactively). See step 6 for a
+   schedule that runs regardless of this machine's power state.
+
+6. **Run regardless of whether this PC is on** — a GitHub Actions workflow
+   at [`../.github/workflows/scrape.yml`](../.github/workflows/scrape.yml)
+   runs the exact same `run.py` every 12 hours on GitHub's own cloud
+   runners. It's additive, not a replacement — both write to the same
+   Supabase table via the same idempotent upsert, so having both enabled
+   just means the table gets refreshed by whichever one runs first each
+   cycle. To enable it:
+   - Push this repo to GitHub (already done if you're reading this from a
+     clone) and make sure Actions are enabled for it (Settings → Actions).
+   - Add these as **repository secrets** (Settings → Secrets and variables
+     → Actions → New repository secret) — same values as your local `.env`:
+     `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `ADZUNA_APP_ID`,
+     `ADZUNA_APP_KEY`, `JOOBLE_API_KEY`, and optionally `SCRAPER_PROXY` /
+     `CLOAKBROWSER_LICENSE_KEY`.
+   - That's it — the workflow's `cron: "0 */12 * * *"` trigger picks it up
+     automatically. Trigger a one-off test run from the Actions tab via
+     "Run workflow" (the `workflow_dispatch` trigger) before waiting 12
+     hours to see if it works.
+   - Caveat: GitHub Actions runners use well-known datacenter IP ranges, so
+     the Indeed/Glassdoor/Naukri/ZipRecruiter sources are more likely to get
+     blocked there than from a home connection unless you set
+     `SCRAPER_PROXY` to a residential proxy. The 9 plain API sources and the
+     Greenhouse/Lever/Ashby boards are unaffected either way.
 
 ## What each run does
 

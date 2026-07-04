@@ -1,0 +1,53 @@
+name: Job Scraper
+
+# Runs every 12 hours on GitHub's own cloud runners - independent of any
+# local machine being on. Complements (does not replace) the local Windows
+# Scheduled Task in job-scraper/install_task.ps1; both write to the same
+# Supabase table via idempotent upserts, so overlapping runs are harmless.
+on:
+  schedule:
+    - cron: "0 */12 * * *"
+  workflow_dispatch: {}
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    defaults:
+      run:
+        working-directory: job-scraper
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          python -m playwright install --with-deps chromium
+          python -m cloakbrowser install
+
+      - name: Run scraper
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          ADZUNA_APP_ID: ${{ secrets.ADZUNA_APP_ID }}
+          ADZUNA_APP_KEY: ${{ secrets.ADZUNA_APP_KEY }}
+          JOOBLE_API_KEY: ${{ secrets.JOOBLE_API_KEY }}
+          # Optional - only needed if you've bought a residential proxy for
+          # the Indeed/Glassdoor/Naukri/ZipRecruiter sources. GitHub Actions
+          # runner IPs are well-known datacenter ranges and get blocked by
+          # those sites more often than a home/residential connection would.
+          SCRAPER_PROXY: ${{ secrets.SCRAPER_PROXY }}
+          CLOAKBROWSER_LICENSE_KEY: ${{ secrets.CLOAKBROWSER_LICENSE_KEY }}
+        run: python run.py
+
+      - name: Upload run log on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: scraper-log
+          path: job-scraper/logs/
+          if-no-files-found: ignore
