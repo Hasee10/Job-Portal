@@ -7,6 +7,13 @@
       "runtimeArgs": ["next", "dev", "-p", "3000"],
       "cwd": "bordful-main",
       "port": 3000
+    },
+    {
+      "name": "prod",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["next", "start", "-p", "3052"],
+      "cwd": "bordful-main",
+      "port": 3052
     }
   ]
 }

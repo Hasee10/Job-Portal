@@ -5,6 +5,7 @@
 # runtime state (sweeper's two-strike confirmation tracking)
 sweeper_state.json
 logs/
+jobs_export.xlsx
 
 __pycache__/
 *.pyc

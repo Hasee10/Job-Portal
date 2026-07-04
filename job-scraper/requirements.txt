@@ -5,3 +5,4 @@ beautifulsoup4>=4.12
 lxml>=5.0
 cloakbrowser>=0.1
 playwright>=1.40
+openpyxl>=3.1

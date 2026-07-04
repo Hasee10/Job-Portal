@@ -2,8 +2,14 @@ import { Feed } from 'feed';
 import config from '@/config';
 import { DEFAULT_DESCRIPTION_LENGTH } from '@/lib/constants/defaults';
 import { formatSalary } from '@/lib/db/airtable';
-import { getJobs } from '@/lib/db/airtable.server';
+import { getJob, getJobs } from '@/lib/db/airtable.server';
 import { generateJobSlug } from '@/lib/utils/slugify';
+
+// Feeds are meant to be a "what's new" digest, not a full database dump -
+// with the jobs table now in the thousands, an uncapped feed would embed
+// every active posting's full description in one response. 50 matches
+// common practice for job-board RSS feeds.
+const FEED_MAX_ITEMS = 50;
 
 export type FeedConfig = {
   enabled: boolean;
@@ -152,11 +158,22 @@ export async function processJobsForFeed(
   baseUrl: string,
   descriptionLength: number
 ): Promise<void> {
-  const jobs = await getJobs();
+  // getJobs() returns lite rows (no description - see JOBS_LIST_COLUMNS in
+  // airtable.server.ts) already sorted newest-first, which is exactly the
+  // ordering a feed wants. Take the most recent FEED_MAX_ITEMS active jobs,
+  // then fetch each one's full row individually for the real description -
+  // cheap at 50 jobs, unlike doing it for the entire table.
+  const liteJobs = await getJobs();
+  const recentActive = liteJobs
+    .filter((job) => job.status === 'active')
+    .slice(0, FEED_MAX_ITEMS);
 
-  for (const job of jobs) {
-    // Only include active jobs
-    if (job.status === 'active') {
+  const fullJobs = await Promise.all(
+    recentActive.map((job) => getJob(job.id))
+  );
+
+  for (const job of fullJobs) {
+    if (job && job.status === 'active') {
       addJobToFeed(feed, job, baseUrl, descriptionLength);
     }
   }

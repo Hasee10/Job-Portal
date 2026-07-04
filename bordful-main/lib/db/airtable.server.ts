@@ -44,32 +44,97 @@ const getSupabaseConfig = cache((): SupabaseConfig | null => {
   return { url: url.replace(/\/$/, ''), key };
 });
 
-// Low-level PostgREST GET against the jobs table. Returns parsed rows, or
-// throws so the callers below can fall back to their empty/null defaults —
-// exactly like the Airtable try/catch did.
+// Low-level PostgREST GET against the jobs table. Returns parsed rows plus
+// the parsed Content-Range header (when Supabase sends one, via
+// `Prefer: count=exact`), or throws so the callers below can fall back to
+// their empty/null defaults - exactly like the Airtable try/catch did.
 async function queryJobs(
   config: SupabaseConfig,
-  queryString: string
-): Promise<Record<string, unknown>[]> {
-  const response = await fetch(
-    `${config.url}/rest/v1/jobs?${queryString}`,
-    {
-      headers: {
-        apikey: config.key,
-        Authorization: `Bearer ${config.key}`,
-        Accept: 'application/json',
-      },
-      // Job data is refreshed by n8n on a schedule; don't cache at the fetch
-      // layer (React's cache() already dedupes within a request).
-      cache: 'no-store',
-    }
-  );
+  queryString: string,
+  options?: { range?: { offset: number; limit: number }; countExact?: boolean }
+): Promise<{ rows: Record<string, unknown>[]; total: number | null }> {
+  const headers: Record<string, string> = {
+    apikey: config.key,
+    Authorization: `Bearer ${config.key}`,
+    Accept: 'application/json',
+  };
+  if (options?.range) {
+    headers['Range-Unit'] = 'items';
+    headers.Range = `${options.range.offset}-${options.range.offset + options.range.limit - 1}`;
+  }
+  if (options?.countExact) {
+    headers.Prefer = 'count=exact';
+  }
+
+  const response = await fetch(`${config.url}/rest/v1/jobs?${queryString}`, {
+    headers,
+    // Job data is refreshed by the scraper on a schedule; don't cache at the
+    // fetch layer (React's cache() already dedupes within a request).
+    cache: 'no-store',
+  });
 
   if (!response.ok) {
     throw new Error(`Supabase request failed: ${response.status}`);
   }
 
-  return (await response.json()) as Record<string, unknown>[];
+  const contentRange = response.headers.get('content-range');
+  const total = contentRange?.includes('/')
+    ? Number(contentRange.split('/')[1])
+    : null;
+
+  return {
+    rows: (await response.json()) as Record<string, unknown>[],
+    total: Number.isFinite(total) ? total : null,
+  };
+}
+
+// PostgREST (and the Cloudflare/Supabase edge in front of it) caps how much
+// a single response can carry - full job rows include large raw-HTML
+// description/benefits columns from scraped sources, so even a few hundred
+// rows can produce a multi-megabyte response and get the connection reset
+// mid-transfer (observed directly: "fetch failed" / "other side closed" /
+// bare 500s once a single page's response passed roughly 3-4MB - reproduced
+// with a 500-row page size once the table grew past ~4,000 rows; a 100-row
+// page size stayed reliable at every offset tested up to 5,300+ rows). Page
+// through in bounded chunks instead of asking for everything in one
+// unbounded `select=*` request, and fire the pages concurrently (bounded
+// batch size) instead of one at a time so this doesn't become a 50+ second
+// sequential waterfall as the table grows.
+const JOBS_PAGE_SIZE = 100;
+const JOBS_CONCURRENT_BATCH = 8;
+
+async function queryAllJobs(
+  config: SupabaseConfig,
+  queryString: string
+): Promise<Record<string, unknown>[]> {
+  const first = await queryJobs(config, queryString, {
+    range: { offset: 0, limit: JOBS_PAGE_SIZE },
+    countExact: true,
+  });
+
+  const rows = [...first.rows];
+  const total = first.total ?? rows.length;
+
+  const remainingOffsets: number[] = [];
+  for (let offset = JOBS_PAGE_SIZE; offset < total; offset += JOBS_PAGE_SIZE) {
+    remainingOffsets.push(offset);
+  }
+
+  for (let i = 0; i < remainingOffsets.length; i += JOBS_CONCURRENT_BATCH) {
+    const batch = remainingOffsets.slice(i, i + JOBS_CONCURRENT_BATCH);
+    const pages = await Promise.all(
+      batch.map((offset) =>
+        queryJobs(config, queryString, {
+          range: { offset, limit: JOBS_PAGE_SIZE },
+        })
+      )
+    );
+    for (const page of pages) {
+      rows.push(...page.rows);
+    }
+  }
+
+  return rows;
 }
 
 // Ensure career level is always returned as an array
@@ -293,7 +358,18 @@ function sanitizeApplyUrl(value: unknown): string {
 
 // Assemble a Supabase row into the Job shape. Kept in one place so getJobs and
 // getJob can't drift apart (the Airtable version duplicated this inline).
-function rowToJob(row: Record<string, unknown>): Job {
+//
+// `lite` skips the expensive text-normalization steps (normalizeMarkdown
+// runs a full remark/unified parse per call, benefits/application_requirements
+// do lighter but still non-trivial parsing). getJobs() uses lite=true because
+// listing pages, search, and slug lookups never render description/benefits/
+// application_requirements (confirmed against filter-jobs.ts and JobCard) -
+// running the full markdown pipeline over every one of several thousand rows
+// just to throw the result away was the dominant cost in a ~19s homepage
+// load. Callers that need the real parsed content for one specific job
+// (the job detail page) fetch it via getJob(id) instead.
+function rowToJob(row: Record<string, unknown>, options?: { lite?: boolean }): Job {
+  const lite = options?.lite ?? false;
   return {
     id: row.id as string,
     title: row.title as string,
@@ -308,11 +384,11 @@ function rowToJob(row: Record<string, unknown>): Job {
             unit: row.salary_unit as SalaryUnit,
           }
         : null,
-    description: normalizeMarkdown(row.description as string),
-    benefits: normalizeBenefits(row.benefits),
-    application_requirements: normalizeApplicationRequirements(
-      row.application_requirements
-    ),
+    description: lite ? '' : normalizeMarkdown(row.description as string),
+    benefits: lite ? null : normalizeBenefits(row.benefits),
+    application_requirements: lite
+      ? null
+      : normalizeApplicationRequirements(row.application_requirements),
     apply_url: sanitizeApplyUrl(row.apply_url),
     // Supabase stores this as posted_at (timestamptz); the Job type calls it
     // posted_date. PostgREST returns it as an ISO string.
@@ -345,6 +421,38 @@ function rowToJob(row: Record<string, unknown>): Job {
   };
 }
 
+// Columns listing pages actually use (confirmed against JobCard.tsx,
+// filter-jobs.ts, and job-filters.tsx) - deliberately excludes description,
+// benefits, application_requirements, skills, qualifications,
+// education_requirements, experience_requirements, responsibilities,
+// industry, and occupational_category, which are large free-text fields
+// only ever rendered on the single-job detail page (via getJob(id)).
+const JOBS_LIST_COLUMNS = [
+  'id',
+  'title',
+  'company',
+  'type',
+  'salary_min',
+  'salary_max',
+  'salary_currency',
+  'salary_unit',
+  'apply_url',
+  'posted_at',
+  'valid_through',
+  'job_identifier',
+  'source',
+  'is_active',
+  'career_level',
+  'visa_sponsorship',
+  'featured',
+  'remote_type',
+  'remote_region',
+  'timezone_requirements',
+  'workplace_city',
+  'workplace_country',
+  'languages',
+].join(',');
+
 export const getJobs = cache(async (): Promise<Job[]> => {
   const config = getSupabaseConfig();
   if (!config) {
@@ -353,13 +461,18 @@ export const getJobs = cache(async (): Promise<Job[]> => {
 
   try {
     // status = 'active' -> is_active = true; posted_date desc -> posted_at desc.
-    // No limit: return every matching row, matching Airtable's .all().
-    const rows = await queryJobs(
+    // Paginated (see queryAllJobs) - still returns every matching row,
+    // matching Airtable's .all(), just not in a single oversized response.
+    // Projects a reduced column set (see JOBS_LIST_COLUMNS) since this feeds
+    // listing/search/slug-lookup, none of which render the heavy text
+    // fields - keeps both the per-page response size and the per-row
+    // normalization cost down as the table grows.
+    const rows = await queryAllJobs(
       config,
-      'select=*&is_active=eq.true&order=posted_at.desc.nullslast'
+      `select=${JOBS_LIST_COLUMNS}&is_active=eq.true&order=posted_at.desc.nullslast`
     );
 
-    return rows.map(rowToJob);
+    return rows.map((row) => rowToJob(row, { lite: true }));
   } catch {
     return [];
   }
@@ -372,7 +485,7 @@ export const getJob = cache(async (id: string): Promise<Job | null> => {
   }
 
   try {
-    const rows = await queryJobs(
+    const { rows } = await queryJobs(
       config,
       `select=*&id=eq.${encodeURIComponent(id)}&limit=1`
     );

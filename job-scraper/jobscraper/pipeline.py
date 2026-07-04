@@ -1,6 +1,7 @@
 import logging
 
 from jobscraper import config, db, scoring, sweeper
+from jobscraper.sanitize import clean_description
 from jobscraper.sources import API_SOURCES
 from jobscraper.sources.base import safe_fetch
 from jobscraper.sources.browser import BROWSER_SOURCES
@@ -39,6 +40,9 @@ def run(include_browser_sources: bool = True, run_sweeper: bool = True) -> None:
         all_jobs.extend(collect_browser_sources())
 
     logger.info("collected %d raw jobs before processing", len(all_jobs))
+
+    for job in all_jobs:
+        job["description"] = clean_description(job.get("description"))
 
     processed = scoring.process(all_jobs)
     written = db.upsert_jobs(processed)

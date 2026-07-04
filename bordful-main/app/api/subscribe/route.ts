@@ -109,13 +109,13 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    const errorMessage =
-      error instanceof Error ? error.message : 'Unknown error';
+    // Log the real error server-side only - returning it to the client risks
+    // leaking internal details (email provider error text, stack traces,
+    // occasionally provider API error bodies that include account info).
+    console.error('[api/subscribe]', error);
 
     return NextResponse.json(
-      {
-        error: errorMessage,
-      },
+      { error: 'Something went wrong. Please try again later.' },
       { status: 500 }
     );
   }

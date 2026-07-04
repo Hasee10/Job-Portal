@@ -13,7 +13,7 @@ import { SimilarJobs } from '@/components/ui/similar-jobs';
 import config from '@/config';
 import { PARENTHESIS_CONTENT_REGEX } from '@/lib/constants/defaults';
 import { formatSalary } from '@/lib/db/airtable';
-import { getJobs } from '@/lib/db/airtable.server';
+import { getJob, getJobs } from '@/lib/db/airtable.server';
 import { resolveColor } from '@/lib/utils/colors';
 import { formatDate } from '@/lib/utils/formatDate';
 import { generateMetadata as createMetadata } from '@/lib/utils/metadata';
@@ -42,14 +42,17 @@ export async function generateMetadata({
 }: {
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
-  // Get all jobs first and resolve params
+  // getJobs() returns lite rows (no description/benefits) - fine for
+  // locating the slug match, but metadata needs the real description below.
   const [allJobs, { slug }] = await Promise.all([getJobs(), params]);
 
   // Find the job with matching slug
-  const job = allJobs.find((j) => {
+  const liteJob = allJobs.find((j) => {
     const jobSlug = generateJobSlug(j.title, j.company);
     return jobSlug === slug;
   });
+
+  const job = liteJob ? await getJob(liteJob.id) : null;
 
   if (!job) {
     return {
@@ -186,7 +189,16 @@ export default async function JobPostPage({
   params: Promise<{ slug: string }>;
 }) {
   const [jobs, { slug }] = await Promise.all([getJobs(), params]);
-  const job = jobs.find((j) => generateJobSlug(j.title, j.company) === slug);
+  const liteJob = jobs.find((j) => generateJobSlug(j.title, j.company) === slug);
+
+  if (!liteJob) {
+    notFound();
+  }
+
+  // getJobs() above returns lite rows (no description/benefits/etc, see
+  // JOBS_LIST_COLUMNS in airtable.server.ts) - only good enough to locate
+  // the slug match. Fetch the real row for everything this page renders.
+  const job = await getJob(liteJob.id);
 
   if (!job) {
     notFound();

@@ -338,7 +338,7 @@ export function Nav() {
     return menuItems.map((item) => {
       // Handle dropdown menu items
       if (item.dropdown && item.items) {
-        const isDropdownOpen = openDropdowns[item.label];
+        const isDropdownOpen = openDropdowns[item.label] ?? false;
 
         if (isMobile) {
           return (
