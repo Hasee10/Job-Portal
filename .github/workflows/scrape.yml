@@ -83,6 +83,12 @@ jobs:
           # from the admin credential in job-scraper/.env used locally for
           # retention_cleanup.py, which needs delete access.
           COCKROACH_DATABASE_URL: ${{ secrets.COCKROACH_DATABASE_URL_CI }}
+          # Both are Cloudflare-gated and GitHub's datacenter runner IPs get
+          # blocked outright (confirmed live 2026-07: 0 job tiles on every
+          # query) - a residential IP (e.g. the local Windows Scheduled Task)
+          # gets through fine, so these two only run there for now instead of
+          # here. See jobscraper/config.py's SKIP_SOURCES docstring.
+          SKIP_SOURCES: "upwork,rozee"
           ADZUNA_APP_ID: ${{ secrets.ADZUNA_APP_ID }}
           ADZUNA_APP_KEY: ${{ secrets.ADZUNA_APP_KEY }}
           JOOBLE_API_KEY: ${{ secrets.JOOBLE_API_KEY }}

@@ -35,6 +35,9 @@ def collect_browser_sources(muse_jobs: list[dict]) -> list[dict]:
         with browser_session() as browser:
             for module in BROWSER_SOURCES:
                 name = module.__name__.rsplit(".", 1)[-1]
+                if name in config.SKIP_SOURCES:
+                    logger.info("%s: skipped (in SKIP_SOURCES)", name)
+                    continue
                 jobs.extend(safe_fetch(name, lambda m=module: m.fetch(browser)))
 
             try:

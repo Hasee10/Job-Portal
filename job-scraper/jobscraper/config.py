@@ -33,6 +33,16 @@ ATS_EXTRA_BOARDS = [
 CLOAKBROWSER_LICENSE_KEY = os.environ.get("CLOAKBROWSER_LICENSE_KEY", "") or None
 SCRAPER_PROXY = os.environ.get("SCRAPER_PROXY", "") or None
 
+# Comma-separated source module names to skip entirely for this run. Set to
+# "upwork,rozee" in the GitHub Actions workflow only - both are Cloudflare-
+# gated and GitHub's datacenter runner IPs get blocked outright (confirmed
+# live 2026-07: 0 job tiles on every query, even the sweeper's plain HTTP
+# liveness check got 403'd), unlike a home/residential IP where both work
+# fine. Left unset locally so they still run via the Windows Scheduled Task.
+SKIP_SOURCES = {
+    name.strip() for name in os.environ.get("SKIP_SOURCES", "").split(",") if name.strip()
+}
+
 LOG_LEVEL = os.environ.get("LOG_LEVEL", "INFO")
 
 # How long a job stays in the table after being marked discontinued before
