@@ -1,15 +1,20 @@
+import json
 import logging
+from datetime import datetime, timezone
+from pathlib import Path
 
 from jobscraper import config, db, scoring, sweeper
 from jobscraper.classify import classify_career_level, classify_employment_type
 from jobscraper.sanitize import clean_description
 from jobscraper.sources import API_SOURCES
-from jobscraper.sources.base import safe_fetch
+from jobscraper.sources.base import get_run_results, record_skipped, reset_run_results, safe_fetch
 from jobscraper.sources.browser import BROWSER_SOURCES
 from jobscraper.sources.browser.session import browser_session
 from jobscraper.sources.browser.themuse_resolver import resolve_themuse_apply_urls
 
 logger = logging.getLogger(__name__)
+
+SUMMARY_FILE = Path(__file__).parent.parent / "run_summary.json"
 
 # Sources whose apply_url can't be liveness-checked with sweeper.py's plain
 # HTTP GET (Cloudflare-gated - a scripted request gets challenged regardless
@@ -37,6 +42,7 @@ def collect_browser_sources(muse_jobs: list[dict]) -> list[dict]:
                 name = module.__name__.rsplit(".", 1)[-1]
                 if name in config.SKIP_SOURCES:
                     logger.info("%s: skipped (in SKIP_SOURCES)", name)
+                    record_skipped(name, "SKIP_SOURCES")
                     continue
                 jobs.extend(safe_fetch(name, lambda m=module: m.fetch(browser)))
 
@@ -52,8 +58,46 @@ def collect_browser_sources(muse_jobs: list[dict]) -> list[dict]:
     return jobs
 
 
+def _write_summary(
+    upserted: int,
+    deactivated_by_source: dict[str, int],
+    sweeper_marked: int | None,
+) -> None:
+    """Writes a compact JSON summary of the run - read back by the GitHub
+    Actions workflow to build a $GITHUB_STEP_SUMMARY block, so a bad run
+    (a source silently returning 0 jobs, or erroring) is visible on the run
+    page in seconds instead of requiring a manual scroll through thousands
+    of raw log lines (see the 2026-07 Upwork/Rozee incident this replaces).
+    """
+    results = get_run_results()
+    zero_or_errored = [
+        r for r in results if not r.get("skipped") and (r.get("error") or r.get("count") == 0)
+    ]
+    summary = {
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "sources": results,
+        "upserted": upserted,
+        "deactivated_by_source": deactivated_by_source,
+        "sweeper_marked": sweeper_marked,
+        "sources_needing_attention": zero_or_errored,
+    }
+    SUMMARY_FILE.write_text(json.dumps(summary, indent=2), encoding="utf-8")
+
+    logger.info("=== RUN SUMMARY ===")
+    for r in results:
+        if r.get("skipped"):
+            logger.info("  %-15s SKIPPED (%s)", r["source"], r["skipped"])
+        elif r.get("error"):
+            logger.info("  %-15s ERROR: %s", r["source"], r["error"])
+        else:
+            flag = " <-- 0 jobs, check this" if r["count"] == 0 else ""
+            logger.info("  %-15s %d jobs%s", r["source"], r["count"], flag)
+    logger.info("upserted=%d sweeper_marked=%s deactivated=%s", upserted, sweeper_marked, deactivated_by_source)
+
+
 def run(include_browser_sources: bool = True, run_sweeper: bool = True) -> None:
     config.require_database()
+    reset_run_results()
 
     all_jobs = collect_api_sources()
     presence_reconciled_jobs: dict[str, list[dict]] = {s: [] for s in PRESENCE_RECONCILED_SOURCES}
@@ -93,17 +137,19 @@ def run(include_browser_sources: bool = True, run_sweeper: bool = True) -> None:
     written = db.upsert_jobs(processed)
     logger.info("upserted %d jobs into Supabase", written)
 
+    deactivated_by_source: dict[str, int] = {}
     for source, jobs in presence_reconciled_jobs.items():
         if not jobs:
             continue
         removed = db.mark_missing_from_source(
             source, [job["apply_url"] for job in jobs if job.get("apply_url")]
         )
+        deactivated_by_source[source] = removed
         logger.info(
             "%s: deactivated %d jobs no longer present in this run's search results",
             source,
             removed,
         )
 
-    if run_sweeper:
-        sweeper.sweep()
+    sweeper_marked = sweeper.sweep() if run_sweeper else None
+    _write_summary(written, deactivated_by_source, sweeper_marked)

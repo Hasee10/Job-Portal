@@ -7,3 +7,7 @@ cockroach_DB_password.txt
 # n8n workflow exports contain hardcoded live API keys (Supabase service_role,
 # Adzuna, Jooble). Keep them local only.
 n8n-workflows/workflows/*.json
+
+# Per-run scraper output, regenerated every run - not meant to be tracked.
+job-scraper/run_summary.json
+job-scraper/logs/
