@@ -123,6 +123,49 @@ def fetch_active_jobs() -> list[dict]:
         conn.close()
 
 
+def mark_missing_from_source(source: str, seen_apply_urls: Iterable[str]) -> int:
+    """Deactivate jobs from `source` that are currently active in the DB but
+    weren't present in this run's fetch.
+
+    The sweeper's plain-HTTP liveness check (sweeper.py) doesn't work for
+    Cloudflare-gated sources like Upwork - a scripted GET gets challenged
+    regardless of whether the posting is actually still open, so either
+    every job gets wrongly deactivated or (once enough checks come back
+    ambiguous) the sweeper's source-block detection skips the source
+    entirely, meaning awarded/closed contracts would never get cleaned up.
+    A job disappearing from a fresh search fetch is that platform's own
+    real "no longer open" signal instead.
+
+    Refuses to act if `seen_apply_urls` is empty - an empty result is far
+    more likely a transient fetch failure (browser crash, selector
+    mismatch) than every single job genuinely vanishing at once, and acting
+    on it would wrongly wipe out an entire source.
+    """
+    urls = list(seen_apply_urls)
+    if not urls:
+        logger.warning(
+            "mark_missing_from_source: %s fetch returned 0 jobs this run - "
+            "skipping cleanup to avoid mass-deactivating on what's more "
+            "likely a transient failure",
+            source,
+        )
+        return 0
+
+    now = datetime.now(timezone.utc)
+    conn = get_connection()
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                "update public.jobs set is_active = false, discontinued_at = %s "
+                "where source = %s and is_active = true and not (apply_url = any(%s))",
+                (now, source, urls),
+            )
+            conn.commit()
+            return cur.rowcount
+    finally:
+        conn.close()
+
+
 def mark_discontinued(job_ids: Iterable[str]) -> int:
     """Mark jobs inactive (acquired/expired/removed by the source) in one
     batched UPDATE, rather than one request per job like the old PATCH-per-id

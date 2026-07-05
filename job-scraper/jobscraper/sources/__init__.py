@@ -2,9 +2,12 @@ from jobscraper.sources import (
     adzuna,
     arbeitnow,
     ats_boards,
+    brightspyre,
     himalayas,
     jobicy,
     jooble,
+    merojob,
+    mustakbil,
     remoteok,
     remotive,
     themuse,
@@ -22,6 +25,12 @@ from jobscraper.sources import (
 # fetch() function are ready to register the moment that's true.
 
 # API-based sources - no browser needed, all plain HTTP/RSS.
+#
+# brightspyre (Pakistan), mustakbil (Pakistan), and merojob (Nepal) added
+# 2026-07 as part of the South Asia expansion - all three are plain
+# server-rendered HTML or a genuine public REST API, no CloakBrowser needed
+# (see each module's docstring). Rozee.pk (Pakistan) and Upwork are
+# CloakBrowser-based instead (Cloudflare-gated) - see sources/browser/.
 API_SOURCES = [
     remotive,
     arbeitnow,
@@ -33,6 +42,9 @@ API_SOURCES = [
     himalayas,
     jobicy,
     ats_boards,
+    brightspyre,
+    mustakbil,
+    merojob,
 ]
 
 __all__ = ["API_SOURCES"]

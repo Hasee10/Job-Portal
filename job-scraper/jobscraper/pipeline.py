@@ -11,6 +11,12 @@ from jobscraper.sources.browser.themuse_resolver import resolve_themuse_apply_ur
 
 logger = logging.getLogger(__name__)
 
+# Sources whose apply_url can't be liveness-checked with sweeper.py's plain
+# HTTP GET (Cloudflare-gated - a scripted request gets challenged regardless
+# of whether the posting is still open) - see db.mark_missing_from_source
+# for how these get their stale/closed postings cleaned up instead.
+PRESENCE_RECONCILED_SOURCES = ("upwork", "rozee")
+
 
 def collect_api_sources() -> list[dict]:
     jobs: list[dict] = []
@@ -47,9 +53,15 @@ def run(include_browser_sources: bool = True, run_sweeper: bool = True) -> None:
     config.require_database()
 
     all_jobs = collect_api_sources()
+    presence_reconciled_jobs: dict[str, list[dict]] = {s: [] for s in PRESENCE_RECONCILED_SOURCES}
     if include_browser_sources:
         muse_jobs = [job for job in all_jobs if job.get("source") == "themuse"]
-        all_jobs.extend(collect_browser_sources(muse_jobs))
+        browser_jobs = collect_browser_sources(muse_jobs)
+        for source in PRESENCE_RECONCILED_SOURCES:
+            presence_reconciled_jobs[source] = [
+                job for job in browser_jobs if job.get("source") == source
+            ]
+        all_jobs.extend(browser_jobs)
 
     logger.info("collected %d raw jobs before processing", len(all_jobs))
 
@@ -77,6 +89,18 @@ def run(include_browser_sources: bool = True, run_sweeper: bool = True) -> None:
     processed = scoring.process(all_jobs)
     written = db.upsert_jobs(processed)
     logger.info("upserted %d jobs into Supabase", written)
+
+    for source, jobs in presence_reconciled_jobs.items():
+        if not jobs:
+            continue
+        removed = db.mark_missing_from_source(
+            source, [job["apply_url"] for job in jobs if job.get("apply_url")]
+        )
+        logger.info(
+            "%s: deactivated %d jobs no longer present in this run's search results",
+            source,
+            removed,
+        )
 
     if run_sweeper:
         sweeper.sweep()
