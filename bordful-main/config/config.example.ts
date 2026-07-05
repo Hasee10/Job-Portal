@@ -1070,7 +1070,9 @@ export const config = {
   // Post Job Banner Configuration
   postJobBanner: {
     // Enable or disable the post job banner
-    enabled: true,
+    // Disabled 2026-07: cta.link below pointed to a placeholder Stripe
+    // Payment Link, not a real checkout - re-enable once a real one exists.
+    enabled: false,
 
     // Banner content
     title: 'Hiring? Post Your Job Ad Here',
