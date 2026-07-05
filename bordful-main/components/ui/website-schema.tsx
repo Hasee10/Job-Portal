@@ -15,7 +15,9 @@ export function WebsiteSchema() {
 
   // Get base values from existing config
   const baseUrl =
-    config.url || process.env.NEXT_PUBLIC_APP_URL || 'https://bordful.com';
+    config.url ||
+    process.env.NEXT_PUBLIC_APP_URL ||
+    'https://job-portal-ten-pi.vercel.app';
   const siteName = config.nav.title;
   const siteDescription = config.description;
 

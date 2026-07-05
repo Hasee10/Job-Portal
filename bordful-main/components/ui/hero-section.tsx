@@ -123,17 +123,19 @@ export function HeroSection({
         <div className="flex flex-col items-center gap-4 md:flex-row md:gap-8 lg:gap-12">
           <div className="w-full space-y-3 px-4 sm:space-y-4 sm:px-0 md:w-1/2">
             <div className="space-y-2 sm:space-y-3">
-              <Badge
-                className="mb-1"
-                style={{
-                  backgroundColor: heroBadgeBgColor || undefined,
-                  color: heroBadgeTextColor || undefined,
-                  borderColor: heroBadgeBorderColor || undefined,
-                }}
-                variant={heroBadgeVariant}
-              >
-                {badge}
-              </Badge>
+              {badge && (
+                <Badge
+                  className="mb-1"
+                  style={{
+                    backgroundColor: heroBadgeBgColor || undefined,
+                    color: heroBadgeTextColor || undefined,
+                    borderColor: heroBadgeBorderColor || undefined,
+                  }}
+                  variant={heroBadgeVariant}
+                >
+                  {badge}
+                </Badge>
+              )}
               <h1
                 className={cn(
                   'font-bold text-2xl tracking-tight sm:text-3xl md:text-4xl'

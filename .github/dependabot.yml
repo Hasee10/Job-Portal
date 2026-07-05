@@ -1,0 +1,24 @@
+version: 2
+updates:
+  # Portal (Next.js) dependencies
+  - package-ecosystem: "npm"
+    directory: "/bordful-main"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+
+  # Scraper (Python) dependencies - pinned to exact versions (2026-07), so
+  # Dependabot's PRs are the intended way to review and bump them deliberately
+  # instead of a floating range silently pulling in whatever's newest.
+  - package-ecosystem: "pip"
+    directory: "/job-scraper"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+
+  # Keep the workflow actions themselves (checkout, cache, setup-python, etc.)
+  # current - an out-of-date action is itself a supply-chain surface.
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"

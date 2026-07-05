@@ -260,8 +260,8 @@ export const config = {
       show: true,
 
       // Logo source path (direct path from public folder)
-      // Examples: "/bordful.svg", "/logo/my-logo.png", etc.
-      src: '/bordful-light.svg',
+      // Examples: "/joblo.svg", "/logo/my-logo.png", etc.
+      src: '/joblo-light.svg',
 
       // Logo dimensions
       width: 185, // IMPORTANT: Use a fixed pixel value, "auto" doesn't work reliably
@@ -318,7 +318,7 @@ export const config = {
         show: true,
 
         // Logo source path (direct path from public folder)
-        src: '/bordful-light.svg',
+        src: '/joblo-light.svg',
 
         // Logo dimensions
         width: 185, // IMPORTANT: Use a fixed pixel value
@@ -333,7 +333,7 @@ export const config = {
   },
 
   // Marketing & SEO
-  badge: 'Open Source Next.js Job Board Starter Kit',
+  badge: '',
   title: 'Discover and Apply to Your Dream Jobs Today',
   description:
     'Browse curated opportunities from leading companies. Updated daily with the latest positions.',
@@ -341,7 +341,7 @@ export const config = {
     process.env.NEXT_PUBLIC_APP_URL ||
     (process.env.NODE_ENV === 'development'
       ? 'http://localhost:3000'
-      : 'https://demo.bordful.com'),
+      : 'https://job-portal-ten-pi.vercel.app'),
 
   // Note: Schema.org structured data now uses values from other config sections
   // - Website name uses nav.title
@@ -687,7 +687,7 @@ export const config = {
           {
             question: 'How do I deploy my Joblo job board?',
             answer:
-              'Joblo can be deployed to various platforms, with Vercel being the recommended option.\n\n## Deployment Steps\n\n1. Fork the Bordful repository\n2. Create your `config.ts` file\n3. Connect your repository to Vercel\n4. Configure environment variables\n5. Deploy!\n\n### Environment Variables\n\n| Variable | Description | Required |\n|----------|-------------|----------|\n| `SUPABASE_URL` | Your Supabase project URL | Yes |\n| `SUPABASE_ANON_KEY` | Your Supabase anon/public API key | Yes |\n| `NEXT_PUBLIC_APP_URL` | Your site URL | Yes |\n\nFor more detailed instructions, please refer to the [deployment documentation](https://github.com/yourusername/bordful).',
+              'Joblo can be deployed to various platforms, with Vercel being the recommended option.\n\n## Deployment Steps\n\n1. Fork the repository\n2. Create your `config.ts` file\n3. Connect your repository to Vercel\n4. Configure environment variables\n5. Deploy!\n\n### Environment Variables\n\n| Variable | Description | Required |\n|----------|-------------|----------|\n| `SUPABASE_URL` | Your Supabase project URL | Yes |\n| `SUPABASE_ANON_KEY` | Your Supabase anon/public API key | Yes |\n| `NEXT_PUBLIC_APP_URL` | Your site URL | Yes |\n\nFor more detailed instructions, please refer to the deployment documentation.',
             isRichText: true,
           },
         ],
@@ -907,7 +907,7 @@ export const config = {
 
     // Built with section
     builtWith: {
-      show: true,
+      show: false,
       text: 'Built with',
       name: 'Bordful',
       link: 'https://bordful.com/',
@@ -1154,17 +1154,8 @@ export const config = {
           description:
             'Our support team is available to help you with any questions or issues you might have.',
           buttonText: 'Contact via Email',
-          buttonLink: 'mailto:hello@bordful.com',
+          buttonLink: 'mailto:hello@joblo.com',
           icon: 'Mail', // Lucide icon name
-        },
-        {
-          type: 'twitter',
-          title: 'Twitter/X Support',
-          description:
-            'Get quick responses and stay updated with our latest announcements on Twitter/X.',
-          buttonText: 'Follow on Twitter/X',
-          buttonLink: 'https://twitter.com/bordful',
-          icon: 'Twitter', // Lucide icon name
         },
         {
           type: 'faq',
@@ -1273,7 +1264,7 @@ export const config = {
       description:
         'Connect talented professionals with meaningful opportunities',
       // Logo URL for the schema
-      logo: '/bordful.svg',
+      logo: '/joblo.svg',
     },
   },
 
@@ -1374,7 +1365,7 @@ export const config = {
     buttonText: 'Report',
 
     // Email address to send reports to
-    email: 'support@bordful.com',
+    email: 'hello@joblo.com',
 
     // Subject line for the report email
     emailSubject: 'Job Report: [Job Title]',

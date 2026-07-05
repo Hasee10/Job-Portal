@@ -238,7 +238,9 @@ function parseEducationCredential(
 export function JobSchema({ job, slug }: JobSchemaProps) {
   // Format base URL for absolute links
   const baseUrl =
-    config.url || process.env.NEXT_PUBLIC_APP_URL || 'https://bordful.com';
+    config.url ||
+    process.env.NEXT_PUBLIC_APP_URL ||
+    'https://job-portal-ten-pi.vercel.app';
 
   // Use slug to create the job URL
   const jobUrl = `${baseUrl}/jobs/${slug}`;
