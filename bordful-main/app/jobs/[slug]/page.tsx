@@ -11,7 +11,10 @@ import { JobSchema } from '@/components/ui/job-schema';
 import { PostJobBanner } from '@/components/ui/post-job-banner';
 import { SimilarJobs } from '@/components/ui/similar-jobs';
 import config from '@/config';
-import { PARENTHESIS_CONTENT_REGEX } from '@/lib/constants/defaults';
+import {
+  PARENTHESIS_CONTENT_REGEX,
+  STATIC_JOB_PAGES_LIMIT,
+} from '@/lib/constants/defaults';
 import { formatSalary } from '@/lib/db/airtable';
 import { getJob, getJobs } from '@/lib/db/airtable.server';
 import { resolveColor } from '@/lib/utils/colors';
@@ -25,9 +28,12 @@ const CHECKBOX_MARKER_LENGTH = 4;
 // Regex constants for performance
 const FINAL_WORD_REGEX = /(\w)$/;
 
-// Generate static params for all active jobs
+// Pre-render only the most recent jobs at build time (see
+// STATIC_JOB_PAGES_LIMIT) - dynamicParams defaults to true, so every other
+// active job still renders correctly on first visit and gets cached via
+// this page's `revalidate` setting below.
 export async function generateStaticParams() {
-  const jobs = await getJobs();
+  const jobs = await getJobs({ limit: STATIC_JOB_PAGES_LIMIT });
   // getJobs already filters for active jobs, but we'll explicitly filter here for clarity
   return jobs
     .filter((job) => job.status === 'active')

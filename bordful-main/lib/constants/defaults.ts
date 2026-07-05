@@ -37,6 +37,17 @@ export const PER_PAGE_OPTIONS = [5, 10, 25, 50, 100] as const;
 // pages, which are server-rendered and don't ship raw job data to the client.
 export const HOMEPAGE_JOBS_LIMIT = 500;
 
+// generateStaticParams() on the job detail page used to pre-render every
+// active job at build time (unbounded, via getJobs() with no limit). With
+// several thousand active jobs, each requiring an individual DB round trip
+// during static generation, that made `next build` fail outright - many
+// pages exceeded Next.js's 60s per-page build timeout waiting on the
+// query. dynamicParams defaults to true, so slugs outside this list still
+// render correctly on first visit and get cached via the page's existing
+// `revalidate = 300` ISR setting - capping this only changes *when* a page
+// is generated (build time vs. first request), not whether it's reachable.
+export const STATIC_JOB_PAGES_LIMIT = 200;
+
 // ARIA label constants
 export const MIN_WIDTH_SELECT = 90;
 
