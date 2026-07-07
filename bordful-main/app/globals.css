@@ -8,6 +8,33 @@
     --font-geist-mono: "Geist Mono";
     --font-inter: "Inter";
     --font-ibm-plex-serif: "IBM Plex Serif";
+
+    /* shadcn/ui design tokens - these were referenced throughout
+       components/ui/*.tsx (bg-primary, text-accent-foreground, etc.) but
+       never actually defined anywhere, so Tailwind silently dropped every
+       one of those utility classes. Zinc-based neutral scale (matches the
+       zinc-* classes already used directly throughout the codebase) with
+       the brand teal from config.ui.primaryColor (#164e63) as --primary. */
+    --background: 0 0% 100%;
+    --foreground: 240 10% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
+    --primary: 196 64% 24%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 240 4.8% 95.9%;
+    --secondary-foreground: 240 5.9% 10%;
+    --muted: 240 4.8% 95.9%;
+    --muted-foreground: 240 3.8% 46.1%;
+    --accent: 196 64% 95%;
+    --accent-foreground: 196 64% 18%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
+    --ring: 196 64% 24%;
+    --radius: 0.5rem;
   }
 
   /* Font styling for IBM Plex Serif */
