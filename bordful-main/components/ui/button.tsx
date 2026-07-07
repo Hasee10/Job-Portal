@@ -19,7 +19,12 @@ const buttonVariants = cva(
           'bg-secondary text-secondary-foreground hover:bg-secondary/80 hover:shadow-sm',
         ghost: 'hover:bg-accent hover:text-accent-foreground',
         link: 'text-primary underline-offset-4 hover:underline',
-        primary: 'text-white hover:opacity-90 hover:shadow-sm',
+        // Real bg-primary fallback (was relying entirely on each call site
+        // passing an inline style={{backgroundColor: resolveColor(...)}}
+        // prop for its color - several call sites across the app never did,
+        // rendering as an invisible white-on-white button). An inline style
+        // still overrides this via normal CSS specificity where one's set.
+        primary: 'bg-primary text-white hover:opacity-90 hover:shadow-sm',
       },
       size: {
         xs: 'h-7 rounded-md px-2.5 text-xs',
