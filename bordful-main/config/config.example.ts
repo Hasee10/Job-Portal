@@ -136,14 +136,18 @@ export const config = {
     // Hero section gradient background
     // Takes precedence over heroBackgroundColor when enabled
     heroGradient: {
-      enabled: false, // Set to true to enable gradient background
+      // Branded gradient (matches ui.primaryColor #164e63) replaces the
+      // generic stock-photo swirl background - ties the hero to the site's
+      // actual identity instead of a random blue/black image with no
+      // connection to Joblo, and drops an external image dependency.
+      enabled: true, // Set to true to enable gradient background
       type: 'linear' as 'linear' | 'radial', // Type of gradient: "linear" or "radial"
-      direction: 'to top', // For linear gradients: "to right", "to bottom", "45deg", etc.
+      direction: '135deg', // For linear gradients: "to right", "to bottom", "45deg", etc.
       // For radial gradients: "circle", "ellipse at center", etc.
       colors: [
-        '#005450', // Start color
-        '#007a73', // Optional middle color(s)
-        '#00a59c', // End color
+        '#0f3a4d', // Start color (deep teal)
+        '#164e63', // Middle color (brand primary)
+        '#1e6a87', // End color (lighter teal)
       ],
       // Optional stops for precise control (0-100%)
       // If not provided, colors will be evenly distributed
@@ -152,16 +156,19 @@ export const config = {
 
     // Hero section background image
     // Takes precedence over both gradient and solid background when enabled
+    // Free-to-use (no attribution required), verified live 2026-07: moody
+    // dimmed office photo from Unsplash - paired with a brand-teal overlay
+    // below so it reads as intentional/branded rather than generic stock.
     heroBackgroundImage: {
       enabled: true, // Set to true to enable background image
-      src: '/hero-background.jpg', // Path to image from public directory
+      src: 'https://images.unsplash.com/photo-1565164370954-8eac883fb7c8?w=1920&q=80&auto=format&fit=crop',
       position: 'center', // CSS background-position value
       size: 'cover', // CSS background-size value: "cover", "contain", "100% auto", etc.
       // Optional overlay for better text readability
       overlay: {
-        enabled: false, // Set to true to enable a color overlay
-        color: 'rgba(0, 84, 80, 0.7)', // Semi-transparent color (RGB or RGBA)
-        opacity: 0.7, // Opacity value from 0 to 1 (alternative to using rgba)
+        enabled: true, // Set to true to enable a color overlay
+        color: 'rgba(22, 78, 99, 0.75)', // Brand teal (#164e63) tint
+        opacity: 0.75, // Opacity value from 0 to 1 (alternative to using rgba)
       },
     },
 
@@ -206,10 +213,12 @@ export const config = {
     primaryColor: '#164e63', // Example: amber color
 
     // Optional: Configure an image for the right side of the hero section
+    // Free-to-use (no attribution required), verified live 2026-07: Photo by
+    // Brooke Cagle on Unsplash (images.unsplash.com/photo-1572021335469-...)
     heroImage: {
       enabled: true, // Set to false to disable the image
-      src: '/office.jpg', // Path to the image (place in /public folder)
-      alt: 'Hero section illustration', // Alt text for accessibility
+      src: 'https://images.unsplash.com/photo-1572021335469-31706a17aaef?w=1000&q=80&auto=format&fit=crop',
+      alt: 'Team of coworkers smiling and collaborating around a laptop',
     },
   },
 
