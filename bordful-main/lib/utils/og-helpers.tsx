@@ -272,6 +272,13 @@ export async function createOGImageResponse(
       width: SHARED_STYLES.DIMENSIONS.WIDTH,
       height: SHARED_STYLES.DIMENSIONS.HEIGHT,
       fonts: imageResponseFonts.length > 0 ? imageResponseFonts : undefined,
+      // Site-wide OG image is effectively static - let the CDN serve repeat
+      // hits instead of re-rendering per request (same rationale as the
+      // per-job OG route in og-job-helpers.tsx).
+      headers: {
+        'Cache-Control':
+          'public, immutable, no-transform, max-age=86400, stale-while-revalidate=604800',
+      },
     }
   );
 }

@@ -1037,7 +1037,7 @@ export const config = {
           'Company profile',
         ],
         cta: {
-          label: 'Choose Basic',
+          label: 'Choose Pro',
           link: 'https://stripe.com',
           variant: 'outline', // Using button variants
         },

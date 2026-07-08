@@ -244,6 +244,16 @@ export async function createJobOGImageResponse(
       width: SHARED_STYLES.DIMENSIONS.WIDTH,
       height: SHARED_STYLES.DIMENSIONS.HEIGHT,
       fonts: imageResponseFonts.length > 0 ? imageResponseFonts : undefined,
+      // Each render does a DB read + Google Font fetch + Satori image render
+      // on the nodejs runtime - expensive and, uncached, a real cost/DoS
+      // amplification surface (a crawler or attacker hitting many job slugs
+      // forces repeated full renders). OG images for a given job are
+      // effectively static, so let the CDN serve repeat hits: cache for a
+      // day, allow a week of stale-while-revalidate.
+      headers: {
+        'Cache-Control':
+          'public, immutable, no-transform, max-age=86400, stale-while-revalidate=604800',
+      },
     }
   );
 }
