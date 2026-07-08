@@ -776,8 +776,8 @@ export const config = {
     postJob: {
       show: true, // Whether to show the Post Job button
       label: 'Post a Job', // Button text
-      link: 'https://stripe.com', // Button link
-      external: true, // Indicates the link is external (opens in a new tab)
+      link: '/pricing', // Send to the pricing page (was a dead stripe.com link)
+      external: false, // Internal route
       variant: 'primary' as
         | 'default'
         | 'primary'
@@ -891,13 +891,13 @@ export const config = {
     // Post Job section
     postJob: {
       show: true,
-      title: 'Post a Job for 30 Days for Free',
+      title: 'Hiring? Get Seen Above the Noise',
       description:
-        'Reach our community of talented professionals. Get quality applications fast.',
+        'Feature your role at the top of results, above every aggregated listing.',
       button: {
-        label: 'Post a Job',
-        link: 'https://stripe.com',
-        external: true, // Indicates the footer link should open externally
+        label: 'View Plans',
+        link: '/pricing',
+        external: false, // Internal route (was a dead stripe.com link)
       },
       learnMoreButton: {
         show: true,
@@ -963,8 +963,9 @@ export const config = {
     badge: 'Pricing',
 
     // Page title and description
-    title: 'Simple, Transparent Pricing',
-    description: "Choose the plan that's right for your job board needs.",
+    title: 'Get Your Role Seen',
+    description:
+      'Joblo aggregates thousands of jobs. Featuring yours puts it at the top, above the noise.',
 
     // Hero image configuration (overrides global setting)
     heroImage: {
@@ -975,7 +976,7 @@ export const config = {
 
     // SEO keywords
     keywords:
-      'job board pricing, post job, job listing plans, recruitment pricing',
+      'featured job posting, promote job listing, job board pricing, recruitment advertising',
 
     // Currency for pricing display
     currency: 'USD' as CurrencyCode,
@@ -1001,74 +1002,82 @@ export const config = {
     },
 
     // Plans configuration
+    //
+    // Model note: Joblo is an aggregator - the feed is mostly jobs scraped
+    // from many sources. Charging employers to *post* into that feed doesn't
+    // work (their listing drowns among thousands of free aggregated ones).
+    // So the paid product is *visibility*: getting a role pinned/highlighted
+    // ABOVE the aggregated noise. Each tier is a clean step up in reach, and
+    // billing terms are directly comparable (forever / per job / per month).
+    //
+    // CTA links point to /contact as a functional interim - swap them to
+    // real Stripe Checkout / Payment Link URLs once checkout is wired up.
     plans: [
       {
         name: 'Free',
         price: 0,
         billingTerm: 'forever',
-        description: 'Perfect for getting started with basic hiring needs.',
+        description:
+          'List your role in the feed alongside every aggregated job.',
         features: [
-          '1 active job posting',
-          'Basic job listing',
+          '1 standard listing',
+          'Appears in search & all filters',
           '30-day visibility',
-          'Standard support',
-          'Basic analytics',
+          'Community support',
         ],
         cta: {
-          label: 'Get Started',
-          link: '/post',
+          label: 'List a Job',
+          link: '/contact',
           variant: 'outline', // Using button variants
         },
         badge: null,
         highlighted: false,
       },
       {
-        name: 'Pro',
-        price: 19,
-        billingTerm: 'job posting',
+        name: 'Featured',
+        price: 29,
+        billingTerm: 'per job',
         description:
-          'Great for occasional hiring needs with better visibility.',
+          'Rise above the aggregated listings - pinned, highlighted, and seen.',
         features: [
-          '3 active job postings',
-          'Standard job listings',
-          '30-day visibility',
+          'Everything in Free',
+          'Pinned to the top of results',
+          '"Featured" highlight badge',
+          '60-day visibility',
+          'Company profile & logo',
           'Email support',
-          'Standard analytics',
-          'Company profile',
         ],
         cta: {
-          label: 'Choose Pro',
-          link: 'https://stripe.com',
-          variant: 'outline', // Using button variants
+          label: 'Feature a Job',
+          link: '/contact',
+          variant: 'default', // Using button variants
         },
         badge: {
-          text: 'Popular',
+          text: 'Most popular',
           type: 'featured',
         },
         highlighted: true,
       },
       {
-        name: 'Business',
-        price: 149,
-        billingTerm: 'year',
+        name: 'Unlimited',
+        price: 99,
+        billingTerm: 'per month',
         description:
-          'Unlimited jobs postings for one year for serious recruiters.',
+          'For recruiters and agencies hiring continuously across roles.',
         features: [
-          '5 active job postings',
-          'Featured job listings',
-          '30-day visibility',
-          'Priority support',
+          'Unlimited featured listings',
+          'Priority placement',
           'Advanced analytics',
-          'Company profile',
           'Applicant tracking',
+          'Dedicated support',
         ],
         cta: {
-          label: 'Upgrade Now',
-          link: 'https://stripe.com',
+          label: 'Go Unlimited',
+          link: '/contact',
           variant: 'default', // Using button variants
         },
         badge: {
-          text: 'Best Value',
+          text: 'Best for agencies',
           type: 'featured',
         },
         highlighted: false,
@@ -1181,13 +1190,17 @@ export const config = {
     },
 
     // Contact information section
+    // phone/address left blank on purpose - the ContactInfoSection component
+    // hides them when empty, so the page shows email only rather than a fake
+    // US phone/address (was placeholder template data). Fill in real values
+    // here when you have them.
     contactInfo: {
       title: 'Contact Information',
       description: "Here's how you can reach us directly.",
-      companyName: 'Joblo Inc.',
+      companyName: 'Joblo',
       email: 'hello@joblo.com',
-      phone: '+1 (555) 123-4567',
-      address: '123 Main Street, San Francisco, CA 94105',
+      phone: '',
+      address: '',
     },
 
     // Schema.org structured data customization

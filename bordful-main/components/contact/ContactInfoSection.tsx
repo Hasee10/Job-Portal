@@ -43,21 +43,25 @@ export function ContactInfoSection({
             </a>
           </div>
 
-          <div className="flex items-center gap-2.5">
-            <Phone className="h-4 w-4 text-zinc-500" />
-            <a
-              className="text-sm hover:underline"
-              href={`tel:${phone.replace(/\D/g, '')}`}
-              style={{ color: primaryColor }}
-            >
-              {phone}
-            </a>
-          </div>
+          {phone && (
+            <div className="flex items-center gap-2.5">
+              <Phone className="h-4 w-4 text-zinc-500" />
+              <a
+                className="text-sm hover:underline"
+                href={`tel:${phone.replace(/\D/g, '')}`}
+                style={{ color: primaryColor }}
+              >
+                {phone}
+              </a>
+            </div>
+          )}
 
-          <div className="flex items-start gap-2.5">
-            <MapPin className="mt-0.5 h-4 w-4 text-zinc-500" />
-            <span className="text-sm text-zinc-700">{address}</span>
-          </div>
+          {address && (
+            <div className="flex items-start gap-2.5">
+              <MapPin className="mt-0.5 h-4 w-4 text-zinc-500" />
+              <span className="text-sm text-zinc-700">{address}</span>
+            </div>
+          )}
         </div>
       </div>
     </div>

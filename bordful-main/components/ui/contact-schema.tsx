@@ -17,15 +17,19 @@ type ContactSchemaProps = {
 export const ContactSchema: FC<ContactSchemaProps> = ({
   companyName = config.contact?.contactInfo?.companyName || config.title,
   email = config.contact?.contactInfo?.email || 'contact@example.com',
-  phone = config.contact?.contactInfo?.phone || '+1-555-123-4567',
-  address = config.contact?.contactInfo?.address ||
-    '123 Main St, Anytown, AN 12345',
+  // No fake fallbacks for phone/address - emitting a placeholder US number
+  // and street into schema.org markup (which Google reads) is worse than
+  // omitting them. Left undefined when unset so the fields are dropped below.
+  phone = config.contact?.contactInfo?.phone || undefined,
+  address = config.contact?.contactInfo?.address || undefined,
   url = `${config.url}/contact` || 'https://example.com/contact',
   description = config.contact?.schema?.description ||
     config.contact?.description ||
     'Get in touch with our team for any questions or support needs.',
 }) => {
-  // Create type-safe schema using schema-dts
+  // Create type-safe schema using schema-dts. Only include telephone/address
+  // when they're actually set, so the structured data never carries
+  // placeholder contact info.
   const contactSchema: WithContext<ContactPage> = {
     '@context': 'https://schema.org',
     '@type': 'ContactPage',
@@ -35,11 +39,15 @@ export const ContactSchema: FC<ContactSchemaProps> = ({
       '@type': 'Organization',
       name: companyName,
       email,
-      telephone: phone,
-      address: {
-        '@type': 'PostalAddress',
-        streetAddress: address,
-      },
+      ...(phone ? { telephone: phone } : {}),
+      ...(address
+        ? {
+            address: {
+              '@type': 'PostalAddress',
+              streetAddress: address,
+            },
+          }
+        : {}),
       url: config.url,
     },
     url,

@@ -41,12 +41,19 @@ export const HOMEPAGE_JOBS_LIMIT = 500;
 // active job at build time (unbounded, via getJobs() with no limit). With
 // several thousand active jobs, each requiring an individual DB round trip
 // during static generation, that made `next build` fail outright - many
-// pages exceeded Next.js's 60s per-page build timeout waiting on the
-// query. dynamicParams defaults to true, so slugs outside this list still
-// render correctly on first visit and get cached via the page's existing
+// pages exceeded Next.js's 60s per-page build timeout waiting on the query.
+// dynamicParams defaults to true, so slugs outside this list still render
+// correctly on first visit and get cached via the page's existing
 // `revalidate = 300` ISR setting - capping this only changes *when* a page
 // is generated (build time vs. first request), not whether it's reachable.
-export const STATIC_JOB_PAGES_LIMIT = 200;
+//
+// Set to 25 (was 200): CockroachDB lives in ap-south-1 while Vercel builds
+// from the US, so each build-time round trip carries real cross-region
+// latency, and 200 concurrent ones saturate the pool enough that individual
+// page renders tip past the 60s cap (observed 2026-07). 25 keeps the most
+// recent jobs pre-rendered for fast first paint / social sharing while
+// making the build reliably fast; everything else is on-demand ISR.
+export const STATIC_JOB_PAGES_LIMIT = 25;
 
 // ARIA label constants
 export const MIN_WIDTH_SELECT = 90;

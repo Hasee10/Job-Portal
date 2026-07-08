@@ -36,9 +36,19 @@ export class EnchargeProvider implements EmailProvider {
       // any deployment that hadn't set the key yet, even with job alerts
       // disabled in config.
       if (!this.writeKey && process.env.NODE_ENV === 'production') {
+        // Loud operator signal - job alerts are enabled in config but the
+        // key was never set on this deployment. Flagged as notConfigured so
+        // the API route returns a clean "temporarily unavailable" instead of
+        // a misleading 500 that looks like a code bug.
+        console.error(
+          '[email/encharge] ENCHARGE_WRITE_KEY is not set - job-alert ' +
+            'subscriptions are failing. Set it in the deployment environment ' +
+            'or disable jobAlerts in config.'
+        );
         throw new EmailProviderError(
           'Encharge write key is required in production',
-          'encharge'
+          'encharge',
+          true // notConfigured
         );
       }
 
@@ -69,6 +79,11 @@ export class EnchargeProvider implements EmailProvider {
 
       return { success: true };
     } catch (error) {
+      // Preserve an already-typed EmailProviderError (keeps its
+      // notConfigured flag) rather than flattening it into a generic one.
+      if (error instanceof EmailProviderError) {
+        throw error;
+      }
       const errorMessage =
         error instanceof Error ? error.message : 'Subscription failed';
       throw new EmailProviderError(errorMessage, 'encharge');

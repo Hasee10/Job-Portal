@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import config from '@/config';
 import { RATE_LIMIT_WINDOW_MS } from '@/lib/constants/defaults';
 import { emailProvider } from '@/lib/email';
+import { EmailProviderError } from '@/lib/email/types';
 
 // Prevent caching
 export const dynamic = 'force-dynamic';
@@ -113,6 +114,15 @@ export async function POST(request: Request) {
     // leaking internal details (email provider error text, stack traces,
     // occasionally provider API error bodies that include account info).
     console.error('[api/subscribe]', error);
+
+    // Provider not set up on this deployment: return a clean, honest
+    // "unavailable" (503) rather than a generic 500 that reads like a bug.
+    if (error instanceof EmailProviderError && error.notConfigured) {
+      return NextResponse.json(
+        { error: 'Job alerts are temporarily unavailable. Please try again later.' },
+        { status: 503 }
+      );
+    }
 
     return NextResponse.json(
       { error: 'Something went wrong. Please try again later.' },
