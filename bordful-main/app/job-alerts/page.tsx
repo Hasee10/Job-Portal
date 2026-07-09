@@ -85,7 +85,7 @@ export default async function JobAlertsPage() {
 
           {/* Latest jobs */}
           <div className="lg:col-span-2">
-            <CompactJobCardList className="bg-white" jobs={latestJobs} />
+            <CompactJobCardList className="bg-background" jobs={latestJobs} />
           </div>
         </div>
       </div>

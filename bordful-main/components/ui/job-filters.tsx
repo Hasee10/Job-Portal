@@ -413,7 +413,7 @@ export function JobFilters({
     : initialLevels;
 
   return (
-    <div className="relative rounded-lg border bg-gray-50 p-5">
+    <div className="relative rounded-lg border bg-muted p-5">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <h2 className="font-semibold text-md">Filters</h2>

@@ -69,7 +69,7 @@ export function JobsPerPageSelect() {
         </SelectTrigger>
         <SelectContent
           aria-label="Jobs per page options"
-          className={`min-w-[${MIN_WIDTH_SELECT}px] bg-white`}
+          className={`min-w-[${MIN_WIDTH_SELECT}px] bg-popover`}
           position="popper"
         >
           {perPageOptions.map((option) => (

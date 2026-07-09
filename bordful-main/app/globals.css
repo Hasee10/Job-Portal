@@ -37,6 +37,33 @@
     --radius: 0.5rem;
   }
 
+  /* Dark mode - class-based (next-themes toggles .dark on <html>), same
+     token names so every component using bg-background/text-foreground/
+     bg-primary/etc. picks this up automatically with zero component
+     changes. --primary is lightened (24% -> 55% lightness) since the dark
+     brand teal reads as near-black on a dark background otherwise. */
+  .dark {
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 240 8% 7%;
+    --card-foreground: 0 0% 98%;
+    --popover: 240 8% 7%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 196 64% 55%;
+    --primary-foreground: 240 10% 3.9%;
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
+    --accent: 196 30% 18%;
+    --accent-foreground: 196 64% 85%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 196 64% 55%;
+  }
+
   /* Font styling for IBM Plex Serif */
   html[data-font="ibm-plex-serif"] {
     font-family: var(--font-ibm-plex-serif), Georgia, serif;
@@ -45,7 +72,11 @@
 
 @layer components {
   .markdown-content {
-    @apply prose prose-sm prose-gray max-w-none;
+    /* prose-gray's headings/body text come from @tailwindcss/typography's
+       own CSS variables (--tw-prose-headings etc.), completely separate
+       from our design tokens - dark:prose-invert is the plugin's own
+       official dark-mode variant, flipping that whole palette at once. */
+    @apply prose prose-sm prose-gray max-w-none dark:prose-invert;
 
     h1 {
       @apply text-2xl font-semibold mb-2;
@@ -64,7 +95,7 @@
     p,
     ul,
     ol {
-      @apply text-sm text-gray-700 leading-relaxed;
+      @apply text-sm text-gray-700 leading-relaxed dark:text-zinc-300;
     }
 
     /* Lists */
@@ -77,20 +108,20 @@
 
     /* Links */
     a {
-      @apply text-blue-600 hover:text-blue-800 no-underline hover:underline;
+      @apply text-blue-600 hover:text-blue-800 no-underline hover:underline dark:text-blue-400 dark:hover:text-blue-300;
     }
 
     /* Code blocks */
     pre {
-      @apply bg-gray-50 p-4 rounded-lg mb-4 overflow-x-auto text-sm;
+      @apply bg-gray-50 p-4 rounded-lg mb-4 overflow-x-auto text-sm dark:bg-zinc-900;
     }
     code {
-      @apply bg-gray-50 px-1.5 py-0.5 rounded text-sm font-normal text-gray-800;
+      @apply bg-gray-50 px-1.5 py-0.5 rounded text-sm font-normal text-gray-800 dark:bg-zinc-900 dark:text-zinc-300;
     }
 
     /* Blockquotes */
     blockquote {
-      @apply border-l-4 border-gray-200 pl-4 italic my-4 text-gray-600;
+      @apply border-l-4 border-gray-200 pl-4 italic my-4 text-gray-600 dark:border-zinc-700 dark:text-zinc-400;
     }
 
     /* Lists inside lists */
@@ -107,19 +138,19 @@
     }
 
     thead {
-      @apply bg-gray-50;
+      @apply bg-gray-50 dark:bg-zinc-900;
     }
 
     th {
-      @apply border border-gray-200 px-3 py-2 text-left font-medium text-gray-700;
+      @apply border border-gray-200 px-3 py-2 text-left font-medium text-gray-700 dark:border-zinc-700 dark:text-zinc-300;
     }
 
     td {
-      @apply border border-gray-200 px-3 py-2 text-gray-700;
+      @apply border border-gray-200 px-3 py-2 text-gray-700 dark:border-zinc-700 dark:text-zinc-300;
     }
 
     tr:nth-child(even) {
-      @apply bg-gray-50;
+      @apply bg-gray-50 dark:bg-zinc-900;
     }
   }
 }

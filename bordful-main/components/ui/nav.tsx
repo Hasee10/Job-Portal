@@ -7,6 +7,7 @@ import {
   Menu,
   X,
 } from 'lucide-react';
+import { useTheme } from 'next-themes';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -19,6 +20,7 @@ import {
 } from 'react';
 import { AuthNavStatus } from '@/components/auth/AuthNavStatus';
 import { Button } from '@/components/ui/button';
+import { ThemeToggle } from '@/components/ui/theme-toggle';
 import config from '@/config';
 import { resolveColor } from '@/lib/utils/colors';
 
@@ -290,6 +292,19 @@ export function Nav() {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
 
+  // Swap to the white-stroke logo variant in dark mode - the default
+  // black-stroke logo.src is invisible against a dark background. Waits
+  // for mount (same reasoning as ThemeToggle) since the real theme isn't
+  // knowable until after hydration; renders the light-mode logo until then
+  // to match the server-rendered default.
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  const logoSrc =
+    mounted && resolvedTheme === 'dark' && config.nav.logoDark
+      ? config.nav.logoDark
+      : config.nav.logo.src;
+
   // Use our custom hook for dropdown functionality
   const { openDropdowns, registerDropdownRef, toggleDropdown } =
     useDropdownMenu();
@@ -390,7 +405,7 @@ export function Nav() {
             </button>
 
             {isDropdownOpen && (
-              <div className="absolute left-0 z-50 mt-1 w-40 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5">
+              <div className="absolute left-0 z-50 mt-1 w-40 rounded-md bg-popover shadow-lg ring-1 ring-black ring-opacity-5 dark:ring-white/10">
                 <div aria-orientation="vertical" className="py-1" role="menu">
                   {item.items.map((subItem) => (
                     <DropdownItem
@@ -429,7 +444,7 @@ export function Nav() {
   const renderMobileNavItems = () => renderNavItems(true);
 
   return (
-    <header className="relative z-40 border-zinc-200 border-b bg-white">
+    <header className="relative z-40 border-border border-b bg-background">
       <div className="container mx-auto px-4">
         <nav
           aria-label="Main navigation"
@@ -446,8 +461,9 @@ export function Nav() {
                 alt={config.nav.logo.alt}
                 className="object-contain"
                 height={config.nav.logo.height}
+                key={logoSrc}
                 priority
-                src={config.nav.logo.src}
+                src={logoSrc}
                 style={{
                   width: `${config.nav.logo.width}px`,
                   height: `${config.nav.logo.height}px`,
@@ -491,6 +507,8 @@ export function Nav() {
               </Button>
             )}
 
+            <ThemeToggle />
+
             {/* Mobile menu button */}
             <button
               aria-expanded={isOpen}
@@ -519,6 +537,8 @@ export function Nav() {
             {/* Social links and post job */}
             <div className="flex items-center whitespace-nowrap">
               {renderSocialLinks()}
+
+              <ThemeToggle />
 
               <AuthNavStatus className="ml-4" />
 
@@ -566,6 +586,7 @@ export function Nav() {
               {/* Social Links */}
               <div className="mt-2 flex items-center space-x-3 border-zinc-200 border-t px-4 py-4">
                 {renderSocialLinks()}
+                <ThemeToggle />
               </div>
 
               {/* Auth status (sign in/up or account) */}

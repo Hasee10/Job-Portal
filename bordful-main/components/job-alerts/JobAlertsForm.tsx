@@ -80,7 +80,8 @@ export function JobAlertsForm() {
             config.jobAlerts.form?.toast?.success?.description ||
             "You'll now receive job alerts in your inbox.",
           variant: 'default',
-          className: 'bg-white border border-green-200 shadow-md',
+          className:
+            'bg-card border border-green-200 shadow-md dark:border-green-900',
         });
 
         // Set success state

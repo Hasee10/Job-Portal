@@ -35,8 +35,8 @@ export function ResetPasswordForm() {
 
   if (isSuccess) {
     return (
-      <div className="mx-auto w-full max-w-md rounded-lg border bg-green-50 p-6 text-center">
-        <p className="text-green-800 text-sm">
+      <div className="mx-auto w-full max-w-md rounded-lg border bg-green-50 p-6 text-center dark:border-green-900 dark:bg-green-950">
+        <p className="text-green-800 text-sm dark:text-green-400">
           Your password has been reset. You can now sign in.
         </p>
       </div>

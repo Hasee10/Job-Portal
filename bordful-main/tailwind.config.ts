@@ -2,6 +2,10 @@ import typography from '@tailwindcss/typography';
 import type { Config } from 'tailwindcss';
 
 const config: Config = {
+  // Class-based (not media-query) dark mode: next-themes toggles a `.dark`
+  // class on <html> so a user's explicit choice (not just OS preference)
+  // controls the theme, and persists it.
+  darkMode: ['class'],
   content: [
     './pages/**/*.{js,ts,jsx,tsx,mdx}',
     './components/**/*.{js,ts,jsx,tsx,mdx}',

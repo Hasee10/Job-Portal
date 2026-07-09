@@ -258,9 +258,11 @@ export default async function JobPostPage({
           <div className="mb-8">
             <div className="space-y-2">
               <h1 className="font-semibold text-2xl">{job.title}</h1>
-              <div className="text-base text-gray-600">{job.company}</div>
+              <div className="text-base text-gray-600 dark:text-zinc-400">
+                {job.company}
+              </div>
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-0">
-                <div className="flex flex-wrap items-center gap-3 text-gray-500 text-sm">
+                <div className="flex flex-wrap items-center gap-3 text-gray-500 text-sm dark:text-zinc-400">
                   <span>{job.type}</span>
                   {showSalary && (
                     <>
@@ -449,7 +451,7 @@ export default async function JobPostPage({
                 <ClipboardList className="h-3.5 w-3.5 text-amber-600" />
                 Application Requirements
               </h3>
-              <p className="text-gray-700 text-xs">
+              <p className="text-gray-700 text-xs dark:text-zinc-300">
                 {job.application_requirements}
               </p>
             </div>
@@ -480,7 +482,7 @@ export default async function JobPostPage({
                   const deadline = new Date(job.valid_through);
                   return (
                     !Number.isNaN(deadline.getTime()) && (
-                      <span className="w-full text-center text-gray-500 text-xs sm:w-auto sm:text-left">
+                      <span className="w-full text-center text-gray-500 text-xs dark:text-zinc-400 sm:w-auto sm:text-left">
                         Apply before:{' '}
                         {deadline.toLocaleDateString('en-US', {
                           year: 'numeric',

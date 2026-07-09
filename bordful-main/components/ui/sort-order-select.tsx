@@ -78,7 +78,7 @@ export function SortOrderSelect() {
             }
           />
         </SelectTrigger>
-        <SelectContent className="bg-white" position="popper">
+        <SelectContent className="bg-popover" position="popper">
           {availableSortOptions.map((option) => (
             <SelectItem className="text-xs" key={option} value={option}>
               {sortOptionLabels[option as SortOption]}

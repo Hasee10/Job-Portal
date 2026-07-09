@@ -56,6 +56,10 @@ export type NavConfig = {
     height: number;
     alt: string;
   };
+  // Optional white/light-colored logo variant swapped in for dark mode -
+  // the default logo.src is typically a dark-stroke SVG that's invisible
+  // against a dark background. Falls back to logo.src if unset.
+  logoDark?: string;
   github: { show: boolean; url: string };
   linkedin: { show: boolean; url: string };
   twitter: { show: boolean; url: string };
@@ -753,6 +757,10 @@ export const config = {
       height: 30, // Height of the logo in pixels
       alt: 'Joblo', // Alt text for the logo
     },
+    // White-stroke variant swapped in automatically for dark mode (see
+    // Nav's logoSrc logic) - the black-stroke logo.src above is invisible
+    // against a dark background otherwise.
+    logoDark: '/joblo-light.svg',
     github: {
       show: false, // GitHub removed for now — add your own repo link later
       url: '',

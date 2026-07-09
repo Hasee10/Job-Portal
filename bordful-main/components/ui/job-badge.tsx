@@ -36,19 +36,25 @@ export function JobBadge({
 }: JobBadgeProps) {
   // Base badge styles without hover effects
   const badgeStyles = {
-    new: 'bg-green-50 border-green-100 border text-green-700',
-    remote: 'bg-green-50 border-green-100 border text-green-700',
-    onsite: 'bg-red-50 border-red-100 border text-red-700',
-    hybrid: 'bg-blue-50 border-blue-100 border text-blue-700',
+    new: 'bg-green-50 border-green-100 border text-green-700 dark:bg-green-950 dark:border-green-900 dark:text-green-400',
+    remote:
+      'bg-green-50 border-green-100 border text-green-700 dark:bg-green-950 dark:border-green-900 dark:text-green-400',
+    onsite:
+      'bg-red-50 border-red-100 border text-red-700 dark:bg-red-950 dark:border-red-900 dark:text-red-400',
+    hybrid:
+      'bg-blue-50 border-blue-100 border text-blue-700 dark:bg-blue-950 dark:border-blue-900 dark:text-blue-400',
     featured: 'text-zinc-50',
-    default: 'bg-white border text-gray-700',
-    'not specified': 'bg-white border text-gray-700',
-    'visa-yes': 'bg-green-50 border-green-100 border text-green-700',
-    'visa-no': 'bg-red-50 border-red-100 border text-red-700',
-    'visa-not-specified': 'bg-white border text-gray-700',
-    'career-level': 'bg-white border text-gray-700',
-    language: 'bg-white border text-gray-700',
-    currency: 'bg-amber-50 border-amber-100 border text-amber-700',
+    default: 'bg-card border text-foreground',
+    'not specified': 'bg-card border text-foreground',
+    'visa-yes':
+      'bg-green-50 border-green-100 border text-green-700 dark:bg-green-950 dark:border-green-900 dark:text-green-400',
+    'visa-no':
+      'bg-red-50 border-red-100 border text-red-700 dark:bg-red-950 dark:border-red-900 dark:text-red-400',
+    'visa-not-specified': 'bg-card border text-foreground',
+    'career-level': 'bg-card border text-foreground',
+    language: 'bg-card border text-foreground',
+    currency:
+      'bg-amber-50 border-amber-100 border text-amber-700 dark:bg-amber-950 dark:border-amber-900 dark:text-amber-400',
   };
 
   // Apply hover effects only when href is provided (badge is clickable)

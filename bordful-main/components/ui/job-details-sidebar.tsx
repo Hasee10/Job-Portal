@@ -138,7 +138,7 @@ export function JobDetailsSidebar({
   const deadline = formatDeadline();
 
   return (
-    <div className="space-y-4 rounded-lg border bg-gray-50 p-5">
+    <div className="space-y-4 rounded-lg border bg-muted p-5">
       <div className="mb-2 flex items-center justify-between">
         <h2 className="font-semibold text-md">Job Details</h2>
         {config.jobReport.enabled && config.jobReport.showInSidebar && (
