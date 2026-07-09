@@ -49,7 +49,7 @@ jobs:
       # versioned by their pinned package versions, so the cache key only
       # needs to change when requirements.txt changes.
       - name: Cache browser binaries
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: |
             ~/.cache/ms-playwright
@@ -64,7 +64,7 @@ jobs:
       # actions/cache pattern for a mutable checkpoint file (cache entries
       # are otherwise immutable per key).
       - name: Restore sweeper state
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v6
         with:
           path: job-scraper/sweeper_state.json
           key: sweeper-state-${{ github.run_id }}
@@ -106,7 +106,7 @@ jobs:
 
       - name: Save sweeper state
         if: always()
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v6
         with:
           path: job-scraper/sweeper_state.json
           key: sweeper-state-${{ github.run_id }}
