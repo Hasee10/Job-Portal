@@ -17,6 +17,7 @@ import {
   useRef,
   useState,
 } from 'react';
+import { AuthNavStatus } from '@/components/auth/AuthNavStatus';
 import { Button } from '@/components/ui/button';
 import config from '@/config';
 import { resolveColor } from '@/lib/utils/colors';
@@ -519,6 +520,8 @@ export function Nav() {
             <div className="flex items-center whitespace-nowrap">
               {renderSocialLinks()}
 
+              <AuthNavStatus className="ml-4" />
+
               {config.nav.postJob.show && (
                 <Button
                   asChild
@@ -563,6 +566,11 @@ export function Nav() {
               {/* Social Links */}
               <div className="mt-2 flex items-center space-x-3 border-zinc-200 border-t px-4 py-4">
                 {renderSocialLinks()}
+              </div>
+
+              {/* Auth status (sign in/up or account) */}
+              <div className="flex items-center justify-center px-4 pb-2">
+                <AuthNavStatus onNavigate={() => setIsOpen(false)} />
               </div>
 
               {/* Post Job Action */}
