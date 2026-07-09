@@ -1,5 +1,6 @@
 import 'server-only';
 
+import { randomBytes, createHash } from 'node:crypto';
 import bcrypt from 'bcryptjs';
 import { getPool } from '@/lib/db/pool';
 
@@ -7,6 +8,7 @@ import { getPool } from '@/lib/db/pool';
 // resist offline brute-force but not so high it noticeably slows sign-in.
 const BCRYPT_COST_FACTOR = 12;
 const MIN_PASSWORD_LENGTH = 8;
+const RESET_TOKEN_TTL_MS = 60 * 60 * 1000; // 1 hour
 
 export type Employer = {
   id: string;
@@ -123,4 +125,65 @@ export async function verifyEmployerCredentials(
   }
 
   return { id: row.id, email: row.email, companyName: row.company_name };
+}
+
+function hashToken(token: string): string {
+  return createHash('sha256').update(token).digest('hex');
+}
+
+/**
+ * Generates a password-reset token for the given email and stores its hash
+ * (never the raw token) with a 1-hour expiry. Returns the raw token to send
+ * in the reset link, or null if no account matches - callers must treat
+ * both cases identically in their response (always "if an account exists,
+ * an email was sent") so this can't be used to enumerate registered emails.
+ */
+export async function createPasswordResetToken(
+  email: string
+): Promise<string | null> {
+  const pool = requirePool();
+  const normalizedEmail = email.trim().toLowerCase();
+
+  const rawToken = randomBytes(32).toString('hex');
+  const tokenHash = hashToken(rawToken);
+  const expiresAt = new Date(Date.now() + RESET_TOKEN_TTL_MS);
+
+  const { rowCount } = await pool.query(
+    `update public.employers
+     set reset_token_hash = $1, reset_token_expires_at = $2, updated_at = now()
+     where email = $3`,
+    [tokenHash, expiresAt, normalizedEmail]
+  );
+
+  return rowCount && rowCount > 0 ? rawToken : null;
+}
+
+/**
+ * Verifies a reset token (comparing its hash, constant-time via a DB lookup
+ * rather than in-app string comparison) and, if valid and unexpired, sets
+ * the new password and invalidates the token so it can't be reused.
+ */
+export async function resetPasswordWithToken(
+  token: string,
+  newPassword: string
+): Promise<boolean> {
+  if (newPassword.length < MIN_PASSWORD_LENGTH) {
+    throw new EmployerAuthError(
+      `Password must be at least ${MIN_PASSWORD_LENGTH} characters.`,
+      'weak_password'
+    );
+  }
+
+  const pool = requirePool();
+  const tokenHash = hashToken(token);
+  const passwordHash = await bcrypt.hash(newPassword, BCRYPT_COST_FACTOR);
+
+  const { rowCount } = await pool.query(
+    `update public.employers
+     set password_hash = $1, reset_token_hash = null, reset_token_expires_at = null, updated_at = now()
+     where reset_token_hash = $2 and reset_token_expires_at > now()`,
+    [passwordHash, tokenHash]
+  );
+
+  return Boolean(rowCount && rowCount > 0);
 }

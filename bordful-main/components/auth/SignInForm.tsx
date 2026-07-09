@@ -76,9 +76,17 @@ export function SignInForm() {
           </div>
 
           <div className="space-y-2">
-            <Label className="font-medium text-sm" htmlFor="password">
-              Password
-            </Label>
+            <div className="flex items-center justify-between">
+              <Label className="font-medium text-sm" htmlFor="password">
+                Password
+              </Label>
+              <a
+                className="text-xs text-zinc-600 underline hover:no-underline"
+                href="/forgot-password"
+              >
+                Forgot password?
+              </a>
+            </div>
             <Input
               disabled={isSubmitting}
               id="password"

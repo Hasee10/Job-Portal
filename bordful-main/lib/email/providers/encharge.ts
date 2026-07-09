@@ -22,38 +22,51 @@ export class EnchargeProvider implements EmailProvider {
     this.eventName = enchargeConfig.eventName || 'Job Alert Subscription';
   }
 
+  /**
+   * Checked at request time rather than in the constructor: the constructor
+   * runs at module-import time, which Next.js also evaluates during
+   * production builds (collecting page data for every route that imports
+   * this module) - throwing there broke `next build` entirely for any
+   * deployment that hadn't set the key yet. Returns true if the caller
+   * should short-circuit with a simulated success (local dev, no key).
+   */
+  private assertConfigured(featureLabel: string): boolean {
+    if (!this.writeKey && process.env.NODE_ENV === 'development') {
+      return true; // simulate success
+    }
+
+    if (!this.writeKey && process.env.NODE_ENV === 'production') {
+      // Loud operator signal - flagged as notConfigured so the calling API
+      // route returns a clean "temporarily unavailable" instead of a
+      // misleading 500 that looks like a code bug.
+      console.error(
+        `[email/encharge] ENCHARGE_WRITE_KEY is not set - ${featureLabel} ` +
+          'is failing. Set it in the deployment environment.'
+      );
+      throw new EmailProviderError(
+        'Encharge write key is required in production',
+        'encharge',
+        true // notConfigured
+      );
+    }
+    return false;
+  }
+
+  private async ingest(payload: Record<string, unknown>): Promise<void> {
+    await axios.post(
+      `https://ingest.encharge.io/v1/${this.writeKey}`,
+      payload,
+      { headers: { 'Content-Type': 'application/json' } }
+    );
+  }
+
   async subscribe(data: SubscriberData) {
     try {
-      // In development without a key, simulate success
-      if (!this.writeKey && process.env.NODE_ENV === 'development') {
+      if (this.assertConfigured('job-alert subscriptions')) {
         return { success: true };
       }
 
-      // Checked here (at request time) rather than in the constructor:
-      // the constructor runs at module-import time, which Next.js also
-      // evaluates during production builds (collecting page data for
-      // /api/subscribe) - throwing there broke `next build` entirely for
-      // any deployment that hadn't set the key yet, even with job alerts
-      // disabled in config.
-      if (!this.writeKey && process.env.NODE_ENV === 'production') {
-        // Loud operator signal - job alerts are enabled in config but the
-        // key was never set on this deployment. Flagged as notConfigured so
-        // the API route returns a clean "temporarily unavailable" instead of
-        // a misleading 500 that looks like a code bug.
-        console.error(
-          '[email/encharge] ENCHARGE_WRITE_KEY is not set - job-alert ' +
-            'subscriptions are failing. Set it in the deployment environment ' +
-            'or disable jobAlerts in config.'
-        );
-        throw new EmailProviderError(
-          'Encharge write key is required in production',
-          'encharge',
-          true // notConfigured
-        );
-      }
-
-      // Format the payload for Encharge
-      const payload = {
+      await this.ingest({
         name: this.eventName,
         user: {
           email: data.email,
@@ -68,14 +81,7 @@ export class EnchargeProvider implements EmailProvider {
           submittedName: data.name || 'Not provided',
         },
         sourceIp: data.ip,
-      };
-
-      // Make the API call to Encharge
-      await axios.post(
-        `https://ingest.encharge.io/v1/${this.writeKey}`,
-        payload,
-        { headers: { 'Content-Type': 'application/json' } }
-      );
+      });
 
       return { success: true };
     } catch (error) {
@@ -86,6 +92,36 @@ export class EnchargeProvider implements EmailProvider {
       }
       const errorMessage =
         error instanceof Error ? error.message : 'Subscription failed';
+      throw new EmailProviderError(errorMessage, 'encharge');
+    }
+  }
+
+  async sendPasswordReset(data: { email: string; resetUrl: string }) {
+    try {
+      if (this.assertConfigured('password-reset emails')) {
+        return { success: true };
+      }
+
+      // Requires a matching automation flow configured in the Encharge
+      // dashboard, triggered by this event name, that emails resetUrl to
+      // the user - same setup job-alert notifications already rely on for
+      // the "Job Alert Subscription" event.
+      await this.ingest({
+        name: 'Password Reset Requested',
+        user: { email: data.email },
+        properties: {
+          resetUrl: data.resetUrl,
+          requestedAt: new Date().toISOString(),
+        },
+      });
+
+      return { success: true };
+    } catch (error) {
+      if (error instanceof EmailProviderError) {
+        throw error;
+      }
+      const errorMessage =
+        error instanceof Error ? error.message : 'Failed to send reset email';
       throw new EmailProviderError(errorMessage, 'encharge');
     }
   }
