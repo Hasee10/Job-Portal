@@ -125,4 +125,40 @@ export class EnchargeProvider implements EmailProvider {
       throw new EmailProviderError(errorMessage, 'encharge');
     }
   }
+
+  async sendTransactionalEmail(data: {
+    email: string;
+    eventName: string;
+    subject: string;
+    html: string;
+  }) {
+    try {
+      if (this.assertConfigured(`"${data.eventName}" emails`)) {
+        return { success: true };
+      }
+
+      // Requires a matching Encharge flow, triggered by data.eventName, with
+      // an email step whose body is a "custom HTML" block referencing the
+      // htmlBody property directly - NOT a flow that composes its own email
+      // template, since that would ignore the design this HTML encodes.
+      await this.ingest({
+        name: data.eventName,
+        user: { email: data.email },
+        properties: {
+          subject: data.subject,
+          htmlBody: data.html,
+          sentAt: new Date().toISOString(),
+        },
+      });
+
+      return { success: true };
+    } catch (error) {
+      if (error instanceof EmailProviderError) {
+        throw error;
+      }
+      const errorMessage =
+        error instanceof Error ? error.message : 'Failed to send email';
+      throw new EmailProviderError(errorMessage, 'encharge');
+    }
+  }
 }

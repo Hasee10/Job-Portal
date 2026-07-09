@@ -26,6 +26,19 @@ export type EmailProvider = {
     email: string;
     resetUrl: string;
   }): Promise<{ success: boolean; error?: string }>;
+  // Sends a fully-rendered transactional email (subject + HTML built from
+  // lib/email/templates/*) - same event-trigger mechanism as the above, but
+  // passes the complete HTML as an event property rather than just a link,
+  // so the exact template design (not just its content) is controlled by
+  // our code. Requires an Encharge flow with an email step whose body
+  // references that HTML property directly (a "custom HTML" content block),
+  // rather than a flow that composes its own email around a merge field.
+  sendTransactionalEmail(data: {
+    email: string;
+    eventName: string;
+    subject: string;
+    html: string;
+  }): Promise<{ success: boolean; error?: string }>;
 };
 
 /**

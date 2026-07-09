@@ -471,16 +471,8 @@ export function Footer() {
                 {config.footer.postJob.learnMoreButton?.show && (
                   <Button
                     asChild
-                    className="flex h-8 items-center justify-center gap-1.5 px-3 text-xs sm:h-7 sm:px-2.5"
+                    className="flex h-8 items-center justify-center gap-1.5 border-white/20 bg-transparent px-3 text-white text-xs hover:border-white/40 hover:bg-white/10 hover:text-white sm:h-7 sm:px-2.5"
                     size="xs"
-                    style={{
-                      color:
-                        backgroundColor === '#0C0E12' ? 'white' : undefined,
-                      borderColor:
-                        backgroundColor === '#0C0E12'
-                          ? 'rgba(255, 255, 255, 0.2)'
-                          : undefined,
-                    }}
                     variant="outline"
                   >
                     <Link
