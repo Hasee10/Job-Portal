@@ -109,13 +109,13 @@ export default function PricingPage() {
                       {plan.price === 0 ? 'Free' : `$${plan.price}`}
                     </span>
                     {plan.price > 0 && (
-                      <span className="ml-1 text-gray-500 text-sm">
+                      <span className="ml-1 text-gray-500 dark:text-gray-500 text-sm">
                         {formatPricingBillingTerm(plan.billingTerm)}
                       </span>
                     )}
                   </div>
 
-                  <div className="text-gray-600 text-sm">
+                  <div className="text-gray-600 dark:text-gray-400 text-sm">
                     {plan.description}
                   </div>
 
@@ -165,7 +165,7 @@ export default function PricingPage() {
                     {plan.features.map((feature, featureIndex) => (
                       <li className="flex items-start" key={featureIndex}>
                         <Check className="mt-0.5 mr-2 h-4 w-4 flex-shrink-0 text-green-600" />
-                        <span className="text-gray-700 text-sm">{feature}</span>
+                        <span className="text-gray-700 dark:text-gray-300 text-sm">{feature}</span>
                       </li>
                     ))}
                   </ul>
@@ -178,7 +178,7 @@ export default function PricingPage() {
         {/* Payment Processing Information */}
         {config.pricing.paymentProcessingText && (
           <div className="mx-auto mt-12 max-w-sm text-center">
-            <p className="text-balance text-gray-500 text-xs">
+            <p className="text-balance text-gray-500 dark:text-gray-500 text-xs">
               {config.pricing.paymentProcessingText}
             </p>
 

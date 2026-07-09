@@ -67,8 +67,8 @@ function NavLink({
   className = '',
 }: NavLinkProps) {
   const baseClasses = 'text-sm px-2.5 py-1 rounded-lg transition-colors';
-  const activeClasses = 'text-zinc-900 bg-zinc-100';
-  const inactiveClasses = 'text-zinc-600 hover:text-zinc-900 hover:bg-zinc-50';
+  const activeClasses = 'text-zinc-900 dark:text-zinc-100 bg-zinc-100 dark:bg-zinc-800';
+  const inactiveClasses = 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-800';
 
   const linkClasses = `${baseClasses} ${
     isActive ? activeClasses : inactiveClasses
@@ -86,7 +86,7 @@ function SocialLink({ href, label, children }: SocialLinkProps) {
   return (
     <Link
       aria-label={label}
-      className="text-zinc-600 transition-colors hover:text-zinc-900"
+      className="text-zinc-600 dark:text-zinc-400 transition-colors hover:text-zinc-900 dark:hover:text-zinc-100"
       href={href}
       rel="noopener noreferrer"
       target="_blank"
@@ -142,8 +142,8 @@ function DropdownItem({
   children,
 }: DropdownItemProps) {
   const baseClasses = 'block px-4 py-2 text-sm';
-  const activeClasses = 'bg-zinc-100 text-zinc-900';
-  const inactiveClasses = 'text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900';
+  const activeClasses = 'bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100';
+  const inactiveClasses = 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-zinc-100';
 
   const itemClasses = `${baseClasses} ${
     isActive ? activeClasses : inactiveClasses
@@ -395,8 +395,8 @@ export function Nav() {
               aria-expanded={isDropdownOpen}
               className={`flex items-center rounded-lg px-2.5 py-1 text-sm ${
                 pathname.startsWith(item.link)
-                  ? 'bg-zinc-100 text-zinc-900'
-                  : 'text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900'
+                  ? 'bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100'
+                  : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-zinc-100'
               } transition-colors`}
               onClick={() => toggleDropdown(item.label)}
             >
@@ -453,7 +453,7 @@ export function Nav() {
           {/* Brand */}
           <Link
             aria-label="Home"
-            className="flex items-center space-x-1.5 text-zinc-900 transition-colors hover:text-zinc-800"
+            className="flex items-center space-x-1.5 text-zinc-900 dark:text-zinc-100 transition-colors hover:text-zinc-800 dark:hover:text-zinc-200"
             href="/"
           >
             {config.nav.logo.enabled ? (
@@ -513,7 +513,7 @@ export function Nav() {
             <button
               aria-expanded={isOpen}
               aria-label="Toggle menu"
-              className="p-2 text-zinc-600 transition-colors hover:text-zinc-900"
+              className="p-2 text-zinc-600 dark:text-zinc-400 transition-colors hover:text-zinc-900 dark:hover:text-zinc-100"
               onClick={() => setIsOpen(!isOpen)}
             >
               {isOpen ? (

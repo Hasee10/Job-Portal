@@ -25,15 +25,15 @@ export function ContactInfoSection({
   return (
     <div className="rounded-lg border p-5 transition-all hover:border-gray-400">
       <div className="pb-4">
-        <h3 className="font-semibold text-xl text-zinc-900">{title}</h3>
-        <p className="mt-1 text-sm text-zinc-600">{description}</p>
+        <h3 className="font-semibold text-xl text-zinc-900 dark:text-zinc-100">{title}</h3>
+        <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">{description}</p>
       </div>
       <div>
         <div className="space-y-4">
-          <p className="font-medium text-zinc-900">{companyName}</p>
+          <p className="font-medium text-zinc-900 dark:text-zinc-100">{companyName}</p>
 
           <div className="flex items-center gap-2.5">
-            <Mail className="h-4 w-4 text-zinc-500" />
+            <Mail className="h-4 w-4 text-zinc-500 dark:text-zinc-500" />
             <a
               className="text-sm hover:underline"
               href={`mailto:${email}`}
@@ -45,7 +45,7 @@ export function ContactInfoSection({
 
           {phone && (
             <div className="flex items-center gap-2.5">
-              <Phone className="h-4 w-4 text-zinc-500" />
+              <Phone className="h-4 w-4 text-zinc-500 dark:text-zinc-500" />
               <a
                 className="text-sm hover:underline"
                 href={`tel:${phone.replace(/\D/g, '')}`}
@@ -58,8 +58,8 @@ export function ContactInfoSection({
 
           {address && (
             <div className="flex items-start gap-2.5">
-              <MapPin className="mt-0.5 h-4 w-4 text-zinc-500" />
-              <span className="text-sm text-zinc-700">{address}</span>
+              <MapPin className="mt-0.5 h-4 w-4 text-zinc-500 dark:text-zinc-500" />
+              <span className="text-sm text-zinc-700 dark:text-zinc-300">{address}</span>
             </div>
           )}
         </div>

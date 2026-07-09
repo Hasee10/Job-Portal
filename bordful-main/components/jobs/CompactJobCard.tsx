@@ -30,8 +30,8 @@ export function CompactJobCard({ job }: { job: Job }) {
 
   return (
     <Link
-      className={`block px-3 py-2.5 transition-colors hover:bg-zinc-50 ${
-        job.featured ? 'bg-zinc-50' : ''
+      className={`block px-3 py-2.5 transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-800 ${
+        job.featured ? 'bg-zinc-50 dark:bg-zinc-900' : ''
       }`}
       href={`/jobs/${generateJobSlug(job.title, job.company)}`}
     >
@@ -63,17 +63,17 @@ export function CompactJobCard({ job }: { job: Job }) {
           </div>
 
           {/* Company */}
-          <div className="line-clamp-1 text-gray-600 text-xs">
+          <div className="line-clamp-1 text-gray-600 text-xs dark:text-zinc-400">
             {job.company}
           </div>
         </div>
 
         {/* Essential info */}
-        <div className="flex shrink-0 items-center gap-2 text-gray-500 text-xs">
+        <div className="flex shrink-0 items-center gap-2 text-gray-500 text-xs dark:text-zinc-400">
           <span className="whitespace-nowrap">{job.type}</span>
           {showSalary && (
             <>
-              <span className="text-gray-300">•</span>
+              <span className="text-gray-300 dark:text-zinc-600">•</span>
               <span className="whitespace-nowrap">
                 {formatSalary(job.salary, true)}
               </span>
@@ -81,11 +81,11 @@ export function CompactJobCard({ job }: { job: Job }) {
           )}
           {workplaceType && (
             <>
-              <span className="text-gray-300">•</span>
+              <span className="text-gray-300 dark:text-zinc-600">•</span>
               <span className="whitespace-nowrap">{workplaceType}</span>
             </>
           )}
-          <span className="text-gray-300">•</span>
+          <span className="text-gray-300 dark:text-zinc-600">•</span>
           <span className="whitespace-nowrap">{relativeTime}</span>
         </div>
       </div>

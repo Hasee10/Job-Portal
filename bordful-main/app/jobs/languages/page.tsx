@@ -36,7 +36,7 @@ function LanguageCard({ href, title, count }: LanguageCardProps) {
     >
       <div className="space-y-1.5 sm:space-y-2">
         <h2 className="font-medium text-sm sm:text-base">{title}</h2>
-        <p className="text-gray-500 text-xs sm:text-sm">
+        <p className="text-gray-500 dark:text-gray-500 text-xs sm:text-sm">
           {count.toLocaleString()} {count === 1 ? 'position' : 'positions'}{' '}
           available
         </p>

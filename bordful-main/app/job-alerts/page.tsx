@@ -76,7 +76,7 @@ export default async function JobAlertsPage() {
             <h2 className="mb-4 font-semibold text-xl">
               {config.jobAlerts.form?.heading || 'Subscribe for Updates'}
             </h2>
-            <p className="mb-6 text-sm text-zinc-600">
+            <p className="mb-6 text-sm text-zinc-600 dark:text-zinc-400">
               {config.jobAlerts.form?.description ||
                 "Get notified when new jobs are posted. We'll also subscribe you to Joblo newsletter."}
             </p>

@@ -22,14 +22,14 @@ export function AuthNavStatus({
     return (
       <div className={`flex items-center gap-3 text-sm ${className}`}>
         <Link
-          className="text-zinc-600 hover:text-zinc-900"
+          className="text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"
           href="/dashboard"
           onClick={onNavigate}
         >
           {session.user.name || session.user.email}
         </Link>
         <button
-          className="text-zinc-600 hover:text-zinc-900"
+          className="text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"
           onClick={() => {
             onNavigate?.();
             signOut({ callbackUrl: '/' });
@@ -45,14 +45,14 @@ export function AuthNavStatus({
   return (
     <div className={`flex items-center gap-3 text-sm ${className}`}>
       <Link
-        className="text-zinc-600 hover:text-zinc-900"
+        className="text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"
         href="/sign-in"
         onClick={onNavigate}
       >
         Sign in
       </Link>
       <Link
-        className="text-zinc-600 hover:text-zinc-900"
+        className="text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"
         href="/sign-up"
         onClick={onNavigate}
       >

@@ -17,12 +17,12 @@ export default function SignUpPage() {
       <div className="container mx-auto px-4">
         <div className="mx-auto mb-8 max-w-md text-center">
           <h1 className="font-bold text-2xl">Create an employer account</h1>
-          <p className="mt-2 text-sm text-zinc-600">
+          <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
             Post jobs and feature listings above the aggregated noise.
           </p>
         </div>
         <SignUpForm />
-        <p className="mt-6 text-center text-sm text-zinc-600">
+        <p className="mt-6 text-center text-sm text-zinc-600 dark:text-zinc-400">
           Already have an account?{' '}
           <Link className="underline hover:no-underline" href="/sign-in">
             Sign in

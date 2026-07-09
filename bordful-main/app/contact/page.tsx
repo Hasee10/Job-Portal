@@ -92,7 +92,7 @@ export default function ContactPage() {
           <MetadataBreadcrumb metadata={metadata} pathname="/contact" />
         </div>
 
-        <h2 className="mb-8 text-center font-semibold text-2xl text-zinc-900">
+        <h2 className="mb-8 text-center font-semibold text-2xl text-zinc-900 dark:text-zinc-100">
           {config.contact.supportChannels.title}
         </h2>
 

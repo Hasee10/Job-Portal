@@ -16,12 +16,12 @@ export default function ForgotPasswordPage() {
       <div className="container mx-auto px-4">
         <div className="mx-auto mb-8 max-w-md text-center">
           <h1 className="font-bold text-2xl">Reset your password</h1>
-          <p className="mt-2 text-sm text-zinc-600">
+          <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
             Enter your email and we&apos;ll send you a reset link.
           </p>
         </div>
         <ForgotPasswordForm />
-        <p className="mt-6 text-center text-sm text-zinc-600">
+        <p className="mt-6 text-center text-sm text-zinc-600 dark:text-zinc-400">
           <Link className="underline hover:no-underline" href="/sign-in">
             Back to sign in
           </Link>

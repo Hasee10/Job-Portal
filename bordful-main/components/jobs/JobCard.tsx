@@ -46,8 +46,8 @@ export function JobCard({ job }: { job: Job }) {
       <Link
         className={`block rounded-lg border p-4 transition-all sm:p-5 ${
           job.featured
-            ? 'bg-zinc-100 hover:bg-zinc-50'
-            : 'hover:border-gray-400'
+            ? 'bg-zinc-100 hover:bg-zinc-50 dark:bg-zinc-900 dark:hover:bg-zinc-800'
+            : 'hover:border-gray-400 dark:hover:border-zinc-600'
         }`}
         href={`/jobs/${generateJobSlug(job.title, job.company)}`}
       >
@@ -69,8 +69,10 @@ export function JobCard({ job }: { job: Job }) {
               </JobBadge>
             )}
           </div>
-          <div className="text-gray-600 text-sm">{job.company}</div>
-          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-gray-500 text-xs">
+          <div className="text-gray-600 text-sm dark:text-zinc-400">
+            {job.company}
+          </div>
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-gray-500 text-xs dark:text-zinc-400">
             <span className="whitespace-nowrap">{job.type}</span>
             {showSalary && (
               <>

@@ -10,7 +10,7 @@ export function JobListings({ jobs, showFiltered = true }: JobListingsProps) {
   return (
     <div className="space-y-4">
       {showFiltered && (
-        <p className="text-gray-500 text-sm">
+        <p className="text-gray-500 dark:text-gray-500 text-sm">
           Showing {jobs.length.toLocaleString()}{' '}
           {jobs.length === 1 ? 'position' : 'positions'}
         </p>

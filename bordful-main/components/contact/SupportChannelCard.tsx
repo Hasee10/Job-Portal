@@ -68,13 +68,13 @@ export function SupportChannelCard({
               />
             </div>
           ) : (
-            <IconComponent className="h-5 w-5 text-zinc-700" />
+            <IconComponent className="h-5 w-5 text-zinc-700 dark:text-zinc-300" />
           )}
         </div>
-        <h3 className="font-medium text-base text-zinc-900">{title}</h3>
+        <h3 className="font-medium text-base text-zinc-900 dark:text-zinc-100">{title}</h3>
       </div>
       <div className="flex-grow pb-6">
-        <p className="text-sm text-zinc-600 leading-relaxed">{description}</p>
+        <p className="text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed">{description}</p>
       </div>
       <div className="mt-auto pt-0">
         <Button

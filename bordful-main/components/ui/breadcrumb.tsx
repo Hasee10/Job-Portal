@@ -154,14 +154,14 @@ function ServerBreadcrumb({
                     <span
                       aria-current="page"
                       aria-disabled="true"
-                      className="font-normal text-gray-900"
+                      className="font-normal text-gray-900 dark:text-gray-100"
                       role="link"
                     >
                       {item.name}
                     </span>
                   ) : (
                     <a
-                      className="text-gray-500 transition-colors hover:text-foreground"
+                      className="text-gray-500 dark:text-gray-500 transition-colors hover:text-foreground"
                       href={item.url}
                     >
                       {item.name}
@@ -172,7 +172,7 @@ function ServerBreadcrumb({
                 {!isLastItem && (
                   <li
                     aria-hidden="true"
-                    className="mx-[-0.25rem] text-gray-300 [&>svg]:h-3.5 [&>svg]:w-3.5"
+                    className="mx-[-0.25rem] text-gray-300 dark:text-gray-700 [&>svg]:h-3.5 [&>svg]:w-3.5"
                     role="presentation"
                   >
                     <ChevronRight />

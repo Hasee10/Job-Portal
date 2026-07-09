@@ -486,7 +486,7 @@ function HomePageContent({
                 <h2 className="flex flex-wrap items-center gap-2 font-semibold text-xl tracking-tight">
                   Latest Opportunities
                   {page > 1 && (
-                    <span className="font-normal text-gray-500">
+                    <span className="font-normal text-gray-500 dark:text-gray-500">
                       Page {page}
                     </span>
                   )}

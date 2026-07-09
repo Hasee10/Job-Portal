@@ -95,28 +95,28 @@ export default function AboutPage() {
 
           <div className="w-full">
             {/* Mission Section */}
-            <h2 className="mb-4 font-semibold text-xl text-zinc-900">
+            <h2 className="mb-4 font-semibold text-xl text-zinc-900 dark:text-zinc-100">
               {config.about.sections?.mission?.title || 'Mission'}
             </h2>
-            <p className="mb-8 text-zinc-600 leading-relaxed">
+            <p className="mb-8 text-zinc-600 dark:text-zinc-400 leading-relaxed">
               {config.about.sections?.mission?.content ||
                 "We're on a mission to connect talented professionals with meaningful opportunities and help organizations find the perfect candidates to drive their success."}
             </p>
 
             {/* Story Section */}
-            <h2 className="mb-4 font-semibold text-xl text-zinc-900">
+            <h2 className="mb-4 font-semibold text-xl text-zinc-900 dark:text-zinc-100">
               {config.about.sections?.story?.title || 'Story'}
             </h2>
-            <p className="mb-8 text-zinc-600 leading-relaxed">
+            <p className="mb-8 text-zinc-600 dark:text-zinc-400 leading-relaxed">
               {config.about.sections?.story?.content ||
                 "Founded with a passion for revolutionizing the job search experience, our platform was built to address the challenges faced by both job seekers and employers in today's competitive market."}
             </p>
 
             {/* Team Section */}
-            <h2 className="mb-4 font-semibold text-xl text-zinc-900">
+            <h2 className="mb-4 font-semibold text-xl text-zinc-900 dark:text-zinc-100">
               {config.about.sections?.team?.title || 'Team'}
             </h2>
-            <p className="mb-8 text-zinc-600 leading-relaxed">
+            <p className="mb-8 text-zinc-600 dark:text-zinc-400 leading-relaxed">
               {config.about.sections?.team?.content ||
                 'Our diverse team brings together expertise from recruitment, technology, and design to create an innovative job board solution that puts user experience first.'}
             </p>
@@ -124,10 +124,10 @@ export default function AboutPage() {
             {/* Contact Us Section - Conditionally rendered based on config */}
             {config.about.contact?.show && (
               <>
-                <h2 className="mb-4 font-semibold text-xl text-zinc-900">
+                <h2 className="mb-4 font-semibold text-xl text-zinc-900 dark:text-zinc-100">
                   {config.about.contact.title || 'Get in Touch'}
                 </h2>
-                <p className="mb-6 text-zinc-600 leading-relaxed">
+                <p className="mb-6 text-zinc-600 dark:text-zinc-400 leading-relaxed">
                   {config.about.contact.description ||
                     'Have questions or want to learn more about our services? We&apos;d love to hear from you.'}
                 </p>

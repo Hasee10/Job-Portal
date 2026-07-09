@@ -73,7 +73,7 @@ function FilterItem({
       </div>
       <span
         className={`rounded-full px-2 py-0.5 text-xs ${
-          checked ? 'bg-zinc-900 text-zinc-50' : 'bg-zinc-100 text-zinc-500'
+          checked ? 'bg-zinc-900 text-zinc-50' : 'bg-zinc-100 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400'
         }`}
       >
         {count.toLocaleString()}
@@ -102,13 +102,13 @@ function SwitchItem({
     <div className="flex items-center justify-between">
       <div className="flex items-center space-x-2">
         <Switch checked={checked} id={id} onCheckedChange={onCheckedChange} />
-        <Label className="font-normal text-gray-500 text-sm" htmlFor={id}>
+        <Label className="font-normal text-gray-500 dark:text-gray-500 text-sm" htmlFor={id}>
           {checked ? 'Yes' : 'No'}
         </Label>
       </div>
       <span
         className={`rounded-full px-2 py-0.5 text-xs ${
-          checked ? 'bg-zinc-900 text-zinc-50' : 'bg-zinc-100 text-zinc-500'
+          checked ? 'bg-zinc-900 text-zinc-50' : 'bg-zinc-100 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400'
         }`}
       >
         {count.toLocaleString()}
@@ -420,7 +420,7 @@ export function JobFilters({
           <button
             aria-controls="filter-content"
             aria-expanded={isExpanded}
-            className="flex items-center text-sm text-zinc-900 md:hidden"
+            className="flex items-center text-sm text-zinc-900 dark:text-zinc-100 md:hidden"
             onClick={() => setIsExpanded(!isExpanded)}
           >
             {isExpanded ? (
@@ -434,7 +434,7 @@ export function JobFilters({
           </button>
         </div>
         <button
-          className="text-sm text-zinc-900 underline underline-offset-4 transition-colors hover:text-zinc-700"
+          className="text-sm text-zinc-900 dark:text-zinc-100 underline underline-offset-4 transition-colors hover:text-zinc-700 dark:hover:text-zinc-300"
           onClick={handleClearFilters}
         >
           Clear all
@@ -487,7 +487,7 @@ export function JobFilters({
             ))}
           </div>
           <button
-            className="text-sm text-zinc-900 underline underline-offset-4 transition-colors hover:text-zinc-700"
+            className="text-sm text-zinc-900 dark:text-zinc-100 underline underline-offset-4 transition-colors hover:text-zinc-700 dark:hover:text-zinc-300"
             onClick={() => setShowAllLevels(!showAllLevels)}
           >
             {showAllLevels ? 'Show fewer levels' : 'Show more levels'}
@@ -555,7 +555,7 @@ export function JobFilters({
           </div>
           {languageEntries.additional.length > 0 && (
             <button
-              className="text-sm text-zinc-900 underline underline-offset-4 transition-colors hover:text-zinc-700"
+              className="text-sm text-zinc-900 dark:text-zinc-100 underline underline-offset-4 transition-colors hover:text-zinc-700 dark:hover:text-zinc-300"
               onClick={() => setShowAllLanguages(!showAllLanguages)}
             >
               {showAllLanguages

@@ -30,7 +30,7 @@ export default function PrivacyPage() {
         <div className="mb-8">
           <div className="space-y-2">
             <h1 className="font-semibold text-2xl">Privacy & Cookies Policy</h1>
-            <div className="text-gray-500 text-sm">
+            <div className="text-gray-500 dark:text-gray-500 text-sm">
               Last updated:{' '}
               {new Date().toLocaleDateString('en-US', {
                 year: 'numeric',

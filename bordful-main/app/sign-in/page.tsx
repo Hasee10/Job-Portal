@@ -18,7 +18,7 @@ export default function SignInPage() {
       <div className="container mx-auto px-4">
         <div className="mx-auto mb-8 max-w-md text-center">
           <h1 className="font-bold text-2xl">Sign in</h1>
-          <p className="mt-2 text-sm text-zinc-600">
+          <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
             Employer accounts only - job seekers browse without signing in.
           </p>
         </div>
@@ -27,7 +27,7 @@ export default function SignInPage() {
         <Suspense fallback={null}>
           <SignInForm />
         </Suspense>
-        <p className="mt-6 text-center text-sm text-zinc-600">
+        <p className="mt-6 text-center text-sm text-zinc-600 dark:text-zinc-400">
           Don&apos;t have an account?{' '}
           <Link className="underline hover:no-underline" href="/sign-up">
             Sign up

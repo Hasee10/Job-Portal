@@ -82,7 +82,7 @@ export function SignInForm() {
                 Password
               </Label>
               <a
-                className="text-xs text-zinc-600 underline hover:no-underline"
+                className="text-xs text-zinc-600 dark:text-zinc-400 underline hover:no-underline"
                 href="/forgot-password"
               >
                 Forgot password?

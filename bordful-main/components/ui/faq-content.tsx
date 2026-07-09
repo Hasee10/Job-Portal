@@ -223,7 +223,7 @@ export function FAQContent({ categories }: FAQContentProps) {
           {searchTerm && (
             <button
               aria-label="Clear search"
-              className="-translate-y-1/2 absolute top-1/2 right-3 text-gray-400 hover:text-gray-600"
+              className="-translate-y-1/2 absolute top-1/2 right-3 text-gray-400 dark:text-gray-600 hover:text-gray-600 dark:hover:text-gray-400"
               onClick={() => {
                 setSearchTerm('');
                 setExpandedItems([]);
@@ -240,7 +240,7 @@ export function FAQContent({ categories }: FAQContentProps) {
       <div className="space-y-10">
         {filteredCategories.length === 0 ? (
           <div className="py-8 text-center">
-            <p className="mb-4 text-zinc-600">
+            <p className="mb-4 text-zinc-600 dark:text-zinc-400">
               No results found for &quot;{searchTerm}&quot;
             </p>
             <Button
@@ -268,12 +268,12 @@ export function FAQContent({ categories }: FAQContentProps) {
                 }}
               >
                 <div className="flex items-center gap-2">
-                  <h2 className="font-semibold text-lg text-zinc-900">
+                  <h2 className="font-semibold text-lg text-zinc-900 dark:text-zinc-100">
                     {category.title}
                   </h2>
                   <button
                     aria-label={`Copy link to ${category.title} section`}
-                    className="text-zinc-400 transition-colors hover:text-zinc-600"
+                    className="text-zinc-400 dark:text-zinc-600 transition-colors hover:text-zinc-600 dark:hover:text-zinc-400"
                     onClick={() => {
                       navigator.clipboard.writeText(
                         `${window.location.origin}/faq#${categoryId}`
@@ -299,10 +299,10 @@ export function FAQContent({ categories }: FAQContentProps) {
                         key={itemIndex}
                         value={itemId}
                       >
-                        <AccordionTrigger className="py-4 font-medium text-sm text-zinc-800 hover:no-underline">
+                        <AccordionTrigger className="py-4 font-medium text-sm text-zinc-800 dark:text-zinc-200 hover:no-underline">
                           {item.question}
                         </AccordionTrigger>
-                        <AccordionContent className="pt-1 pb-4 text-sm text-zinc-600">
+                        <AccordionContent className="pt-1 pb-4 text-sm text-zinc-600 dark:text-zinc-400">
                           {item.isRichText ? (
                             <div className="markdown-content">
                               <ReactMarkdown
@@ -340,10 +340,10 @@ export function FAQContent({ categories }: FAQContentProps) {
 
         {/* Contact Section */}
         <div className="mt-12 border-zinc-200 border-t pt-8 text-center">
-          <h2 className="mb-2 font-semibold text-lg text-zinc-900">
+          <h2 className="mb-2 font-semibold text-lg text-zinc-900 dark:text-zinc-100">
             Still have questions?
           </h2>
-          <p className="mb-6 text-sm text-zinc-600">
+          <p className="mb-6 text-sm text-zinc-600 dark:text-zinc-400">
             If you couldn&apos;t find the answer to your question, feel free to
             contact us.
           </p>

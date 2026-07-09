@@ -24,13 +24,13 @@ export default async function DashboardPage() {
           <h1 className="font-bold text-2xl">
             Welcome, {session.user.name || session.user.email}
           </h1>
-          <p className="mt-2 text-sm text-zinc-600">
+          <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
             Signed in as {session.user.email}.
           </p>
 
           <div className="mt-8 rounded-lg border p-6">
             <h2 className="font-semibold text-lg">Employer dashboard</h2>
-            <p className="mt-2 text-sm text-zinc-600">
+            <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
               Job posting management, featured listings, and applicant
               tracking land here next - sign-in/sign-up is wired and working;
               this is a placeholder for the tools those tie into.
