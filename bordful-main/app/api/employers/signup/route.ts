@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import config from '@/config';
 import { createEmployer, EmployerAuthError } from '@/lib/auth/employers';
-import { emailProvider } from '@/lib/email';
+import { sendEmail } from '@/lib/email/resend';
 import { renderWelcomeEmail } from '@/lib/email/templates/welcome';
 import { createRateLimiter, getClientIp } from '@/lib/utils/rate-limit';
 
@@ -31,19 +31,14 @@ export async function POST(request: Request) {
 
     // Fire-and-catch, not fire-and-forget: awaited so it completes before
     // this serverless invocation can be frozen, but a failure here (e.g. no
-    // Encharge flow configured yet) must never fail signup itself - the
+    // RESEND_API_KEY configured yet) must never fail signup itself - the
     // account is already created at this point.
     try {
       const { subject, html } = renderWelcomeEmail({
         companyName: employer.companyName || employer.email,
         dashboardUrl: `${config.url}/dashboard`,
       });
-      await emailProvider.sendTransactionalEmail({
-        email: employer.email,
-        eventName: 'Employer Welcome Email',
-        subject,
-        html,
-      });
+      await sendEmail({ to: employer.email, subject, html });
     } catch (error) {
       console.error('[api/employers/signup] welcome email failed', error);
     }

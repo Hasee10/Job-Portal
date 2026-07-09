@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import config from '@/config';
 import { createPasswordResetToken } from '@/lib/auth/employers';
-import { emailProvider } from '@/lib/email';
+import { sendEmail } from '@/lib/email/resend';
+import { renderPasswordResetEmail } from '@/lib/email/templates/password-reset';
 import { EmailProviderError } from '@/lib/email/types';
 import { createRateLimiter, getClientIp } from '@/lib/utils/rate-limit';
 
@@ -38,7 +39,8 @@ export async function POST(request: Request) {
     if (token) {
       const resetUrl = `${config.url}/reset-password?token=${token}`;
       try {
-        await emailProvider.sendPasswordReset({ email, resetUrl });
+        const { subject, html } = renderPasswordResetEmail({ resetUrl });
+        await sendEmail({ to: email, subject, html });
       } catch (error) {
         // Don't let a provider hiccup (or a not-yet-configured deployment)
         // leak into the response - the generic message goes out either way.
