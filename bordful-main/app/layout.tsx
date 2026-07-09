@@ -3,6 +3,8 @@ import type { Metadata } from 'next';
 import Script, { type ScriptProps } from 'next/script';
 import { NuqsAdapter } from 'nuqs/adapters/next/app';
 import type { ReactNode } from 'react';
+import { auth } from '@/auth';
+import { AuthSessionProvider } from '@/components/auth/session-provider';
 import { Footer } from '@/components/ui/footer';
 import { Nav } from '@/components/ui/nav';
 import { Toaster } from '@/components/ui/toaster';
@@ -50,7 +52,15 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({ children }: { children: ReactNode }) {
+export default async function RootLayout({
+  children,
+}: {
+  children: ReactNode;
+}) {
+  // Read the session server-side so it's available on first paint (no
+  // client-side fetch/loading flash for the Nav's sign-in state).
+  const session = await auth();
+
   // Get the current font family from config
   const fontFamily = siteConfig?.font?.family || 'geist';
 
@@ -80,14 +90,16 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             {...script.attributes}
           />
         ))}
-        <div className="flex min-h-screen flex-col">
-          <Nav />
-          <main className="flex-1">
-            <NuqsAdapter>{children}</NuqsAdapter>
-          </main>
-          <Footer />
-        </div>
-        <Toaster />
+        <AuthSessionProvider session={session}>
+          <div className="flex min-h-screen flex-col">
+            <Nav />
+            <main className="flex-1">
+              <NuqsAdapter>{children}</NuqsAdapter>
+            </main>
+            <Footer />
+          </div>
+          <Toaster />
+        </AuthSessionProvider>
         {siteConfig.scripts.body.map((script: CustomScript) => (
           <Script
             key={`body-script-${script.src || 'inline'}`}
