@@ -6,6 +6,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { PasswordInput } from '@/components/ui/password-input';
 import config from '@/config';
 import { useToast } from '@/hooks/use-toast';
 import { resolveColor } from '@/lib/utils/colors';
@@ -87,13 +88,12 @@ export function SignInForm() {
                 Forgot password?
               </a>
             </div>
-            <Input
+            <PasswordInput
               disabled={isSubmitting}
               id="password"
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Your password"
               required
-              type="password"
               value={password}
             />
           </div>

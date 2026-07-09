@@ -3,8 +3,8 @@
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { PasswordInput } from '@/components/ui/password-input';
 import config from '@/config';
 import { useToast } from '@/hooks/use-toast';
 import { resolveColor } from '@/lib/utils/colors';
@@ -13,6 +13,7 @@ export function ResetPasswordForm() {
   const searchParams = useSearchParams();
   const token = searchParams.get('token') || '';
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -47,6 +48,10 @@ export function ResetPasswordForm() {
     e.preventDefault();
     if (password.length < 8) {
       setError('Password must be at least 8 characters.');
+      return;
+    }
+    if (confirmPassword !== password) {
+      setError('Passwords do not match.');
       return;
     }
 
@@ -86,14 +91,27 @@ export function ResetPasswordForm() {
           <Label className="font-medium text-sm" htmlFor="password">
             New password
           </Label>
-          <Input
+          <PasswordInput
             disabled={isSubmitting}
             id="password"
             onChange={(e) => setPassword(e.target.value)}
             placeholder="At least 8 characters"
             required
-            type="password"
             value={password}
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label className="font-medium text-sm" htmlFor="confirmPassword">
+            Confirm new password
+          </Label>
+          <PasswordInput
+            disabled={isSubmitting}
+            id="confirmPassword"
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            placeholder="Re-enter your new password"
+            required
+            value={confirmPassword}
           />
           {error && <p className="mt-1 text-red-500 text-sm">{error}</p>}
         </div>

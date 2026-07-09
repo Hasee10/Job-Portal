@@ -6,6 +6,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { PasswordInput } from '@/components/ui/password-input';
 import config from '@/config';
 import { useToast } from '@/hooks/use-toast';
 import { resolveColor } from '@/lib/utils/colors';
@@ -16,20 +17,30 @@ export function SignUpForm() {
   const [companyName, setCompanyName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errors, setErrors] = useState<{ email?: string; password?: string }>(
-    {}
-  );
+  const [errors, setErrors] = useState<{
+    email?: string;
+    password?: string;
+    confirmPassword?: string;
+  }>({});
   const { toast } = useToast();
   const router = useRouter();
 
   const validate = () => {
-    const newErrors: { email?: string; password?: string } = {};
+    const newErrors: {
+      email?: string;
+      password?: string;
+      confirmPassword?: string;
+    } = {};
     if (!email || !EMAIL_REGEX.test(email)) {
       newErrors.email = 'Enter a valid email address.';
     }
     if (password.length < 8) {
       newErrors.password = 'Password must be at least 8 characters.';
+    }
+    if (confirmPassword !== password) {
+      newErrors.confirmPassword = 'Passwords do not match.';
     }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -130,17 +141,35 @@ export function SignUpForm() {
             <Label className="font-medium text-sm" htmlFor="password">
               Password *
             </Label>
-            <Input
+            <PasswordInput
               disabled={isSubmitting}
               id="password"
               onChange={(e) => setPassword(e.target.value)}
               placeholder="At least 8 characters"
               required
-              type="password"
               value={password}
             />
             {errors.password && (
               <p className="mt-1 text-red-500 text-sm">{errors.password}</p>
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <Label className="font-medium text-sm" htmlFor="confirmPassword">
+              Confirm password *
+            </Label>
+            <PasswordInput
+              disabled={isSubmitting}
+              id="confirmPassword"
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              placeholder="Re-enter your password"
+              required
+              value={confirmPassword}
+            />
+            {errors.confirmPassword && (
+              <p className="mt-1 text-red-500 text-sm">
+                {errors.confirmPassword}
+              </p>
             )}
           </div>
         </div>
