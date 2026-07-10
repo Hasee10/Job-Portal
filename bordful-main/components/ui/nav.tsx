@@ -175,7 +175,7 @@ const SOCIAL_PLATFORMS: SocialPlatformConfig[] = [
     src: '/assets/social/rss.svg',
     alt: 'RSS Feed',
     labelPrefix: 'Subscribe to',
-    enabled: (config) => config.rssFeed?.enabled,
+    enabled: () => false,
     getUrl: () => '/feed.xml',
   },
   {

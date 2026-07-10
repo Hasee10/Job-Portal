@@ -9,11 +9,5 @@
 
 import type { Config } from './config.example';
 
-export const config = {
-  rssFeed: {
-    enabled: true,
-    showInNavigation: false,
-    showInFooter: true,
-  },
-} satisfies Partial<Config>;
+export const config = {} satisfies Partial<Config>;
 
