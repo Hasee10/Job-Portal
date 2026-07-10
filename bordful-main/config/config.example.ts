@@ -627,7 +627,7 @@ export const config = {
           {
             question: 'Is Joblo free to use?',
             answer:
-              'Yes, browsing jobs on Joblo is always free. Joblo is built on Bordful, an open-source project available under the MIT license.',
+              'Yes, browsing jobs on Joblo is completely free. You can search and apply to any listed role at no cost.',
           },
           {
             question: 'How often are job listings updated?',
@@ -733,18 +733,8 @@ export const config = {
 
   // Scripts Configuration (analytics, tracking, etc.)
   scripts: {
-    head: [
-      // Example: Umami Analytics (loads early but non-blocking)
-      {
-        src: 'https://umami.craftled.com/script.js',
-        strategy: 'afterInteractive',
-        attributes: {
-          'data-website-id': 'b93ebd4d-b4fd-49f3-9507-c32245ac447f',
-          defer: '',
-        },
-      },
-    ] as CustomScript[],
-    body: [] as CustomScript[], // Scripts to load at the end of body
+    head: [] as CustomScript[],
+    body: [] as CustomScript[],
   },
 
   // Navigation
@@ -919,7 +909,7 @@ export const config = {
     copyright: {
       show: true,
       startYear: 2024,
-      text: 'Joblo - built with the open-source Bordful job board template.',
+      text: '© 2024-2026 Joblo. All rights reserved.',
     },
 
     // Built with section
