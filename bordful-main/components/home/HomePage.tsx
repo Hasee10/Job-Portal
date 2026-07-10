@@ -413,7 +413,7 @@ function HomePageContent({
       >
         {/* Search Bar - Replace with our new component */}
         <div className="max-w-[480px]">
-          <JobSearchInput />
+          <JobSearchInput jobs={initialJobs} />
         </div>
 
         {/* Browse all jobs CTA */}
