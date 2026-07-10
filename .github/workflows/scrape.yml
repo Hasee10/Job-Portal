@@ -118,3 +118,20 @@ jobs:
           name: scraper-log
           path: job-scraper/logs/
           if-no-files-found: ignore
+
+      # ── Node.js RSS scraper (Mustakbil + jobs.com.pk) ────────────────────
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: bordful-main/package-lock.json
+
+      - name: Install Node dependencies
+        working-directory: bordful-main
+        run: npm ci
+
+      - name: Run RSS scraper
+        working-directory: bordful-main
+        env:
+          COCKROACH_WRITER_URL: ${{ secrets.COCKROACH_DATABASE_URL_CI }}
+        run: npx tsx scripts/scraper/index.ts rss
