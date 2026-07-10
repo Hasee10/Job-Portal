@@ -31,6 +31,7 @@ type FilterType =
   | 'salary'
   | 'visa'
   | 'language'
+  | 'company'
   | 'clear';
 type FilterValue = string[] | boolean | CareerLevel[] | LanguageCode[] | true;
 
@@ -43,6 +44,7 @@ type JobFiltersProps = {
     salaryRanges: string[];
     visa: boolean;
     languages: LanguageCode[];
+    companies: string[];
   };
   jobs: Job[];
 };
@@ -150,6 +152,12 @@ export function JobFilters({
     parseAsArrayOf(parseAsString).withDefault([])
   );
 
+  // URL state for company filter using nuqs
+  const [companiesParam, setCompaniesParam] = useQueryState(
+    'companies',
+    parseAsArrayOf(parseAsString).withDefault([])
+  );
+
   // URL state for boolean filters using nuqs
   const [remoteParam, setRemoteParam] = useQueryState(
     'remote',
@@ -200,6 +208,10 @@ export function JobFilters({
 
     if (languagesParam.length === 0 && initialFilters.languages.length > 0) {
       setLanguagesParam(initialFilters.languages);
+    }
+
+    if (companiesParam.length === 0 && initialFilters.companies.length > 0) {
+      setCompaniesParam(initialFilters.companies);
     }
 
     if (!remoteParam && initialFilters.remote) {
@@ -267,6 +279,14 @@ export function JobFilters({
     syncToUrl(setLanguagesParam(newValues.length ? newValues : null));
   };
 
+  const handleCompanyChange = (checked: boolean, value: string) => {
+    const newValues = checked
+      ? [...companiesParam, value]
+      : companiesParam.filter((item) => item !== value);
+    onFilterChange('company', newValues);
+    syncToUrl(setCompaniesParam(newValues.length ? newValues : null));
+  };
+
   const handleRemoteChange = (checked: boolean) => {
     onFilterChange('remote', checked);
     syncToUrl(setRemoteParam(checked || null));
@@ -280,6 +300,7 @@ export function JobFilters({
   // Toggle states for expandable sections
   const [showAllLevels, setShowAllLevels] = useState(false);
   const [showAllLanguages, setShowAllLanguages] = useState(false);
+  const [showAllCompanies, setShowAllCompanies] = useState(false);
 
   // Predefined lists
   const initialLevels: CareerLevel[] = [
@@ -316,6 +337,7 @@ export function JobFilters({
         setRolesParam(null),
         setSalaryRangesParam(null),
         setLanguagesParam(null),
+        setCompaniesParam(null),
         setRemoteParam(null),
         setVisaParam(null),
       ])
@@ -385,6 +407,16 @@ export function JobFilters({
         },
         {} as Record<LanguageCode, number>
       ),
+
+      companies: jobs.reduce(
+        (acc, job) => {
+          if (job.company) {
+            acc[job.company] = (acc[job.company] || 0) + 1;
+          }
+          return acc;
+        },
+        {} as Record<string, number>
+      ),
     }),
     [jobs]
   );
@@ -411,6 +443,17 @@ export function JobFilters({
   const visibleLevels = showAllLevels
     ? [...initialLevels, ...additionalLevels]
     : initialLevels;
+
+  // Company entries sorted by count desc
+  const companyEntries = useMemo(() => {
+    const entries = Object.entries(counts.companies)
+      .sort((a, b) => b[1] - a[1])
+      .filter(([, count]) => count > 0);
+    return {
+      visible: showAllCompanies ? entries : entries.slice(0, 6),
+      extra: entries.length > 6 ? entries.length - 6 : 0,
+    };
+  }, [counts.companies, showAllCompanies]);
 
   return (
     <div className="relative rounded-lg border bg-muted p-5">
@@ -451,6 +494,35 @@ export function JobFilters({
         }`}
         id="filter-content"
       >
+        {/* Company */}
+        {companyEntries.visible.length > 0 && (
+          <div className="space-y-4">
+            <h3 className="font-semibold text-md">Company</h3>
+            <div className="space-y-3">
+              {companyEntries.visible.map(([company, count]) => (
+                <FilterItem
+                  checked={companiesParam.includes(company)}
+                  count={count}
+                  id={`company-${company.toLowerCase().replace(/\s+/g, '-')}`}
+                  key={company}
+                  label={company}
+                  onCheckedChange={(checked) => handleCompanyChange(checked, company)}
+                />
+              ))}
+            </div>
+            {companyEntries.extra > 0 && (
+              <button
+                className="text-sm text-zinc-900 dark:text-zinc-100 underline underline-offset-4 transition-colors hover:text-zinc-700 dark:hover:text-zinc-300"
+                onClick={() => setShowAllCompanies(!showAllCompanies)}
+              >
+                {showAllCompanies
+                  ? 'Show fewer companies'
+                  : `Show ${companyEntries.extra} more compan${companyEntries.extra === 1 ? 'y' : 'ies'}`}
+              </button>
+            )}
+          </div>
+        )}
+
         {/* Job Type */}
         <div className="space-y-4">
           <h3 className="font-semibold text-md">Job Type</h3>

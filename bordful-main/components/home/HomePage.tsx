@@ -27,6 +27,7 @@ type Filters = {
   salaryRanges: string[];
   visa: boolean;
   languages: LanguageCode[];
+  companies: string[];
 };
 
 type FilterType =
@@ -36,6 +37,7 @@ type FilterType =
   | 'salary'
   | 'visa'
   | 'language'
+  | 'company'
   | 'clear';
 type FilterValue = string[] | boolean | CareerLevel[] | LanguageCode[] | true;
 
@@ -62,6 +64,7 @@ function HomePageContent({
     visa: searchParams.get('visa') === 'true',
     languages: (searchParams.get('languages')?.split(',').filter(Boolean) ||
       []) as LanguageCode[],
+    companies: searchParams.get('companies')?.split(',').filter(Boolean) || [],
   };
 
   const [filters, setFilters] = useState<Filters>({
@@ -71,6 +74,7 @@ function HomePageContent({
     salaryRanges: initialFilters?.salaryRanges || [],
     visa: initialFilters?.visa,
     languages: initialFilters?.languages || ([] as LanguageCode[]),
+    companies: initialFilters?.companies || [],
   });
   const [pendingUrlUpdate, setPendingUrlUpdate] = useState<Record<
     string,
@@ -117,6 +121,9 @@ function HomePageContent({
         languages: newFilters.languages.length
           ? newFilters.languages.join(',')
           : null,
+        companies: newFilters.companies.length
+          ? newFilters.companies.join(',')
+          : null,
         page: '1', // Reset to first page when filters change
       };
 
@@ -135,6 +142,7 @@ function HomePageContent({
           salaryRanges: [],
           visa: false,
           languages: [],
+          companies: [],
         };
         setFilters(clearedFilters);
         updateFilterParams(clearedFilters);
@@ -195,6 +203,16 @@ function HomePageContent({
               JSON.stringify(value) !== JSON.stringify(prev.languages)
             ) {
               newFilters.languages = value as LanguageCode[];
+            } else {
+              return prev;
+            }
+            break;
+          case 'company':
+            if (
+              Array.isArray(value) &&
+              JSON.stringify(value) !== JSON.stringify(prev.companies)
+            ) {
+              newFilters.companies = value as string[];
             } else {
               return prev;
             }
@@ -273,6 +291,13 @@ function HomePageContent({
         }
         return filters.languages.some((lang) => job.languages.includes(lang));
       });
+    }
+
+    // Apply company filter
+    if (filters.companies.length > 0) {
+      filtered = filtered.filter((job) =>
+        filters.companies.includes(job.company)
+      );
     }
 
     // Apply sorting
@@ -367,6 +392,17 @@ function HomePageContent({
       .length;
   }, [initialJobs]);
 
+  // Activity stats
+  const jobsThisWeek = useMemo(() => {
+    const weekAgo = new Date();
+    weekAgo.setDate(weekAgo.getDate() - 7);
+    return initialJobs.filter((job) => new Date(job.posted_date) > weekAgo).length;
+  }, [initialJobs]);
+
+  const companiesHiringCount = useMemo(() => {
+    return new Set(initialJobs.map((job) => job.company)).size;
+  }, [initialJobs]);
+
   return (
     <main className="min-h-screen bg-background">
       <HeroSection
@@ -378,6 +414,17 @@ function HomePageContent({
         {/* Search Bar - Replace with our new component */}
         <div className="max-w-[480px]">
           <JobSearchInput />
+        </div>
+
+        {/* Browse all jobs CTA */}
+        <div className="mt-3">
+          <a
+            href="#jobs-section"
+            className="inline-flex items-center gap-1.5 text-sm font-medium underline underline-offset-4 opacity-75 hover:opacity-100 transition-opacity"
+            style={{ color: config.ui?.heroStatsColor || 'inherit' }}
+          >
+            Browse all {totalActiveJobs.toLocaleString()} open positions ↓
+          </a>
         </div>
 
         {/* Quick Stats - Reverted to original structure with color customization */}
@@ -476,11 +523,57 @@ function HomePageContent({
         )}
       </HeroSection>
 
+      {/* Activity Bar */}
+      <div className="border-b bg-muted/40" id="jobs-section">
+        <div className="container mx-auto flex flex-wrap items-center gap-x-6 gap-y-1 px-4 py-2.5 text-xs text-muted-foreground">
+          <span>
+            <span className="font-semibold text-foreground">{jobsAddedToday.toLocaleString()}</span> added today
+          </span>
+          <span className="hidden sm:inline">·</span>
+          <span>
+            <span className="font-semibold text-foreground">{jobsThisWeek.toLocaleString()}</span> this week
+          </span>
+          <span className="hidden sm:inline">·</span>
+          <span>
+            <span className="font-semibold text-foreground">{companiesHiringCount.toLocaleString()}</span> companies hiring
+          </span>
+          <span className="hidden sm:inline">·</span>
+          <span>
+            <span className="font-semibold text-foreground">{totalActiveJobs.toLocaleString()}</span> open positions
+          </span>
+        </div>
+      </div>
+
       {/* Jobs Section */}
       <div className="container mx-auto px-4 py-8">
         <div className="flex flex-col justify-between gap-4 md:flex-row md:gap-6 lg:gap-8">
           {/* Main Content */}
           <div className="order-2 flex-[3] md:order-1">
+            {/* Easy Filter Pills */}
+            <div className="mb-4 flex flex-wrap gap-2">
+              {[
+                { label: 'Remote', active: filters.remote, onClick: () => handleFilterChange('remote', !filters.remote) },
+                { label: 'Full-time', active: filters.types.includes('FullTime'), onClick: () => handleFilterChange('type', filters.types.includes('FullTime') ? filters.types.filter(t => t !== 'FullTime') : [...filters.types, 'FullTime']) },
+                { label: 'Contract', active: filters.types.includes('Contract'), onClick: () => handleFilterChange('type', filters.types.includes('Contract') ? filters.types.filter(t => t !== 'Contract') : [...filters.types, 'Contract']) },
+                { label: 'Part-time', active: filters.types.includes('PartTime'), onClick: () => handleFilterChange('type', filters.types.includes('PartTime') ? filters.types.filter(t => t !== 'PartTime') : [...filters.types, 'PartTime']) },
+                { label: '$100K+', active: filters.salaryRanges.includes('$100K - $200K') || filters.salaryRanges.includes('> $200K'), onClick: () => { const high = ['$100K - $200K', '> $200K']; const anyActive = high.some(r => filters.salaryRanges.includes(r)); handleFilterChange('salary', anyActive ? filters.salaryRanges.filter(r => !high.includes(r)) : [...new Set([...filters.salaryRanges, ...high])]); } },
+                { label: 'Visa Sponsor', active: filters.visa, onClick: () => handleFilterChange('visa', !filters.visa) },
+              ].map(({ label, active, onClick }) => (
+                <button
+                  key={label}
+                  onClick={onClick}
+                  type="button"
+                  className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
+                    active
+                      ? 'border-zinc-900 bg-zinc-900 text-white dark:border-zinc-100 dark:bg-zinc-100 dark:text-zinc-900'
+                      : 'border-zinc-200 bg-background text-zinc-600 hover:border-zinc-400 hover:text-zinc-900 dark:border-zinc-700 dark:text-zinc-400 dark:hover:border-zinc-500 dark:hover:text-zinc-100'
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+
             <div className="mb-6 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-end sm:gap-0">
               <div className="w-full space-y-1 sm:w-auto">
                 <h2 className="flex flex-wrap items-center gap-2 font-semibold text-xl tracking-tight">
@@ -537,6 +630,19 @@ function HomePageContent({
                 jobs={initialJobs}
                 onFilterChange={handleFilterChange}
               />
+              {/* Job Alerts Card */}
+              <div className="rounded-lg border bg-muted p-5">
+                <h3 className="font-semibold text-sm">Get job alerts</h3>
+                <p className="mt-1 text-xs text-muted-foreground leading-relaxed">
+                  Be the first to know when new roles matching your interests are posted.
+                </p>
+                <a
+                  href="/job-alerts"
+                  className="mt-3 flex w-full items-center justify-center rounded-md border border-zinc-300 bg-background px-3 py-2 text-xs font-semibold text-foreground transition-colors hover:bg-accent hover:text-accent-foreground dark:border-zinc-600"
+                >
+                  Set up alerts →
+                </a>
+              </div>
               {/* Post Job Banner - Desktop only */}
               <div className="hidden md:block">
                 <PostJobBanner />

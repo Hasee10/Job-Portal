@@ -43,6 +43,7 @@ export function JobsLayout({ filteredJobs }: JobsLayoutProps) {
         | 'salary'
         | 'visa'
         | 'language'
+        | 'company'
         | 'clear',
       value:
         | string[]
@@ -155,6 +156,18 @@ export function JobsLayout({ filteredJobs }: JobsLayoutProps) {
         );
       }
 
+      // Apply company filter
+      if (
+        filterType === 'company' &&
+        Array.isArray(value) &&
+        value.length > 0
+      ) {
+        const companies = value as string[];
+        newFilteredJobs = newFilteredJobs.filter((job) =>
+          companies.includes(job.company)
+        );
+      }
+
       setSelectedJobs(newFilteredJobs);
     },
     [filteredJobs, searchTerm]
@@ -244,6 +257,7 @@ export function JobsLayout({ filteredJobs }: JobsLayoutProps) {
                 salaryRanges: [],
                 visa: false,
                 languages: [],
+                companies: [],
               }}
               jobs={filteredJobs}
               onFilterChange={handleFilterChange}
