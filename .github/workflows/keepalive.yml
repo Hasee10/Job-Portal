@@ -1,0 +1,29 @@
+name: Keepalive
+
+# Pushes a timestamp commit once a month so GitHub never auto-disables
+# scheduled workflows due to 60 days of repository inactivity.
+# Workflow runs alone do NOT count as activity — only pushes do.
+
+on:
+  schedule:
+    - cron: '0 0 1 * *'   # 00:00 UTC on the 1st of every month
+  workflow_dispatch:        # manual trigger if needed
+
+permissions:
+  contents: write
+
+jobs:
+  keepalive:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Bump keepalive timestamp
+        run: |
+          echo "Last keepalive: $(date -u '+%Y-%m-%d %H:%M:%S UTC')" > keepalive.txt
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add keepalive.txt
+          git diff --staged --quiet && echo "No change needed" && exit 0
+          git commit -m "chore: keepalive [skip ci]"
+          git push
