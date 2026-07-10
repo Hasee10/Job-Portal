@@ -240,44 +240,59 @@ export function JobSearchInput({
     document.body
   ) : null;
 
+  const onSearchClick = () => {
+    handleSearch(inputValue);
+    setOpen(false);
+    inputRef.current?.blur();
+  };
+
   return (
-    <div className="relative w-full" ref={containerRef}>
-      <Search className="-translate-y-1/2 absolute top-1/2 left-3 h-4 w-4 text-muted-foreground z-10" />
-      <Input
-        ref={inputRef}
-        aria-label={finalAriaLabel}
-        aria-autocomplete="list"
-        aria-expanded={hasSuggestions}
-        className={cn(
-          className,
-          // When a custom (typically light) background is forced, ensure
-          // text stays dark so it's visible in both light and dark themes.
-          heroSearchBgColor ? 'text-zinc-900 placeholder:text-zinc-500' : ''
+    <div className="flex w-full gap-2" ref={containerRef}>
+      <div className="relative flex-1">
+        <Search className="-translate-y-1/2 absolute top-1/2 left-3 h-4 w-4 text-muted-foreground z-10" />
+        <Input
+          ref={inputRef}
+          aria-label={finalAriaLabel}
+          aria-autocomplete="list"
+          aria-expanded={hasSuggestions}
+          className={cn(
+            className,
+            // When a custom (typically light) background is forced, ensure
+            // text stays dark so it's visible in both light and dark themes.
+            heroSearchBgColor ? 'text-zinc-900 placeholder:text-zinc-500' : ''
+          )}
+          onChange={onChange}
+          onFocus={() => { if (inputValue.length > 0) { updateDropdownRect(); setOpen(true); } }}
+          onKeyDown={onKeyDown}
+          placeholder={finalPlaceholder}
+          role="combobox"
+          style={{ backgroundColor: heroSearchBgColor || undefined }}
+          type="text"
+          value={inputValue}
+        />
+        {inputValue && (
+          <button
+            aria-label="Clear search"
+            className="-translate-y-1/2 absolute top-1/2 right-3 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-400 z-10"
+            onMouseDown={(e) => { e.preventDefault(); onClear(); }}
+            type="button"
+          >
+            <X className="h-4 w-4" />
+          </button>
         )}
-        onChange={onChange}
-        onFocus={() => { if (inputValue.length > 0) { updateDropdownRect(); setOpen(true); } }}
-        onKeyDown={onKeyDown}
-        placeholder={finalPlaceholder}
-        role="combobox"
-        style={{ backgroundColor: heroSearchBgColor || undefined }}
-        type="text"
-        value={inputValue}
-      />
-      {inputValue && (
-        <button
-          aria-label="Clear search"
-          className="-translate-y-1/2 absolute top-1/2 right-3 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-400 z-10"
-          onMouseDown={(e) => { e.preventDefault(); onClear(); }}
-          type="button"
-        >
-          <X className="h-4 w-4" />
-        </button>
-      )}
-      {isSearching && !hasSuggestions && (
-        <div className="-translate-y-1/2 absolute top-1/2 right-10 z-10">
-          <div className="pulse-dot h-2 w-2 rounded-full bg-blue-500 opacity-75" />
-        </div>
-      )}
+        {isSearching && !hasSuggestions && (
+          <div className="-translate-y-1/2 absolute top-1/2 right-10 z-10">
+            <div className="pulse-dot h-2 w-2 rounded-full bg-blue-500 opacity-75" />
+          </div>
+        )}
+      </div>
+      <button
+        type="button"
+        onClick={onSearchClick}
+        className="shrink-0 rounded-md bg-primary px-5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      >
+        Search
+      </button>
       {dropdown}
     </div>
   );
