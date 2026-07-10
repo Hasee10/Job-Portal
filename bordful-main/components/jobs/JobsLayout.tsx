@@ -11,7 +11,7 @@ import { PostJobBanner } from '@/components/ui/post-job-banner';
 import { SortOrderSelect } from '@/components/ui/sort-order-select';
 import type { JobType } from '@/lib/constants/job-types';
 import type { LanguageCode } from '@/lib/constants/languages';
-import type { CareerLevel, Job } from '@/lib/db/airtable';
+import { normalizeAnnualSalary, type CareerLevel, type Job } from '@/lib/db/airtable';
 import { useJobSearch } from '@/lib/hooks/useJobSearch';
 import { usePagination } from '@/lib/hooks/usePagination';
 import { useSortOrder } from '@/lib/hooks/useSortOrder';
@@ -188,9 +188,12 @@ export function JobsLayout({ filteredJobs }: JobsLayoutProps) {
           new Date(a.posted_date).getTime() - new Date(b.posted_date).getTime()
         );
       case 'salary': {
-        const aMax = a.salary?.max || 0;
-        const bMax = b.salary?.max || 0;
-        return bMax - aMax;
+        const aSalary = normalizeAnnualSalary(a.salary);
+        const bSalary = normalizeAnnualSalary(b.salary);
+        if (aSalary === -1 && bSalary === -1) return 0;
+        if (aSalary === -1) return 1;
+        if (bSalary === -1) return -1;
+        return bSalary - aSalary;
       }
       default: // newest
         return (

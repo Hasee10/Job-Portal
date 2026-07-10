@@ -197,6 +197,9 @@ export function normalizeAnnualSalary(salary: Salary | null): number {
   // Use the maximum value for comparison, or minimum if no maximum
   const value = salary.max || salary.min || 0;
 
+  // Guard against null/undefined unit (can happen with incomplete DB rows)
+  const multiplier = annualMultiplier[salary.unit] ?? 1;
+
   // Convert to USD and annualize
-  return value * exchangeRate * annualMultiplier[salary.unit];
+  return value * exchangeRate * multiplier;
 }

@@ -359,8 +359,12 @@ function HomePageContent({
             new Date(b.posted_date).getTime()
           );
         case 'salary': {
-          const aSalary = a.salary ? normalizeAnnualSalary(a.salary) : 0;
-          const bSalary = b.salary ? normalizeAnnualSalary(b.salary) : 0;
+          const aSalary = normalizeAnnualSalary(a.salary);
+          const bSalary = normalizeAnnualSalary(b.salary);
+          // -1 means no salary data — push those jobs to the end
+          if (aSalary === -1 && bSalary === -1) return 0;
+          if (aSalary === -1) return 1;
+          if (bSalary === -1) return -1;
           return bSalary - aSalary;
         }
         default:

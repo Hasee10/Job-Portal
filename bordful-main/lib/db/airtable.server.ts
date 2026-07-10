@@ -295,7 +295,7 @@ function rowToJob(row: Record<string, unknown>, options?: { lite?: boolean }): J
             min: row.salary_min ? Number(row.salary_min) : null,
             max: row.salary_max ? Number(row.salary_max) : null,
             currency: normalizeCurrency(row.salary_currency),
-            unit: row.salary_unit as SalaryUnit,
+            unit: (row.salary_unit as SalaryUnit) || 'year',
           }
         : null,
     description: lite ? '' : normalizeMarkdown(row.description as string),
