@@ -6,7 +6,12 @@
 //   bun scripts/scraper/index.ts mustakbil    — Mustakbil only
 //   bun scripts/scraper/index.ts naukrigulf   — NaukriGulf only
 
-import 'dotenv/config';
+import dotenv from 'dotenv';
+import { resolve } from 'path';
+// In CI, COCKROACH_WRITER_URL is injected directly — no file needed.
+// Locally: load job-scraper/.env (writer credential) then .env.local as fallback.
+dotenv.config({ path: resolve(process.cwd(), '../job-scraper/.env') });
+dotenv.config({ path: resolve(process.cwd(), '.env.local') });
 import { closePool, upsertJob } from './db';
 import { RSS_SOURCES, scrapeRss } from './sources/rss';
 import { scrapeMustakbil } from './sources/mustakbil';

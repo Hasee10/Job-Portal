@@ -5,8 +5,10 @@ let pool: Pool | null = null;
 
 function getPool(): Pool {
   if (!pool) {
-    const url = process.env.COCKROACH_DATABASE_URL;
-    if (!url) throw new Error('COCKROACH_DATABASE_URL is not set');
+    // COCKROACH_WRITER_URL takes priority (write-capable user).
+    // Falls back to COCKROACH_DATABASE_URL for environments that only set one var.
+    const url = process.env.COCKROACH_WRITER_URL ?? process.env.COCKROACH_DATABASE_URL;
+    if (!url) throw new Error('Neither COCKROACH_WRITER_URL nor COCKROACH_DATABASE_URL is set');
     pool = new Pool({ connectionString: url, ssl: { rejectUnauthorized: true }, max: 5 });
   }
   return pool;
@@ -46,8 +48,8 @@ export async function upsertJob(job: ScrapedJob): Promise<'inserted' | 'updated'
         workplace_country = COALESCE($8, workplace_country),
         salary_min       = COALESCE($9, salary_min),
         salary_max       = COALESCE($10, salary_max),
-        salary_currency  = COALESCE($11, salary_currency),
-        salary_unit      = COALESCE($12, salary_unit),
+        salary_currency  = COALESCE($11, salary_currency, 'USD'),
+        salary_unit      = COALESCE($12, salary_unit, 'year'),
         posted_at        = COALESCE($13, posted_at),
         valid_through    = COALESCE($14, valid_through),
         is_active        = true
@@ -91,7 +93,7 @@ export async function upsertJob(job: ScrapedJob): Promise<'inserted' | 'updated'
     ) VALUES (
       gen_random_uuid(), $1, $2, $3, $4, $5,
       $6, $7, $8, $9, $10,
-      $11, $12, $13, $14,
+      $11, $12, COALESCE($13, 'USD'), COALESCE($14, 'year'),
       $15, $16, true, false,
       'Not specified', '{}', '{}', 'Worldwide'
     )`,
