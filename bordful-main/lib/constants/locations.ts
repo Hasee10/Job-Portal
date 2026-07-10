@@ -9,27 +9,42 @@ export type LocationCounts = {
   remote: number;
 };
 
-/**
- * Formats a location string for display
- * @param location Location string to format
- * @returns Formatted location string
- */
+const US_STATES: Record<string, string> = {
+  AL: 'Alabama', AK: 'Alaska', AZ: 'Arizona', AR: 'Arkansas',
+  CA: 'California', CO: 'Colorado', CT: 'Connecticut', DE: 'Delaware',
+  FL: 'Florida', GA: 'Georgia', HI: 'Hawaii', ID: 'Idaho',
+  IL: 'Illinois', IN: 'Indiana', IA: 'Iowa', KS: 'Kansas',
+  KY: 'Kentucky', LA: 'Louisiana', ME: 'Maine', MD: 'Maryland',
+  MA: 'Massachusetts', MI: 'Michigan', MN: 'Minnesota', MS: 'Mississippi',
+  MO: 'Missouri', MT: 'Montana', NE: 'Nebraska', NV: 'Nevada',
+  NH: 'New Hampshire', NJ: 'New Jersey', NM: 'New Mexico', NY: 'New York',
+  NC: 'North Carolina', ND: 'North Dakota', OH: 'Ohio', OK: 'Oklahoma',
+  OR: 'Oregon', PA: 'Pennsylvania', RI: 'Rhode Island', SC: 'South Carolina',
+  SD: 'South Dakota', TN: 'Tennessee', TX: 'Texas', UT: 'Utah',
+  VT: 'Vermont', VA: 'Virginia', WA: 'Washington', WV: 'West Virginia',
+  WI: 'Wisconsin', WY: 'Wyoming', DC: 'Washington D.C.',
+};
+
 export function formatLocationTitle(location: string): string {
-  // Handle remote case
   if (location.toLowerCase() === 'remote') {
     return 'Remote';
   }
 
-  // For countries, ensure we use the official name from our countries list
+  // Expand US state abbreviations (e.g. "CA" → "California")
+  const upper = location.trim().toUpperCase();
+  if (US_STATES[upper]) {
+    return US_STATES[upper];
+  }
+
+  // Match against the canonical countries list
   const matchedCountry = countries.find(
     (country) => country.toLowerCase() === location.toLowerCase()
   );
-
   if (matchedCountry) {
-    return matchedCountry; // Use the exact casing from our countries list
+    return matchedCountry;
   }
 
-  // For cities or other locations, use title case
+  // Fall back to title case for cities / freeform strings
   return location
     .toLowerCase()
     .split(' ')

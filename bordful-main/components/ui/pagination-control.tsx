@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import {
   Pagination,
   PaginationContent,
@@ -10,10 +9,7 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from '@/components/ui/pagination';
-import {
-  LOADING_STATE_DELAY,
-  PAGINATION_DELTA,
-} from '@/lib/constants/defaults';
+import { PAGINATION_DELTA } from '@/lib/constants/defaults';
 import { usePagination } from '@/lib/hooks/usePagination';
 
 type PaginationControlProps = {
@@ -28,7 +24,6 @@ export function PaginationControl({
   className,
 }: PaginationControlProps) {
   const { page, setPage } = usePagination();
-  const [isUpdating, setIsUpdating] = useState(false);
 
   const totalPages = Math.ceil(totalItems / itemsPerPage);
 
@@ -69,17 +64,9 @@ export function PaginationControl({
     return rangeWithDots;
   };
 
-  // Handle page change
   const handlePageChange = (newPage: number) => {
-    if (newPage < 1 || newPage > totalPages || newPage === page) {
-      return;
-    }
-
-    setIsUpdating(true);
+    if (newPage < 1 || newPage > totalPages || newPage === page) return;
     setPage(newPage);
-
-    // Add a small delay to show loading state
-    setTimeout(() => setIsUpdating(false), LOADING_STATE_DELAY);
   };
 
   // Ensure current page is valid
@@ -92,13 +79,8 @@ export function PaginationControl({
     <div
       className={`mt-8 flex justify-center sm:justify-start ${className || ''}`}
     >
-      {isUpdating ? (
-        <div className="py-2 text-center">
-          <div className="inline-block h-5 w-5 animate-spin rounded-full border-2 border-gray-900 border-r-transparent" />
-        </div>
-      ) : (
-        <Pagination>
-          <PaginationContent className="flex gap-2">
+      <Pagination>
+        <PaginationContent className="flex gap-2">
             <PaginationItem>
               <PaginationPrevious
                 className={`transition-colors hover:bg-gray-100 ${
@@ -146,9 +128,8 @@ export function PaginationControl({
                 }}
               />
             </PaginationItem>
-          </PaginationContent>
-        </Pagination>
-      )}
+        </PaginationContent>
+      </Pagination>
     </div>
   );
 }

@@ -300,40 +300,6 @@ function HomePageContent({
       );
     }
 
-    // Apply sorting
-    switch (sortOrder) {
-      case 'oldest':
-        filtered.sort(
-          (a, b) =>
-            new Date(a.posted_date).getTime() -
-            new Date(b.posted_date).getTime()
-        );
-        break;
-      case 'salary':
-        filtered.sort((a, b) => {
-          const salaryA = a.salary ? normalizeAnnualSalary(a.salary) : -1;
-          const salaryB = b.salary ? normalizeAnnualSalary(b.salary) : -1;
-
-          if (salaryA === -1 && salaryB === -1) {
-            return 0;
-          }
-          if (salaryA === -1) {
-            return 1;
-          }
-          if (salaryB === -1) {
-            return -1;
-          }
-          return salaryB - salaryA;
-        });
-        break;
-      default: // "newest"
-        filtered.sort(
-          (a, b) =>
-            new Date(b.posted_date).getTime() -
-            new Date(a.posted_date).getTime()
-        );
-    }
-
     return filtered;
   }, [initialJobs, searchTerm, sortOrder, filters]);
 
