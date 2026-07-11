@@ -1,8 +1,7 @@
 import 'server-only';
 
-import type { Pool } from 'pg';
 import { cache } from 'react';
-import { getPool } from '@/lib/db/pool';
+import { getSupabaseClient } from '@/lib/db/supabase-client';
 import {
   CURRENCY_CODES,
   type CurrencyCode,
@@ -18,38 +17,12 @@ import { normalizeMarkdown } from '@/lib/utils/markdown';
 import type { CareerLevel, Job, SalaryUnit } from '@/lib/db/airtable';
 
 // ---------------------------------------------------------------------------
-// CockroachDB data source
+// Supabase data source (PostgREST via @supabase/supabase-js)
 //
-// Cut over from Supabase/PostgREST to a direct SQL connection - CockroachDB
-// has no auto-generated REST API to read through. The exported functions
-// (getJobs, getJob, testConnection) keep identical signatures and return
-// shapes, and every normalizer below is unchanged from the Supabase/Airtable
-// version - they are data-shape guards, independent of the transport.
-//
-// IMPORTANT: this connects with the same single credential used for writes
-// (COCKROACH_DATABASE_URL) - there's no RLS/anon-key equivalent in
-// CockroachDB to enforce read-only access the way Supabase's anon key did.
-// A dedicated read-only SQL user is worth setting up before this goes to
-// production; nothing here currently prevents this pool from writing.
+// Reads jobs using SUPABASE_URL + SUPABASE_ANON_KEY (read-only, no RLS
+// needed on public.jobs since the anon role has SELECT by default).
+// Employer auth still uses the pg pool (pool.ts / CockroachDB) separately.
 // ---------------------------------------------------------------------------
-
-// Job data is refreshed by the scraper on a schedule - every query below
-// reads live, no query-level caching (React's cache() already dedupes
-// identical calls within a single request).
-async function queryJobs(
-  pool: Pool,
-  whereClause: string,
-  params: unknown[],
-  options?: { columns?: string; limit?: number }
-): Promise<Record<string, unknown>[]> {
-  const columns = options?.columns ?? '*';
-  const limitClause = options?.limit ? ` limit ${Number(options.limit)}` : '';
-  const { rows } = await pool.query(
-    `select ${columns} from public.jobs ${whereClause}${limitClause}`,
-    params
-  );
-  return rows;
-}
 
 // Ensure career level is always returned as an array
 function normalizeCareerLevel(value: unknown): CareerLevel[] {
@@ -335,119 +308,82 @@ function rowToJob(row: Record<string, unknown>, options?: { lite?: boolean }): J
   };
 }
 
-// Columns listing pages actually use (confirmed against JobCard.tsx,
-// filter-jobs.ts, and job-filters.tsx) - deliberately excludes description,
-// benefits, application_requirements, skills, qualifications,
-// education_requirements, experience_requirements, responsibilities,
-// industry, and occupational_category, which are large free-text fields
-// only ever rendered on the single-job detail page (via getJob(id)).
-const JOBS_LIST_COLUMNS = [
-  'id',
-  'title',
-  'company',
-  'type',
-  'salary_min',
-  'salary_max',
-  'salary_currency',
-  'salary_unit',
-  'apply_url',
-  'posted_at',
-  'valid_through',
-  'job_identifier',
-  'source',
-  'is_active',
-  'career_level',
-  'visa_sponsorship',
-  'featured',
-  'remote_type',
-  'remote_region',
-  'timezone_requirements',
-  'workplace_city',
-  'workplace_country',
-  'languages',
-].join(',');
+// Listing pages only need these columns — excludes large free-text fields
+// (description, benefits, skills, etc.) that are only rendered on the
+// single-job detail page.
+const JOBS_LIST_COLUMNS =
+  'id,title,company,type,salary_min,salary_max,salary_currency,salary_unit,' +
+  'apply_url,posted_at,valid_through,job_identifier,source,is_active,' +
+  'career_level,visa_sponsorship,featured,remote_type,remote_region,' +
+  'timezone_requirements,workplace_city,workplace_country,languages';
 
 export const getJobs = cache(
   async (options?: { limit?: number }): Promise<Job[]> => {
-    const pool = getPool();
-    if (!pool) {
-      return [];
-    }
+    const supabase = getSupabaseClient();
+    if (!supabase) return [];
 
     try {
-      // Projects a reduced column set (see JOBS_LIST_COLUMNS) since this feeds
-      // listing/search/slug-lookup, none of which render the heavy text
-      // fields - keeps both the per-row size and normalization cost down as
-      // the table grows. With a limit (e.g. the homepage's most-recent-N
-      // view), a single bounded query is both cheaper and faster than
-      // fetching every active row and throwing most of it away.
-      const rows = await queryJobs(
-        pool,
-        'where is_active = true order by posted_at desc nulls last',
-        [],
-        { columns: JOBS_LIST_COLUMNS, limit: options?.limit }
-      );
+      let query = supabase
+        .from('jobs')
+        .select(JOBS_LIST_COLUMNS)
+        .eq('is_active', true)
+        .order('posted_at', { ascending: false, nullsFirst: false });
 
-      return rows.map((row) => rowToJob(row, { lite: true }));
+      if (options?.limit) query = query.limit(options.limit);
+
+      const { data, error } = await query;
+      if (error) throw error;
+      return (data ?? []).map((row) => rowToJob(row as Record<string, unknown>, { lite: true }));
     } catch {
       return [];
     }
   }
 );
 
-// Cheap count of active jobs, used where only the total matters (e.g. the
-// homepage's "Open Jobs" stat) so it stays accurate even when getJobs() is
-// called with a limit that caps the actual row data returned.
 export const getActiveJobsCount = cache(async (): Promise<number> => {
-  const pool = getPool();
-  if (!pool) {
-    return 0;
-  }
+  const supabase = getSupabaseClient();
+  if (!supabase) return 0;
 
   try {
-    const { rows } = await pool.query(
-      'select count(*)::int as count from public.jobs where is_active = true'
-    );
-    return (rows[0]?.count as number) ?? 0;
+    const { count, error } = await supabase
+      .from('jobs')
+      .select('*', { count: 'exact', head: true })
+      .eq('is_active', true);
+    if (error) throw error;
+    return count ?? 0;
   } catch {
     return 0;
   }
 });
 
 export const getJob = cache(async (id: string): Promise<Job | null> => {
-  const pool = getPool();
-  if (!pool) {
-    return null;
-  }
+  const supabase = getSupabaseClient();
+  if (!supabase) return null;
 
   try {
-    const rows = await queryJobs(pool, 'where id = $1', [id], { limit: 1 });
-
-    const row = rows[0];
-    if (!row) {
-      return null;
-    }
-
-    // Mirror the previous behavior: only return active postings.
-    if (!row.is_active) {
-      return null;
-    }
-
-    return rowToJob(row);
+    const { data, error } = await supabase
+      .from('jobs')
+      .select('*')
+      .eq('id', id)
+      .eq('is_active', true)
+      .maybeSingle();
+    if (error) throw error;
+    if (!data) return null;
+    return rowToJob(data as Record<string, unknown>);
   } catch {
     return null;
   }
 });
 
 export async function testConnection(): Promise<boolean> {
-  const pool = getPool();
-  if (!pool) {
-    return false;
-  }
-
+  const supabase = getSupabaseClient();
+  if (!supabase) return false;
   try {
-    await pool.query('select 1');
-    return true;
+    const { error } = await supabase
+      .from('jobs')
+      .select('id', { count: 'exact', head: true })
+      .limit(1);
+    return !error;
   } catch {
     return false;
   }

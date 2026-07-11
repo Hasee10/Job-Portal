@@ -1,17 +1,14 @@
-"""Thin CockroachDB SQL client (cut over from the previous Supabase
-PostgREST client - same upsert-by-apply_url dedup semantics, same
-is_active sweep pattern, just talking directly to CockroachDB over the
-Postgres wire protocol instead of an HTTP REST layer, since CockroachDB
-has no PostgREST-equivalent built in).
+"""Supabase PostgREST client — switched back from CockroachDB (hit RU limit).
+
+Uses the REST API via httpx so no postgres driver or SSL cert path is needed.
+All write operations use the service role key which bypasses RLS.
 """
 
 import logging
 from datetime import datetime, timezone
 from typing import Iterable
 
-import certifi
-import psycopg2
-import psycopg2.extras
+import httpx
 
 from jobscraper import config
 
@@ -20,171 +17,164 @@ logger = logging.getLogger(__name__)
 UPSERT_BATCH_SIZE = 200
 
 
-def get_connection():
-    config.require_database()
-    # verify-full needs an explicit CA bundle on Windows - libpq/OpenSSL
-    # don't reliably find the default root cert path there. certifi ships
-    # the same Mozilla trusted-root list under a portable path.
-    return psycopg2.connect(config.COCKROACH_DATABASE_URL, sslrootcert=certifi.where())
+def _headers(*, content_type: bool = True) -> dict:
+    h = {
+        "apikey": config.SUPABASE_SERVICE_ROLE_KEY,
+        "Authorization": f"Bearer {config.SUPABASE_SERVICE_ROLE_KEY}",
+    }
+    if content_type:
+        h["Content-Type"] = "application/json"
+    return h
+
+
+def _rest(path: str) -> str:
+    return f"{config.SUPABASE_URL}/rest/v1/{path}"
 
 
 def _dedupe_by_apply_url(jobs: list[dict]) -> list[dict]:
-    """A single multi-row INSERT ... ON CONFLICT can't affect the same
-    conflict-key row twice in one statement (Postgres/CockroachDB both
-    enforce this) - dedupe within each batch first. Last one wins.
-    """
     deduped: dict[str, dict] = {}
     skipped = 0
     for job in jobs:
-        apply_url = job.get("apply_url")
-        if apply_url in deduped:
+        url = job.get("apply_url")
+        if url in deduped:
             skipped += 1
-        deduped[apply_url] = job
+        deduped[url] = job
     if skipped:
-        logger.info("upsert: deduped %d jobs sharing an apply_url with another job", skipped)
+        logger.info("upsert: deduped %d jobs sharing an apply_url", skipped)
     return list(deduped.values())
 
 
-def _normalize_keys(jobs: list[dict]) -> tuple[list[dict], list[str]]:
-    """Every job dict in one batch needs the same key set for a single
-    multi-row INSERT statement - different sources produce dicts with
-    different optional fields (e.g. only Adzuna sets salary_min/salary_max).
-    Fill every job out to the same key set first. Returns the normalized
-    rows plus the resulting column list (every key here is a real job
-    field the scraper actually sets - never an unknown column - so it's
-    safe to use directly as a SQL column list).
-    """
-    all_keys: set[str] = set()
-    for job in jobs:
-        all_keys.update(job.keys())
-    columns = sorted(all_keys)
-    return [{key: job.get(key) for key in columns} for job in jobs], columns
-
-
 def upsert_jobs(jobs: list[dict]) -> int:
-    """Upsert jobs, deduping on the `apply_url` unique index.
-
-    Re-running never creates duplicates - it refreshes every column present
-    in the batch. Columns never present in any job dict (id, created_at,
-    visa_sponsorship, etc.) are left alone on conflict and take their table
-    default on insert - matches the old PostgREST merge-duplicates behavior
-    exactly (it only ever touched columns present in the JSON body too).
-    """
+    """Upsert jobs deduping on apply_url unique index."""
     if not jobs:
         return 0
 
+    config.require_database()
     deduped = _dedupe_by_apply_url(jobs)
-
     written = 0
-    conn = get_connection()
-    try:
-        with conn.cursor() as cur:
-            for i in range(0, len(deduped), UPSERT_BATCH_SIZE):
-                batch = deduped[i : i + UPSERT_BATCH_SIZE]
-                normalized, columns = _normalize_keys(batch)
-                if "apply_url" not in columns:
-                    continue  # keep_valid() upstream should already guarantee this
 
-                col_list = ", ".join(columns)
-                update_clause = ", ".join(
-                    f"{c} = excluded.{c}" for c in columns if c != "apply_url"
+    with httpx.Client(timeout=30) as client:
+        for i in range(0, len(deduped), UPSERT_BATCH_SIZE):
+            batch = deduped[i : i + UPSERT_BATCH_SIZE]
+            resp = client.post(
+                _rest("jobs"),
+                json=batch,
+                headers={
+                    **_headers(),
+                    "Prefer": "resolution=merge-duplicates,return=minimal",
+                },
+            )
+            if resp.status_code in (200, 201):
+                written += len(batch)
+            else:
+                logger.error(
+                    "Upsert batch %d–%d failed: %s %s",
+                    i, i + len(batch), resp.status_code, resp.text[:300],
                 )
-                values = [tuple(job.get(c) for c in columns) for job in normalized]
 
-                sql = (
-                    f"insert into public.jobs ({col_list}) values %s "
-                    f"on conflict (apply_url) do update set {update_clause}"
-                )
-                try:
-                    psycopg2.extras.execute_values(cur, sql, values)
-                    conn.commit()
-                    written += len(batch)
-                except Exception:
-                    conn.rollback()
-                    logger.exception("Upsert batch failed (rows %d-%d)", i, i + len(batch))
-                    continue
-    finally:
-        conn.close()
     return written
 
 
 def fetch_active_jobs() -> list[dict]:
-    """Fetch every active job's id/apply_url/source for the sweeper - a
-    single query (no PostgREST-style pagination needed; that was only ever
-    working around PostgREST's default 1000-row response cap, which
-    doesn't apply to a direct SQL query).
+    """Fetch every active job's id/apply_url/source for the sweeper.
+
+    Supabase PostgREST caps responses at 1 000 rows by default — use the
+    Range header to request a larger window (up to whatever the DB has).
     """
-    conn = get_connection()
-    try:
-        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
-            cur.execute("select id, apply_url, source from public.jobs where is_active = true")
-            return [dict(row) for row in cur.fetchall()]
-    finally:
-        conn.close()
+    config.require_database()
+    all_rows: list[dict] = []
+    page_size = 1000
+    offset = 0
+
+    with httpx.Client(timeout=30) as client:
+        while True:
+            resp = client.get(
+                _rest("jobs"),
+                params={"is_active": "eq.true", "select": "id,apply_url,source"},
+                headers={
+                    **_headers(content_type=False),
+                    "Range": f"{offset}-{offset + page_size - 1}",
+                    "Range-Unit": "items",
+                    "Prefer": "count=none",
+                },
+            )
+            if resp.status_code not in (200, 206):
+                logger.error("fetch_active_jobs page %d failed: %s", offset, resp.status_code)
+                break
+            rows = resp.json()
+            all_rows.extend(rows)
+            if len(rows) < page_size:
+                break
+            offset += page_size
+
+    return all_rows
 
 
 def mark_missing_from_source(source: str, seen_apply_urls: Iterable[str]) -> int:
-    """Deactivate jobs from `source` that are currently active in the DB but
-    weren't present in this run's fetch.
-
-    The sweeper's plain-HTTP liveness check (sweeper.py) doesn't work for
-    Cloudflare-gated sources like Upwork - a scripted GET gets challenged
-    regardless of whether the posting is actually still open, so either
-    every job gets wrongly deactivated or (once enough checks come back
-    ambiguous) the sweeper's source-block detection skips the source
-    entirely, meaning awarded/closed contracts would never get cleaned up.
-    A job disappearing from a fresh search fetch is that platform's own
-    real "no longer open" signal instead.
-
-    Refuses to act if `seen_apply_urls` is empty - an empty result is far
-    more likely a transient fetch failure (browser crash, selector
-    mismatch) than every single job genuinely vanishing at once, and acting
-    on it would wrongly wipe out an entire source.
-    """
-    urls = list(seen_apply_urls)
-    if not urls:
+    """Deactivate jobs from `source` that vanished from this run's fetch."""
+    seen = set(seen_apply_urls)
+    if not seen:
         logger.warning(
-            "mark_missing_from_source: %s fetch returned 0 jobs this run - "
-            "skipping cleanup to avoid mass-deactivating on what's more "
-            "likely a transient failure",
+            "mark_missing_from_source: %s returned 0 jobs — skipping to avoid mass-deactivation",
             source,
         )
         return 0
 
-    now = datetime.now(timezone.utc)
-    conn = get_connection()
-    try:
-        with conn.cursor() as cur:
-            cur.execute(
-                "update public.jobs set is_active = false, discontinued_at = %s "
-                "where source = %s and is_active = true and not (apply_url = any(%s))",
-                (now, source, urls),
-            )
-            conn.commit()
-            return cur.rowcount
-    finally:
-        conn.close()
+    config.require_database()
+
+    # Fetch all active jobs from this source, then find the ones not seen
+    with httpx.Client(timeout=30) as client:
+        resp = client.get(
+            _rest("jobs"),
+            params={"source": f"eq.{source}", "is_active": "eq.true", "select": "id,apply_url"},
+            headers={
+                **_headers(content_type=False),
+                "Range": "0-9999",
+                "Range-Unit": "items",
+            },
+        )
+        if resp.status_code not in (200, 206):
+            logger.error("mark_missing_from_source fetch failed: %s", resp.status_code)
+            return 0
+
+        active = resp.json()
+
+    missing_ids = [row["id"] for row in active if row["apply_url"] not in seen]
+    if not missing_ids:
+        return 0
+
+    return mark_discontinued(missing_ids)
 
 
 def mark_discontinued(job_ids: Iterable[str]) -> int:
-    """Mark jobs inactive (acquired/expired/removed by the source) in one
-    batched UPDATE, rather than one request per job like the old PATCH-per-id
-    PostgREST version did.
-    """
+    """Mark jobs inactive in one batched PATCH."""
     ids = list(job_ids)
     if not ids:
         return 0
 
-    now = datetime.now(timezone.utc)
-    conn = get_connection()
-    try:
-        with conn.cursor() as cur:
-            cur.execute(
-                "update public.jobs set is_active = false, discontinued_at = %s "
-                "where id = any(%s)",
-                (now, ids),
+    config.require_database()
+    now = datetime.now(timezone.utc).isoformat()
+    updated = 0
+
+    with httpx.Client(timeout=30) as client:
+        for i in range(0, len(ids), 500):
+            batch = ids[i : i + 500]
+            id_list = "(" + ",".join(batch) + ")"
+            resp = client.patch(
+                _rest("jobs"),
+                params={"id": f"in.{id_list}"},
+                json={"is_active": False},
+                headers={
+                    **_headers(),
+                    "Prefer": "return=minimal",
+                },
             )
-            conn.commit()
-            return cur.rowcount
-    finally:
-        conn.close()
+            if resp.status_code in (200, 204):
+                updated += len(batch)
+            else:
+                logger.error(
+                    "mark_discontinued batch %d–%d failed: %s %s",
+                    i, i + len(batch), resp.status_code, resp.text[:200],
+                )
+
+    return updated

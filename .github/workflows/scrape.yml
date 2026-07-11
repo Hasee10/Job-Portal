@@ -78,24 +78,12 @@ jobs:
 
       - name: Run scraper
         env:
-          # Uses a dedicated scraper_ci credential (SELECT/INSERT/UPDATE only,
-          # no DELETE) - see cockroachdb/create_ci_scraper_user.sql. Separate
-          # from the admin credential in job-scraper/.env used locally for
-          # retention_cleanup.py, which needs delete access.
-          COCKROACH_DATABASE_URL: ${{ secrets.COCKROACH_DATABASE_URL_CI }}
-          # Both are Cloudflare-gated and GitHub's datacenter runner IPs get
-          # blocked outright (confirmed live 2026-07: 0 job tiles on every
-          # query) - a residential IP (e.g. the local Windows Scheduled Task)
-          # gets through fine, so these two only run there for now instead of
-          # here. See jobscraper/config.py's SKIP_SOURCES docstring.
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           SKIP_SOURCES: "upwork,rozee"
           ADZUNA_APP_ID: ${{ secrets.ADZUNA_APP_ID }}
           ADZUNA_APP_KEY: ${{ secrets.ADZUNA_APP_KEY }}
           JOOBLE_API_KEY: ${{ secrets.JOOBLE_API_KEY }}
-          # Optional - only needed if you've bought a residential proxy for
-          # the Indeed/Glassdoor/Naukri/ZipRecruiter sources. GitHub Actions
-          # runner IPs are well-known datacenter ranges and get blocked by
-          # those sites more often than a home/residential connection would.
           SCRAPER_PROXY: ${{ secrets.SCRAPER_PROXY }}
           CLOAKBROWSER_LICENSE_KEY: ${{ secrets.CLOAKBROWSER_LICENSE_KEY }}
         run: python run.py
@@ -133,5 +121,6 @@ jobs:
       - name: Run RSS scraper
         working-directory: bordful-main
         env:
-          COCKROACH_WRITER_URL: ${{ secrets.COCKROACH_DATABASE_URL_CI }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: npx tsx scripts/scraper/index.ts rss
