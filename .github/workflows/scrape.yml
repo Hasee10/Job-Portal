@@ -110,7 +110,7 @@ jobs:
       # ── Node.js RSS scraper (Mustakbil + jobs.com.pk) ────────────────────
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: npm
           cache-dependency-path: bordful-main/package-lock.json
 
