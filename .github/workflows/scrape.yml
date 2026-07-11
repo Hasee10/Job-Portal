@@ -114,7 +114,7 @@ jobs:
 
       - name: Install Node dependencies
         working-directory: bordful-main
-        run: npm ci
+        run: npm install --prefer-offline
 
       - name: Run RSS scraper
         working-directory: bordful-main
