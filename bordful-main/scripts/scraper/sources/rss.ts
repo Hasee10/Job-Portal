@@ -16,13 +16,31 @@ export interface RssSourceConfig {
 
 const parser = new XMLParser({ ignoreAttributes: false, attributeNamePrefix: '@_' });
 
-// CDATA blocks are treated as literal text — numeric HTML entities inside them
-// are NOT decoded by the XML parser. Decode them manually so date strings
-// like "Thu, 09 Jul 2026 21:20:30 &#x2B;0000" parse correctly.
+// CDATA blocks are treated as literal text — HTML entities inside them are NOT
+// decoded by the XML parser. Decode numeric and named entities manually.
 function decodeEntities(s: string): string {
+  const named: Record<string, string> = {
+    amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", nbsp: ' ',
+    ndash: '–', mdash: '—', hellip: '…', laquo: '«', raquo: '»',
+  };
   return s
     .replace(/&#x([0-9a-fA-F]+);/g, (_, h) => String.fromCharCode(parseInt(h, 16)))
-    .replace(/&#([0-9]+);/g, (_, d) => String.fromCharCode(parseInt(d, 10)));
+    .replace(/&#([0-9]+);/g, (_, d) => String.fromCharCode(parseInt(d, 10)))
+    .replace(/&([a-zA-Z]+);/g, (m, name) => named[name.toLowerCase()] ?? m);
+}
+
+// Strip HTML tags and decode entities — used for job descriptions that arrive
+// as raw HTML from feeds like Mustakbil.
+function stripHtml(s: string): string {
+  return decodeEntities(
+    s
+      .replace(/<br\s*\/?>/gi, '\n')   // preserve line breaks
+      .replace(/<\/p>/gi, '\n\n')      // blank line after paragraphs
+      .replace(/<[^>]+>/g, '')         // remove all other tags
+      .replace(/[ \t]+/g, ' ')         // collapse horizontal whitespace
+      .replace(/\n{3,}/g, '\n\n')      // max two consecutive newlines
+      .trim()
+  );
 }
 
 function parseDate(raw: unknown): Date | undefined {
@@ -74,7 +92,7 @@ export async function scrapeRss(config: RssSourceConfig): Promise<ScrapedJob[]> 
   const jobs: ScrapedJob[] = [];
 
   for (const item of rawItems) {
-    const rawTitle = String(item.title ?? '').trim();
+    const rawTitle = decodeEntities(String(item.title ?? '').trim());
     // <link> in Atom feeds is an object; fall back to <guid>
     const link = String(
       typeof item.link === 'object'
@@ -114,7 +132,7 @@ export async function scrapeRss(config: RssSourceConfig): Promise<ScrapedJob[]> 
       : slugFromUrl(link);
 
     const pubDate = item.pubDate ?? item.pubdate ?? item.published ?? item.updated;
-    const description = String(item.description ?? item.summary ?? item['content:encoded'] ?? '').trim();
+    const description = stripHtml(String(item.description ?? item.summary ?? item['content:encoded'] ?? ''));
 
     // Detect remote from title keywords
     const lowerTitle = title.toLowerCase();
