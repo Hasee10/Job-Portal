@@ -333,7 +333,7 @@ export const getJobs = cache(
 
       const { data, error } = await query;
       if (error) throw error;
-      return (data ?? []).map((row) => rowToJob(row as Record<string, unknown>, { lite: true }));
+      return (data ?? []).map((row) => rowToJob(row as unknown as Record<string, unknown>, { lite: true }));
     } catch {
       return [];
     }
@@ -369,7 +369,7 @@ export const getJob = cache(async (id: string): Promise<Job | null> => {
       .maybeSingle();
     if (error) throw error;
     if (!data) return null;
-    return rowToJob(data as Record<string, unknown>);
+    return rowToJob(data as unknown as Record<string, unknown>);
   } catch {
     return null;
   }
