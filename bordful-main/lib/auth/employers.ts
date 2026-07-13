@@ -120,7 +120,7 @@ export async function createPasswordResetToken(
   const tokenHash = hashToken(rawToken);
   const expiresAt = new Date(Date.now() + RESET_TOKEN_TTL_MS).toISOString();
 
-  const { count } = await supabase
+  const { data } = await supabase
     .from('employers')
     .update({
       reset_token_hash: tokenHash,
@@ -128,9 +128,9 @@ export async function createPasswordResetToken(
       updated_at: new Date().toISOString(),
     })
     .eq('email', normalizedEmail)
-    .select('id', { count: 'exact', head: true });
+    .select('id');
 
-  return count && count > 0 ? rawToken : null;
+  return data && data.length > 0 ? rawToken : null;
 }
 
 export async function resetPasswordWithToken(
@@ -149,7 +149,7 @@ export async function resetPasswordWithToken(
   const passwordHash = await bcrypt.hash(newPassword, BCRYPT_COST_FACTOR);
   const now = new Date().toISOString();
 
-  const { count } = await supabase
+  const { data } = await supabase
     .from('employers')
     .update({
       password_hash: passwordHash,
@@ -159,7 +159,7 @@ export async function resetPasswordWithToken(
     })
     .eq('reset_token_hash', tokenHash)
     .gt('reset_token_expires_at', now)
-    .select('id', { count: 'exact', head: true });
+    .select('id');
 
-  return Boolean(count && count > 0);
+  return Boolean(data && data.length > 0);
 }
