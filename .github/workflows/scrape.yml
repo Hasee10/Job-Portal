@@ -108,7 +108,7 @@ jobs:
           if-no-files-found: ignore
 
       # ── Node.js RSS scraper (Mustakbil + jobs.com.pk) ────────────────────
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@v7
         with:
           node-version: '22'
 
