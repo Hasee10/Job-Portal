@@ -4,7 +4,11 @@ import { useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 import { JobListings } from '@/components/jobs/JobListings';
 import { ClientBreadcrumb } from '@/components/ui/client-breadcrumb';
-import { JobFilters } from '@/components/ui/job-filters';
+import {
+  JobFilters,
+  SALARY_SLIDER_MAX,
+  SALARY_SLIDER_MIN,
+} from '@/components/ui/job-filters';
 import { JobsPerPageSelect } from '@/components/ui/jobs-per-page-select';
 import { PaginationControl } from '@/components/ui/pagination-control';
 import { PostJobBanner } from '@/components/ui/post-job-banner';
@@ -47,6 +51,7 @@ export function JobsLayout({ filteredJobs }: JobsLayoutProps) {
         | 'clear',
       value:
         | string[]
+        | number[]
         | boolean
         | CareerLevel[]
         | LanguageCode[]
@@ -87,51 +92,23 @@ export function JobsLayout({ filteredJobs }: JobsLayoutProps) {
       }
 
       // Apply salary filter
-      if (filterType === 'salary' && Array.isArray(value) && value.length > 0) {
-        // Type assertion to tell TypeScript this is a string array
-        const salaryRanges = value as string[];
-        // Handle salary filtering logic here
-        newFilteredJobs = newFilteredJobs.filter((job) => {
-          if (!job.salary) {
-            return false;
-          }
-
-          // Calculate annual salary based on available data
-          let annualSalary = 0;
-          if (job.salary.max) {
-            annualSalary = job.salary.max;
-          } else if (job.salary.min) {
-            // If hourly, convert to annual (assuming 2080 hours per year)
-            annualSalary = job.salary.min * 2080;
-          }
-
-          if (annualSalary === 0) {
-            return false;
-          }
-
-          if (salaryRanges.includes('< $50K') && annualSalary < 50_000) {
+      if (filterType === 'salary' && Array.isArray(value) && value.length === 2) {
+        const [salaryMin, salaryMax] = value as number[];
+        if (salaryMin > SALARY_SLIDER_MIN || salaryMax < SALARY_SLIDER_MAX) {
+          newFilteredJobs = newFilteredJobs.filter((job) => {
+            const annualSalary = normalizeAnnualSalary(job.salary);
+            if (annualSalary === -1) {
+              return false;
+            }
+            if (annualSalary < salaryMin) {
+              return false;
+            }
+            if (salaryMax < SALARY_SLIDER_MAX && annualSalary > salaryMax) {
+              return false;
+            }
             return true;
-          }
-          if (
-            salaryRanges.includes('$50K - $100K') &&
-            annualSalary >= 50_000 &&
-            annualSalary <= 100_000
-          ) {
-            return true;
-          }
-          if (
-            salaryRanges.includes('$100K - $200K') &&
-            annualSalary > 100_000 &&
-            annualSalary <= 200_000
-          ) {
-            return true;
-          }
-          if (salaryRanges.includes('> $200K') && annualSalary > 200_000) {
-            return true;
-          }
-
-          return false;
-        });
+          });
+        }
       }
 
       // Apply visa filter
@@ -257,7 +234,8 @@ export function JobsLayout({ filteredJobs }: JobsLayoutProps) {
                 types: [],
                 roles: [],
                 remote: false,
-                salaryRanges: [],
+                salaryMin: SALARY_SLIDER_MIN,
+                salaryMax: SALARY_SLIDER_MAX,
                 visa: false,
                 languages: [],
                 companies: [],

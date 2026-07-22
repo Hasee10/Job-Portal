@@ -29,6 +29,16 @@ const CHECKBOX_MARKER_LENGTH = 4;
 
 // Regex constants for performance
 const FINAL_WORD_REGEX = /(\w)$/;
+const TAG_SPLIT_REGEX = /[,;\n]+/;
+
+// Job data stores skills/education/experience as free-text strings (comma,
+// semicolon, or newline separated) - split into discrete tags for display.
+function splitTags(value: string): string[] {
+  return value
+    .split(TAG_SPLIT_REGEX)
+    .map((tag) => tag.trim())
+    .filter(Boolean);
+}
 
 // Pre-render only the most recent jobs at build time (see
 // STATIC_JOB_PAGES_LIMIT) - dynamicParams defaults to true, so every other
@@ -451,6 +461,57 @@ export default async function JobPostPage({
               </ReactMarkdown>
             </div>
           </div>
+
+          {/* Structured skills/education/experience blocks, when the job data has them */}
+          {(job.skills || job.education_requirements || job.experience_requirements) && (
+            <div className="mt-6 space-y-4">
+              {job.skills && (
+                <div>
+                  <h3 className="mb-2 font-semibold text-sm">Skills</h3>
+                  <div className="flex flex-wrap gap-1.5">
+                    {splitTags(job.skills).map((tag) => (
+                      <span
+                        className="rounded-full border bg-gray-50 px-2.5 py-1 text-gray-700 text-xs dark:bg-zinc-800 dark:text-zinc-300"
+                        key={tag}
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {job.education_requirements && (
+                <div>
+                  <h3 className="mb-2 font-semibold text-sm">Education</h3>
+                  <div className="flex flex-wrap gap-1.5">
+                    {splitTags(job.education_requirements).map((tag) => (
+                      <span
+                        className="rounded-full border bg-gray-50 px-2.5 py-1 text-gray-700 text-xs dark:bg-zinc-800 dark:text-zinc-300"
+                        key={tag}
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {job.experience_requirements && (
+                <div>
+                  <h3 className="mb-2 font-semibold text-sm">Experience</h3>
+                  <div className="flex flex-wrap gap-1.5">
+                    {splitTags(job.experience_requirements).map((tag) => (
+                      <span
+                        className="rounded-full border bg-gray-50 px-2.5 py-1 text-gray-700 text-xs dark:bg-zinc-800 dark:text-zinc-300"
+                        key={tag}
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Application Requirements - Prominently displayed before apply button */}
           {job.application_requirements && (

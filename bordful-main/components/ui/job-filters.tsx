@@ -2,12 +2,14 @@ import { ChevronDown, ChevronUp } from 'lucide-react';
 import {
   parseAsArrayOf,
   parseAsBoolean,
+  parseAsInteger,
   parseAsString,
   useQueryState,
 } from 'nuqs';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
+import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
 import { CAREER_LEVEL_DISPLAY_NAMES } from '@/lib/constants/career-levels';
 import {
@@ -24,6 +26,12 @@ import {
   normalizeAnnualSalary,
 } from '@/lib/db/airtable';
 
+// Salary range slider bounds - annual, in USD-equivalent terms (jobs already
+// go through normalizeAnnualSalary before comparison).
+export const SALARY_SLIDER_MIN = 0;
+export const SALARY_SLIDER_MAX = 300_000;
+export const SALARY_SLIDER_STEP = 5000;
+
 type FilterType =
   | 'type'
   | 'role'
@@ -33,7 +41,13 @@ type FilterType =
   | 'language'
   | 'company'
   | 'clear';
-type FilterValue = string[] | boolean | CareerLevel[] | LanguageCode[] | true;
+type FilterValue =
+  | string[]
+  | boolean
+  | CareerLevel[]
+  | LanguageCode[]
+  | number[]
+  | true;
 
 type JobFiltersProps = {
   onFilterChange: (filterType: FilterType, value: FilterValue) => void;
@@ -41,13 +55,21 @@ type JobFiltersProps = {
     types: string[];
     roles: CareerLevel[];
     remote: boolean;
-    salaryRanges: string[];
+    salaryMin?: number;
+    salaryMax?: number;
     visa: boolean;
     languages: LanguageCode[];
     companies: string[];
   };
   jobs: Job[];
 };
+
+function formatSalaryBound(value: number): string {
+  if (value >= SALARY_SLIDER_MAX) {
+    return `$${(SALARY_SLIDER_MAX / 1000).toFixed(0)}K+`;
+  }
+  return `$${(value / 1000).toFixed(0)}K`;
+}
 
 // Filter Item component to make UI more DRY
 type FilterItemProps = {
@@ -140,11 +162,21 @@ export function JobFilters({
     parseAsArrayOf(parseAsString).withDefault([])
   );
 
-  // URL state for salary ranges filter using nuqs
-  const [salaryRangesParam, setSalaryRangesParam] = useQueryState(
-    'salary',
-    parseAsArrayOf(parseAsString).withDefault([])
+  // URL state for salary range slider using nuqs
+  const [salaryMinParam, setSalaryMinParam] = useQueryState(
+    'salary_min',
+    parseAsInteger.withDefault(SALARY_SLIDER_MIN)
   );
+  const [salaryMaxParam, setSalaryMaxParam] = useQueryState(
+    'salary_max',
+    parseAsInteger.withDefault(SALARY_SLIDER_MAX)
+  );
+  // Local slider value so the thumb moves smoothly while dragging; only
+  // committed to the URL/filter on release (see handleSalaryCommit).
+  const [salaryRange, setSalaryRange] = useState<[number, number]>([
+    salaryMinParam,
+    salaryMaxParam,
+  ]);
 
   // URL state for languages filter using nuqs
   const [languagesParam, setLanguagesParam] = useQueryState(
@@ -200,10 +232,21 @@ export function JobFilters({
     }
 
     if (
-      salaryRangesParam.length === 0 &&
-      initialFilters.salaryRanges.length > 0
+      salaryMinParam === SALARY_SLIDER_MIN &&
+      initialFilters.salaryMin !== undefined &&
+      initialFilters.salaryMin > SALARY_SLIDER_MIN
     ) {
-      setSalaryRangesParam(initialFilters.salaryRanges);
+      setSalaryMinParam(initialFilters.salaryMin);
+      setSalaryRange(([, max]) => [initialFilters.salaryMin as number, max]);
+    }
+
+    if (
+      salaryMaxParam === SALARY_SLIDER_MAX &&
+      initialFilters.salaryMax !== undefined &&
+      initialFilters.salaryMax < SALARY_SLIDER_MAX
+    ) {
+      setSalaryMaxParam(initialFilters.salaryMax);
+      setSalaryRange(([min]) => [min, initialFilters.salaryMax as number]);
     }
 
     if (languagesParam.length === 0 && initialFilters.languages.length > 0) {
@@ -263,12 +306,15 @@ export function JobFilters({
     syncToUrl(setRolesParam(newValues.length ? newValues : null));
   };
 
-  const handleSalaryChange = (checked: boolean, value: string) => {
-    const newValues = checked
-      ? [...salaryRangesParam, value]
-      : salaryRangesParam.filter((item) => item !== value);
-    onFilterChange('salary', newValues);
-    syncToUrl(setSalaryRangesParam(newValues.length ? newValues : null));
+  const handleSalaryCommit = (range: number[]) => {
+    const [min, max] = range;
+    onFilterChange('salary', [min, max]);
+    syncToUrl(
+      Promise.all([
+        setSalaryMinParam(min > SALARY_SLIDER_MIN ? min : null),
+        setSalaryMaxParam(max < SALARY_SLIDER_MAX ? max : null),
+      ])
+    );
   };
 
   const handleLanguageChange = (checked: boolean, value: string) => {
@@ -331,11 +377,13 @@ export function JobFilters({
   // parent to reset the visible list in one go.
   const handleClearFilters = () => {
     onFilterChange('clear', true);
+    setSalaryRange([SALARY_SLIDER_MIN, SALARY_SLIDER_MAX]);
     syncToUrl(
       Promise.all([
         setTypesParam(null),
         setRolesParam(null),
-        setSalaryRangesParam(null),
+        setSalaryMinParam(null),
+        setSalaryMaxParam(null),
         setLanguagesParam(null),
         setCompaniesParam(null),
         setRemoteParam(null),
@@ -373,30 +421,20 @@ export function JobFilters({
 
       visa: jobs.filter((job) => job.visa_sponsorship === 'Yes').length,
 
-      salary: jobs.reduce(
-        (acc, job) => {
-          if (!job.salary) {
-            return acc;
-          }
-          const annualSalary = normalizeAnnualSalary(job.salary);
-          if (annualSalary < 50_000) {
-            acc['< $50K']++;
-          } else if (annualSalary <= 100_000) {
-            acc['$50K - $100K']++;
-          } else if (annualSalary <= 200_000) {
-            acc['$100K - $200K']++;
-          } else {
-            acc['> $200K']++;
-          }
-          return acc;
-        },
-        {
-          '< $50K': 0,
-          '$50K - $100K': 0,
-          '$100K - $200K': 0,
-          '> $200K': 0,
+      salaryInRange: jobs.filter((job) => {
+        if (!job.salary) {
+          return false;
         }
-      ),
+        const annualSalary = normalizeAnnualSalary(job.salary);
+        if (annualSalary === -1) {
+          return false;
+        }
+        const [min, max] = salaryRange;
+        return (
+          annualSalary >= min &&
+          (max >= SALARY_SLIDER_MAX || annualSalary <= max)
+        );
+      }).length,
 
       languages: jobs.reduce(
         (acc, job) => {
@@ -418,7 +456,7 @@ export function JobFilters({
         {} as Record<string, number>
       ),
     }),
-    [jobs]
+    [jobs, salaryRange]
   );
 
   // Sort and filter languages
@@ -580,20 +618,28 @@ export function JobFilters({
 
         {/* Salary Range */}
         <div className="space-y-4">
-          <h3 className="font-semibold text-md">Salary Range</h3>
-          <div className="space-y-3">
-            {Object.entries(counts.salary).map(([range, count]) => (
-              <FilterItem
-                checked={salaryRangesParam.includes(range)}
-                count={count}
-                id={`salary-${range.toLowerCase().replace(/[\s$>]/g, '-')}`}
-                key={range}
-                label={`${range}/year`}
-                onCheckedChange={(checked) =>
-                  handleSalaryChange(checked, range)
-                }
-              />
-            ))}
+          <div className="flex items-center justify-between">
+            <h3 className="font-semibold text-md">Salary Range</h3>
+            <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-xs text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400">
+              {counts.salaryInRange.toLocaleString()}
+            </span>
+          </div>
+          <div className="px-1">
+            <Slider
+              max={SALARY_SLIDER_MAX}
+              min={SALARY_SLIDER_MIN}
+              minStepsBetweenThumbs={1}
+              onValueChange={(value) =>
+                setSalaryRange(value as [number, number])
+              }
+              onValueCommit={handleSalaryCommit}
+              step={SALARY_SLIDER_STEP}
+              value={salaryRange}
+            />
+          </div>
+          <div className="flex items-center justify-between text-gray-500 text-xs dark:text-gray-500">
+            <span>{formatSalaryBound(salaryRange[0])}/year</span>
+            <span>{formatSalaryBound(salaryRange[1])}/year</span>
           </div>
         </div>
 
