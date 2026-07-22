@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { getJob } from '@/lib/db/airtable.server';
-import { groqChatCompletion } from '@/lib/ai/groq';
+import { aiChatCompletion } from '@/lib/ai/provider';
 import { AIProviderError } from '@/lib/ai/types';
 import { checkAndIncrementResumeTailorUsage } from '@/lib/jobs/entitlements-actions';
 import type { ResumeContent } from '@/lib/jobs/resume-actions';
@@ -93,7 +93,7 @@ export async function POST(request: Request) {
     .join('\n\n');
 
   try {
-    const output = await groqChatCompletion(
+    const output = await aiChatCompletion(
       [
         { role: 'system', content: systemPrompt },
         { role: 'user', content: userPrompt },
@@ -109,7 +109,7 @@ export async function POST(request: Request) {
         { status: 503 }
       );
     }
-    console.error('[api/seeker/resume/tailor] Groq request failed:', error);
+    console.error('[api/seeker/resume/tailor] AI request failed:', error);
     return NextResponse.json(
       { error: 'Failed to generate tailored content. Please try again.' },
       { status: 502 }
