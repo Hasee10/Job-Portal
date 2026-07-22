@@ -3,6 +3,7 @@ import { auth } from '@/auth';
 import { getJob } from '@/lib/db/airtable.server';
 import { groqChatCompletion } from '@/lib/ai/groq';
 import { AIProviderError } from '@/lib/ai/types';
+import { checkAndIncrementResumeTailorUsage } from '@/lib/jobs/entitlements-actions';
 import type { ResumeContent } from '@/lib/jobs/resume-actions';
 
 export const dynamic = 'force-dynamic';
@@ -37,6 +38,17 @@ export async function POST(request: Request) {
   const session = await auth();
   if (!session?.user || session.user.role !== 'seeker') {
     return NextResponse.json({ error: 'Not signed in.' }, { status: 401 });
+  }
+
+  const usage = await checkAndIncrementResumeTailorUsage(session.user.id);
+  if (!usage.allowed) {
+    return NextResponse.json(
+      {
+        error: `Free plan is limited to ${usage.limit} AI tailoring requests per month. Upgrade to Premium for more (coming soon).`,
+        upgradeRequired: true,
+      },
+      { status: 403 }
+    );
   }
 
   const body = await request.json();

@@ -47,6 +47,7 @@ export function ResumeBuilder({
   const [isTailoring, setIsTailoring] = useState(false);
   const [tailoredOutput, setTailoredOutput] = useState<string | null>(null);
   const [tailorError, setTailorError] = useState<string | null>(null);
+  const [upgradeRequired, setUpgradeRequired] = useState(false);
 
   const updateExperience = (index: number, patch: Partial<ResumeExperience>) => {
     setContent((prev) => ({
@@ -103,6 +104,7 @@ export function ResumeBuilder({
     setIsTailoring(true);
     setTailorError(null);
     setTailoredOutput(null);
+    setUpgradeRequired(false);
     try {
       const response = await fetch('/api/seeker/resume/tailor', {
         method: 'POST',
@@ -111,6 +113,7 @@ export function ResumeBuilder({
       });
       const data = await response.json();
       if (!response.ok) {
+        setUpgradeRequired(Boolean(data.upgradeRequired));
         throw new Error(data.error || 'Failed to generate tailored content.');
       }
       setTailoredOutput(data.output);
@@ -327,7 +330,15 @@ export function ResumeBuilder({
           <Button disabled={isTailoring} onClick={handleTailor} type="button">
             {isTailoring ? 'Generating...' : 'Generate'}
           </Button>
-          {tailorError && (
+          {tailorError && upgradeRequired && (
+            <div className="rounded-md border border-dashed p-3 text-sm">
+              <p>{tailorError}</p>
+              <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+                Premium plans are coming soon.
+              </p>
+            </div>
+          )}
+          {tailorError && !upgradeRequired && (
             <p className="text-sm text-red-600 dark:text-red-400">{tailorError}</p>
           )}
           {tailoredOutput && (

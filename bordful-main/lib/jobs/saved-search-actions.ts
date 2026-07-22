@@ -1,6 +1,8 @@
 import 'server-only';
 
 import { createClient } from '@supabase/supabase-js';
+import { getSavedSearchLimit } from '@/lib/entitlements';
+import { getSeekerTier } from '@/lib/jobs/entitlements-actions';
 import {
   DEFAULT_SAVED_SEARCH_FILTERS,
   type SavedSearchFilters,
@@ -48,8 +50,6 @@ function rowToSavedSearch(row: Record<string, unknown>): SavedSearch {
   };
 }
 
-const MAX_SAVED_SEARCHES_PER_SEEKER = 20;
-
 export async function listSavedSearches(
   seekerId: string
 ): Promise<SavedSearch[]> {
@@ -75,14 +75,21 @@ export async function createSavedSearch(
 ): Promise<SavedSearch> {
   const supabase = getAdminClient();
 
-  const { count, error: countError } = await supabase
-    .from('saved_searches')
-    .select('*', { count: 'exact', head: true })
-    .eq('seeker_id', seekerId);
-  if (countError) throw countError;
-  if ((count ?? 0) >= MAX_SAVED_SEARCHES_PER_SEEKER) {
+  const [tier, countResult] = await Promise.all([
+    getSeekerTier(seekerId),
+    supabase
+      .from('saved_searches')
+      .select('*', { count: 'exact', head: true })
+      .eq('seeker_id', seekerId),
+  ]);
+  if (countResult.error) throw countResult.error;
+
+  const limit = getSavedSearchLimit(tier);
+  if ((countResult.count ?? 0) >= limit) {
     throw new Error(
-      `You can save up to ${MAX_SAVED_SEARCHES_PER_SEEKER} searches.`
+      tier === 'free'
+        ? `Free plan is limited to ${limit} saved searches. Upgrade to Premium for more (coming soon).`
+        : `You can save up to ${limit} searches.`
     );
   }
 

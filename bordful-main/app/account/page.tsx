@@ -6,6 +6,8 @@ import { SavedSearchesList } from '@/components/account/SavedSearchesList';
 import { SignOutButton } from '@/components/auth/SignOutButton';
 import config from '@/config';
 import { getJobs } from '@/lib/db/airtable.server';
+import { getSavedSearchLimit } from '@/lib/entitlements';
+import { getSeekerTier } from '@/lib/jobs/entitlements-actions';
 import { listSavedSearches } from '@/lib/jobs/saved-search-actions';
 import { matchesSavedSearch } from '@/lib/jobs/saved-search-matching';
 import { getSavedJobsWithDetails, getSeekerJobState } from '@/lib/jobs/seeker-actions';
@@ -33,11 +35,12 @@ export default async function AccountPage() {
     redirect('/dashboard');
   }
 
-  const [savedJobs, jobState, savedSearches, profile] = await Promise.all([
+  const [savedJobs, jobState, savedSearches, profile, tier] = await Promise.all([
     getSavedJobsWithDetails(session.user.id),
     getSeekerJobState(session.user.id),
     listSavedSearches(session.user.id),
     getSeekerProfile(session.user.id),
+    getSeekerTier(session.user.id),
   ]);
 
   const appliedJobs = savedJobs.filter(
@@ -59,11 +62,23 @@ export default async function AccountPage() {
     <main className="min-h-[60vh] bg-background py-16">
       <div className="container mx-auto px-4">
         <div className="mx-auto max-w-2xl">
-          <h1 className="font-bold text-2xl">
-            Welcome, {session.user.name || session.user.email}
-          </h1>
+          <div className="flex items-center gap-3">
+            <h1 className="font-bold text-2xl">
+              Welcome, {session.user.name || session.user.email}
+            </h1>
+            <span className="shrink-0 rounded-full border px-2.5 py-0.5 text-xs font-medium capitalize text-zinc-600 dark:text-zinc-400">
+              {tier} plan
+            </span>
+          </div>
           <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
             Signed in as {session.user.email}.
+            {tier === 'free' && (
+              <>
+                {' '}
+                Free plan includes up to {getSavedSearchLimit('free')} saved
+                searches. Premium plans are coming soon.
+              </>
+            )}
           </p>
 
           {!profile?.onboardingCompletedAt && (
