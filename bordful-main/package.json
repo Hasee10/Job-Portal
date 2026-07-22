@@ -71,7 +71,7 @@
     "cheerio": "^1.2.0",
     "fast-xml-parser": "^5.9.3",
     "postcss": "^8.5.6",
-    "tailwindcss": "^3.4.17",
+    "tailwindcss": "^4.3.3",
     "tsx": "^4.23.0",
     "typescript": "5.9.3",
     "ultracite": "^7.9.3"
