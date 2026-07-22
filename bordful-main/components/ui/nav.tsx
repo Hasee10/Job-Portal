@@ -427,7 +427,7 @@ export function Nav() {
       // Regular menu items
       return (
         <NavLink
-          className={isMobile ? 'mb-1' : ''}
+          className={isMobile ? 'mb-1 block' : ''}
           href={item.link}
           isActive={isActivePath(item.link)}
           key={item.link}
@@ -540,7 +540,7 @@ export function Nav() {
 
               <ThemeToggle />
 
-              <AuthNavStatus className="ml-4" />
+              <AuthNavStatus className="ml-4" variant="desktop" />
 
               {config.nav.postJob.show && (
                 <Button

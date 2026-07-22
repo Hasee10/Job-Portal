@@ -160,11 +160,12 @@ export const config = {
 
     // Hero section background image
     // Takes precedence over both gradient and solid background when enabled
-    // Free-to-use (no attribution required), verified live 2026-07: moody
-    // dimmed office photo from Unsplash - paired with a brand-teal overlay
-    // below so it reads as intentional/branded rather than generic stock.
+    // Disabled: the branded heroGradient above is the intended hero
+    // background (see its comment) - leaving this enabled too made it win
+    // on precedence, showing a dark, low-contrast stock photo instead and
+    // making the hero text hard to read.
     heroBackgroundImage: {
-      enabled: true, // Set to true to enable background image
+      enabled: false, // Set to true to enable background image
       src: 'https://images.unsplash.com/photo-1565164370954-8eac883fb7c8?w=1920&q=80&auto=format&fit=crop',
       position: 'center', // CSS background-position value
       size: 'cover', // CSS background-size value: "cover", "contain", "100% auto", etc.
@@ -784,6 +785,10 @@ export const config = {
         | 'ghost'
         | 'link', // Button variant
     },
+    // Kept to 4 top-level items on purpose - About/Pricing/Contact and Job
+    // Alerts used to sit as their own flat links next to the two existing
+    // dropdowns, which crowded the desktop bar. They're folded into
+    // "Jobs"/"Company" dropdowns instead so the primary row stays short.
     menu: [
       { label: 'Home', link: '/' },
       {
@@ -796,6 +801,7 @@ export const config = {
           { label: 'Job Locations', link: '/jobs/locations' },
           { label: 'Job Levels', link: '/jobs/levels' },
           { label: 'Job Languages', link: '/jobs/languages' },
+          { label: 'Job Alerts', link: '/job-alerts' },
         ],
       },
       {
@@ -808,10 +814,16 @@ export const config = {
           { label: 'Recruiters', link: '/recruiters' },
         ],
       },
-      { label: 'About', link: '/about' },
-      { label: 'Pricing', link: '/pricing' },
-      { label: 'Job Alerts', link: '/job-alerts' },
-      { label: 'Contact', link: '/contact' },
+      {
+        label: 'Company',
+        link: '/about',
+        dropdown: true,
+        items: [
+          { label: 'About', link: '/about' },
+          { label: 'Pricing', link: '/pricing' },
+          { label: 'Contact', link: '/contact' },
+        ],
+      },
     ],
   } as NavConfig,
 
