@@ -4,6 +4,8 @@ import { notFound } from 'next/navigation';
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { JobApplicationActions } from '@/components/jobs/JobApplicationActions';
+import { SaveJobButton } from '@/components/jobs/SaveJobButton';
 import { Button } from '@/components/ui/button';
 import { ClientBreadcrumb } from '@/components/ui/client-breadcrumb';
 import { JobDetailsSidebar } from '@/components/ui/job-details-sidebar';
@@ -277,24 +279,30 @@ export default async function JobPostPage({
                     </>
                   )}
                 </div>
-                <Button
-                  asChild
-                  className="w-full gap-1.5 text-xs sm:w-auto"
-                  size="xs"
-                  style={{
-                    backgroundColor: resolveColor(config.ui.primaryColor),
-                  }}
-                  variant="primary"
-                >
-                  <a
-                    href={job.apply_url}
-                    rel="noopener noreferrer"
-                    target="_blank"
+                <div className="flex w-full items-center gap-2 sm:w-auto">
+                  <Button
+                    asChild
+                    className="w-full gap-1.5 text-xs sm:w-auto"
+                    size="xs"
+                    style={{
+                      backgroundColor: resolveColor(config.ui.primaryColor),
+                    }}
+                    variant="primary"
                   >
-                    Apply Now
-                    <ArrowUpRight aria-hidden="true" className="h-3.5 w-3.5" />
-                  </a>
-                </Button>
+                    <a
+                      href={job.apply_url}
+                      rel="noopener noreferrer"
+                      target="_blank"
+                    >
+                      Apply Now
+                      <ArrowUpRight
+                        aria-hidden="true"
+                        className="h-3.5 w-3.5"
+                      />
+                    </a>
+                  </Button>
+                  <SaveJobButton jobId={job.id} />
+                </div>
               </div>
             </div>
           </div>
@@ -477,6 +485,7 @@ export default async function JobPostPage({
                   <ArrowUpRight aria-hidden="true" className="h-3.5 w-3.5" />
                 </a>
               </Button>
+              <JobApplicationActions jobId={job.id} />
               {job.valid_through &&
                 (() => {
                   const deadline = new Date(job.valid_through);

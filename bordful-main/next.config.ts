@@ -43,12 +43,18 @@ const nextConfig: NextConfig = {
           // Baseline CSP: blocks framing, restricts script/style/connect origins
           // to self plus the Umami analytics endpoint, disallows plugins/objects.
           // img-src stays broad (https:) since job data comes from many external
-          // sources with arbitrary logo/OG-image hosts.
+          // sources with arbitrary logo/OG-image hosts. 'unsafe-eval' is added
+          // only in dev - Next's webpack/HMR runtime loads modules via eval()
+          // in development, which a strict CSP otherwise silently blocks (no
+          // client JS runs at all, but no visible error without checking the
+          // console). Production builds don't eval(), so prod stays strict.
           {
             key: 'Content-Security-Policy',
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-inline'",
+              `script-src 'self' 'unsafe-inline'${
+                process.env.NODE_ENV === 'development' ? " 'unsafe-eval'" : ''
+              }`,
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' data: https:",
               "font-src 'self' data:",

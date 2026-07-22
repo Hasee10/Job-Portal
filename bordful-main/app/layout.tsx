@@ -5,6 +5,7 @@ import { NuqsAdapter } from 'nuqs/adapters/next/app';
 import type { ReactNode } from 'react';
 import { auth } from '@/auth';
 import { AuthSessionProvider } from '@/components/auth/session-provider';
+import { SeekerJobStateProvider } from '@/components/jobs/SeekerJobStateContext';
 import { ThemeProvider } from '@/components/theme-provider';
 import { Footer } from '@/components/ui/footer';
 import { Nav } from '@/components/ui/nav';
@@ -103,14 +104,16 @@ export default async function RootLayout({
         ))}
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
           <AuthSessionProvider session={session}>
-            <div className="flex min-h-screen flex-col">
-              <Nav />
-              <main className="flex-1">
-                <NuqsAdapter>{children}</NuqsAdapter>
-              </main>
-              <Footer />
-            </div>
-            <Toaster />
+            <SeekerJobStateProvider>
+              <div className="flex min-h-screen flex-col">
+                <Nav />
+                <main className="flex-1">
+                  <NuqsAdapter>{children}</NuqsAdapter>
+                </main>
+                <Footer />
+              </div>
+              <Toaster />
+            </SeekerJobStateProvider>
           </AuthSessionProvider>
         </ThemeProvider>
         {siteConfig.scripts.body.map((script: CustomScript) => (

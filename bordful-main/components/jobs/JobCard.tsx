@@ -1,5 +1,6 @@
 import { ArrowUpRight, Sparkles } from 'lucide-react';
 import Link from 'next/link';
+import { SaveJobButton } from '@/components/jobs/SaveJobButton';
 import { Button } from '@/components/ui/button';
 import { JobBadge } from '@/components/ui/job-badge';
 import config from '@/config';
@@ -95,8 +96,11 @@ export function JobCard({ job }: { job: Job }) {
           </div>
         </div>
       </Link>
+      <div className="absolute top-4 right-4 sm:top-auto sm:bottom-4 sm:opacity-0 sm:transition-opacity sm:group-hover:opacity-100">
+        <SaveJobButton jobId={job.id} />
+      </div>
       {job.apply_url && (
-        <div className="absolute right-4 bottom-4 hidden opacity-0 transition-opacity group-hover:opacity-100 sm:block">
+        <div className="absolute right-14 bottom-4 hidden opacity-0 transition-opacity group-hover:opacity-100 sm:block">
           <Button
             asChild
             className="gap-1.5 text-xs"

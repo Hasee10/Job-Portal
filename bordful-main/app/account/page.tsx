@@ -1,8 +1,11 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
 import { SignOutButton } from '@/components/auth/SignOutButton';
 import config from '@/config';
+import { getSavedJobsWithDetails, getSeekerJobState } from '@/lib/jobs/seeker-actions';
+import { generateJobSlug } from '@/lib/utils/slugify';
 
 export const metadata: Metadata = {
   title: `My Account | ${config.title}`,
@@ -23,6 +26,16 @@ export default async function AccountPage() {
     redirect('/dashboard');
   }
 
+  const [savedJobs, jobState] = await Promise.all([
+    getSavedJobsWithDetails(session.user.id),
+    getSeekerJobState(session.user.id),
+  ]);
+
+  const appliedJobs = savedJobs.filter(
+    (job) => jobState.applications[job.jobId] === 'applied'
+  );
+  const applicationEntries = Object.entries(jobState.applications);
+
   return (
     <main className="min-h-[60vh] bg-background py-16">
       <div className="container mx-auto px-4">
@@ -36,17 +49,73 @@ export default async function AccountPage() {
 
           <div className="mt-8 rounded-lg border p-6">
             <h2 className="font-semibold text-lg">Saved jobs</h2>
-            <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-              Nothing saved yet - bookmark a listing from the jobs board and
-              it&apos;ll show up here.
-            </p>
+            {savedJobs.length === 0 ? (
+              <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
+                Nothing saved yet - bookmark a listing from the jobs board and
+                it&apos;ll show up here.
+              </p>
+            ) : (
+              <ul className="mt-4 space-y-3">
+                {savedJobs.map((job) => (
+                  <li
+                    className="flex items-center justify-between gap-4"
+                    key={job.jobId}
+                  >
+                    <Link
+                      className="min-w-0 flex-1 truncate font-medium text-sm hover:underline"
+                      href={`/jobs/${generateJobSlug(job.title, job.company ?? '')}`}
+                    >
+                      {job.title}
+                      {job.company && (
+                        <span className="text-zinc-500 dark:text-zinc-400">
+                          {' '}
+                          &middot; {job.company}
+                        </span>
+                      )}
+                    </Link>
+                    {jobState.applications[job.jobId] === 'applied' && (
+                      <span className="shrink-0 rounded-full bg-zinc-100 px-2 py-0.5 text-xs dark:bg-zinc-800">
+                        Applied
+                      </span>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
 
           <div className="mt-6 rounded-lg border p-6">
             <h2 className="font-semibold text-lg">Applications</h2>
-            <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-              Application tracking lands here next.
-            </p>
+            {applicationEntries.length === 0 ? (
+              <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
+                Mark a job as applied from its listing page and it&apos;ll show
+                up here.
+              </p>
+            ) : appliedJobs.length === 0 ? (
+              <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
+                You&apos;ve marked jobs as applied, but they&apos;re no longer
+                in your saved jobs list.
+              </p>
+            ) : (
+              <ul className="mt-4 space-y-3">
+                {appliedJobs.map((job) => (
+                  <li key={job.jobId}>
+                    <Link
+                      className="truncate font-medium text-sm hover:underline"
+                      href={`/jobs/${generateJobSlug(job.title, job.company ?? '')}`}
+                    >
+                      {job.title}
+                      {job.company && (
+                        <span className="text-zinc-500 dark:text-zinc-400">
+                          {' '}
+                          &middot; {job.company}
+                        </span>
+                      )}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
 
           <div className="mt-6">
