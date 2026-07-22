@@ -5,9 +5,14 @@ import { auth } from '@/auth';
 import { SavedSearchesList } from '@/components/account/SavedSearchesList';
 import { SignOutButton } from '@/components/auth/SignOutButton';
 import config from '@/config';
+import { getJobs } from '@/lib/db/airtable.server';
 import { listSavedSearches } from '@/lib/jobs/saved-search-actions';
+import { matchesSavedSearch } from '@/lib/jobs/saved-search-matching';
 import { getSavedJobsWithDetails, getSeekerJobState } from '@/lib/jobs/seeker-actions';
+import { getSeekerProfile } from '@/lib/jobs/seeker-profile-actions';
 import { generateJobSlug } from '@/lib/utils/slugify';
+
+const MAX_RECOMMENDED_JOBS = 10;
 
 export const metadata: Metadata = {
   title: `My Account | ${config.title}`,
@@ -28,16 +33,27 @@ export default async function AccountPage() {
     redirect('/dashboard');
   }
 
-  const [savedJobs, jobState, savedSearches] = await Promise.all([
+  const [savedJobs, jobState, savedSearches, profile] = await Promise.all([
     getSavedJobsWithDetails(session.user.id),
     getSeekerJobState(session.user.id),
     listSavedSearches(session.user.id),
+    getSeekerProfile(session.user.id),
   ]);
 
   const appliedJobs = savedJobs.filter(
     (job) => jobState.applications[job.jobId] === 'applied'
   );
   const applicationEntries = Object.entries(jobState.applications);
+
+  const recommendedJobs = profile?.onboardingCompletedAt
+    ? (await getJobs())
+        .filter((job) => matchesSavedSearch(job, profile.filters, profile.searchTerm))
+        .sort(
+          (a, b) =>
+            new Date(b.posted_date).getTime() - new Date(a.posted_date).getTime()
+        )
+        .slice(0, MAX_RECOMMENDED_JOBS)
+    : [];
 
   return (
     <main className="min-h-[60vh] bg-background py-16">
@@ -49,6 +65,56 @@ export default async function AccountPage() {
           <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
             Signed in as {session.user.email}.
           </p>
+
+          {!profile?.onboardingCompletedAt && (
+            <div className="mt-8 flex items-center justify-between gap-4 rounded-lg border border-zinc-900 bg-zinc-50 p-6 dark:border-zinc-100 dark:bg-zinc-900">
+              <div>
+                <h2 className="font-semibold text-lg">
+                  Personalize your job feed
+                </h2>
+                <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+                  Answer a few quick questions and we&apos;ll recommend jobs
+                  that fit what you&apos;re looking for.
+                </p>
+              </div>
+              <Link
+                className="shrink-0 rounded-md bg-zinc-900 px-4 py-2 font-medium text-sm text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
+                href="/account/onboarding"
+              >
+                Get started
+              </Link>
+            </div>
+          )}
+
+          {recommendedJobs.length > 0 && (
+            <div className="mt-8 rounded-lg border p-6">
+              <div className="flex items-center justify-between">
+                <h2 className="font-semibold text-lg">Recommended for you</h2>
+                <Link
+                  className="text-sm text-zinc-600 hover:underline dark:text-zinc-400"
+                  href="/account/onboarding"
+                >
+                  Edit preferences
+                </Link>
+              </div>
+              <ul className="mt-4 space-y-3">
+                {recommendedJobs.map((job) => (
+                  <li key={job.id}>
+                    <Link
+                      className="truncate font-medium text-sm hover:underline"
+                      href={`/jobs/${generateJobSlug(job.title, job.company)}`}
+                    >
+                      {job.title}
+                      <span className="text-zinc-500 dark:text-zinc-400">
+                        {' '}
+                        &middot; {job.company}
+                      </span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
 
           <div className="mt-8 rounded-lg border p-6">
             <h2 className="font-semibold text-lg">Saved jobs</h2>
