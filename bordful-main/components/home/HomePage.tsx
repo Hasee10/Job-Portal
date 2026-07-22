@@ -4,6 +4,7 @@ import { formatDistanceToNow, isToday } from 'date-fns';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import { JobCard } from '@/components/jobs/JobCard';
+import { SaveSearchButton } from '@/components/jobs/SaveSearchButton';
 import { useSeekerJobState } from '@/components/jobs/SeekerJobStateContext';
 import { HeroSection } from '@/components/ui/hero-section';
 import {
@@ -578,35 +579,46 @@ function HomePageContent({
           {/* Main Content */}
           <div className="order-2 flex-[3] md:order-1">
             {/* Job View Tabs */}
-            <div
-              aria-label="Job view"
-              className="mb-4 flex gap-1 overflow-x-auto border-b"
-              role="tablist"
-            >
-              {JOB_VIEW_TABS.map((tab) => (
-                <button
-                  aria-selected={activeView === tab.value}
-                  className={`whitespace-nowrap border-b-2 px-3 py-2 text-sm font-medium transition-colors ${
-                    activeView === tab.value
-                      ? 'border-zinc-900 text-zinc-900 dark:border-zinc-100 dark:text-zinc-100'
-                      : 'border-transparent text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100'
-                  }`}
-                  key={tab.value}
-                  onClick={() => {
-                    if (tab.value !== 'all' && !isSeeker) {
-                      router.push(
-                        `/account/sign-in?callbackUrl=${encodeURIComponent('/')}`
-                      );
-                      return;
-                    }
-                    setActiveView(tab.value);
-                  }}
-                  role="tab"
-                  type="button"
-                >
-                  {tab.label}
-                </button>
-              ))}
+            <div className="mb-4 flex items-center justify-between gap-2 border-b">
+              <div
+                aria-label="Job view"
+                className="flex gap-1 overflow-x-auto"
+                role="tablist"
+              >
+                {JOB_VIEW_TABS.map((tab) => (
+                  <button
+                    aria-selected={activeView === tab.value}
+                    className={`whitespace-nowrap border-b-2 px-3 py-2 text-sm font-medium transition-colors ${
+                      activeView === tab.value
+                        ? 'border-zinc-900 text-zinc-900 dark:border-zinc-100 dark:text-zinc-100'
+                        : 'border-transparent text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100'
+                    }`}
+                    key={tab.value}
+                    onClick={() => {
+                      if (tab.value !== 'all' && !isSeeker) {
+                        router.push(
+                          `/account/sign-in?callbackUrl=${encodeURIComponent('/')}`
+                        );
+                        return;
+                      }
+                      setActiveView(tab.value);
+                    }}
+                    role="tab"
+                    type="button"
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+              {activeView === 'all' && (
+                <div className="pb-2">
+                  <SaveSearchButton
+                    filters={filters}
+                    isSeeker={isSeeker}
+                    searchTerm={searchTerm || ''}
+                  />
+                </div>
+              )}
             </div>
 
             {/* Easy Filter Pills */}

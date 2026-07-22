@@ -1,0 +1,111 @@
+import { NextResponse } from 'next/server';
+import { sendEmail } from '@/lib/email/resend';
+import { getJobs } from '@/lib/db/airtable.server';
+import config from '@/config';
+import type { Job } from '@/lib/db/airtable';
+import {
+  listSavedSearchesForNotification,
+  markSavedSearchNotified,
+  type SavedSearchForNotification,
+  type SavedSearchFrequency,
+} from '@/lib/jobs/saved-search-actions';
+import { matchesSavedSearch } from '@/lib/jobs/saved-search-matching';
+import { generateJobSlug } from '@/lib/utils/slugify';
+
+export const dynamic = 'force-dynamic';
+export const maxDuration = 60;
+
+const MAX_JOBS_PER_EMAIL = 15;
+
+function buildEmailHtml(
+  search: SavedSearchForNotification,
+  matches: Job[]
+): string {
+  const rows = matches
+    .slice(0, MAX_JOBS_PER_EMAIL)
+    .map((job) => {
+      const url = `${config.url}/jobs/${generateJobSlug(job.title, job.company)}`;
+      return `<li style="margin-bottom:12px;">
+        <a href="${url}" style="font-weight:600;color:#18181b;text-decoration:none;">${job.title}</a>
+        <div style="color:#71717a;font-size:13px;">${job.company}${job.workplace_city ? ` &middot; ${job.workplace_city}` : ''}</div>
+      </li>`;
+    })
+    .join('');
+
+  return `
+    <div style="font-family:sans-serif;max-width:560px;margin:0 auto;">
+      <h2 style="color:#18181b;">${matches.length} new job${matches.length > 1 ? 's' : ''} match "${search.name}"</h2>
+      <p style="color:#71717a;">Based on your saved search on ${config.title}.</p>
+      <ul style="list-style:none;padding:0;">${rows}</ul>
+      <p><a href="${config.url}" style="color:#18181b;">Browse all jobs</a></p>
+      <p style="color:#a1a1aa;font-size:12px;">You're receiving this because you saved this search on ${config.title}. Manage your saved searches from your account page.</p>
+    </div>
+  `;
+}
+
+async function processFrequency(
+  frequency: SavedSearchFrequency,
+  jobs: Job[]
+): Promise<number> {
+  const searches = await listSavedSearchesForNotification(frequency);
+  let sent = 0;
+
+  for (const search of searches) {
+    const cutoff = new Date(search.lastNotifiedAt || search.createdAt);
+    const alreadyNotified = new Set(search.notifiedJobIds);
+
+    const matches = jobs.filter((job) => {
+      if (alreadyNotified.has(job.id)) return false;
+      if (new Date(job.posted_date) <= cutoff) return false;
+      return matchesSavedSearch(job, search.filters, search.searchTerm);
+    });
+
+    if (matches.length === 0) continue;
+
+    try {
+      await sendEmail({
+        to: search.seekerEmail,
+        subject: `${matches.length} new job${matches.length > 1 ? 's' : ''} matching "${search.name}"`,
+        html: buildEmailHtml(search, matches),
+      });
+      await markSavedSearchNotified(search.id, [
+        ...search.notifiedJobIds,
+        ...matches.map((job) => job.id),
+      ]);
+      sent++;
+    } catch (error) {
+      console.error(
+        `[cron/search-alerts] Failed to notify saved search ${search.id}:`,
+        error
+      );
+    }
+  }
+
+  return sent;
+}
+
+export async function GET(request: Request) {
+  const authHeader = request.headers.get('authorization');
+  if (
+    process.env.CRON_SECRET &&
+    authHeader !== `Bearer ${process.env.CRON_SECRET}`
+  ) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const jobs = await getJobs();
+
+  // Weekly digests are folded into the Monday run of this same daily cron
+  // rather than a second scheduled job.
+  const isWeeklyRunDay = new Date().getUTCDay() === 1;
+  const frequencies: SavedSearchFrequency[] = isWeeklyRunDay
+    ? ['daily', 'weekly']
+    : ['daily'];
+
+  let totalSent = 0;
+  for (const frequency of frequencies) {
+    totalSent += await processFrequency(frequency, jobs);
+  }
+
+  return NextResponse.json({ ok: true, sent: totalSent });
+}

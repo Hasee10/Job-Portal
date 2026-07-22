@@ -2,8 +2,10 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
+import { SavedSearchesList } from '@/components/account/SavedSearchesList';
 import { SignOutButton } from '@/components/auth/SignOutButton';
 import config from '@/config';
+import { listSavedSearches } from '@/lib/jobs/saved-search-actions';
 import { getSavedJobsWithDetails, getSeekerJobState } from '@/lib/jobs/seeker-actions';
 import { generateJobSlug } from '@/lib/utils/slugify';
 
@@ -26,9 +28,10 @@ export default async function AccountPage() {
     redirect('/dashboard');
   }
 
-  const [savedJobs, jobState] = await Promise.all([
+  const [savedJobs, jobState, savedSearches] = await Promise.all([
     getSavedJobsWithDetails(session.user.id),
     getSeekerJobState(session.user.id),
+    listSavedSearches(session.user.id),
   ]);
 
   const appliedJobs = savedJobs.filter(
@@ -116,6 +119,11 @@ export default async function AccountPage() {
                 ))}
               </ul>
             )}
+          </div>
+
+          <div className="mt-6 rounded-lg border p-6">
+            <h2 className="font-semibold text-lg">Saved searches</h2>
+            <SavedSearchesList savedSearches={savedSearches} />
           </div>
 
           <div className="mt-6">
