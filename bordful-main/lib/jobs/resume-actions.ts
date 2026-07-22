@@ -40,6 +40,12 @@ export type SeekerResume = {
   updatedAt: string;
 };
 
+export type SeekerResumeForMatching = SeekerResume & {
+  seekerEmail: string;
+  matchedJobIds: string[];
+  lastMatchedAt: string | null;
+};
+
 function getAdminClient() {
   const url = process.env.SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -73,6 +79,47 @@ export async function getSeekerResume(
   if (error) throw error;
   if (!data) return null;
   return rowToResume(data);
+}
+
+// Used by the daily alert cron - every seeker with a parsed/uploaded resume
+// (skills present) along with their email, so newly posted jobs can be
+// matched against those skills without re-parsing anything.
+export async function listSeekerResumesForMatching(): Promise<
+  SeekerResumeForMatching[]
+> {
+  const supabase = getAdminClient();
+  const { data, error } = await supabase
+    .from('seeker_resumes')
+    .select('*, job_seekers(email)');
+
+  if (error) throw error;
+
+  return (data ?? [])
+    .filter((row) => row.job_seekers?.email)
+    .map((row) => ({
+      ...rowToResume(row),
+      seekerEmail: (row.job_seekers as { email: string }).email,
+      matchedJobIds: (row.matched_job_ids as string[]) || [],
+      lastMatchedAt: (row.last_matched_at as string) || null,
+    }))
+    .filter((resume) => resume.content.skills.length > 0);
+}
+
+const MAX_MATCHED_JOB_IDS = 500;
+
+export async function markSeekerResumeMatched(
+  seekerId: string,
+  matchedJobIds: string[]
+): Promise<void> {
+  const supabase = getAdminClient();
+  const { error } = await supabase
+    .from('seeker_resumes')
+    .update({
+      last_matched_at: new Date().toISOString(),
+      matched_job_ids: matchedJobIds.slice(-MAX_MATCHED_JOB_IDS),
+    })
+    .eq('seeker_id', seekerId);
+  if (error) throw error;
 }
 
 export async function saveSeekerResume(

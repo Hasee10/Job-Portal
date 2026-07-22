@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -51,6 +51,13 @@ export function ResumeBuilder({
   const [tailorError, setTailorError] = useState<string | null>(null);
   const [upgradeRequired, setUpgradeRequired] = useState(false);
 
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [uploadMatches, setUploadMatches] = useState<
+    { jobId: string; title: string; company: string; matchedSkills: string[] }[]
+  >([]);
+
   const updateExperience = (index: number, patch: Partial<ResumeExperience>) => {
     setContent((prev) => ({
       ...prev,
@@ -98,6 +105,41 @@ export function ResumeBuilder({
     }
   };
 
+  const handleUpload = async (file: File) => {
+    setIsUploading(true);
+    setUploadError(null);
+    setUploadMatches([]);
+    try {
+      const body = new FormData();
+      body.append('file', file);
+      const response = await fetch('/api/seeker/resume/upload', {
+        method: 'POST',
+        body,
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'Failed to parse resume.');
+
+      const parsed = data.resume.content as ResumeContent;
+      setContent(parsed);
+      setSkillsInput(parsed.skills.join(', '));
+      setUploadMatches(data.matches ?? []);
+      toast({
+        title: 'Resume parsed',
+        description:
+          data.matches?.length > 0
+            ? `Found ${data.matches.length} matching job${data.matches.length > 1 ? 's' : ''} - check your email too.`
+            : 'Review the details below and save.',
+      });
+    } catch (error) {
+      setUploadError(
+        error instanceof Error ? error.message : 'Something went wrong.'
+      );
+    } finally {
+      setIsUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
   const handleTailor = async () => {
     if (!targetJob && !jobDescription.trim()) {
       setTailorError('Paste a job description first.');
@@ -134,6 +176,58 @@ export function ResumeBuilder({
 
   return (
     <div className="space-y-8">
+      <div className="rounded-lg border p-6">
+        <h2 className="font-semibold text-lg">Upload an existing resume</h2>
+        <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+          Upload a PDF resume and we&apos;ll fill in the details below
+          automatically, then email you jobs that match your skills.
+        </p>
+        <div className="mt-4 flex items-center gap-3">
+          <input
+            accept="application/pdf"
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) handleUpload(file);
+            }}
+            ref={fileInputRef}
+            type="file"
+          />
+          <Button
+            disabled={isUploading}
+            onClick={() => fileInputRef.current?.click()}
+            type="button"
+            variant="outline"
+          >
+            {isUploading ? 'Parsing...' : 'Upload PDF resume'}
+          </Button>
+        </div>
+        {uploadError && (
+          <p className="mt-2 text-sm text-red-600 dark:text-red-400">
+            {uploadError}
+          </p>
+        )}
+        {uploadMatches.length > 0 && (
+          <div className="mt-4 space-y-2">
+            <p className="font-medium text-sm">
+              {uploadMatches.length} job{uploadMatches.length > 1 ? 's' : ''}{' '}
+              match your skills:
+            </p>
+            <ul className="space-y-1">
+              {uploadMatches.map((match) => (
+                <li className="text-sm" key={match.jobId}>
+                  <span className="font-medium">{match.title}</span>
+                  <span className="text-zinc-500 dark:text-zinc-400">
+                    {' '}
+                    at {match.company} &mdash; matches: {match.matchedSkills.join(', ')}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
+
       <div className="rounded-lg border p-6">
         <h2 className="font-semibold text-lg">Resume details</h2>
         <div className="mt-4 space-y-4">

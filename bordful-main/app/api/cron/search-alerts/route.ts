@@ -10,6 +10,11 @@ import {
   type SavedSearchFrequency,
 } from '@/lib/jobs/saved-search-actions';
 import { matchesSavedSearch } from '@/lib/jobs/saved-search-matching';
+import {
+  listSeekerResumesForMatching,
+  markSeekerResumeMatched,
+} from '@/lib/jobs/resume-actions';
+import { matchJobsBySkills } from '@/lib/jobs/resume-matching';
 import { generateJobSlug } from '@/lib/utils/slugify';
 
 export const dynamic = 'force-dynamic';
@@ -84,6 +89,74 @@ async function processFrequency(
   return sent;
 }
 
+const MAX_RESUME_MATCHES_PER_EMAIL = 10;
+
+function buildResumeMatchEmailHtml(matches: { job: Job; matchedSkills: string[] }[]): string {
+  const rows = matches
+    .map(({ job, matchedSkills }) => {
+      const url = `${config.url}/jobs/${generateJobSlug(job.title, job.company)}`;
+      return `<li style="margin-bottom:12px;">
+        <a href="${url}" style="font-weight:600;color:#18181b;text-decoration:none;">${job.title}</a>
+        <div style="color:#71717a;font-size:13px;">${job.company}${job.workplace_city ? ` &middot; ${job.workplace_city}` : ''}</div>
+        <div style="color:#a1a1aa;font-size:12px;">Matches: ${matchedSkills.join(', ')}</div>
+      </li>`;
+    })
+    .join('');
+
+  return `
+    <div style="font-family:sans-serif;max-width:560px;margin:0 auto;">
+      <h2 style="color:#18181b;">${matches.length} new job${matches.length > 1 ? 's' : ''} match your resume skills</h2>
+      <p style="color:#71717a;">Based on the resume you uploaded to ${config.title}.</p>
+      <ul style="list-style:none;padding:0;">${rows}</ul>
+      <p><a href="${config.url}" style="color:#18181b;">Browse all jobs</a></p>
+      <p style="color:#a1a1aa;font-size:12px;">You're receiving this because you uploaded a resume on ${config.title}.</p>
+    </div>
+  `;
+}
+
+async function processResumeMatches(jobs: Job[]): Promise<number> {
+  const resumes = await listSeekerResumesForMatching();
+  let sent = 0;
+
+  for (const resume of resumes) {
+    const alreadyMatched = new Set(resume.matchedJobIds);
+    const cutoff = resume.lastMatchedAt ? new Date(resume.lastMatchedAt) : null;
+
+    const eligibleJobs = jobs.filter((job) => {
+      if (alreadyMatched.has(job.id)) return false;
+      if (cutoff && new Date(job.posted_date) <= cutoff) return false;
+      return true;
+    });
+
+    const scored = matchJobsBySkills(
+      eligibleJobs,
+      resume.content.skills,
+      MAX_RESUME_MATCHES_PER_EMAIL
+    );
+    if (scored.length === 0) continue;
+
+    try {
+      await sendEmail({
+        to: resume.seekerEmail,
+        subject: `${scored.length} new job${scored.length > 1 ? 's' : ''} match your resume skills`,
+        html: buildResumeMatchEmailHtml(scored),
+      });
+      await markSeekerResumeMatched(resume.seekerId, [
+        ...resume.matchedJobIds,
+        ...scored.map(({ job }) => job.id),
+      ]);
+      sent++;
+    } catch (error) {
+      console.error(
+        `[cron/search-alerts] Failed to notify resume matches for seeker ${resume.seekerId}:`,
+        error
+      );
+    }
+  }
+
+  return sent;
+}
+
 export async function GET(request: Request) {
   const authHeader = request.headers.get('authorization');
   if (
@@ -106,6 +179,7 @@ export async function GET(request: Request) {
   for (const frequency of frequencies) {
     totalSent += await processFrequency(frequency, jobs);
   }
+  totalSent += await processResumeMatches(jobs);
 
   return NextResponse.json({ ok: true, sent: totalSent });
 }
