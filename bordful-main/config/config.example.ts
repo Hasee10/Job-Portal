@@ -798,6 +798,16 @@ export const config = {
           { label: 'Job Languages', link: '/jobs/languages' },
         ],
       },
+      {
+        label: 'Resources',
+        link: '/guides',
+        dropdown: true,
+        items: [
+          { label: 'Career Guides', link: '/guides' },
+          { label: 'MasterClasses', link: '/masterclasses' },
+          { label: 'Recruiters', link: '/recruiters' },
+        ],
+      },
       { label: 'About', link: '/about' },
       { label: 'Pricing', link: '/pricing' },
       { label: 'Job Alerts', link: '/job-alerts' },

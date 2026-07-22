@@ -23,6 +23,15 @@ export function AuthNavStatus({
       session.user.role === 'seeker' ? '/account' : '/dashboard';
     return (
       <div className={`flex items-center gap-3 text-sm ${className}`}>
+        {session.user.role === 'seeker' && (
+          <Link
+            className="text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"
+            href="/account/resume"
+            onClick={onNavigate}
+          >
+            Resume Builder
+          </Link>
+        )}
         <Link
           className="text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"
           href={accountHref}
