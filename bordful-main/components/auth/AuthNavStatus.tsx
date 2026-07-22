@@ -19,11 +19,13 @@ export function AuthNavStatus({
   }
 
   if (session?.user) {
+    const accountHref =
+      session.user.role === 'seeker' ? '/account' : '/dashboard';
     return (
       <div className={`flex items-center gap-3 text-sm ${className}`}>
         <Link
           className="text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"
-          href="/dashboard"
+          href={accountHref}
           onClick={onNavigate}
         >
           {session.user.name || session.user.email}

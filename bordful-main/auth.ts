@@ -1,17 +1,22 @@
 import NextAuth from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
+import Google from 'next-auth/providers/google';
+import LinkedIn from 'next-auth/providers/linkedin';
 import { verifyEmployerCredentials } from '@/lib/auth/employers';
+import { upsertJobSeeker } from '@/lib/auth/job-seekers';
 import { createRateLimiter, getClientIp } from '@/lib/utils/rate-limit';
 
 // Brute-force guard on login attempts, independent of the sign-up limiter.
 const isRateLimited = createRateLimiter(10);
 
-// Employer-only auth (job seekers browse anonymously - no accounts needed
-// on that side). JWT session strategy: the session is a signed, encrypted
-// cookie with no server-side session table to manage, which keeps this
-// simple while still getting Auth.js's hardened cookie defaults (httpOnly,
-// Secure in production, SameSite=Lax) and built-in CSRF protection on the
-// credentials callback.
+// Two account types share this one NextAuth instance: employers (email
+// + password, via Credentials) and job seekers (Google/LinkedIn OAuth).
+// They're distinguished by `token.role` in the callbacks below - job
+// listings themselves stay fully anonymous/browsable either way. JWT
+// session strategy: the session is a signed, encrypted cookie with no
+// server-side session table to manage, which keeps this simple while
+// still getting Auth.js's hardened cookie defaults (httpOnly, Secure in
+// production, SameSite=Lax) and built-in CSRF protection.
 export const { handlers, auth, signIn, signOut } = NextAuth({
   // Required on Vercel/serverless: Auth.js can't otherwise verify the
   // incoming Host header is legitimate (there's no fixed origin the way a
@@ -56,19 +61,43 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         };
       },
     }),
+    Google,
+    LinkedIn,
   ],
   callbacks: {
-    // Carry the employer id through to the client-visible session object -
-    // NextAuth's default user object only exposes name/email/image.
-    async jwt({ token, user }) {
-      if (user) {
+    // Carry the employer/seeker id through to the client-visible session
+    // object - NextAuth's default user object only exposes name/email/image.
+    // `account` is only present on the initial sign-in request, which is
+    // exactly when we need to upsert the job_seekers row (not on every
+    // subsequent request that just re-reads the JWT cookie).
+    async jwt({ token, user, account }) {
+      if (account?.provider === 'credentials' && user) {
         token.employerId = user.id;
+        token.role = 'employer';
+      } else if (
+        account &&
+        (account.provider === 'google' || account.provider === 'linkedin') &&
+        user?.email
+      ) {
+        const seeker = await upsertJobSeeker({
+          email: user.email,
+          name: user.name ?? null,
+          avatarUrl: user.image ?? null,
+          provider: account.provider,
+          providerAccountId: account.providerAccountId,
+        });
+        token.seekerId = seeker.id;
+        token.role = 'seeker';
       }
       return token;
     },
     async session({ session, token }) {
       if (session.user) {
-        session.user.id = token.employerId as string;
+        session.user.id =
+          token.role === 'seeker'
+            ? (token.seekerId as string)
+            : (token.employerId as string);
+        session.user.role = token.role as 'employer' | 'seeker' | undefined;
       }
       return session;
     },
