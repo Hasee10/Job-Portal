@@ -1,8 +1,10 @@
 import type { Metadata } from 'next';
 import { HomePage } from '@/components/home/HomePage';
+import { TrustSection } from '@/components/home/TrustSection';
 import config from '@/config';
 import { HOMEPAGE_JOBS_LIMIT } from '@/lib/constants/defaults';
 import { getActiveJobsCount, getJobs } from '@/lib/db/airtable.server';
+import { listPublishedTestimonials } from '@/lib/content/testimonial-actions';
 import { generateMetadata } from '@/lib/utils/metadata';
 
 // Add metadata for SEO
@@ -27,9 +29,21 @@ export const metadata: Metadata = generateMetadata({
 export const revalidate = 300;
 
 export default async function Home() {
-  const [jobs, totalActiveJobs] = await Promise.all([
+  const [jobs, totalActiveJobs, allJobs, testimonials] = await Promise.all([
     getJobs({ limit: HOMEPAGE_JOBS_LIMIT }),
     getActiveJobsCount(),
+    getJobs(),
+    listPublishedTestimonials(),
   ]);
-  return <HomePage initialJobs={jobs} totalActiveJobs={totalActiveJobs} />;
+  const companiesHiringCount = new Set(allJobs.map((job) => job.company)).size;
+
+  return (
+    <>
+      <HomePage initialJobs={jobs} totalActiveJobs={totalActiveJobs} />
+      <TrustSection
+        companiesHiringCount={companiesHiringCount}
+        testimonials={testimonials}
+      />
+    </>
+  );
 }
