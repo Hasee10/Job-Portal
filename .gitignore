@@ -3,6 +3,11 @@ SUPABASE_DB_Password.txt
 cockroach_DB_password.txt
 *.env
 .env*
+client_secret_*.json
+cred_*.txt
+
+# Local tool artifacts — not meant to be tracked
+.playwright-mcp/
 
 # n8n workflow exports contain hardcoded live API keys (Supabase service_role,
 # Adzuna, Jooble). Keep them local only.
