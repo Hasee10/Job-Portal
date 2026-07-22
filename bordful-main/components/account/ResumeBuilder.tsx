@@ -30,8 +30,10 @@ function emptyEducation(): ResumeEducation {
 
 export function ResumeBuilder({
   initialContent,
+  targetJob = null,
 }: {
   initialContent: ResumeContent;
+  targetJob?: { id: string; title: string; company: string } | null;
 }) {
   const { toast } = useToast();
   const [content, setContent] = useState<ResumeContent>(
@@ -97,7 +99,7 @@ export function ResumeBuilder({
   };
 
   const handleTailor = async () => {
-    if (!jobDescription.trim()) {
+    if (!targetJob && !jobDescription.trim()) {
       setTailorError('Paste a job description first.');
       return;
     }
@@ -109,7 +111,11 @@ export function ResumeBuilder({
       const response = await fetch('/api/seeker/resume/tailor', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ mode, jobDescription, resume: content }),
+        body: JSON.stringify(
+          targetJob
+            ? { mode, jobId: targetJob.id, resume: content }
+            : { mode, jobDescription, resume: content }
+        ),
       });
       const data = await response.json();
       if (!response.ok) {
@@ -298,10 +304,20 @@ export function ResumeBuilder({
 
       <div className="rounded-lg border p-6">
         <h2 className="font-semibold text-lg">Tailor for a job</h2>
-        <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-          Paste a job description and get an AI-tailored resume or cover
-          letter based only on what&apos;s in your resume above.
-        </p>
+        {targetJob ? (
+          <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+            Tailoring for{' '}
+            <span className="font-medium text-foreground">
+              {targetJob.title} at {targetJob.company}
+            </span>
+            . We&apos;ll use that job&apos;s description automatically.
+          </p>
+        ) : (
+          <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+            Paste a job description and get an AI-tailored resume or cover
+            letter based only on what&apos;s in your resume above.
+          </p>
+        )}
         <div className="mt-4 space-y-3">
           <div className="flex gap-2">
             <Button
@@ -321,12 +337,14 @@ export function ResumeBuilder({
               Cover letter
             </Button>
           </div>
-          <Textarea
-            onChange={(e) => setJobDescription(e.target.value)}
-            placeholder="Paste the job description here"
-            rows={6}
-            value={jobDescription}
-          />
+          {!targetJob && (
+            <Textarea
+              onChange={(e) => setJobDescription(e.target.value)}
+              placeholder="Paste the job description here"
+              rows={6}
+              value={jobDescription}
+            />
+          )}
           <Button disabled={isTailoring} onClick={handleTailor} type="button">
             {isTailoring ? 'Generating...' : 'Generate'}
           </Button>

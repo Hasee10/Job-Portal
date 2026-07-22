@@ -42,6 +42,22 @@ export function JobCard({ job }: { job: Job }) {
     return diffInHours <= 48;
   };
 
+  // Derived from real listing fields, not AI-generated copy - "early
+  // applicant" is a stricter/earlier window than the "New" badge (24h vs
+  // 48h) so the two don't just duplicate each other on the same card.
+  const isVeryNew = () => {
+    const diffInHours = Math.floor(
+      (new Date().getTime() - new Date(job.posted_date).getTime()) /
+        (1000 * 60 * 60)
+    );
+    return diffInHours <= 24;
+  };
+  const highlightBadges = [
+    showSalary ? 'Competitive salary' : null,
+    job.workplace_type === 'Remote' ? 'Remote' : null,
+    isVeryNew() ? 'Be an early applicant' : null,
+  ].filter((label): label is string => Boolean(label));
+
   return (
     <div className="group relative">
       <Link
@@ -94,6 +110,15 @@ export function JobCard({ job }: { job: Job }) {
               {fullDate} ({relativeTime})
             </time>
           </div>
+          {highlightBadges.length > 0 && (
+            <div className="flex flex-wrap items-center gap-1.5">
+              {highlightBadges.map((label) => (
+                <JobBadge key={label} type="default">
+                  {label}
+                </JobBadge>
+              ))}
+            </div>
+          )}
         </div>
       </Link>
       <div className="absolute top-4 right-4 sm:top-auto sm:bottom-4 sm:opacity-0 sm:transition-opacity sm:group-hover:opacity-100">

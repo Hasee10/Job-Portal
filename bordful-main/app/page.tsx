@@ -36,13 +36,28 @@ export default async function Home() {
     listPublishedTestimonials(),
   ]);
   const companiesHiringCount = new Set(allJobs.map((job) => job.company)).size;
+  // Companies with the most open roles right now - real data, not a
+  // fabricated logo strip of brands that don't actually post here.
+  const jobCountsByCompany = new Map<string, number>();
+  for (const job of allJobs) {
+    jobCountsByCompany.set(
+      job.company,
+      (jobCountsByCompany.get(job.company) ?? 0) + 1
+    );
+  }
+  const featuredCompanies = [...jobCountsByCompany.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 8)
+    .map(([company]) => company);
 
   return (
     <>
       <HomePage initialJobs={jobs} totalActiveJobs={totalActiveJobs} />
       <TrustSection
         companiesHiringCount={companiesHiringCount}
+        featuredCompanies={featuredCompanies}
         testimonials={testimonials}
+        totalActiveJobs={totalActiveJobs}
       />
     </>
   );

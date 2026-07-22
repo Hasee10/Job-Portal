@@ -55,8 +55,39 @@ export function OnboardingQuiz({
     initialFilters.salaryMin,
     initialFilters.salaryMax,
   ]);
+  const [resumeStatus, setResumeStatus] = useState<
+    'ready' | 'needs-work' | 'none' | null
+  >(null);
+  const [wantsHeadhunter, setWantsHeadhunter] = useState<boolean | null>(null);
 
   const steps = [
+    {
+      title: "What's the state of your resume?",
+      content: (
+        <div className="space-y-2">
+          {(
+            [
+              { value: 'ready', label: "It's ready to go" },
+              { value: 'needs-work', label: 'I have one, but it needs work' },
+              { value: 'none', label: "I don't have one yet" },
+            ] as const
+          ).map((option) => (
+            <button
+              className={`w-full rounded-md border px-4 py-3 text-left text-sm transition-colors ${
+                resumeStatus === option.value
+                  ? 'border-zinc-900 bg-zinc-900 text-white dark:border-zinc-100 dark:bg-zinc-100 dark:text-zinc-900'
+                  : 'border-zinc-200 text-zinc-600 hover:border-zinc-400 dark:border-zinc-700 dark:text-zinc-400'
+              }`}
+              key={option.value}
+              onClick={() => setResumeStatus(option.value)}
+              type="button"
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
+      ),
+    },
     {
       title: 'What role are you looking for?',
       content: (
@@ -108,28 +139,94 @@ export function OnboardingQuiz({
       ),
     },
     {
-      title: 'Remote preference and salary expectations',
+      title: 'Do you want to work remotely?',
       content: (
-        <div className="space-y-6">
-          <div className="flex items-center justify-between">
-            <span className="text-sm">Remote only</span>
-            <Switch checked={remote} onCheckedChange={setRemote} />
+        <div className="flex items-center justify-between rounded-md border px-4 py-3">
+          <span className="text-sm">Remote only</span>
+          <Switch checked={remote} onCheckedChange={setRemote} />
+        </div>
+      ),
+    },
+    {
+      title: "What's your salary range?",
+      content: (
+        <div className="space-y-2">
+          <span className="text-sm">
+            ${(salaryRange[0] / 1000).toFixed(0)}K &ndash;{' '}
+            {salaryRange[1] >= SALARY_MAX
+              ? `$${(SALARY_MAX / 1000).toFixed(0)}K+`
+              : `$${(salaryRange[1] / 1000).toFixed(0)}K`}
+          </span>
+          <Slider
+            max={SALARY_MAX}
+            min={SALARY_MIN}
+            onValueChange={setSalaryRange}
+            step={5000}
+            value={salaryRange}
+          />
+        </div>
+      ),
+    },
+    {
+      title: 'Interested in working with a recruiter?',
+      content: (
+        <div className="space-y-2">
+          <p className="text-sm text-zinc-600 dark:text-zinc-400">
+            Premium members can connect directly with recruiters in our
+            network who specialize in their field.
+          </p>
+          <div className="flex gap-2">
+            <button
+              className={`flex-1 rounded-md border px-4 py-3 text-sm transition-colors ${
+                wantsHeadhunter === true
+                  ? 'border-zinc-900 bg-zinc-900 text-white dark:border-zinc-100 dark:bg-zinc-100 dark:text-zinc-900'
+                  : 'border-zinc-200 text-zinc-600 hover:border-zinc-400 dark:border-zinc-700 dark:text-zinc-400'
+              }`}
+              onClick={() => setWantsHeadhunter(true)}
+              type="button"
+            >
+              Yes, connect me
+            </button>
+            <button
+              className={`flex-1 rounded-md border px-4 py-3 text-sm transition-colors ${
+                wantsHeadhunter === false
+                  ? 'border-zinc-900 bg-zinc-900 text-white dark:border-zinc-100 dark:bg-zinc-100 dark:text-zinc-900'
+                  : 'border-zinc-200 text-zinc-600 hover:border-zinc-400 dark:border-zinc-700 dark:text-zinc-400'
+              }`}
+              onClick={() => setWantsHeadhunter(false)}
+              type="button"
+            >
+              Not right now
+            </button>
           </div>
-          <div className="space-y-2">
-            <span className="text-sm">
-              ${(salaryRange[0] / 1000).toFixed(0)}K &ndash;{' '}
-              {salaryRange[1] >= SALARY_MAX
-                ? `$${(SALARY_MAX / 1000).toFixed(0)}K+`
-                : `$${(salaryRange[1] / 1000).toFixed(0)}K`}
-            </span>
-            <Slider
-              max={SALARY_MAX}
-              min={SALARY_MIN}
-              onValueChange={setSalaryRange}
-              step={5000}
-              value={salaryRange}
-            />
+        </div>
+      ),
+    },
+    {
+      title: 'Free vs. Premium',
+      content: (
+        <div className="space-y-3">
+          <div className="grid grid-cols-2 gap-3 text-sm">
+            <div className="rounded-md border p-3">
+              <p className="font-medium">Free</p>
+              <ul className="mt-2 space-y-1 text-xs text-zinc-600 dark:text-zinc-400">
+                <li>3 saved search alerts</li>
+                <li>5 AI resume tailors / month</li>
+              </ul>
+            </div>
+            <div className="rounded-md border border-zinc-900 p-3 dark:border-zinc-100">
+              <p className="font-medium">Premium</p>
+              <ul className="mt-2 space-y-1 text-xs text-zinc-600 dark:text-zinc-400">
+                <li>20 saved search alerts</li>
+                <li>Unlimited AI resume tailors</li>
+                <li>Connect with recruiters</li>
+              </ul>
+            </div>
           </div>
+          <p className="text-xs text-zinc-500 dark:text-zinc-400">
+            You&apos;re starting on the Free plan. You can upgrade any time
+            from your account.
+          </p>
         </div>
       ),
     },
@@ -163,7 +260,13 @@ export function OnboardingQuiz({
         title: 'Preferences saved',
         description: "We'll use these to personalize your job feed.",
       });
-      router.push('/account');
+      if (resumeStatus === 'none' || resumeStatus === 'needs-work') {
+        router.push('/account/resume');
+      } else if (wantsHeadhunter) {
+        router.push('/recruiters');
+      } else {
+        router.push('/account');
+      }
       router.refresh();
     } catch (error) {
       toast({

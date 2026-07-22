@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
 import { ResumeBuilder } from '@/components/account/ResumeBuilder';
 import config from '@/config';
+import { getJob } from '@/lib/db/airtable.server';
 import { EMPTY_RESUME_CONTENT, getSeekerResume } from '@/lib/jobs/resume-actions';
 
 export const metadata: Metadata = {
@@ -12,7 +13,11 @@ export const metadata: Metadata = {
 
 export const dynamic = 'force-dynamic';
 
-export default async function ResumePage() {
+export default async function ResumePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ jobId?: string }>;
+}) {
   const session = await auth();
   if (!session?.user) {
     redirect('/account/sign-in?callbackUrl=/account/resume');
@@ -21,7 +26,11 @@ export default async function ResumePage() {
     redirect('/account');
   }
 
-  const resume = await getSeekerResume(session.user.id);
+  const { jobId } = await searchParams;
+  const [resume, targetJob] = await Promise.all([
+    getSeekerResume(session.user.id),
+    jobId ? getJob(jobId) : Promise.resolve(null),
+  ]);
 
   return (
     <main className="min-h-[60vh] bg-background py-16">
@@ -35,6 +44,11 @@ export default async function ResumePage() {
           <div className="mt-6">
             <ResumeBuilder
               initialContent={resume?.content ?? EMPTY_RESUME_CONTENT}
+              targetJob={
+                targetJob
+                  ? { id: targetJob.id, title: targetJob.title, company: targetJob.company }
+                  : null
+              }
             />
           </div>
         </div>

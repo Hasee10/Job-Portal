@@ -1,7 +1,9 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import { auth } from '@/auth';
 import { RecruiterRequestForm } from '@/components/recruiters/RecruiterRequestForm';
 import config from '@/config';
+import { getSeekerTier } from '@/lib/jobs/entitlements-actions';
 import { listActiveRecruiters } from '@/lib/jobs/recruiter-actions';
 
 export const metadata: Metadata = {
@@ -18,6 +20,8 @@ export default async function RecruitersPage() {
     listActiveRecruiters(),
   ]);
   const isSeeker = session?.user?.role === 'seeker';
+  const tier = isSeeker ? await getSeekerTier(session?.user.id as string) : 'free';
+  const isPremium = tier === 'premium';
 
   return (
     <main className="min-h-[60vh] bg-background py-16">
@@ -28,7 +32,24 @@ export default async function RecruitersPage() {
             Get matched with a recruiter who specializes in your field.
           </p>
 
-          {recruiters.length === 0 ? (
+          {!isPremium ? (
+            <div className="mt-8 rounded-lg border border-dashed p-6 text-center">
+              <p className="font-medium text-sm">
+                Connecting with recruiters is a Premium feature.
+              </p>
+              <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+                {isSeeker
+                  ? 'Upgrade to Premium to reach out to recruiters in our network.'
+                  : 'Sign in as a job seeker and upgrade to Premium to reach out to recruiters in our network.'}
+              </p>
+              <Link
+                className="mt-4 inline-block rounded-md bg-primary px-4 py-2 font-medium text-primary-foreground text-sm hover:opacity-90"
+                href={isSeeker ? '/pricing' : '/account/sign-in?callbackUrl=/recruiters'}
+              >
+                {isSeeker ? 'View Premium plans' : 'Sign in'}
+              </Link>
+            </div>
+          ) : recruiters.length === 0 ? (
             <div className="mt-8 rounded-lg border border-dashed p-6 text-center">
               <p className="font-medium text-sm">
                 Our recruiter marketplace is launching soon.

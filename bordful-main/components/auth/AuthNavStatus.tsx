@@ -24,13 +24,22 @@ export function AuthNavStatus({
     return (
       <div className={`flex items-center gap-3 text-sm ${className}`}>
         {session.user.role === 'seeker' && (
-          <Link
-            className="text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"
-            href="/account/resume"
-            onClick={onNavigate}
-          >
-            Resume Builder
-          </Link>
+          <>
+            <Link
+              className="text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"
+              href="/account/resume"
+              onClick={onNavigate}
+            >
+              Resume Builder
+            </Link>
+            <Link
+              className="font-medium text-amber-600 hover:text-amber-700 dark:text-amber-400 dark:hover:text-amber-300"
+              href="/pricing"
+              onClick={onNavigate}
+            >
+              Go Premium
+            </Link>
+          </>
         )}
         <Link
           className="text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"
@@ -57,14 +66,14 @@ export function AuthNavStatus({
     <div className={`flex items-center gap-3 text-sm ${className}`}>
       <Link
         className="text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"
-        href="/sign-in"
+        href="/account/sign-in"
         onClick={onNavigate}
       >
         Sign in
       </Link>
       <Link
         className="text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"
-        href="/sign-up"
+        href="/account/sign-in"
         onClick={onNavigate}
       >
         Sign up

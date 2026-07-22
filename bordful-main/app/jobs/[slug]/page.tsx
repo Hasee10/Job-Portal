@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { GenerateResumeButton } from '@/components/jobs/GenerateResumeButton';
 import { JobApplicationActions } from '@/components/jobs/JobApplicationActions';
 import { SaveJobButton } from '@/components/jobs/SaveJobButton';
 import { Button } from '@/components/ui/button';
@@ -312,6 +313,7 @@ export default async function JobPostPage({
                     </a>
                   </Button>
                   <SaveJobButton jobId={job.id} />
+                  <GenerateResumeButton jobId={job.id} />
                 </div>
               </div>
             </div>
