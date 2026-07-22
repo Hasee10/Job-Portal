@@ -192,6 +192,23 @@ export default async function AccountPage() {
             <SavedSearchesList savedSearches={savedSearches} />
           </div>
 
+          <div className="mt-6 rounded-lg border p-6">
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <h2 className="font-semibold text-lg">Resume builder</h2>
+                <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+                  Build your resume and tailor it for specific jobs with AI.
+                </p>
+              </div>
+              <Link
+                className="shrink-0 rounded-md border px-4 py-2 font-medium text-sm hover:bg-accent"
+                href="/account/resume"
+              >
+                Open
+              </Link>
+            </div>
+          </div>
+
           <div className="mt-6">
             <SignOutButton />
           </div>
