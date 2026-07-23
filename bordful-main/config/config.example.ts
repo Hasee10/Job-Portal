@@ -881,17 +881,9 @@ export const config = {
         ],
       },
       {
-        id: 'job-feeds',
-        show: true,
-        order: 4,
-        title: 'Job Feeds',
-        // Special column type that will render feed links (RSS, Atom, JSON)
-        type: 'feeds',
-      },
-      {
         id: 'legal',
         show: true,
-        order: 5,
+        order: 4,
         title: 'Legal',
         links: [
           {

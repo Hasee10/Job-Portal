@@ -128,18 +128,6 @@ export function Footer() {
       </div>
       <div className="flex items-center space-x-3">
         {/* Social links */}
-        {rssEnabled && (
-          <Link
-            aria-label="Subscribe to RSS Feed"
-            className={hoverLinkClassName}
-            href="/feed.xml"
-            rel="noopener noreferrer"
-            style={hoverLinkStyle}
-            target="_blank"
-          >
-            <Rss aria-hidden="true" className="h-4 w-4" />
-          </Link>
-        )}
         {config.nav.github.show && (
           <Link
             aria-label="View on GitHub"
@@ -545,7 +533,7 @@ export function Footer() {
 
                   {/* Other columns stack in remaining space */}
                   <div className="md:col-span-7 min-[960px]:col-span-9">
-                    <div className="grid grid-cols-1 gap-x-4 gap-y-8 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 min-[300px]:grid-cols-2 min-[960px]:grid-cols-4">
+                    <div className="grid grid-cols-1 gap-x-4 gap-y-8 min-[300px]:grid-cols-2 md:grid-cols-3">
                       {sortedColumns.slice(1).map((column) => (
                         <div key={column.id}>{column.content}</div>
                       ))}
@@ -554,7 +542,7 @@ export function Footer() {
                 </div>
               ) : (
                 /* Fallback to regular grid if brand isn't first */
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6 min-[300px]:grid-cols-2 min-[960px]:grid-cols-4">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-3 min-[300px]:grid-cols-2">
                   {sortedColumns.map((column) => (
                     <div key={column.id}>{column.content}</div>
                   ))}
