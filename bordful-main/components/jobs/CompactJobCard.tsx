@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
 import { JobBadge } from '@/components/ui/job-badge';
 import { formatSalary, type Job } from '@/lib/db/airtable';
 import { formatDate } from '@/lib/utils/formatDate';
@@ -11,15 +12,23 @@ export function CompactJobCard({ job }: { job: Job }) {
   const showSalary =
     job.salary && (job.salary.min !== null || job.salary.max !== null);
 
-  // Check if job was posted within the last 48 hours
-  const isNew = () => {
+  // Whether the job was posted within the last 48 hours, evaluated against
+  // "now" - deliberately computed post-mount rather than during render.
+  // This page is statically cached (revalidate = 300s), so the server's
+  // "now" at generation time and the browser's "now" at hydration time can
+  // differ by minutes - right at the 48h boundary that flips the "New"
+  // badge on or off between server and client render, which React reports
+  // as a hydration mismatch (minified error #418). Starting false and
+  // flipping true in an effect always matches the server's initial render.
+  const [isNew, setIsNew] = useState(false);
+  useEffect(() => {
     const now = new Date();
     const postedDate = new Date(job.posted_date);
     const diffInHours = Math.floor(
       (now.getTime() - postedDate.getTime()) / (1000 * 60 * 60)
     );
-    return diffInHours <= 48;
-  };
+    setIsNew(diffInHours <= 48);
+  }, [job.posted_date]);
 
   // Simplify location to just the type
   const workplaceType = job.workplace_type || '';
@@ -43,7 +52,7 @@ export function CompactJobCard({ job }: { job: Job }) {
               {limitedTitle}
             </h3>
             <div className="flex shrink-0 flex-nowrap gap-1">
-              {isNew() && (
+              {isNew && (
                 <JobBadge
                   className="flex h-4 items-center px-1.5 py-0 text-[10px]"
                   type="new"

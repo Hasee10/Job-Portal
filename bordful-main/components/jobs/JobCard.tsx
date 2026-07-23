@@ -1,5 +1,6 @@
 import { ArrowUpRight, Sparkles } from 'lucide-react';
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
 import { SaveJobButton } from '@/components/jobs/SaveJobButton';
 import { Button } from '@/components/ui/button';
 import { JobBadge } from '@/components/ui/job-badge';
@@ -32,30 +33,33 @@ export function JobCard({ job }: { job: Job }) {
             .filter(Boolean)
             .join(', ') || null;
 
-  // Check if job was posted within the last 48 hours
-  const isNew = () => {
-    const now = new Date();
-    const postedDate = new Date(job.posted_date);
-    const diffInHours = Math.floor(
-      (now.getTime() - postedDate.getTime()) / (1000 * 60 * 60)
-    );
-    return diffInHours <= 48;
-  };
-
-  // Derived from real listing fields, not AI-generated copy - "early
-  // applicant" is a stricter/earlier window than the "New" badge (24h vs
-  // 48h) so the two don't just duplicate each other on the same card.
-  const isVeryNew = () => {
+  // Whether the job is "New" (<=48h) / "very new" (<=24h, for the "Be an
+  // early applicant" highlight badge) - deliberately computed post-mount
+  // rather than during render. This page is statically cached (revalidate
+  // = 300s), so the server's "now" at generation time and the browser's
+  // "now" at hydration time can differ by minutes - right at either
+  // boundary that flips a badge on or off between server and client
+  // render, which React reports as a hydration mismatch (minified error
+  // #418). Starting both false and flipping in an effect always matches
+  // the server's initial render.
+  const [isNew, setIsNew] = useState(false);
+  const [isVeryNew, setIsVeryNew] = useState(false);
+  useEffect(() => {
     const diffInHours = Math.floor(
       (new Date().getTime() - new Date(job.posted_date).getTime()) /
         (1000 * 60 * 60)
     );
-    return diffInHours <= 24;
-  };
+    setIsNew(diffInHours <= 48);
+    setIsVeryNew(diffInHours <= 24);
+  }, [job.posted_date]);
+
+  // Derived from real listing fields, not AI-generated copy - "early
+  // applicant" is a stricter/earlier window than the "New" badge (24h vs
+  // 48h) so the two don't just duplicate each other on the same card.
   const highlightBadges = [
     showSalary ? 'Competitive salary' : null,
     job.workplace_type === 'Remote' ? 'Remote' : null,
-    isVeryNew() ? 'Be an early applicant' : null,
+    isVeryNew ? 'Be an early applicant' : null,
   ].filter((label): label is string => Boolean(label));
 
   return (
@@ -74,7 +78,7 @@ export function JobCard({ job }: { job: Job }) {
               <h2 className="line-clamp-2 font-medium text-base">
                 {job.title}
               </h2>
-              {isNew() && <JobBadge type="new">New</JobBadge>}
+              {isNew && <JobBadge type="new">New</JobBadge>}
             </div>
             {job.featured && (
               <JobBadge
