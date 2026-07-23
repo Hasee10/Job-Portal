@@ -7,6 +7,12 @@ export type JobSeeker = {
   email: string;
   name: string | null;
   avatarUrl: string | null;
+  // True only on the request that first creates the row - detected by
+  // comparing created_at (DB default, set once) against the updated_at we
+  // just wrote (always "now"). On a genuine insert those land within
+  // milliseconds of each other; on every later login updated_at is far
+  // newer than the original created_at.
+  isNew: boolean;
 };
 
 function getAdminClient() {
@@ -31,6 +37,8 @@ export async function upsertJobSeeker(profile: {
   const supabase = getAdminClient();
   const normalizedEmail = profile.email.trim().toLowerCase();
 
+  const updatedAt = new Date();
+
   const { data, error } = await supabase
     .from('job_seekers')
     .upsert(
@@ -40,14 +48,23 @@ export async function upsertJobSeeker(profile: {
         avatar_url: profile.avatarUrl,
         provider: profile.provider,
         provider_account_id: profile.providerAccountId,
-        updated_at: new Date().toISOString(),
+        updated_at: updatedAt.toISOString(),
       },
       { onConflict: 'email' }
     )
-    .select('id, email, name, avatar_url')
+    .select('id, email, name, avatar_url, created_at')
     .single();
 
   if (error) throw error;
 
-  return { id: data.id, email: data.email, name: data.name, avatarUrl: data.avatar_url };
+  const createdAt = new Date(data.created_at as string);
+  const isNew = Math.abs(updatedAt.getTime() - createdAt.getTime()) < 5000;
+
+  return {
+    id: data.id,
+    email: data.email,
+    name: data.name,
+    avatarUrl: data.avatar_url,
+    isNew,
+  };
 }

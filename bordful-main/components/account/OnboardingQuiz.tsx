@@ -279,17 +279,54 @@ export function OnboardingQuiz({
     }
   };
 
+  // /account redirects here whenever onboarding isn't marked complete, so
+  // skipping still has to save (with defaults) rather than just navigating
+  // away - otherwise the user would land right back on this page.
+  const handleSkip = async () => {
+    setIsSubmitting(true);
+    try {
+      const response = await fetch('/api/seeker/profile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          searchTerm: initialSearchTerm || null,
+          filters: initialFilters,
+        }),
+      });
+      if (!response.ok) throw new Error('Failed to skip.');
+      router.push('/account');
+      router.refresh();
+    } catch (error) {
+      toast({
+        title: 'Something went wrong',
+        description: error instanceof Error ? error.message : 'Please try again.',
+        variant: 'destructive',
+      });
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <div className="mx-auto max-w-lg rounded-lg border p-6">
-      <div className="mb-4 flex gap-1">
-        {steps.map((s, i) => (
-          <div
-            className={`h-1 flex-1 rounded-full ${
-              i <= step ? 'bg-zinc-900 dark:bg-zinc-100' : 'bg-zinc-200 dark:bg-zinc-800'
-            }`}
-            key={s.title}
-          />
-        ))}
+      <div className="mb-4 flex items-center gap-3">
+        <div className="flex flex-1 gap-1">
+          {steps.map((s, i) => (
+            <div
+              className={`h-1 flex-1 rounded-full ${
+                i <= step ? 'bg-zinc-900 dark:bg-zinc-100' : 'bg-zinc-200 dark:bg-zinc-800'
+              }`}
+              key={s.title}
+            />
+          ))}
+        </div>
+        <button
+          className="shrink-0 text-xs text-zinc-500 underline underline-offset-2 hover:text-zinc-900 disabled:opacity-50 dark:text-zinc-400 dark:hover:text-zinc-100"
+          disabled={isSubmitting}
+          onClick={handleSkip}
+          type="button"
+        >
+          Skip for now
+        </button>
       </div>
       <h2 className="font-semibold text-lg">{steps[step].title}</h2>
       <div className="mt-4">{steps[step].content}</div>

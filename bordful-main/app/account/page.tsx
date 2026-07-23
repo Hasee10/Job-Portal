@@ -35,11 +35,19 @@ export default async function AccountPage() {
     redirect('/dashboard');
   }
 
-  const [savedJobs, jobState, savedSearches, profile, tier] = await Promise.all([
+  const profile = await getSeekerProfile(session.user.id);
+  // Send every seeker who hasn't finished the quiz straight there instead
+  // of a banner they can miss - "Skip for now" on that page (which still
+  // marks onboarding complete with default filters) is the way out for
+  // anyone who really doesn't want to answer it.
+  if (!profile?.onboardingCompletedAt) {
+    redirect('/account/onboarding');
+  }
+
+  const [savedJobs, jobState, savedSearches, tier] = await Promise.all([
     getSavedJobsWithDetails(session.user.id),
     getSeekerJobState(session.user.id),
     listSavedSearches(session.user.id),
-    getSeekerProfile(session.user.id),
     getSeekerTier(session.user.id),
   ]);
 
@@ -80,26 +88,6 @@ export default async function AccountPage() {
               </>
             )}
           </p>
-
-          {!profile?.onboardingCompletedAt && (
-            <div className="mt-8 flex items-center justify-between gap-4 rounded-lg border border-zinc-900 bg-zinc-50 p-6 dark:border-zinc-100 dark:bg-zinc-900">
-              <div>
-                <h2 className="font-semibold text-lg">
-                  Personalize your job feed
-                </h2>
-                <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-                  Answer a few quick questions and we&apos;ll recommend jobs
-                  that fit what you&apos;re looking for.
-                </p>
-              </div>
-              <Link
-                className="shrink-0 rounded-md bg-zinc-900 px-4 py-2 font-medium text-sm text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
-                href="/account/onboarding"
-              >
-                Get started
-              </Link>
-            </div>
-          )}
 
           {recommendedJobs.length > 0 && (
             <div className="mt-8 rounded-lg border p-6">

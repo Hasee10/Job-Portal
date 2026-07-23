@@ -2,8 +2,11 @@ import NextAuth from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
 import Google from 'next-auth/providers/google';
 import LinkedIn from 'next-auth/providers/linkedin';
+import config from '@/config';
 import { verifyEmployerCredentials } from '@/lib/auth/employers';
 import { upsertJobSeeker } from '@/lib/auth/job-seekers';
+import { sendEmail } from '@/lib/email/resend';
+import { renderSeekerWelcomeEmail } from '@/lib/email/templates/seeker-welcome';
 import { createRateLimiter, getClientIp } from '@/lib/utils/rate-limit';
 
 // Brute-force guard on login attempts, independent of the sign-up limiter.
@@ -88,6 +91,22 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         });
         token.seekerId = seeker.id;
         token.role = 'seeker';
+
+        // Fire-and-catch, not fire-and-forget: awaited so it completes
+        // before this serverless invocation can be frozen, but a failure
+        // here (e.g. no RESEND_API_KEY configured) must never block sign-in
+        // - the account already exists at this point either way.
+        if (seeker.isNew) {
+          try {
+            const { subject, html } = renderSeekerWelcomeEmail({
+              name: seeker.name || seeker.email,
+              onboardingUrl: `${config.url}/account/onboarding`,
+            });
+            await sendEmail({ to: seeker.email, subject, html });
+          } catch (error) {
+            console.error('[auth] seeker welcome email failed', error);
+          }
+        }
       }
       return token;
     },
