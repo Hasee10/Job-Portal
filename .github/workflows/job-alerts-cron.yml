@@ -1,0 +1,50 @@
+name: Job Alerts Cron
+
+# Vercel's own cron (vercel.json) already hits this same endpoint once a
+# day - that's the Hobby plan's hard ceiling (1 scheduled run/day, no
+# more, no matter what's configured). This workflow calls it more often
+# for free via GitHub Actions instead of paying for Vercel Pro.
+#
+# Safe to run more frequently than the Vercel cron: app/api/cron/search-
+# alerts is idempotent - it tracks notifiedJobIds/matchedJobIds per seeker
+# and only emails about jobs it hasn't already sent, so extra runs just
+# mean alerts go out sooner, never duplicated. The two schedules don't
+# need to be coordinated.
+#
+# Requires a CRON_SECRET repository secret with the exact same value as
+# the CRON_SECRET env var set in Vercel (Project Settings -> Environment
+# Variables) - the endpoint checks that Bearer token and returns 401
+# without it. Optionally set a PORTAL_URL repository variable (Settings ->
+# Secrets and variables -> Actions -> Variables) if the site is on a
+# custom domain instead of the default *.vercel.app one.
+
+on:
+  schedule:
+    - cron: '0 */6 * * *'
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  trigger-alerts:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call job alerts cron endpoint
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          PORTAL_URL: ${{ vars.PORTAL_URL || 'https://job-portal-ten-pi.vercel.app' }}
+        run: |
+          if [ -z "$CRON_SECRET" ]; then
+            echo "::error::CRON_SECRET repository secret is not set - add it under Settings > Secrets and variables > Actions, matching the value in Vercel."
+            exit 1
+          fi
+          status=$(curl -sS -o response.json -w "%{http_code}" \
+            -X GET "$PORTAL_URL/api/cron/search-alerts" \
+            -H "Authorization: Bearer $CRON_SECRET")
+          echo "HTTP $status"
+          cat response.json
+          if [ "$status" -ge 300 ]; then
+            echo "::error::Job alerts cron call failed with HTTP $status"
+            exit 1
+          fi
