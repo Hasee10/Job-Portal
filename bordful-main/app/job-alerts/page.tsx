@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import { JobAlertsForm } from '@/components/job-alerts/JobAlertsForm';
 import { CompactJobCardList } from '@/components/jobs/CompactJobCardList';
 import { HeroSection } from '@/components/ui/hero-section';
 import { MetadataBreadcrumb } from '@/components/ui/metadata-breadcrumb';
@@ -71,16 +71,24 @@ export default async function JobAlertsPage() {
         </div>
 
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
-          {/* Job alerts form */}
+          {/* Sign in + saved search alerts - the newsletter-style signup
+              form here was disabled (it depended on an email marketing
+              provider that isn't set up), but seekers already have a real,
+              working alerts mechanism: save a search from the homepage and
+              the daily/6-hourly cron emails matching new listings. Point
+              here instead of showing a dead form. */}
           <div className="lg:col-span-1">
-            <h2 className="mb-4 font-semibold text-xl">
-              {config.jobAlerts.form?.heading || 'Subscribe for Updates'}
-            </h2>
+            <h2 className="mb-4 font-semibold text-xl">Get job alerts</h2>
             <p className="mb-6 text-sm text-zinc-600 dark:text-zinc-400">
-              {config.jobAlerts.form?.description ||
-                "Get notified when new jobs are posted. We'll also subscribe you to Joblo newsletter."}
+              Sign in, save a search with the filters you care about, and
+              we&apos;ll email you when matching jobs are posted.
             </p>
-            <JobAlertsForm />
+            <Link
+              className="inline-flex items-center justify-center rounded-md bg-zinc-900 px-4 py-2 font-medium text-sm text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
+              href="/account/sign-in?callbackUrl=/"
+            >
+              Sign in to set up alerts
+            </Link>
           </div>
 
           {/* Latest jobs */}
