@@ -265,6 +265,7 @@ export function ResumeBuilder({
               className="mt-1"
               id="summary"
               onChange={(e) => setContent((p) => ({ ...p, summary: e.target.value }))}
+              placeholder="A 2-3 sentence overview of your experience and what you're looking for next."
               rows={3}
               value={content.summary}
             />

@@ -9,6 +9,21 @@ import type { ResumeContent } from '@/lib/jobs/resume-actions';
 export const dynamic = 'force-dynamic';
 export const maxDuration = 30;
 
+// The model is told not to use markdown, but strip it defensively anyway -
+// asterisks/hashes/backticks rendered literally (not as bold/headers) in the
+// plain-text output box, which just looked like broken AI slop.
+function stripMarkdown(text: string): string {
+  return text
+    .replace(/^```[a-z]*\n?/gim, '')
+    .replace(/```\s*$/gim, '')
+    .replace(/\*\*(.+?)\*\*/g, '$1')
+    .replace(/(?<!\w)\*(?!\s)(.+?)(?<!\s)\*(?!\w)/g, '$1')
+    .replace(/^#{1,6}\s+/gm, '')
+    .replace(/^[-*_]{3,}\s*$/gm, '')
+    .replace(/^[ \t]*[-*]\s+/gm, '- ')
+    .trim();
+}
+
 function resumeToPlainText(content: ResumeContent): string {
   const lines: string[] = [];
   if (content.fullName) lines.push(content.fullName);
@@ -79,10 +94,19 @@ export async function POST(request: Request) {
     );
   }
 
+  const formattingRules =
+    'Output plain text only, formatted like a real document ready to paste ' +
+    'into an email or application form: no markdown syntax whatsoever - no ' +
+    '**bold**, no # headings, no backticks, no asterisk bullets. Use plain ' +
+    'hyphens (-) for any list items and blank lines between sections. Do ' +
+    'not include any preamble, explanation, or commentary ("Here is your ' +
+    'tailored resume:", "Sure, here\'s...") before or after the content - ' +
+    'output only the resume or letter itself, nothing else.';
+
   const systemPrompt =
     mode === 'cover-letter'
-      ? 'You are an expert career coach. Write a concise, specific, and honest cover letter (max 350 words) based only on the facts in the resume provided. Do not invent experience, skills, or achievements that are not in the resume. Address why the candidate fits this specific role.'
-      : 'You are an expert resume writer. Rewrite the given resume content to better emphasize the experience and skills most relevant to the target job. Do not invent experience, skills, employers, or achievements that are not present in the original resume - only reorder, re-emphasize, and rephrase what is already there. Return the tailored resume as clean plain text.';
+      ? `You are an expert career coach. Write a concise, specific, and honest cover letter (max 350 words) based only on the facts in the resume provided. Do not invent experience, skills, or achievements that are not in the resume. Address why the candidate fits this specific role. Write in a natural, human voice - not generic AI phrasing ("I am excited to apply", "I believe I would be a great fit"). ${formattingRules}`
+      : `You are an expert resume writer. Rewrite the given resume content to better emphasize the experience and skills most relevant to the target job. Do not invent experience, skills, employers, or achievements that are not present in the original resume - only reorder, re-emphasize, and rephrase what is already there. Structure it like a real resume: name and headline on top, then section headers in ALL CAPS (EXPERIENCE, EDUCATION, SKILLS). ${formattingRules}`;
 
   const userPrompt = [
     jobTitle ? `Target role: ${jobTitle}${jobCompany ? ` at ${jobCompany}` : ''}` : null,
@@ -101,7 +125,7 @@ export async function POST(request: Request) {
       { temperature: 0.4, maxTokens: 1200 }
     );
 
-    return NextResponse.json({ output });
+    return NextResponse.json({ output: stripMarkdown(output) });
   } catch (error) {
     if (error instanceof AIProviderError && error.notConfigured) {
       return NextResponse.json(
