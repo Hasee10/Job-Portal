@@ -1,4 +1,14 @@
-"""Jooble - https://jooble.org/api/about (free API key required)."""
+"""Jooble - https://jooble.org/api/about (free API key required).
+
+Jooble has no industry/category filter, only free-text keyword + location
+search, and covers 65 countries including the Gulf (UAE, Saudi Arabia,
+Qatar, Kuwait, Bahrain - confirmed live 2026-07) alongside South Asia and
+North America. To get broad, targeted coverage instead of one arbitrary
+query, this runs the full JOOBLE_KEYWORDS x JOOBLE_LOCATIONS matrix and
+merges the results (deduped by apply_url - the same posting can surface
+under more than one keyword). One combo failing (rate limit, bad location
+string) is logged and skipped rather than dropping the whole source.
+"""
 
 import logging
 from datetime import datetime
@@ -9,19 +19,40 @@ from jobscraper.sources.base import get_client, keep_valid
 logger = logging.getLogger(__name__)
 
 
+def _fetch_one(client, keywords: str, location: str) -> list[dict]:
+    url = f"https://jooble.org/api/{config.JOOBLE_API_KEY}"
+    resp = client.post(url, json={"keywords": keywords, "location": location})
+    resp.raise_for_status()
+    return resp.json().get("jobs", [])
+
+
 def fetch() -> list[dict]:
     if not config.JOOBLE_API_KEY:
         logger.info("jooble: JOOBLE_API_KEY not set, skipping")
         return []
 
-    url = f"https://jooble.org/api/{config.JOOBLE_API_KEY}"
+    raw_jobs = []
+    seen_urls: set[str] = set()
     with get_client() as client:
-        resp = client.post(url, json={"keywords": "developer", "location": ""})
-        resp.raise_for_status()
-        jobs = resp.json().get("jobs", [])
+        for keywords in config.JOOBLE_KEYWORDS:
+            for location in config.JOOBLE_LOCATIONS:
+                try:
+                    for job in _fetch_one(client, keywords, location):
+                        link = job.get("link")
+                        if link and link in seen_urls:
+                            continue
+                        if link:
+                            seen_urls.add(link)
+                        raw_jobs.append(job)
+                except Exception:
+                    logger.exception(
+                        "jooble: query keywords=%r location=%r failed, skipping this combo",
+                        keywords,
+                        location,
+                    )
 
     out = []
-    for job in jobs:
+    for job in raw_jobs:
         text = f"{job.get('title') or ''} {job.get('snippet') or ''}".lower()
         remote_type = (
             "remote" if "remote" in text else ("hybrid" if "hybrid" in text else "onsite")

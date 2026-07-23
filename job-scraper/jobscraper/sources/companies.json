@@ -1,9 +1,11 @@
 {
   "_comment": "Company board tokens for the public Greenhouse/Lever/Ashby JSON APIs. These are open, unauthenticated, and explicitly meant for public consumption (they power each company's own careers page) - no ToS risk like Indeed/LinkedIn scraping. Add more via ATS_EXTRA_BOARDS in .env (format: token or token:platform), or add directly here.",
+  "_comment_regional": "careem, tamara (greenhouse), swiggy, freshworks, upstox (smartrecruiters), unifonic (recruitee) added 2026-07 as part of the Middle East/Asia expansion - all verified live against the public API directly (curl, 200 + real postings) before adding, not guessed. See job-scraper README / memory for the ME-board research that motivated this (Bayt/GulfTalent/NaukriGulf have no free API, unlike these).",
   "greenhouse": [
     "stripe", "airbnb", "coinbase", "doordash", "robinhood", "figma",
     "gitlab", "elastic", "cloudflare", "asana", "reddit", "pinterest",
-    "affirm", "grammarly", "instacart"
+    "affirm", "grammarly", "instacart",
+    "careem", "tamara"
   ],
   "lever": [
     "netflix", "shopify", "brex", "attentive", "plaid",
@@ -14,10 +16,10 @@
     "replit", "runwayml"
   ],
   "smartrecruiters": [
-    "Visa", "DeliveryHero"
+    "Visa", "DeliveryHero", "swiggy", "freshworks", "upstox"
   ],
   "recruitee": [
-    "bunq", "livestorm", "channable"
+    "bunq", "livestorm", "channable", "unifonic"
   ],
   "personio": [
     "personio"

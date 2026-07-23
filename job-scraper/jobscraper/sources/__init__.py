@@ -31,6 +31,7 @@ from jobscraper.sources import (
 # server-rendered HTML or a genuine public REST API, no CloakBrowser needed
 # (see each module's docstring). Rozee.pk (Pakistan) and Upwork are
 # CloakBrowser-based instead (Cloudflare-gated) - see sources/browser/.
+#
 API_SOURCES = [
     remotive,
     arbeitnow,

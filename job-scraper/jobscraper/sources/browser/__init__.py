@@ -1,10 +1,13 @@
 from jobscraper.sources.browser import (
+    bayt,
     dice,
     glassdoor,
+    gulftalent,
     hiringcafe,
     indeed,
     levels_fyi,
     naukri,
+    naukrigulf,
     rozee,
     upwork,
     ziprecruiter,
@@ -32,10 +35,22 @@ from jobscraper.sources.browser import (
 # Upwork and Rozee.pk both need pipeline.py's PRESENCE_RECONCILED_SOURCES
 # path instead of the plain-HTTP sweeper for cleaning up closed/awarded
 # postings - see each module's docstring for why.
+#
+# gulftalent and naukrigulf (Middle East, added 2026-07) both call a JSON
+# endpoint via page.evaluate(fetch(...)) instead of parsing HTML - see each
+# module's docstring for why a plain httpx module (like Adzuna/Jooble) gets
+# blocked by bot detection that a real browser context sails through.
+#
+# bayt (Middle East, added 2026-07) is plain server-rendered HTML, parsed
+# with CSS selectors like naukri.py - runs a country x keyword matrix since,
+# unlike gulftalent/naukrigulf, one query doesn't span every country.
 BROWSER_SOURCES = [
     indeed,
     glassdoor,
     naukri,
+    gulftalent,
+    naukrigulf,
+    bayt,
     hiringcafe,
     ziprecruiter,
     dice,
