@@ -6,6 +6,14 @@ updates:
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 10
+    ignore:
+      # Tailwind v4 moved its PostCSS plugin to a separate @tailwindcss/
+      # postcss package and changed the config format - auto-merging (or
+      # even just leaving an open PR for) a major bump here breaks every
+      # build until someone does the actual migration deliberately. Minor/
+      # patch v3.x updates still come through normally.
+      - dependency-name: "tailwindcss"
+        update-types: ["version-update:semver-major"]
 
   # Scraper (Python) dependencies - pinned to exact versions (2026-07), so
   # Dependabot's PRs are the intended way to review and bump them deliberately
