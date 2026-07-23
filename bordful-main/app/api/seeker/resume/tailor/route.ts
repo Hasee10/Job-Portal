@@ -24,9 +24,10 @@ function stripMarkdown(text: string): string {
     .trim();
 }
 
-function resumeToPlainText(content: ResumeContent): string {
+function resumeToPlainText(content: ResumeContent, email?: string | null): string {
   const lines: string[] = [];
   if (content.fullName) lines.push(content.fullName);
+  if (email) lines.push(`Email: ${email}`);
   if (content.headline) lines.push(content.headline);
   if (content.summary) lines.push(`Summary: ${content.summary}`);
   if (content.experience.length) {
@@ -101,7 +102,11 @@ export async function POST(request: Request) {
     'hyphens (-) for any list items and blank lines between sections. Do ' +
     'not include any preamble, explanation, or commentary ("Here is your ' +
     'tailored resume:", "Sure, here\'s...") before or after the content - ' +
-    'output only the resume or letter itself, nothing else.';
+    'output only the resume or letter itself, nothing else. Only use ' +
+    'contact details (email, phone, address) that are explicitly given to ' +
+    'you below - if none is given, omit the contact line entirely. Never ' +
+    'invent a placeholder email like name@example.com or any other ' +
+    'placeholder contact info.';
 
   const systemPrompt =
     mode === 'cover-letter'
@@ -111,7 +116,7 @@ export async function POST(request: Request) {
   const userPrompt = [
     jobTitle ? `Target role: ${jobTitle}${jobCompany ? ` at ${jobCompany}` : ''}` : null,
     `Job description:\n${jobDescription}`,
-    `Candidate resume:\n${resumeToPlainText(resume)}`,
+    `Candidate resume:\n${resumeToPlainText(resume, session.user.email)}`,
   ]
     .filter(Boolean)
     .join('\n\n');
