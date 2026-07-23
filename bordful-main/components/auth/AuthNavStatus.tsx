@@ -163,7 +163,7 @@ export function AuthNavStatus({
       </Link>
       <Link
         className="rounded-lg bg-zinc-900 px-3 py-1 text-xs font-medium text-white transition-colors hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
-        href="/account/sign-in"
+        href="/account/sign-in?intent=signup"
         onClick={onNavigate}
       >
         Sign up
