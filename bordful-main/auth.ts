@@ -5,7 +5,7 @@ import LinkedIn from 'next-auth/providers/linkedin';
 import config from '@/config';
 import { verifyEmployerCredentials } from '@/lib/auth/employers';
 import { upsertJobSeeker } from '@/lib/auth/job-seekers';
-import { sendEmail } from '@/lib/email/resend';
+import { sendEmail } from '@/lib/email/smtp';
 import { renderSeekerWelcomeEmail } from '@/lib/email/templates/seeker-welcome';
 import { createRateLimiter, getClientIp } from '@/lib/utils/rate-limit';
 

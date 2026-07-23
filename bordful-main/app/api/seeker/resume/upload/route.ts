@@ -10,7 +10,7 @@ import {
   type ResumeContent,
 } from '@/lib/jobs/resume-actions';
 import { matchJobsBySkills } from '@/lib/jobs/resume-matching';
-import { sendEmail } from '@/lib/email/resend';
+import { sendEmail } from '@/lib/email/smtp';
 import { generateJobSlug } from '@/lib/utils/slugify';
 
 export const dynamic = 'force-dynamic';

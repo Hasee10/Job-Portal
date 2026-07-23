@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import config from '@/config';
 import { createEmployer, EmployerAuthError } from '@/lib/auth/employers';
-import { sendEmail } from '@/lib/email/resend';
+import { sendEmail } from '@/lib/email/smtp';
 import { renderWelcomeEmail } from '@/lib/email/templates/welcome';
 import { createRateLimiter, getClientIp } from '@/lib/utils/rate-limit';
 

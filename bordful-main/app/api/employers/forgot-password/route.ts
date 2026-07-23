@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import config from '@/config';
 import { createPasswordResetToken } from '@/lib/auth/employers';
-import { sendEmail } from '@/lib/email/resend';
+import { sendEmail } from '@/lib/email/smtp';
 import { renderPasswordResetEmail } from '@/lib/email/templates/password-reset';
 import { EmailProviderError } from '@/lib/email/types';
 import { createRateLimiter, getClientIp } from '@/lib/utils/rate-limit';

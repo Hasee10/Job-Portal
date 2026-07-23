@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { sendEmail } from '@/lib/email/resend';
+import { sendEmail } from '@/lib/email/smtp';
 import { getJobs } from '@/lib/db/airtable.server';
 import config from '@/config';
 import type { Job } from '@/lib/db/airtable';
