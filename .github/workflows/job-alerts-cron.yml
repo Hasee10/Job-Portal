@@ -11,12 +11,21 @@ name: Job Alerts Cron
 # mean alerts go out sooner, never duplicated. The two schedules don't
 # need to be coordinated.
 #
-# Requires a CRON_SECRET repository secret with the exact same value as
-# the CRON_SECRET env var set in Vercel (Project Settings -> Environment
-# Variables) - the endpoint checks that Bearer token and returns 401
-# without it. Optionally set a PORTAL_URL repository variable (Settings ->
-# Secrets and variables -> Actions -> Variables) if the site is on a
-# custom domain instead of the default *.vercel.app one.
+# CRON_SECRET is optional on both ends: app/api/cron/search-alerts only
+# enforces the Bearer token check when process.env.CRON_SECRET is set in
+# Vercel - if it isn't (currently the case), the endpoint accepts any
+# request, including one with no Authorization header at all. This
+# workflow works either way: it sends the header only if a CRON_SECRET
+# repository secret exists, and calls without one otherwise. Add the
+# secret later (Settings -> Secrets and variables -> Actions) - matching
+# whatever you eventually set in Vercel - to lock the endpoint down; until
+# then it stays open to anyone who knows the URL, which is a minor but
+# real exposure worth closing off eventually.
+#
+# Set a PORTAL_URL repository variable (Settings -> Secrets and variables
+# -> Actions -> Variables) if NEXT_PUBLIC_APP_URL in Vercel points to a
+# custom domain rather than the default *.vercel.app one - otherwise this
+# falls back to the vercel.app URL, which may be stale.
 
 on:
   schedule:
@@ -35,13 +44,15 @@ jobs:
           CRON_SECRET: ${{ secrets.CRON_SECRET }}
           PORTAL_URL: ${{ vars.PORTAL_URL || 'https://job-portal-ten-pi.vercel.app' }}
         run: |
-          if [ -z "$CRON_SECRET" ]; then
-            echo "::error::CRON_SECRET repository secret is not set - add it under Settings > Secrets and variables > Actions, matching the value in Vercel."
-            exit 1
+          auth_header=()
+          if [ -n "$CRON_SECRET" ]; then
+            auth_header=(-H "Authorization: Bearer $CRON_SECRET")
+          else
+            echo "No CRON_SECRET repository secret set - calling without an Authorization header (the endpoint currently has no auth enforced, per its own CRON_SECRET env check)."
           fi
           status=$(curl -sS -o response.json -w "%{http_code}" \
             -X GET "$PORTAL_URL/api/cron/search-alerts" \
-            -H "Authorization: Bearer $CRON_SECRET")
+            "${auth_header[@]}")
           echo "HTTP $status"
           cat response.json
           if [ "$status" -ge 300 ]; then
