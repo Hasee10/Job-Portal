@@ -45,7 +45,7 @@ export function CompanyLogoMarquee({ companies }: { companies: CompanyLogo[] }) 
           >
             <Image
               alt=""
-              className="rounded-md object-contain grayscale transition-[filter] hover:grayscale-0"
+              className="rounded-md object-contain"
               height={36}
               src={company.logoUrl}
               unoptimized
