@@ -40,6 +40,34 @@ export const MASTERCLASS_CHANNEL_ALLOWLIST: MasterclassChannel[] = [
     name: 'The Muse',
     defaultCategory: 'Job Search',
   },
+  {
+    channelId: 'UCiQNvBItd1s9Bei2Zkmar4A',
+    name: 'The Interview Guys',
+    defaultCategory: 'Interviewing',
+  },
+  {
+    channelId: 'UCeNm7lbfRg9wiBDSLQ-M8RA',
+    name: 'Self Made Millennial',
+    defaultCategory: 'Job Search',
+  },
+  {
+    channelId: 'UCiLeUu6mTGaopeEV1pFDVLA',
+    name: 'Josh Doody (Fearless Salary Negotiation)',
+    defaultCategory: 'Negotiation & Offers',
+  },
+  {
+    channelId: 'UCmem-D5aeCsSRyXTZkH_gKQ',
+    name: 'Jennifer Brick',
+    defaultCategory: 'Career Development',
+  },
+  // Jeff Su's channel is broader productivity/AI-tooling content, not
+  // purely career advice - relies more heavily on the relevance keyword
+  // filter below to skip his non-career videos than the other channels do.
+  {
+    channelId: 'UCwAnu01qlnVg1Ai2AbtTMaA',
+    name: 'Jeff Su',
+    defaultCategory: 'Career Development',
+  },
 ];
 
 // Deliberately excluded despite being on the original requested list:
