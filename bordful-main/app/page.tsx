@@ -45,9 +45,13 @@ export default async function Home() {
       (jobCountsByCompany.get(job.company) ?? 0) + 1
     );
   }
+  // A larger candidate pool than what actually displays - TrustSection
+  // resolves a logo for each and only shows the ones that actually have
+  // one, so this needs enough companies going in for a full-looking
+  // slider to come out the other side.
   const featuredCompanies = [...jobCountsByCompany.entries()]
     .sort((a, b) => b[1] - a[1])
-    .slice(0, 8)
+    .slice(0, 50)
     .map(([company]) => company);
 
   return (

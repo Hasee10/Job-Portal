@@ -1,4 +1,4 @@
-import Image from 'next/image';
+import { CompanyLogoMarquee } from '@/components/home/CompanyLogoMarquee';
 import type { Testimonial } from '@/lib/content/testimonial-actions';
 import { getCompanyLogoUrls } from '@/lib/utils/company-logo';
 
@@ -14,10 +14,13 @@ export async function TrustSection({
   featuredCompanies: string[];
 }) {
   // Resolves real logos for as many of the real companies above as
-  // Logo.dev has - anything unresolved (smaller/regional firms, or the
-  // "Confidential Company" placeholder) just falls back to the plain
-  // text label already shown today, never a broken image or a guess.
+  // Logo.dev has - anything that doesn't resolve (smaller/regional firms,
+  // or the "Confidential Company" placeholder) is left out of the logo
+  // slider entirely rather than shown without one.
   const logoUrls = await getCompanyLogoUrls(featuredCompanies);
+  const companiesWithLogos = featuredCompanies
+    .filter((company) => logoUrls.has(company))
+    .map((company) => ({ name: company, logoUrl: logoUrls.get(company) as string }));
 
   return (
     <div className="border-t bg-muted/20">
@@ -35,29 +38,19 @@ export async function TrustSection({
           </p>
         </div>
 
-        {featuredCompanies.length > 0 && (
+        <CompanyLogoMarquee companies={companiesWithLogos} />
+
+        {/* Falls back to the plain text list only if too few real logos
+            resolved for the slider to be worth showing (e.g. Logo.dev
+            isn't configured yet, or this batch of top companies happens
+            to be mostly smaller/regional firms it doesn't have). */}
+        {companiesWithLogos.length === 0 && featuredCompanies.length > 0 && (
           <div className="mx-auto mt-6 flex max-w-3xl flex-wrap items-center justify-center gap-x-6 gap-y-3">
-            {featuredCompanies.map((company) => {
-              const logoUrl = logoUrls.get(company);
-              return (
-                <span
-                  className="flex items-center gap-1.5 text-muted-foreground text-sm"
-                  key={company}
-                >
-                  {logoUrl && (
-                    <Image
-                      alt=""
-                      className="rounded-sm object-contain"
-                      height={16}
-                      src={logoUrl}
-                      unoptimized
-                      width={16}
-                    />
-                  )}
-                  {company}
-                </span>
-              );
-            })}
+            {featuredCompanies.slice(0, 8).map((company) => (
+              <span className="text-muted-foreground text-sm" key={company}>
+                {company}
+              </span>
+            ))}
           </div>
         )}
 
