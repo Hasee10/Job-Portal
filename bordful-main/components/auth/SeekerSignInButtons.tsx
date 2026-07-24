@@ -52,32 +52,34 @@ export function SeekerSignInButtons() {
   };
 
   return (
-    <div className="mx-auto w-full max-w-md space-y-3">
-      <Button
-        className="w-full gap-2"
-        disabled={pendingProvider !== null}
-        onClick={() => handleSignIn('google')}
-        type="button"
-        variant="outline"
-      >
-        <GoogleIcon />
-        {pendingProvider === 'google'
-          ? 'Redirecting...'
-          : 'Continue with Google'}
-      </Button>
+    <div className="mx-auto w-full max-w-md rounded-xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900/60">
+      <div className="space-y-3">
+        <Button
+          className="w-full gap-2"
+          disabled={pendingProvider !== null}
+          onClick={() => handleSignIn('google')}
+          type="button"
+          variant="outline"
+        >
+          <GoogleIcon />
+          {pendingProvider === 'google'
+            ? 'Redirecting...'
+            : 'Continue with Google'}
+        </Button>
 
-      <Button
-        className="w-full gap-2"
-        disabled={pendingProvider !== null}
-        onClick={() => handleSignIn('linkedin')}
-        type="button"
-        variant="outline"
-      >
-        <LinkedInIcon />
-        {pendingProvider === 'linkedin'
-          ? 'Redirecting...'
-          : 'Continue with LinkedIn'}
-      </Button>
+        <Button
+          className="w-full gap-2"
+          disabled={pendingProvider !== null}
+          onClick={() => handleSignIn('linkedin')}
+          type="button"
+          variant="outline"
+        >
+          <LinkedInIcon />
+          {pendingProvider === 'linkedin'
+            ? 'Redirecting...'
+            : 'Continue with LinkedIn'}
+        </Button>
+      </div>
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, BookOpen, Mail, Target, Users } from 'lucide-react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { AboutSchema } from '@/components/ui/about-schema';
@@ -93,45 +93,69 @@ export default function AboutPage() {
             <MetadataBreadcrumb metadata={metadata} pathname="/about" />
           </div>
 
-          <div className="w-full">
+          <div className="w-full divide-y divide-zinc-100 dark:divide-zinc-800">
             {/* Mission Section */}
-            <h2 className="mb-4 font-semibold text-xl text-zinc-900 dark:text-zinc-100">
-              {config.about.sections?.mission?.title || 'Mission'}
-            </h2>
-            <p className="mb-8 text-zinc-600 dark:text-zinc-400 leading-relaxed">
-              {config.about.sections?.mission?.content ||
-                "We're on a mission to connect talented professionals with meaningful opportunities and help organizations find the perfect candidates to drive their success."}
-            </p>
+            <div className="flex gap-4 py-8 first:pt-0">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-cyan-50 text-cyan-700 dark:bg-cyan-500/10 dark:text-cyan-400">
+                <Target aria-hidden="true" className="h-5 w-5" />
+              </div>
+              <div>
+                <h2 className="mb-2 font-semibold text-xl text-zinc-900 dark:text-zinc-100">
+                  {config.about.sections?.mission?.title || 'Mission'}
+                </h2>
+                <p className="text-zinc-600 leading-relaxed dark:text-zinc-400">
+                  {config.about.sections?.mission?.content ||
+                    "We're on a mission to connect talented professionals with meaningful opportunities and help organizations find the perfect candidates to drive their success."}
+                </p>
+              </div>
+            </div>
 
             {/* Story Section */}
-            <h2 className="mb-4 font-semibold text-xl text-zinc-900 dark:text-zinc-100">
-              {config.about.sections?.story?.title || 'Story'}
-            </h2>
-            <p className="mb-8 text-zinc-600 dark:text-zinc-400 leading-relaxed">
-              {config.about.sections?.story?.content ||
-                "Founded with a passion for revolutionizing the job search experience, our platform was built to address the challenges faced by both job seekers and employers in today's competitive market."}
-            </p>
+            <div className="flex gap-4 py-8">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-violet-50 text-violet-700 dark:bg-violet-500/10 dark:text-violet-400">
+                <BookOpen aria-hidden="true" className="h-5 w-5" />
+              </div>
+              <div>
+                <h2 className="mb-2 font-semibold text-xl text-zinc-900 dark:text-zinc-100">
+                  {config.about.sections?.story?.title || 'Story'}
+                </h2>
+                <p className="text-zinc-600 leading-relaxed dark:text-zinc-400">
+                  {config.about.sections?.story?.content ||
+                    "Founded with a passion for revolutionizing the job search experience, our platform was built to address the challenges faced by both job seekers and employers in today's competitive market."}
+                </p>
+              </div>
+            </div>
 
             {/* Team Section */}
-            <h2 className="mb-4 font-semibold text-xl text-zinc-900 dark:text-zinc-100">
-              {config.about.sections?.team?.title || 'Team'}
-            </h2>
-            <p className="mb-8 text-zinc-600 dark:text-zinc-400 leading-relaxed">
-              {config.about.sections?.team?.content ||
-                'Our diverse team brings together expertise from recruitment, technology, and design to create an innovative job board solution that puts user experience first.'}
-            </p>
+            <div className="flex gap-4 py-8">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400">
+                <Users aria-hidden="true" className="h-5 w-5" />
+              </div>
+              <div>
+                <h2 className="mb-2 font-semibold text-xl text-zinc-900 dark:text-zinc-100">
+                  {config.about.sections?.team?.title || 'Team'}
+                </h2>
+                <p className="text-zinc-600 leading-relaxed dark:text-zinc-400">
+                  {config.about.sections?.team?.content ||
+                    'Our diverse team brings together expertise from recruitment, technology, and design to create an innovative job board solution that puts user experience first.'}
+                </p>
+              </div>
+            </div>
 
             {/* Contact Us Section - Conditionally rendered based on config */}
             {config.about.contact?.show && (
-              <>
-                <h2 className="mb-4 font-semibold text-xl text-zinc-900 dark:text-zinc-100">
-                  {config.about.contact.title || 'Get in Touch'}
-                </h2>
-                <p className="mb-6 text-zinc-600 dark:text-zinc-400 leading-relaxed">
-                  {config.about.contact.description ||
-                    'Have questions or want to learn more about our services? We&apos;d love to hear from you.'}
-                </p>
-                <div className="mt-6 mb-8">
+              <div className="flex gap-4 py-8 last:pb-0">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400">
+                  <Mail aria-hidden="true" className="h-5 w-5" />
+                </div>
+                <div>
+                  <h2 className="mb-2 font-semibold text-xl text-zinc-900 dark:text-zinc-100">
+                    {config.about.contact.title || 'Get in Touch'}
+                  </h2>
+                  <p className="mb-5 text-zinc-600 leading-relaxed dark:text-zinc-400">
+                    {config.about.contact.description ||
+                      'Have questions or want to learn more about our services? We&apos;d love to hear from you.'}
+                  </p>
                   <Link href={config.about.contact.url}>
                     <Button
                       className="gap-1.5 text-xs"
@@ -149,7 +173,7 @@ export default function AboutPage() {
                     </Button>
                   </Link>
                 </div>
-              </>
+              </div>
             )}
           </div>
         </div>

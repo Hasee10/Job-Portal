@@ -1,3 +1,4 @@
+import { Bell, Info, LogIn } from 'lucide-react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
@@ -85,38 +86,58 @@ export default async function JobAlertsPage() {
           <div className="lg:col-span-1">
             <h2 className="mb-4 font-semibold text-xl">Get job alerts</h2>
             {isSeeker ? (
-              <>
-                <p className="mb-6 text-sm text-zinc-600 dark:text-zinc-400">
+              <div className="rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900/60">
+                <div className="flex h-11 w-11 items-center justify-center rounded-full bg-cyan-50 text-cyan-700 dark:bg-cyan-500/10 dark:text-cyan-400">
+                  <Bell aria-hidden="true" className="h-5 w-5" />
+                </div>
+                <p className="mt-4 font-semibold text-zinc-900 dark:text-zinc-50">
+                  Save a search to start getting alerts
+                </p>
+                <p className="mt-1.5 text-sm text-zinc-600 dark:text-zinc-400">
                   Head to the homepage, run a search with the filters you
                   care about, and hit &quot;Save search&quot; - we&apos;ll
                   email you when matching jobs are posted.
                 </p>
                 <Link
-                  className="inline-flex items-center justify-center rounded-md bg-zinc-900 px-4 py-2 font-medium text-sm text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
+                  className="mt-5 inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 font-medium text-primary-foreground text-sm transition-opacity hover:opacity-90"
                   href="/"
                 >
                   Go save a search
                 </Link>
-              </>
+              </div>
             ) : isEmployer ? (
-              <p className="text-sm text-zinc-600 dark:text-zinc-400">
-                Saved search alerts are for job seeker accounts. Sign in with
-                a Google or LinkedIn seeker account (not your employer login)
-                to use them.
-              </p>
+              <div className="rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900/60">
+                <div className="flex h-11 w-11 items-center justify-center rounded-full bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400">
+                  <Info aria-hidden="true" className="h-5 w-5" />
+                </div>
+                <p className="mt-4 font-semibold text-zinc-900 dark:text-zinc-50">
+                  Alerts are for job seeker accounts
+                </p>
+                <p className="mt-1.5 text-sm text-zinc-600 dark:text-zinc-400">
+                  Saved search alerts are for job seeker accounts. Sign in
+                  with a Google or LinkedIn seeker account (not your employer
+                  login) to use them.
+                </p>
+              </div>
             ) : (
-              <>
-                <p className="mb-6 text-sm text-zinc-600 dark:text-zinc-400">
+              <div className="rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900/60">
+                <div className="flex h-11 w-11 items-center justify-center rounded-full bg-cyan-50 text-cyan-700 dark:bg-cyan-500/10 dark:text-cyan-400">
+                  <LogIn aria-hidden="true" className="h-5 w-5" />
+                </div>
+                <p className="mt-4 font-semibold text-zinc-900 dark:text-zinc-50">
+                  Sign in to set up alerts
+                </p>
+                <p className="mt-1.5 text-sm text-zinc-600 dark:text-zinc-400">
                   Sign in, save a search with the filters you care about, and
                   we&apos;ll email you when matching jobs are posted.
                 </p>
                 <Link
-                  className="inline-flex items-center justify-center rounded-md bg-zinc-900 px-4 py-2 font-medium text-sm text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
+                  className="mt-5 inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 font-medium text-primary-foreground text-sm transition-opacity hover:opacity-90"
                   href="/account/sign-in?callbackUrl=/"
                 >
                   Sign in to set up alerts
                 </Link>
-              </>
+              </div>
             )}
           </div>
 

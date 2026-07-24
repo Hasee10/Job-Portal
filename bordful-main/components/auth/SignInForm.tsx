@@ -58,7 +58,7 @@ export function SignInForm() {
   };
 
   return (
-    <div className="mx-auto w-full max-w-md rounded-lg border p-6">
+    <div className="mx-auto w-full max-w-md rounded-xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900/60">
       <form className="space-y-5" onSubmit={handleSubmit}>
         <div className="space-y-4">
           <div className="space-y-2">
