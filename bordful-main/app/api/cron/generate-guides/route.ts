@@ -18,11 +18,8 @@ const DRAFTS_PER_RUN = 2;
 const PUBLISHED_GUIDE_CAP = 12;
 
 export async function GET(request: Request) {
-  const authHeader = request.headers.get('authorization');
-  if (
-    process.env.CRON_SECRET &&
-    authHeader !== `Bearer ${process.env.CRON_SECRET}`
-  ) {
+  const secret = process.env.CRON_SECRET;
+  if (!secret || request.headers.get('authorization') !== `Bearer ${secret}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 

@@ -22,6 +22,10 @@ export const maxDuration = 60;
 
 const MAX_JOBS_PER_EMAIL = 15;
 
+function h(s: string): string {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
 function buildEmailHtml(
   search: SavedSearchForNotification,
   matches: Job[]
@@ -31,19 +35,19 @@ function buildEmailHtml(
     .map((job) => {
       const url = `${config.url}/jobs/${generateJobSlug(job.title, job.company)}`;
       return `<li style="margin-bottom:12px;">
-        <a href="${url}" style="font-weight:600;color:#18181b;text-decoration:none;">${job.title}</a>
-        <div style="color:#71717a;font-size:13px;">${job.company}${job.workplace_city ? ` &middot; ${job.workplace_city}` : ''}</div>
+        <a href="${h(url)}" style="font-weight:600;color:#18181b;text-decoration:none;">${h(job.title)}</a>
+        <div style="color:#71717a;font-size:13px;">${h(job.company)}${job.workplace_city ? ` &middot; ${h(job.workplace_city)}` : ''}</div>
       </li>`;
     })
     .join('');
 
   return `
     <div style="font-family:sans-serif;max-width:560px;margin:0 auto;">
-      <h2 style="color:#18181b;">${matches.length} new job${matches.length > 1 ? 's' : ''} match "${search.name}"</h2>
-      <p style="color:#71717a;">Based on your saved search on ${config.title}.</p>
+      <h2 style="color:#18181b;">${matches.length} new job${matches.length > 1 ? 's' : ''} match &ldquo;${h(search.name)}&rdquo;</h2>
+      <p style="color:#71717a;">Based on your saved search on ${h(config.title)}.</p>
       <ul style="list-style:none;padding:0;">${rows}</ul>
-      <p><a href="${config.url}" style="color:#18181b;">Browse all jobs</a></p>
-      <p style="color:#a1a1aa;font-size:12px;">You're receiving this because you saved this search on ${config.title}. Manage your saved searches from your account page.</p>
+      <p><a href="${h(config.url)}" style="color:#18181b;">Browse all jobs</a></p>
+      <p style="color:#a1a1aa;font-size:12px;">You&rsquo;re receiving this because you saved this search on ${h(config.title)}. Manage your saved searches from your account page.</p>
     </div>
   `;
 }
@@ -96,9 +100,9 @@ function buildResumeMatchEmailHtml(matches: { job: Job; matchedSkills: string[] 
     .map(({ job, matchedSkills }) => {
       const url = `${config.url}/jobs/${generateJobSlug(job.title, job.company)}`;
       return `<li style="margin-bottom:12px;">
-        <a href="${url}" style="font-weight:600;color:#18181b;text-decoration:none;">${job.title}</a>
-        <div style="color:#71717a;font-size:13px;">${job.company}${job.workplace_city ? ` &middot; ${job.workplace_city}` : ''}</div>
-        <div style="color:#a1a1aa;font-size:12px;">Matches: ${matchedSkills.join(', ')}</div>
+        <a href="${h(url)}" style="font-weight:600;color:#18181b;text-decoration:none;">${h(job.title)}</a>
+        <div style="color:#71717a;font-size:13px;">${h(job.company)}${job.workplace_city ? ` &middot; ${h(job.workplace_city)}` : ''}</div>
+        <div style="color:#a1a1aa;font-size:12px;">Matches: ${matchedSkills.map(h).join(', ')}</div>
       </li>`;
     })
     .join('');
@@ -106,10 +110,10 @@ function buildResumeMatchEmailHtml(matches: { job: Job; matchedSkills: string[] 
   return `
     <div style="font-family:sans-serif;max-width:560px;margin:0 auto;">
       <h2 style="color:#18181b;">${matches.length} new job${matches.length > 1 ? 's' : ''} match your resume skills</h2>
-      <p style="color:#71717a;">Based on the resume you uploaded to ${config.title}.</p>
+      <p style="color:#71717a;">Based on the resume you uploaded to ${h(config.title)}.</p>
       <ul style="list-style:none;padding:0;">${rows}</ul>
-      <p><a href="${config.url}" style="color:#18181b;">Browse all jobs</a></p>
-      <p style="color:#a1a1aa;font-size:12px;">You're receiving this because you uploaded a resume on ${config.title}.</p>
+      <p><a href="${h(config.url)}" style="color:#18181b;">Browse all jobs</a></p>
+      <p style="color:#a1a1aa;font-size:12px;">You&rsquo;re receiving this because you uploaded a resume on ${h(config.title)}.</p>
     </div>
   `;
 }
@@ -158,11 +162,8 @@ async function processResumeMatches(jobs: Job[]): Promise<number> {
 }
 
 export async function GET(request: Request) {
-  const authHeader = request.headers.get('authorization');
-  if (
-    process.env.CRON_SECRET &&
-    authHeader !== `Bearer ${process.env.CRON_SECRET}`
-  ) {
+  const secret = process.env.CRON_SECRET;
+  if (!secret || request.headers.get('authorization') !== `Bearer ${secret}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 

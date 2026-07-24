@@ -62,14 +62,18 @@ function parseExtractedContent(raw: string): ResumeContent {
   };
 }
 
+function h(s: string): string {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
 function buildMatchEmailHtml(matches: { job: { title: string; company: string; workplace_city?: string | null }; matchedSkills: string[] }[]): string {
   const rows = matches
     .map(({ job, matchedSkills }) => {
       const url = `${config.url}/jobs/${generateJobSlug(job.title, job.company)}`;
       return `<li style="margin-bottom:12px;">
-        <a href="${url}" style="font-weight:600;color:#18181b;text-decoration:none;">${job.title}</a>
-        <div style="color:#71717a;font-size:13px;">${job.company}${job.workplace_city ? ` &middot; ${job.workplace_city}` : ''}</div>
-        <div style="color:#a1a1aa;font-size:12px;">Matches: ${matchedSkills.join(', ')}</div>
+        <a href="${h(url)}" style="font-weight:600;color:#18181b;text-decoration:none;">${h(job.title)}</a>
+        <div style="color:#71717a;font-size:13px;">${h(job.company)}${job.workplace_city ? ` &middot; ${h(job.workplace_city)}` : ''}</div>
+        <div style="color:#a1a1aa;font-size:12px;">Matches: ${matchedSkills.map(h).join(', ')}</div>
       </li>`;
     })
     .join('');
@@ -77,10 +81,10 @@ function buildMatchEmailHtml(matches: { job: { title: string; company: string; w
   return `
     <div style="font-family:sans-serif;max-width:560px;margin:0 auto;">
       <h2 style="color:#18181b;">${matches.length} job${matches.length > 1 ? 's' : ''} match the skills on your resume</h2>
-      <p style="color:#71717a;">Based on the resume you just uploaded to ${config.title}.</p>
+      <p style="color:#71717a;">Based on the resume you just uploaded to ${h(config.title)}.</p>
       <ul style="list-style:none;padding:0;">${rows}</ul>
-      <p><a href="${config.url}" style="color:#18181b;">Browse all jobs</a></p>
-      <p style="color:#a1a1aa;font-size:12px;">You're receiving this because you uploaded a resume on ${config.title}.</p>
+      <p><a href="${h(config.url)}" style="color:#18181b;">Browse all jobs</a></p>
+      <p style="color:#a1a1aa;font-size:12px;">You&rsquo;re receiving this because you uploaded a resume on ${h(config.title)}.</p>
     </div>
   `;
 }
