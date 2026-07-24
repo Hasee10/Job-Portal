@@ -25,7 +25,29 @@ export const MASTERCLASS_CHANNEL_ALLOWLIST: MasterclassChannel[] = [
     name: 'Andrew LaCivita',
     defaultCategory: 'Negotiation & Offers',
   },
+  {
+    channelId: 'UCAC8Y3gJMuhGsjNWyufUNAQ',
+    name: 'Career Contessa',
+    defaultCategory: 'Job Search',
+  },
+  {
+    channelId: 'UCWo4IA01TXzBeGJJKWHOG9g',
+    name: 'Harvard Business Review',
+    defaultCategory: 'Career Development',
+  },
+  {
+    channelId: 'UCk4bbQAZD26f_XdGyb4wwhg',
+    name: 'The Muse',
+    defaultCategory: 'Job Search',
+  },
 ];
+
+// Deliberately excluded despite being on the original requested list:
+// Dan Lok and Big Interview each have multiple candidate channels online
+// with no reliable way to confirm which one is truly official - safer to
+// leave them out than misattribute discovered videos to the wrong
+// channel. Big Interview's single most relevant video was still hand-
+// verified and seeded directly (see the initial 4 seeded masterclasses).
 
 // A discovered video's title/description must contain at least one of
 // these to be considered - filters out a channel's unrelated content
