@@ -1,0 +1,48 @@
+name: Masterclass Discovery Cron
+
+# Monthly: pulls recent uploads from a fixed, curated YouTube channel
+# allowlist (lib/content/masterclass-channels.ts), filters for relevance,
+# and drafts up to 3 new masterclasses (is_published=false - reviewed and
+# published manually, same rule as the guide generation cron). See
+# app/api/cron/discover-masterclasses for the logic; this workflow is
+# just the scheduled trigger.
+#
+# Requires YOUTUBE_API_KEY to be set in Vercel - without it the endpoint
+# returns a clean 503 rather than failing. A free API key from Google
+# Cloud Console (enable "YouTube Data API v3" on a project, no billing
+# required for this usage level) - no service account needed.
+#
+# CRON_SECRET is optional, same pattern as the other cron workflows.
+
+on:
+  schedule:
+    - cron: '0 7 1 * *'
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  discover-masterclasses:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call masterclass discovery cron endpoint
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          PORTAL_URL: ${{ vars.PORTAL_URL || 'https://job-portal-ten-pi.vercel.app' }}
+        run: |
+          auth_header=()
+          if [ -n "$CRON_SECRET" ]; then
+            auth_header=(-H "Authorization: Bearer $CRON_SECRET")
+          else
+            echo "No CRON_SECRET repository secret set - calling without an Authorization header."
+          fi
+          status=$(curl -sS -o response.json -w "%{http_code}" \
+            -X GET "$PORTAL_URL/api/cron/discover-masterclasses" \
+            "${auth_header[@]}")
+          echo "HTTP $status"
+          cat response.json
+          if [ "$status" -ge 300 ]; then
+            echo "::error::Masterclass discovery cron call failed with HTTP $status"
+            exit 1
+          fi
