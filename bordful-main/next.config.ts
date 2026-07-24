@@ -70,6 +70,7 @@ const nextConfig: NextConfig = {
               "object-src 'none'",
               "base-uri 'self'",
               "form-action 'self'",
+              "frame-src https://www.youtube.com",
               "frame-ancestors 'none'",
             ].join('; '),
           },
