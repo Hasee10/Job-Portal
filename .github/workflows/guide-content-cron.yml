@@ -1,0 +1,48 @@
+name: Guide Content Cron
+
+# Monthly: generates up to 2 new AI-drafted career guides (landed as
+# is_published=false - a human still has to review and publish each one,
+# nothing goes live unattended) and archives the oldest published guides
+# once the library exceeds its cap. See app/api/cron/generate-guides for
+# the actual logic; this workflow is just the scheduled trigger, same
+# pattern as job-alerts-cron.yml.
+#
+# CRON_SECRET is optional on both ends, same as the other cron workflow -
+# sends the header only if a CRON_SECRET repository secret exists.
+#
+# Set a PORTAL_URL repository variable (Settings -> Secrets and variables
+# -> Actions -> Variables) if NEXT_PUBLIC_APP_URL in Vercel points to a
+# custom domain rather than the default *.vercel.app one.
+
+on:
+  schedule:
+    - cron: '0 6 1 * *'
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  generate-guides:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call guide generation cron endpoint
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          PORTAL_URL: ${{ vars.PORTAL_URL || 'https://job-portal-ten-pi.vercel.app' }}
+        run: |
+          auth_header=()
+          if [ -n "$CRON_SECRET" ]; then
+            auth_header=(-H "Authorization: Bearer $CRON_SECRET")
+          else
+            echo "No CRON_SECRET repository secret set - calling without an Authorization header."
+          fi
+          status=$(curl -sS -o response.json -w "%{http_code}" \
+            -X GET "$PORTAL_URL/api/cron/generate-guides" \
+            "${auth_header[@]}")
+          echo "HTTP $status"
+          cat response.json
+          if [ "$status" -ge 300 ]; then
+            echo "::error::Guide content cron call failed with HTTP $status"
+            exit 1
+          fi
