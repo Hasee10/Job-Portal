@@ -1,5 +1,6 @@
 'use client';
 
+import { Bell, BellOff, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
@@ -61,18 +62,24 @@ export function SavedSearchesList({
 
   if (savedSearches.length === 0) {
     return (
-      <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-        No saved searches yet - use the &quot;Save search&quot; button on the
-        jobs board to get emailed when new matches are posted.
-      </p>
+      <div className="mt-4 flex items-start gap-3 rounded-md border border-dashed p-4">
+        <BellOff
+          aria-hidden="true"
+          className="mt-0.5 h-4 w-4 shrink-0 text-zinc-400 dark:text-zinc-500"
+        />
+        <p className="text-sm text-zinc-600 dark:text-zinc-400">
+          No saved searches yet - use the &quot;Save search&quot; button on
+          the jobs board to get emailed when new matches are posted.
+        </p>
+      </div>
     );
   }
 
   return (
-    <ul className="mt-4 space-y-3">
+    <ul className="mt-4 space-y-2.5">
       {savedSearches.map((search) => (
         <li
-          className="flex items-start justify-between gap-4 rounded-md border p-3"
+          className="group flex items-start justify-between gap-4 rounded-md border p-3 transition-colors hover:border-zinc-300 hover:bg-zinc-50 dark:hover:border-zinc-700 dark:hover:bg-zinc-800/50"
           key={search.id}
         >
           <div className="min-w-0">
@@ -80,17 +87,20 @@ export function SavedSearchesList({
             <p className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">
               {summarizeSavedSearch(search)}
             </p>
-            <p className="mt-1 text-xs text-zinc-400 dark:text-zinc-500">
+            <p className="mt-1.5 flex items-center gap-1 text-xs text-zinc-400 dark:text-zinc-500">
+              <Bell aria-hidden="true" className="h-3 w-3" />
               {search.frequency === 'daily' ? 'Daily' : 'Weekly'} email alerts
             </p>
           </div>
           <Button
+            className="shrink-0 opacity-60 transition-opacity group-hover:opacity-100"
             disabled={deletingId === search.id}
             onClick={() => handleDelete(search.id)}
             size="xs"
             variant="outline"
           >
-            Remove
+            <Trash2 aria-hidden="true" className="h-3 w-3" />
+            {deletingId === search.id ? 'Removing...' : 'Remove'}
           </Button>
         </li>
       ))}
