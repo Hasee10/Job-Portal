@@ -1,6 +1,8 @@
+import Image from 'next/image';
 import type { Testimonial } from '@/lib/content/testimonial-actions';
+import { getCompanyLogoUrls } from '@/lib/utils/company-logo';
 
-export function TrustSection({
+export async function TrustSection({
   testimonials,
   companiesHiringCount,
   totalActiveJobs,
@@ -11,6 +13,12 @@ export function TrustSection({
   totalActiveJobs: number;
   featuredCompanies: string[];
 }) {
+  // Resolves real logos for as many of the real companies above as
+  // Logo.dev has - anything unresolved (smaller/regional firms, or the
+  // "Confidential Company" placeholder) just falls back to the plain
+  // text label already shown today, never a broken image or a guess.
+  const logoUrls = await getCompanyLogoUrls(featuredCompanies);
+
   return (
     <div className="border-t bg-muted/20">
       <div className="container mx-auto px-4 py-12">
@@ -28,15 +36,28 @@ export function TrustSection({
         </div>
 
         {featuredCompanies.length > 0 && (
-          <div className="mx-auto mt-6 flex max-w-3xl flex-wrap items-center justify-center gap-x-6 gap-y-2">
-            {featuredCompanies.map((company) => (
-              <span
-                className="text-muted-foreground text-sm"
-                key={company}
-              >
-                {company}
-              </span>
-            ))}
+          <div className="mx-auto mt-6 flex max-w-3xl flex-wrap items-center justify-center gap-x-6 gap-y-3">
+            {featuredCompanies.map((company) => {
+              const logoUrl = logoUrls.get(company);
+              return (
+                <span
+                  className="flex items-center gap-1.5 text-muted-foreground text-sm"
+                  key={company}
+                >
+                  {logoUrl && (
+                    <Image
+                      alt=""
+                      className="rounded-sm object-contain"
+                      height={16}
+                      src={logoUrl}
+                      unoptimized
+                      width={16}
+                    />
+                  )}
+                  {company}
+                </span>
+              );
+            })}
           </div>
         )}
 
