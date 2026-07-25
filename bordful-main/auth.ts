@@ -4,6 +4,7 @@ import Google from 'next-auth/providers/google';
 import LinkedIn from 'next-auth/providers/linkedin';
 import config from '@/config';
 import { verifyEmployerCredentials } from '@/lib/auth/employers';
+import { verifyRecruiterCredentials } from '@/lib/auth/recruiter-accounts';
 import { upsertJobSeeker } from '@/lib/auth/job-seekers';
 import { sendEmail } from '@/lib/email/smtp';
 import { renderSeekerWelcomeEmail } from '@/lib/email/templates/seeker-welcome';
@@ -41,15 +42,31 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       async authorize(credentials, request) {
         const email = credentials?.email;
         const password = credentials?.password;
+        // `accountType` is passed by the recruiter sign-in form to distinguish
+        // recruiter logins from employer logins — both use the same Credentials
+        // provider, same cookie, same JWT. Defaults to 'employer' so the
+        // existing employer sign-in form keeps working with no changes.
+        const accountType = (credentials as Record<string, unknown>)?.accountType ?? 'employer';
         if (typeof email !== 'string' || typeof password !== 'string') {
           return null;
         }
 
         if (isRateLimited(getClientIp(request))) {
-          // Thrown errors from authorize() surface as a generic "CredentialsSignin"
-          // error to the client either way - this just stops the DB lookup/bcrypt
-          // compare from running on a request we're already rejecting.
           throw new Error('Too many sign-in attempts. Please try again later.');
+        }
+
+        if (accountType === 'recruiter') {
+          const recruiter = await verifyRecruiterCredentials(email, password);
+          if (!recruiter) return null;
+          // Tag the user object so the jwt callback can set role: 'recruiter'
+          return {
+            id: recruiter.id,
+            email: recruiter.email,
+            name: recruiter.name,
+            // NextAuth passes extra fields through as-is on the user object
+            // inside the jwt callback, so we use this as a signal.
+            accountType: 'recruiter',
+          };
         }
 
         const employer = await verifyEmployerCredentials(email, password);
@@ -75,8 +92,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     // subsequent request that just re-reads the JWT cookie).
     async jwt({ token, user, account }) {
       if (account?.provider === 'credentials' && user) {
-        token.employerId = user.id;
-        token.role = 'employer';
+        const u = user as typeof user & { accountType?: string };
+        if (u.accountType === 'recruiter') {
+          token.recruiterId = user.id;
+          token.role = 'recruiter';
+        } else {
+          token.employerId = user.id;
+          token.role = 'employer';
+        }
       } else if (
         account &&
         (account.provider === 'google' || account.provider === 'linkedin') &&
@@ -112,11 +135,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     },
     async session({ session, token }) {
       if (session.user) {
-        session.user.id =
-          token.role === 'seeker'
-            ? (token.seekerId as string)
-            : (token.employerId as string);
-        session.user.role = token.role as 'employer' | 'seeker' | undefined;
+        if (token.role === 'seeker') {
+          session.user.id = token.seekerId as string;
+        } else if (token.role === 'recruiter') {
+          session.user.id = token.recruiterId as string;
+        } else {
+          session.user.id = token.employerId as string;
+        }
+        session.user.role = token.role as 'employer' | 'seeker' | 'recruiter' | undefined;
       }
       return session;
     },

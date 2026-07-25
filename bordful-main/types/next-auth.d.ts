@@ -4,7 +4,7 @@ declare module 'next-auth' {
   interface Session {
     user: {
       id: string;
-      role?: 'employer' | 'seeker';
+      role?: 'employer' | 'seeker' | 'recruiter';
     } & DefaultSession['user'];
   }
 }
@@ -13,6 +13,7 @@ declare module 'next-auth/jwt' {
   interface JWT {
     employerId?: string;
     seekerId?: string;
-    role?: 'employer' | 'seeker';
+    recruiterId?: string;
+    role?: 'employer' | 'seeker' | 'recruiter';
   }
 }

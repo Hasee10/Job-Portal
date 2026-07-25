@@ -12,6 +12,7 @@ import { listSavedSearches } from '@/lib/jobs/saved-search-actions';
 import { matchesSavedSearch } from '@/lib/jobs/saved-search-matching';
 import { getSavedJobsWithDetails, getSeekerJobState } from '@/lib/jobs/seeker-actions';
 import { getSeekerProfile } from '@/lib/jobs/seeker-profile-actions';
+import { getSeekerUnreadCount } from '@/lib/jobs/candidate-outreach-actions';
 import { generateJobSlug } from '@/lib/utils/slugify';
 
 const MAX_RECOMMENDED_JOBS = 10;
@@ -28,12 +29,8 @@ export default async function AccountPage() {
   if (!session?.user) {
     redirect('/account/sign-in?callbackUrl=/account');
   }
-  // Employers already have their own dashboard at /dashboard - keep the
-  // two account types on separate landing pages rather than branching
-  // this one page on role.
-  if (session.user.role === 'employer') {
-    redirect('/dashboard');
-  }
+  if (session.user.role === 'employer') redirect('/dashboard');
+  if (session.user.role === 'recruiter') redirect('/recruiter/dashboard');
 
   const profile = await getSeekerProfile(session.user.id);
   // Send every seeker who hasn't finished the quiz straight there instead
@@ -44,11 +41,12 @@ export default async function AccountPage() {
     redirect('/account/onboarding');
   }
 
-  const [savedJobs, jobState, savedSearches, tier] = await Promise.all([
+  const [savedJobs, jobState, savedSearches, tier, unreadInbox] = await Promise.all([
     getSavedJobsWithDetails(session.user.id),
     getSeekerJobState(session.user.id),
     listSavedSearches(session.user.id),
     getSeekerTier(session.user.id),
+    getSeekerUnreadCount(session.user.id),
   ]);
 
   const appliedJobs = savedJobs.filter(
@@ -206,6 +204,32 @@ export default async function AccountPage() {
               <Link
                 className="shrink-0 rounded-md border px-4 py-2 font-medium text-sm hover:bg-accent"
                 href="/account/resume"
+              >
+                Open
+              </Link>
+            </div>
+          </div>
+
+          <div className="mt-6 rounded-lg border p-6">
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <h2 className="font-semibold text-lg flex items-center gap-2">
+                  Recruiter inbox
+                  {unreadInbox > 0 && (
+                    <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-bold">
+                      {unreadInbox}
+                    </span>
+                  )}
+                </h2>
+                <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+                  {unreadInbox > 0
+                    ? `${unreadInbox} new message${unreadInbox > 1 ? 's' : ''} from recruiters.`
+                    : 'Manage recruiter outreach and your visibility settings.'}
+                </p>
+              </div>
+              <Link
+                className="shrink-0 rounded-md border px-4 py-2 font-medium text-sm hover:bg-accent"
+                href="/account/inbox"
               >
                 Open
               </Link>

@@ -40,7 +40,11 @@ export function AuthNavStatus({
 
   if (session?.user) {
     const accountHref =
-      session.user.role === 'seeker' ? '/account' : '/dashboard';
+      session.user.role === 'seeker'
+        ? '/account'
+        : session.user.role === 'recruiter'
+        ? '/recruiter/dashboard'
+        : '/dashboard';
     const displayName = session.user.name || session.user.email;
 
     const closeAndNavigate = () => {
