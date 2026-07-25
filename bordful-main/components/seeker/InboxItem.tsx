@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { Check, X, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
@@ -52,9 +53,12 @@ export function InboxItem({ item: initial }: { item: OutreachWithRecruiter }) {
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="font-semibold text-sm text-zinc-900 dark:text-zinc-50">
+            <Link
+              className="font-semibold text-sm text-zinc-900 hover:underline dark:text-zinc-50"
+              href={`/recruiter/profile/${item.recruiterId}`}
+            >
               {item.recruiterName}
-            </span>
+            </Link>
             {item.recruiterAgency && (
               <span className="text-xs text-zinc-500 dark:text-zinc-400">
                 · {item.recruiterAgency}

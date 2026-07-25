@@ -5,6 +5,7 @@ import { ArrowLeft, Inbox } from 'lucide-react';
 import { auth } from '@/auth';
 import { InboxItem } from '@/components/seeker/InboxItem';
 import { OpenToRecruitersToggle } from '@/components/seeker/OpenToRecruitersToggle';
+import { SeekerHeadlineForm } from '@/components/seeker/SeekerHeadlineForm';
 import { listSeekerInbox } from '@/lib/jobs/candidate-outreach-actions';
 import { createClient } from '@supabase/supabase-js';
 import config from '@/config';
@@ -16,17 +17,20 @@ export const metadata: Metadata = {
 
 export const dynamic = 'force-dynamic';
 
-async function getSeekerOpenStatus(seekerId: string): Promise<boolean> {
+async function getSeekerVisibility(seekerId: string): Promise<{ openToRecruiters: boolean; headline: string | null }> {
   const url = process.env.SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key) return false;
+  if (!url || !key) return { openToRecruiters: false, headline: null };
   const supabase = createClient(url, key, { auth: { persistSession: false } });
   const { data } = await supabase
     .from('job_seekers')
-    .select('open_to_recruiters')
+    .select('open_to_recruiters, headline')
     .eq('id', seekerId)
     .maybeSingle();
-  return Boolean(data?.open_to_recruiters);
+  return {
+    openToRecruiters: Boolean(data?.open_to_recruiters),
+    headline: (data?.headline as string) || null,
+  };
 }
 
 export default async function SeekerInboxPage() {
@@ -34,10 +38,11 @@ export default async function SeekerInboxPage() {
   if (!session?.user) redirect('/account/sign-in?callbackUrl=/account/inbox');
   if (session.user.role !== 'seeker') redirect('/account');
 
-  const [inbox, openToRecruiters] = await Promise.all([
+  const [inbox, visibility] = await Promise.all([
     listSeekerInbox(session.user.id),
-    getSeekerOpenStatus(session.user.id),
+    getSeekerVisibility(session.user.id),
   ]);
+  const { openToRecruiters, headline } = visibility;
 
   const unread = inbox.filter((i) => i.status === 'pending').length;
 
@@ -70,7 +75,7 @@ export default async function SeekerInboxPage() {
             </div>
           </div>
 
-          {/* Open to recruiters toggle */}
+          {/* Visibility settings */}
           <div className="mt-6 rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900/60">
             <OpenToRecruitersToggle initial={openToRecruiters} />
             {!openToRecruiters && (
@@ -78,6 +83,9 @@ export default async function SeekerInboxPage() {
                 Enable this to let recruiters discover your profile and send you outreach messages.
               </p>
             )}
+            <div className="mt-4 border-t border-zinc-100 pt-4 dark:border-zinc-800">
+              <SeekerHeadlineForm initial={headline} />
+            </div>
           </div>
 
           {/* Inbox */}
