@@ -13,6 +13,7 @@ import { matchesSavedSearch } from '@/lib/jobs/saved-search-matching';
 import { getSavedJobsWithDetails, getSeekerJobState } from '@/lib/jobs/seeker-actions';
 import { getSeekerProfile } from '@/lib/jobs/seeker-profile-actions';
 import { getSeekerUnreadCount } from '@/lib/jobs/candidate-outreach-actions';
+import { getSeekerUnreadInviteCount } from '@/lib/jobs/employer-candidate-actions';
 import { generateJobSlug } from '@/lib/utils/slugify';
 
 const MAX_RECOMMENDED_JOBS = 10;
@@ -41,13 +42,15 @@ export default async function AccountPage() {
     redirect('/account/onboarding');
   }
 
-  const [savedJobs, jobState, savedSearches, tier, unreadInbox] = await Promise.all([
+  const [savedJobs, jobState, savedSearches, tier, unreadOutreach, unreadInvites] = await Promise.all([
     getSavedJobsWithDetails(session.user.id),
     getSeekerJobState(session.user.id),
     listSavedSearches(session.user.id),
     getSeekerTier(session.user.id),
     getSeekerUnreadCount(session.user.id),
+    getSeekerUnreadInviteCount(session.user.id),
   ]);
+  const unreadInbox = unreadOutreach + unreadInvites;
 
   const appliedJobs = savedJobs.filter(
     (job) => jobState.applications[job.jobId] === 'applied'
@@ -214,7 +217,7 @@ export default async function AccountPage() {
             <div className="flex items-center justify-between gap-4">
               <div>
                 <h2 className="font-semibold text-lg flex items-center gap-2">
-                  Recruiter inbox
+                  Inbox
                   {unreadInbox > 0 && (
                     <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-bold">
                       {unreadInbox}
@@ -223,8 +226,8 @@ export default async function AccountPage() {
                 </h2>
                 <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
                   {unreadInbox > 0
-                    ? `${unreadInbox} new message${unreadInbox > 1 ? 's' : ''} from recruiters.`
-                    : 'Manage recruiter outreach and your visibility settings.'}
+                    ? `${unreadInbox} new message${unreadInbox > 1 ? 's' : ''} from recruiters and employers.`
+                    : 'Manage recruiter and employer outreach and your visibility settings.'}
                 </p>
               </div>
               <Link

@@ -305,6 +305,8 @@ function rowToJob(row: Record<string, unknown>, options?: { lite?: boolean }): J
     industry: (row.industry as string) || null,
     occupational_category: (row.occupational_category as string) || null,
     responsibilities: (row.responsibilities as string) || null,
+    employer_id: (row.employer_id as string) || null,
+    accepts_applications: Boolean(row.accepts_applications),
   };
 }
 
@@ -315,7 +317,8 @@ const JOBS_LIST_COLUMNS =
   'id,title,company,type,salary_min,salary_max,salary_currency,salary_unit,' +
   'apply_url,posted_at,valid_through,job_identifier,source,is_active,' +
   'career_level,visa_sponsorship,featured,remote_type,remote_region,' +
-  'timezone_requirements,workplace_city,workplace_country,languages';
+  'timezone_requirements,workplace_city,workplace_country,languages,' +
+  'employer_id,accepts_applications';
 
 export const getJobs = cache(
   async (options?: { limit?: number }): Promise<Job[]> => {

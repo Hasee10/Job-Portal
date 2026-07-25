@@ -1,13 +1,13 @@
-import { ArrowUpRight, ClipboardList } from 'lucide-react';
+import { ClipboardList } from 'lucide-react';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { ApplyButton } from '@/components/jobs/ApplyButton';
 import { GenerateResumeButton } from '@/components/jobs/GenerateResumeButton';
 import { JobApplicationActions } from '@/components/jobs/JobApplicationActions';
 import { SaveJobButton } from '@/components/jobs/SaveJobButton';
-import { Button } from '@/components/ui/button';
 import { ClientBreadcrumb } from '@/components/ui/client-breadcrumb';
 import { JobDetailsSidebar } from '@/components/ui/job-details-sidebar';
 import { JobSchema } from '@/components/ui/job-schema';
@@ -20,7 +20,6 @@ import {
 } from '@/lib/constants/defaults';
 import { formatSalary } from '@/lib/db/airtable';
 import { getJob, getJobs } from '@/lib/db/airtable.server';
-import { resolveColor } from '@/lib/utils/colors';
 import { formatDate } from '@/lib/utils/formatDate';
 import { generateMetadata as createMetadata } from '@/lib/utils/metadata';
 import { generateJobSlug } from '@/lib/utils/slugify';
@@ -291,27 +290,12 @@ export default async function JobPostPage({
                   )}
                 </div>
                 <div className="flex w-full items-center gap-2 sm:w-auto">
-                  <Button
-                    asChild
-                    className="w-full gap-1.5 text-xs sm:w-auto"
-                    size="xs"
-                    style={{
-                      backgroundColor: resolveColor(config.ui.primaryColor),
-                    }}
-                    variant="primary"
-                  >
-                    <a
-                      href={job.apply_url}
-                      rel="noopener noreferrer"
-                      target="_blank"
-                    >
-                      Apply Now
-                      <ArrowUpRight
-                        aria-hidden="true"
-                        className="h-3.5 w-3.5"
-                      />
-                    </a>
-                  </Button>
+                  <ApplyButton
+                    acceptsApplications={Boolean(job.accepts_applications)}
+                    applyUrl={job.apply_url}
+                    jobId={job.id}
+                    jobTitle={job.title}
+                  />
                   <SaveJobButton jobId={job.id} />
                   <GenerateResumeButton jobId={job.id} />
                 </div>
@@ -530,24 +514,12 @@ export default async function JobPostPage({
 
           <div className="mt-8">
             <div className="flex flex-col items-center gap-3 sm:flex-row sm:items-center">
-              <Button
-                asChild
-                className="w-full gap-1.5 text-xs sm:w-auto"
-                size="xs"
-                style={{
-                  backgroundColor: resolveColor(config.ui.primaryColor),
-                }}
-                variant="primary"
-              >
-                <a
-                  href={job.apply_url}
-                  rel="noopener noreferrer"
-                  target="_blank"
-                >
-                  Apply Now
-                  <ArrowUpRight aria-hidden="true" className="h-3.5 w-3.5" />
-                </a>
-              </Button>
+              <ApplyButton
+                acceptsApplications={Boolean(job.accepts_applications)}
+                applyUrl={job.apply_url}
+                jobId={job.id}
+                jobTitle={job.title}
+              />
               <JobApplicationActions jobId={job.id} />
               {job.valid_through &&
                 (() => {

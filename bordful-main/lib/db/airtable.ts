@@ -69,6 +69,10 @@ export type Job = {
   industry?: string | null;
   occupational_category?: string | null;
   responsibilities?: string | null;
+
+  // In-app employer job posting
+  employer_id?: string | null;
+  accepts_applications?: boolean;
 };
 
 // Format salary for display
