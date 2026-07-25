@@ -87,12 +87,15 @@ export async function submitApplication(
     throw new Error('This job is not accepting applications.');
   }
 
-  const matchScore = computeMatchScore(
-    input.resumeSnapshot.skills,
-    (job.required_skills as string[]) || []
-  );
+  const requiredSkills = (job.required_skills as string[]) || [];
+  const matchScore = computeMatchScore(input.resumeSnapshot.skills, requiredSkills);
   const threshold = (job.auto_shortlist_threshold as number) ?? 70;
-  const autoShortlisted = matchScore >= threshold;
+  // Auto-shortlisting only fires when the employer/recruiter has actually
+  // configured required skills. With no criteria set, computeMatchScore
+  // returns 100 for everyone (so no one is unfairly penalized) - but that
+  // would otherwise auto-shortlist every single applicant regardless of
+  // fit, which isn't a real signal and shouldn't bypass manual review.
+  const autoShortlisted = requiredSkills.length > 0 && matchScore >= threshold;
 
   const { data, error } = await supabase
     .from('job_application_submissions')
