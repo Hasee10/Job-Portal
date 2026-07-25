@@ -69,10 +69,16 @@ export async function extractResumeFromPdf(file: File): Promise<ResumeContent> {
     throw new Error('File is too large (max 4MB).');
   }
 
-  const buffer = Buffer.from(await file.arrayBuffer());
-  const pdfParse = (await import('pdf-parse')).default;
-  const parsed = await pdfParse(buffer);
-  const rawText = parsed.text.trim();
+  let rawText: string;
+  try {
+    const buffer = Buffer.from(await file.arrayBuffer());
+    const pdfParse = (await import('pdf-parse')).default;
+    const parsed = await pdfParse(buffer);
+    rawText = parsed.text.trim();
+  } catch (error) {
+    console.error('[resume-extraction] PDF parsing failed:', error);
+    throw new Error("Couldn't read that PDF. Try a different file.");
+  }
 
   if (!rawText) {
     throw new Error("That PDF didn't contain any extractable text.");
