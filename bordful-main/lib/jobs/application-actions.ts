@@ -31,6 +31,18 @@ function getAdminClient() {
   return createClient(url, key, { auth: { persistSession: false } });
 }
 
+// Supabase/PostgREST errors are plain objects, not `instanceof Error` - a
+// bare `throw error` on one of those gets silently discarded by any catch
+// block that does `error instanceof Error ? error.message : 'fallback'`,
+// which is exactly how the job_applications table-name collision stayed
+// invisible: the real Postgres error ("column does not exist") never made
+// it past that check. Wrapping here means the real message always survives.
+function toError(error: unknown, fallback: string): Error {
+  if (error instanceof Error) return error;
+  const message = (error as { message?: string } | null)?.message;
+  return new Error(message || fallback);
+}
+
 function rowToApplication(row: Record<string, unknown>): JobApplication {
   return {
     id: row.id as string,
@@ -70,7 +82,7 @@ export async function submitApplication(
     .eq('id', jobId)
     .maybeSingle();
 
-  if (jobError) throw jobError;
+  if (jobError) throw toError(jobError, 'Failed to look up job.');
   if (!job || !job.is_active || !job.accepts_applications) {
     throw new Error('This job is not accepting applications.');
   }
@@ -83,7 +95,7 @@ export async function submitApplication(
   const autoShortlisted = matchScore >= threshold;
 
   const { data, error } = await supabase
-    .from('job_applications')
+    .from('job_application_submissions')
     .insert({
       job_id: jobId,
       seeker_id: seekerId,
@@ -100,7 +112,7 @@ export async function submitApplication(
     if (error.code === '23505') {
       throw new Error('You have already applied to this job.');
     }
-    throw error;
+    throw toError(error, 'Failed to submit application.');
   }
 
   return rowToApplication(data);
@@ -125,12 +137,12 @@ export async function listJobApplications(
   if (!job) return [];
 
   const { data, error } = await supabase
-    .from('job_applications')
+    .from('job_application_submissions')
     .select('*, job_seekers(name, email)')
     .eq('job_id', jobId)
     .order('match_score', { ascending: false });
 
-  if (error) throw error;
+  if (error) throw toError(error, 'Failed to load applications.');
 
   return (data ?? []).map((row) => {
     const seeker = row.job_seekers as Record<string, unknown> | null;
@@ -154,7 +166,7 @@ export async function updateApplicationStatus(
   // Verify the application belongs to one of this owner's jobs before
   // allowing the status change.
   const { data: application } = await supabase
-    .from('job_applications')
+    .from('job_application_submissions')
     .select(`id, job_id, jobs!inner(${ownerColumn})`)
     .eq('id', applicationId)
     .eq(`jobs.${ownerColumn}`, ownerIdValue)
@@ -163,20 +175,20 @@ export async function updateApplicationStatus(
   if (!application) throw new Error('Application not found.');
 
   const { data, error } = await supabase
-    .from('job_applications')
+    .from('job_application_submissions')
     .update({ status, updated_at: new Date().toISOString() })
     .eq('id', applicationId)
     .select('*')
     .single();
 
-  if (error) throw error;
+  if (error) throw toError(error, 'Failed to update application.');
   return rowToApplication(data);
 }
 
 export async function hasSeekerApplied(seekerId: string, jobId: string): Promise<boolean> {
   const supabase = getAdminClient();
   const { data } = await supabase
-    .from('job_applications')
+    .from('job_application_submissions')
     .select('id')
     .eq('seeker_id', seekerId)
     .eq('job_id', jobId)

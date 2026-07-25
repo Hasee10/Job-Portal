@@ -53,6 +53,16 @@ function getAdminClient() {
   return createClient(url, key, { auth: { persistSession: false } });
 }
 
+// Supabase/PostgREST errors are plain objects, not `instanceof Error` - API
+// routes that do `error instanceof Error ? error.message : 'fallback'` would
+// silently discard the real message on a bare `throw error`. Wrapping here
+// keeps the real message intact for callers.
+function toError(error: unknown, fallback: string): Error {
+  if (error instanceof Error) return error;
+  const message = (error as { message?: string } | null)?.message;
+  return new Error(message || fallback);
+}
+
 function ownerColumn(owner: JobOwner): 'employer_id' | 'recruiter_id' {
   return owner.employerId !== undefined ? 'employer_id' : 'recruiter_id';
 }
@@ -134,8 +144,8 @@ function rowToPostedJob(row: Record<string, unknown>): PostedJob {
     requiredSkills: (row.required_skills as string[]) || [],
     minExperienceYears: (row.min_experience_years as number) ?? null,
     autoShortlistThreshold: (row.auto_shortlist_threshold as number) ?? 70,
-    applicationCount: Array.isArray(row.job_applications)
-      ? (row.job_applications[0]?.count as number) ?? 0
+    applicationCount: Array.isArray(row.job_application_submissions)
+      ? (row.job_application_submissions[0]?.count as number) ?? 0
       : 0,
   };
 }
@@ -187,7 +197,7 @@ export async function createJob(
     .select('*')
     .single();
 
-  if (error) throw error;
+  if (error) throw toError(error, 'Failed to create job.');
   return rowToPostedJob(data);
 }
 
@@ -229,7 +239,7 @@ export async function updateJob(
     .select('*')
     .single();
 
-  if (error) throw error;
+  if (error) throw toError(error, 'Failed to update job.');
   return rowToPostedJob(data);
 }
 
@@ -240,7 +250,7 @@ export async function closeJob(owner: JobOwner, jobId: string): Promise<void> {
     .update({ is_active: false, discontinued_at: new Date().toISOString() })
     .eq('id', jobId)
     .eq(ownerColumn(owner), ownerId(owner));
-  if (error) throw error;
+  if (error) throw toError(error, 'Failed to close job.');
 }
 
 export async function reopenJob(owner: JobOwner, jobId: string): Promise<void> {
@@ -250,18 +260,18 @@ export async function reopenJob(owner: JobOwner, jobId: string): Promise<void> {
     .update({ is_active: true, discontinued_at: null })
     .eq('id', jobId)
     .eq(ownerColumn(owner), ownerId(owner));
-  if (error) throw error;
+  if (error) throw toError(error, 'Failed to reopen job.');
 }
 
 export async function listOwnerJobs(owner: JobOwner): Promise<PostedJob[]> {
   const supabase = getAdminClient();
   const { data, error } = await supabase
     .from('jobs')
-    .select('*, job_applications(count)')
+    .select('*, job_application_submissions(count)')
     .eq(ownerColumn(owner), ownerId(owner))
     .order('posted_at', { ascending: false });
 
-  if (error) throw error;
+  if (error) throw toError(error, 'Failed to load jobs.');
   return (data ?? []).map((row) => rowToPostedJob(row as unknown as Record<string, unknown>));
 }
 
@@ -269,11 +279,11 @@ export async function getOwnerJob(owner: JobOwner, jobId: string): Promise<Poste
   const supabase = getAdminClient();
   const { data, error } = await supabase
     .from('jobs')
-    .select('*, job_applications(count)')
+    .select('*, job_application_submissions(count)')
     .eq('id', jobId)
     .eq(ownerColumn(owner), ownerId(owner))
     .maybeSingle();
 
-  if (error) throw error;
+  if (error) throw toError(error, 'Failed to load job.');
   return data ? rowToPostedJob(data as unknown as Record<string, unknown>) : null;
 }
