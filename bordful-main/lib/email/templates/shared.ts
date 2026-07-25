@@ -42,7 +42,7 @@ export function emailHeader(): string {
 
 export function emailFooter(options?: {
   isReceipt?: boolean;
-  audience?: 'employer' | 'seeker';
+  audience?: 'employer' | 'seeker' | 'recruiter';
 }): string {
   // Both of these are transactional (account-creation confirmation, payment
   // receipt) rather than marketing sends, so an unsubscribe link isn't
@@ -54,7 +54,9 @@ export function emailFooter(options?: {
     ? 'This is a receipt for your records - keep it for your files.'
     : options?.audience === 'seeker'
       ? "You're receiving this because you created a JobLo job seeker account."
-      : "You're receiving this because you created a JobLo employer account.";
+      : options?.audience === 'recruiter'
+        ? "You're receiving this because you created a JobLo recruiter account."
+        : "You're receiving this because you created a JobLo employer account.";
 
   return `<table align="center" width="100%" cellpadding="0" cellspacing="0" role="presentation">
   <tr><td style="height: 1px; line-height: 1px; font-size: 0; background: #ececef;">&nbsp;</td></tr>

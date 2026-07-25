@@ -1,5 +1,8 @@
 import { NextResponse } from 'next/server';
+import config from '@/config';
 import { createRecruiterAccount, RecruiterAuthError } from '@/lib/auth/recruiter-accounts';
+import { sendEmail } from '@/lib/email/smtp';
+import { renderRecruiterWelcomeEmail } from '@/lib/email/templates/recruiter-welcome';
 import { createRateLimiter, getClientIp } from '@/lib/utils/rate-limit';
 
 export const dynamic = 'force-dynamic';
@@ -23,6 +26,19 @@ export async function POST(request: Request) {
     const agency = typeof body.agency === 'string' ? body.agency : undefined;
 
     const recruiter = await createRecruiterAccount(email, password, name, agency);
+
+    // Fire-and-catch, not fire-and-forget: awaited so it completes before
+    // this serverless invocation can be frozen, but a failure here must
+    // never fail signup itself - the account is already created.
+    try {
+      const { subject, html } = renderRecruiterWelcomeEmail({
+        name: recruiter.name,
+        dashboardUrl: `${config.url}/recruiter/dashboard`,
+      });
+      await sendEmail({ to: recruiter.email, subject, html });
+    } catch (error) {
+      console.error('[api/recruiters/signup] welcome email failed', error);
+    }
 
     return NextResponse.json({ success: true, email: recruiter.email });
   } catch (error) {
