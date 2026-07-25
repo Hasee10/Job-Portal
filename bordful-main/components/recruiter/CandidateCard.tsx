@@ -31,10 +31,12 @@ const STATUS_BADGE: Record<string, { label: string; icon: React.ReactNode; class
 
 export function CandidateCard({
   candidate,
+  dailyRemaining,
   onOutreachSent,
 }: {
   candidate: OptInCandidate;
-  onOutreachSent: (seekerId: string) => void;
+  dailyRemaining: number;
+  onOutreachSent: (seekerId: string, remaining: number) => void;
 }) {
   const [showModal, setShowModal] = useState(false);
   const displayName = candidate.name || 'Anonymous';
@@ -108,6 +110,7 @@ export function CandidateCard({
       {showModal && (
         <OutreachModal
           candidate={candidate}
+          dailyRemaining={dailyRemaining}
           onClose={() => setShowModal(false)}
           onSent={onOutreachSent}
         />

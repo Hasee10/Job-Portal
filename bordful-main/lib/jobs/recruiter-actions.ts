@@ -42,18 +42,29 @@ function rowToRecruiter(row: Record<string, unknown>): Recruiter {
   };
 }
 
-// Only active, admin-approved recruiters are shown publicly - the table is
-// seeded by hand for now, there's no self-serve recruiter signup yet.
+// Returns admin-seeded recruiters plus verified self-serve recruiter accounts.
 export async function listActiveRecruiters(): Promise<Recruiter[]> {
   const supabase = getAdminClient();
-  const { data, error } = await supabase
-    .from('recruiters')
-    .select('*')
-    .eq('is_active', true)
-    .order('created_at', { ascending: false });
 
-  if (error) throw error;
-  return (data ?? []).map(rowToRecruiter);
+  const [legacyResult, accountsResult] = await Promise.all([
+    supabase.from('recruiters').select('*').eq('is_active', true).order('created_at', { ascending: false }),
+    supabase.from('recruiter_accounts').select('*').eq('is_verified', true).order('created_at', { ascending: false }),
+  ]);
+
+  if (legacyResult.error) throw legacyResult.error;
+
+  const legacy = (legacyResult.data ?? []).map(rowToRecruiter);
+  const accounts = (accountsResult.data ?? []).map((row: Record<string, unknown>) => ({
+    id: row.id as string,
+    name: row.name as string,
+    title: null,
+    company: (row.agency as string) || null,
+    bio: (row.bio as string) || null,
+    specialties: (row.specialties as string[]) || [],
+    avatarUrl: null,
+  }));
+
+  return [...legacy, ...accounts];
 }
 
 export async function createRecruiterRequest(

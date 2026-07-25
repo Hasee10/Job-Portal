@@ -6,7 +6,7 @@ import { auth } from '@/auth';
 import { SignOutButton } from '@/components/auth/SignOutButton';
 import { CandidateSearch } from '@/components/recruiter/CandidateSearch';
 import { getRecruiterAccountById } from '@/lib/auth/recruiter-accounts';
-import { listOptInCandidates, listRecruiterOutreach } from '@/lib/jobs/candidate-outreach-actions';
+import { getRecruiterDailyOutreachCount, listOptInCandidates, listRecruiterOutreach } from '@/lib/jobs/candidate-outreach-actions';
 import config from '@/config';
 
 export const metadata: Metadata = {
@@ -33,11 +33,13 @@ export default async function RecruiterDashboardPage() {
   if (!session?.user) redirect('/recruiter/sign-in?callbackUrl=/recruiter/dashboard');
   if (session.user.role !== 'recruiter') redirect('/');
 
-  const [recruiter, candidates, outreach] = await Promise.all([
+  const [recruiter, candidates, outreach, dailyCount] = await Promise.all([
     getRecruiterAccountById(session.user.id),
     listOptInCandidates(session.user.id),
     listRecruiterOutreach(session.user.id),
+    getRecruiterDailyOutreachCount(session.user.id),
   ]);
+  const dailyRemaining = Math.max(0, 20 - dailyCount);
 
   const stats = {
     sent: outreach.filter((o) => o.status === 'pending').length,
@@ -104,7 +106,7 @@ export default async function RecruiterDashboardPage() {
             </div>
 
             <div className="mt-6">
-              <CandidateSearch initial={candidates} />
+              <CandidateSearch initial={candidates} initialDailyRemaining={dailyRemaining} />
             </div>
           </div>
 

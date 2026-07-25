@@ -6,8 +6,15 @@ import { Input } from '@/components/ui/input';
 import { CandidateCard } from './CandidateCard';
 import type { OptInCandidate } from '@/lib/jobs/candidate-outreach-actions';
 
-export function CandidateSearch({ initial }: { initial: OptInCandidate[] }) {
+export function CandidateSearch({
+  initial,
+  initialDailyRemaining,
+}: {
+  initial: OptInCandidate[];
+  initialDailyRemaining: number;
+}) {
   const [candidates, setCandidates] = useState<OptInCandidate[]>(initial);
+  const [dailyRemaining, setDailyRemaining] = useState(initialDailyRemaining);
   const [query, setQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -38,10 +45,11 @@ export function CandidateSearch({ initial }: { initial: OptInCandidate[] }) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedQuery]);
 
-  const handleOutreachSent = (seekerId: string) => {
+  const handleOutreachSent = (seekerId: string, remaining: number) => {
     setCandidates((prev) =>
       prev.map((c) => (c.seekerId === seekerId ? { ...c, outreachStatus: 'pending' } : c))
     );
+    setDailyRemaining(remaining);
   };
 
   return (
@@ -82,6 +90,7 @@ export function CandidateSearch({ initial }: { initial: OptInCandidate[] }) {
             {candidates.map((c) => (
               <CandidateCard
                 candidate={c}
+                dailyRemaining={dailyRemaining}
                 key={c.seekerId}
                 onOutreachSent={handleOutreachSent}
               />

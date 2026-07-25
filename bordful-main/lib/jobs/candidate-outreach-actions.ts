@@ -121,13 +121,26 @@ export async function listOptInCandidates(
   return candidates;
 }
 
-// Send outreach from a recruiter to a seeker
+// Send outreach from a recruiter to a seeker — verifies the seeker has
+// opted in before inserting, so the API cannot be abused by posting
+// arbitrary seeker IDs directly.
 export async function sendOutreach(
   recruiterId: string,
   seekerId: string,
   message: string
 ): Promise<CandidateOutreach> {
   const supabase = getAdminClient();
+
+  // Verify the seeker actually opted in
+  const { data: seeker } = await supabase
+    .from('job_seekers')
+    .select('open_to_recruiters')
+    .eq('id', seekerId)
+    .maybeSingle();
+
+  if (!seeker || !seeker.open_to_recruiters) {
+    throw new Error('This candidate is not open to recruiter outreach.');
+  }
 
   const { data, error } = await supabase
     .from('candidate_outreach')
@@ -143,6 +156,20 @@ export async function sendOutreach(
   }
 
   return rowToOutreach(data);
+}
+
+// How many outreach messages this recruiter sent in the last 24 hours
+export async function getRecruiterDailyOutreachCount(
+  recruiterId: string
+): Promise<number> {
+  const supabase = getAdminClient();
+  const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+  const { count } = await supabase
+    .from('candidate_outreach')
+    .select('id', { count: 'exact', head: true })
+    .eq('recruiter_id', recruiterId)
+    .gte('created_at', since);
+  return count ?? 0;
 }
 
 // Recruiter's sent outreach with seeker info
