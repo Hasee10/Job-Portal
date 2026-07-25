@@ -28,6 +28,18 @@ export default function SignUpPage() {
             Sign in
           </Link>
         </p>
+        <p className="mt-2 text-center text-sm text-zinc-600 dark:text-zinc-400">
+          Looking for a job?{' '}
+          <Link className="underline hover:no-underline" href="/account/sign-in">
+            Job seeker sign in
+          </Link>
+        </p>
+        <p className="mt-2 text-center text-sm text-zinc-600 dark:text-zinc-400">
+          Are you a recruiter?{' '}
+          <Link className="underline hover:no-underline" href="/recruiter/sign-up">
+            Recruiter sign up
+          </Link>
+        </p>
       </div>
     </main>
   );

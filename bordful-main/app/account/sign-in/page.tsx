@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import { Suspense } from 'react';
 import { SeekerSignInButtons } from '@/components/auth/SeekerSignInButtons';
 import config from '@/config';
@@ -41,6 +42,18 @@ export default async function SeekerSignInPage({
         <Suspense fallback={null}>
           <SeekerSignInButtons />
         </Suspense>
+        <p className="mt-6 text-center text-sm text-zinc-600 dark:text-zinc-400">
+          Hiring?{' '}
+          <Link className="underline hover:no-underline" href="/sign-up">
+            Post a job
+          </Link>
+        </p>
+        <p className="mt-2 text-center text-sm text-zinc-600 dark:text-zinc-400">
+          Are you a recruiter?{' '}
+          <Link className="underline hover:no-underline" href="/recruiter/sign-up">
+            Recruiter sign up
+          </Link>
+        </p>
       </div>
     </main>
   );

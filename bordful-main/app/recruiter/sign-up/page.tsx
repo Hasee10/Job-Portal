@@ -37,6 +37,12 @@ export default function RecruiterSignUpPage() {
             Job seeker sign in
           </Link>
         </p>
+        <p className="mt-2 text-center text-sm text-zinc-600 dark:text-zinc-400">
+          Hiring?{' '}
+          <Link className="underline hover:no-underline" href="/sign-up">
+            Post a job
+          </Link>
+        </p>
       </div>
     </main>
   );
