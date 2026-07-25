@@ -3,6 +3,7 @@ import 'server-only';
 import { randomBytes, createHash } from 'node:crypto';
 import bcrypt from 'bcryptjs';
 import { createClient } from '@supabase/supabase-js';
+import { deriveLogoUrl } from '@/lib/utils/website-logo';
 
 const BCRYPT_COST_FACTOR = 12;
 const MIN_PASSWORD_LENGTH = 8;
@@ -37,18 +38,6 @@ function rowToEmployer(row: Record<string, unknown>): Employer {
   };
 }
 
-// Derives a company logo from a website URL via Clearbit's free, keyless
-// logo API - this is the "auto-picked" logo the employer can still override.
-export function deriveLogoUrl(website: string | null | undefined): string | null {
-  if (!website) return null;
-  try {
-    const url = website.startsWith('http') ? website : `https://${website}`;
-    const domain = new URL(url).hostname.replace(/^www\./, '');
-    return domain ? `https://logo.clearbit.com/${domain}` : null;
-  } catch {
-    return null;
-  }
-}
 
 export class EmployerAuthError extends Error {
   constructor(

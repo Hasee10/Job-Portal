@@ -79,6 +79,11 @@ export default async function RecruiterPipelinePage() {
                             <span className="text-xs text-zinc-400 truncate">{item.seekerHeadline}</span>
                           )}
                         </div>
+                        {item.jobTitle && (
+                          <p className="mt-0.5 text-xs text-zinc-400">
+                            Invited to apply for <span className="font-medium text-zinc-500 dark:text-zinc-400">{item.jobTitle}</span>
+                          </p>
+                        )}
                         {item.seekerSkills.length > 0 && (
                           <div className="mt-1.5 flex flex-wrap gap-1">
                             {item.seekerSkills.slice(0, 5).map((s) => (

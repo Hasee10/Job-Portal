@@ -6,8 +6,17 @@ import type { CurrencyCode } from '@/lib/constants/currencies';
 import { generateJobSlug } from '@/lib/utils/slugify';
 import config from '@/config';
 
-export type EmployerJob = Job & {
-  employerId: string;
+// A job posting is owned by exactly one of an employer or a recruiter -
+// both can post jobs (recruiters typically on behalf of client companies),
+// so every write/read here is scoped through this owner reference rather
+// than assuming employer_id.
+export type JobOwner =
+  | { employerId: string; recruiterId?: undefined }
+  | { recruiterId: string; employerId?: undefined };
+
+export type PostedJob = Job & {
+  postedByType: 'employer' | 'recruiter';
+  postedById: string;
   acceptsApplications: boolean;
   requiredSkills: string[];
   minExperienceYears: number | null;
@@ -44,6 +53,18 @@ function getAdminClient() {
   return createClient(url, key, { auth: { persistSession: false } });
 }
 
+function ownerColumn(owner: JobOwner): 'employer_id' | 'recruiter_id' {
+  return owner.employerId !== undefined ? 'employer_id' : 'recruiter_id';
+}
+
+function ownerId(owner: JobOwner): string {
+  return owner.employerId ?? (owner.recruiterId as string);
+}
+
+function ownerSource(owner: JobOwner): 'employer' | 'recruiter' {
+  return owner.employerId !== undefined ? 'employer' : 'recruiter';
+}
+
 function workplaceTypeToRemoteType(workplaceType: string): string {
   switch (workplaceType) {
     case 'Remote':
@@ -72,7 +93,8 @@ function remoteTypeToWorkplaceType(remoteType: unknown): Job['workplace_type'] {
   }
 }
 
-function rowToEmployerJob(row: Record<string, unknown>): EmployerJob {
+function rowToPostedJob(row: Record<string, unknown>): PostedJob {
+  const postedByType: PostedJob['postedByType'] = row.recruiter_id ? 'recruiter' : 'employer';
   return {
     id: row.id as string,
     title: row.title as string,
@@ -106,7 +128,8 @@ function rowToEmployerJob(row: Record<string, unknown>): EmployerJob {
     workplace_country: (row.workplace_country as string) || null,
     languages: [],
     skills: (row.skills as string) || null,
-    employerId: row.employer_id as string,
+    postedByType,
+    postedById: (postedByType === 'recruiter' ? row.recruiter_id : row.employer_id) as string,
     acceptsApplications: Boolean(row.accepts_applications),
     requiredSkills: (row.required_skills as string[]) || [],
     minExperienceYears: (row.min_experience_years as number) ?? null,
@@ -118,10 +141,10 @@ function rowToEmployerJob(row: Record<string, unknown>): EmployerJob {
 }
 
 export async function createJob(
-  employerId: string,
+  owner: JobOwner,
   companyName: string,
   input: JobPostInput
-): Promise<EmployerJob> {
+): Promise<PostedJob> {
   const supabase = getAdminClient();
 
   const slug = generateJobSlug(input.title, companyName);
@@ -136,7 +159,7 @@ export async function createJob(
   const { data, error } = await supabase
     .from('jobs')
     .insert({
-      employer_id: employerId,
+      [ownerColumn(owner)]: ownerId(owner),
       title: input.title.trim(),
       company: companyName,
       type: input.type,
@@ -144,7 +167,7 @@ export async function createJob(
       benefits: input.benefits,
       application_requirements: input.applicationRequirements,
       apply_url: applyUrl,
-      source: 'employer',
+      source: ownerSource(owner),
       is_active: true,
       posted_at: new Date().toISOString(),
       career_level: input.careerLevel.length > 0 ? input.careerLevel : ['NotSpecified'],
@@ -165,14 +188,14 @@ export async function createJob(
     .single();
 
   if (error) throw error;
-  return rowToEmployerJob(data);
+  return rowToPostedJob(data);
 }
 
 export async function updateJob(
-  employerId: string,
+  owner: JobOwner,
   jobId: string,
   input: Partial<JobPostInput> & { companyName: string }
-): Promise<EmployerJob> {
+): Promise<PostedJob> {
   const supabase = getAdminClient();
   const patch: Record<string, unknown> = {};
 
@@ -202,55 +225,55 @@ export async function updateJob(
     .from('jobs')
     .update(patch)
     .eq('id', jobId)
-    .eq('employer_id', employerId)
+    .eq(ownerColumn(owner), ownerId(owner))
     .select('*')
     .single();
 
   if (error) throw error;
-  return rowToEmployerJob(data);
+  return rowToPostedJob(data);
 }
 
-export async function closeJob(employerId: string, jobId: string): Promise<void> {
+export async function closeJob(owner: JobOwner, jobId: string): Promise<void> {
   const supabase = getAdminClient();
   const { error } = await supabase
     .from('jobs')
     .update({ is_active: false, discontinued_at: new Date().toISOString() })
     .eq('id', jobId)
-    .eq('employer_id', employerId);
+    .eq(ownerColumn(owner), ownerId(owner));
   if (error) throw error;
 }
 
-export async function reopenJob(employerId: string, jobId: string): Promise<void> {
+export async function reopenJob(owner: JobOwner, jobId: string): Promise<void> {
   const supabase = getAdminClient();
   const { error } = await supabase
     .from('jobs')
     .update({ is_active: true, discontinued_at: null })
     .eq('id', jobId)
-    .eq('employer_id', employerId);
+    .eq(ownerColumn(owner), ownerId(owner));
   if (error) throw error;
 }
 
-export async function listEmployerJobs(employerId: string): Promise<EmployerJob[]> {
+export async function listOwnerJobs(owner: JobOwner): Promise<PostedJob[]> {
   const supabase = getAdminClient();
   const { data, error } = await supabase
     .from('jobs')
     .select('*, job_applications(count)')
-    .eq('employer_id', employerId)
+    .eq(ownerColumn(owner), ownerId(owner))
     .order('posted_at', { ascending: false });
 
   if (error) throw error;
-  return (data ?? []).map((row) => rowToEmployerJob(row as unknown as Record<string, unknown>));
+  return (data ?? []).map((row) => rowToPostedJob(row as unknown as Record<string, unknown>));
 }
 
-export async function getEmployerJob(employerId: string, jobId: string): Promise<EmployerJob | null> {
+export async function getOwnerJob(owner: JobOwner, jobId: string): Promise<PostedJob | null> {
   const supabase = getAdminClient();
   const { data, error } = await supabase
     .from('jobs')
     .select('*, job_applications(count)')
     .eq('id', jobId)
-    .eq('employer_id', employerId)
+    .eq(ownerColumn(owner), ownerId(owner))
     .maybeSingle();
 
   if (error) throw error;
-  return data ? rowToEmployerJob(data as unknown as Record<string, unknown>) : null;
+  return data ? rowToPostedJob(data as unknown as Record<string, unknown>) : null;
 }

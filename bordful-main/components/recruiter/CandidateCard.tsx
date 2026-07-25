@@ -33,10 +33,14 @@ export function CandidateCard({
   candidate,
   dailyRemaining,
   onOutreachSent,
+  jobId,
+  jobTitle,
 }: {
   candidate: OptInCandidate;
   dailyRemaining: number;
   onOutreachSent: (seekerId: string, remaining: number) => void;
+  jobId?: string;
+  jobTitle?: string;
 }) {
   const [showModal, setShowModal] = useState(false);
   const displayName = candidate.name || 'Anonymous';
@@ -68,6 +72,12 @@ export function CandidateCard({
               </p>
             )}
           </div>
+          {jobId && (
+            <div className="shrink-0 text-right">
+              <p className="font-bold text-sm text-zinc-900 dark:text-zinc-50">{candidate.matchScore}%</p>
+              <p className="text-[10px] text-zinc-400">match</p>
+            </div>
+          )}
         </div>
 
         {candidate.skills.length > 0 && (
@@ -101,7 +111,7 @@ export function CandidateCard({
               variant="outline"
             >
               <Send className="h-3 w-3" />
-              Send outreach
+              {jobId ? 'Invite to apply' : 'Send outreach'}
             </Button>
           )}
         </div>
@@ -111,6 +121,8 @@ export function CandidateCard({
         <OutreachModal
           candidate={candidate}
           dailyRemaining={dailyRemaining}
+          jobId={jobId}
+          jobTitle={jobTitle}
           onClose={() => setShowModal(false)}
           onSent={onOutreachSent}
         />

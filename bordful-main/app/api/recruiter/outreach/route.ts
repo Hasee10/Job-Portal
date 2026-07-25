@@ -54,6 +54,7 @@ export async function POST(request: Request) {
   const body = await request.json();
   const seekerId = typeof body.seekerId === 'string' ? body.seekerId : '';
   const message = typeof body.message === 'string' ? body.message.trim().slice(0, 2000) : '';
+  const jobId = typeof body.jobId === 'string' ? body.jobId : null;
 
   if (!seekerId) {
     return NextResponse.json({ error: 'Candidate ID is required.' }, { status: 400 });
@@ -63,7 +64,7 @@ export async function POST(request: Request) {
   }
 
   try {
-    const outreach = await sendOutreach(session.user.id, seekerId, message);
+    const outreach = await sendOutreach(session.user.id, seekerId, message, jobId);
 
     // Notify the seeker by email — fire-and-catch so an email failure
     // never blocks the outreach from being recorded.

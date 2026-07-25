@@ -9,9 +9,13 @@ import type { OptInCandidate } from '@/lib/jobs/candidate-outreach-actions';
 export function CandidateSearch({
   initial,
   initialDailyRemaining,
+  jobId,
+  jobTitle,
 }: {
   initial: OptInCandidate[];
   initialDailyRemaining: number;
+  jobId?: string;
+  jobTitle?: string;
 }) {
   const [candidates, setCandidates] = useState<OptInCandidate[]>(initial);
   const [dailyRemaining, setDailyRemaining] = useState(initialDailyRemaining);
@@ -30,6 +34,7 @@ export function CandidateSearch({
     try {
       const params = new URLSearchParams();
       if (q) params.set('q', q);
+      if (jobId) params.set('jobId', jobId);
       const res = await fetch(`/api/recruiter/candidates?${params}`);
       if (!res.ok) return;
       const data = await res.json();
@@ -37,7 +42,7 @@ export function CandidateSearch({
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [jobId]);
 
   useEffect(() => {
     if (debouncedQuery !== '') fetchCandidates(debouncedQuery);
@@ -91,6 +96,8 @@ export function CandidateSearch({
               <CandidateCard
                 candidate={c}
                 dailyRemaining={dailyRemaining}
+                jobId={jobId}
+                jobTitle={jobTitle}
                 key={c.seekerId}
                 onOutreachSent={handleOutreachSent}
               />

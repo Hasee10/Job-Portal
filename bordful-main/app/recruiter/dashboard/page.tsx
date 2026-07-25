@@ -67,6 +67,12 @@ export default async function RecruiterDashboardPage() {
             <div className="flex items-center gap-3">
               <Link
                 className="rounded-md border px-3 py-1.5 text-sm font-medium hover:bg-accent transition-colors"
+                href="/recruiter/jobs"
+              >
+                My jobs
+              </Link>
+              <Link
+                className="rounded-md border px-3 py-1.5 text-sm font-medium hover:bg-accent transition-colors"
                 href="/recruiter/profile/edit"
               >
                 Edit profile

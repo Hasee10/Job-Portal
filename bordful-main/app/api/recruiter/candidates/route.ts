@@ -14,7 +14,8 @@ export async function GET(request: Request) {
   const searchTerm = searchParams.get('q') || undefined;
   const skillsParam = searchParams.get('skills');
   const skills = skillsParam ? skillsParam.split(',').map((s) => s.trim()).filter(Boolean) : undefined;
+  const jobId = searchParams.get('jobId') || undefined;
 
-  const candidates = await listOptInCandidates(session.user.id, { skills, searchTerm });
+  const candidates = await listOptInCandidates(session.user.id, { skills, searchTerm, jobId });
   return NextResponse.json({ candidates });
 }

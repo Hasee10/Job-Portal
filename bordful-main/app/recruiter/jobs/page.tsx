@@ -14,12 +14,12 @@ export const metadata: Metadata = {
 
 export const dynamic = 'force-dynamic';
 
-export default async function EmployerJobsPage() {
+export default async function RecruiterJobsPage() {
   const session = await auth();
-  if (!session?.user) redirect('/sign-in?callbackUrl=/dashboard/jobs');
-  if (session.user.role !== 'employer') redirect('/');
+  if (!session?.user) redirect('/recruiter/sign-in?callbackUrl=/recruiter/jobs');
+  if (session.user.role !== 'recruiter') redirect('/');
 
-  const jobs = await listOwnerJobs({ employerId: session.user.id });
+  const jobs = await listOwnerJobs({ recruiterId: session.user.id });
 
   return (
     <main className="min-h-[60vh] bg-background py-12">
@@ -29,12 +29,12 @@ export default async function EmployerJobsPage() {
             <div>
               <h1 className="font-bold text-2xl text-zinc-900 dark:text-zinc-50">My jobs</h1>
               <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-                Manage your listings and review applicants.
+                Jobs you&rsquo;ve posted on behalf of clients.
               </p>
             </div>
             <Link
               className="inline-flex items-center gap-1.5 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90"
-              href="/dashboard/jobs/new"
+              href="/recruiter/jobs/new"
             >
               <Plus className="h-4 w-4" />
               Post a job
@@ -47,7 +47,7 @@ export default async function EmployerJobsPage() {
                 <Briefcase className="h-5 w-5 text-zinc-400" />
               </div>
               <p className="mt-3 font-medium text-zinc-900 dark:text-zinc-50">No jobs posted yet</p>
-              <p className="mt-1 text-sm text-zinc-500">Post your first job to start receiving applications.</p>
+              <p className="mt-1 text-sm text-zinc-500">Post a job on behalf of a client to start receiving applications.</p>
             </div>
           ) : (
             <div className="mt-8 space-y-4">
@@ -61,7 +61,7 @@ export default async function EmployerJobsPage() {
                       <div className="flex items-center gap-2 flex-wrap">
                         <Link
                           className="font-semibold text-zinc-900 hover:underline dark:text-zinc-50"
-                          href={`/dashboard/jobs/${job.id}/edit`}
+                          href={`/recruiter/jobs/${job.id}/edit`}
                         >
                           {job.title}
                         </Link>
@@ -76,19 +76,22 @@ export default async function EmployerJobsPage() {
                         </span>
                       </div>
                       <p className="mt-0.5 text-sm text-zinc-500 dark:text-zinc-400">
-                        {job.type}
+                        {job.company} · {job.type}
                         {job.workplace_city ? ` · ${job.workplace_city}` : ''}
-                        {job.workplace_type !== 'Not specified' ? ` · ${job.workplace_type}` : ''}
                       </p>
                     </div>
-                    <JobStatusToggle isActive={job.status === 'active'} jobId={job.id} />
+                    <JobStatusToggle
+                      apiBasePath="/api/recruiter/jobs"
+                      isActive={job.status === 'active'}
+                      jobId={job.id}
+                    />
                   </div>
 
                   <div className="mt-4 flex items-center gap-4 border-t border-zinc-100 pt-3 dark:border-zinc-800">
                     {job.acceptsApplications && (
                       <Link
                         className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
-                        href={`/dashboard/jobs/${job.id}/applications`}
+                        href={`/recruiter/jobs/${job.id}/applications`}
                       >
                         <Users className="h-3.5 w-3.5" />
                         {job.applicationCount} application{job.applicationCount !== 1 ? 's' : ''}
@@ -96,13 +99,13 @@ export default async function EmployerJobsPage() {
                     )}
                     <Link
                       className="text-sm text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200"
-                      href={`/dashboard/jobs/${job.id}/candidates`}
+                      href={`/recruiter/jobs/${job.id}/candidates`}
                     >
                       Search candidates
                     </Link>
                     <Link
                       className="text-sm text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200"
-                      href={`/dashboard/jobs/${job.id}/edit`}
+                      href={`/recruiter/jobs/${job.id}/edit`}
                     >
                       Edit
                     </Link>

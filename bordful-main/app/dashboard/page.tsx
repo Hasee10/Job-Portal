@@ -5,7 +5,7 @@ import { Briefcase, Building2, Users } from 'lucide-react';
 import { auth } from '@/auth';
 import { SignOutButton } from '@/components/auth/SignOutButton';
 import { getEmployerById } from '@/lib/auth/employers';
-import { listEmployerJobs } from '@/lib/jobs/employer-job-actions';
+import { listOwnerJobs } from '@/lib/jobs/employer-job-actions';
 import config from '@/config';
 
 export const metadata: Metadata = {
@@ -24,7 +24,7 @@ export default async function DashboardPage() {
 
   const [employer, jobs] = await Promise.all([
     getEmployerById(session.user.id),
-    listEmployerJobs(session.user.id),
+    listOwnerJobs({ employerId: session.user.id }),
   ]);
 
   const activeJobs = jobs.filter((j) => j.status === 'active');

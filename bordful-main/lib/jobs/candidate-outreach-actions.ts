@@ -1,11 +1,13 @@
 import 'server-only';
 
 import { createClient } from '@supabase/supabase-js';
+import { computeMatchScore } from '@/lib/jobs/application-actions';
 
 export type CandidateOutreach = {
   id: string;
   recruiterId: string;
   seekerId: string;
+  jobId: string | null;
   message: string;
   status: 'pending' | 'read' | 'accepted' | 'declined';
   createdAt: string;
@@ -25,6 +27,7 @@ export type OutreachWithSeeker = CandidateOutreach & {
   seekerEmail: string;
   seekerHeadline: string | null;
   seekerSkills: string[];
+  jobTitle: string | null;
 };
 
 export type OptInCandidate = {
@@ -33,6 +36,7 @@ export type OptInCandidate = {
   email: string;
   headline: string | null;
   skills: string[];
+  matchScore: number;
   createdAt: string;
   outreachStatus: 'pending' | 'read' | 'accepted' | 'declined' | null;
 };
@@ -44,12 +48,27 @@ function getAdminClient() {
   return createClient(url, key, { auth: { persistSession: false } });
 }
 
-// Seekers who have opted in and their outreach status for this recruiter
+// Seekers who have opted in and their outreach status for this recruiter.
+// When jobId is provided, candidates are scored/ranked against that job's
+// required skills (same scoring used for employer applications) and
+// outreachStatus reflects invites for that specific job rather than any
+// general outreach.
 export async function listOptInCandidates(
   recruiterId: string,
-  opts: { skills?: string[]; searchTerm?: string } = {}
+  opts: { skills?: string[]; searchTerm?: string; jobId?: string } = {}
 ): Promise<OptInCandidate[]> {
   const supabase = getAdminClient();
+
+  let requiredSkills: string[] = [];
+  if (opts.jobId) {
+    const { data: job } = await supabase
+      .from('jobs')
+      .select('required_skills')
+      .eq('id', opts.jobId)
+      .eq('recruiter_id', recruiterId)
+      .maybeSingle();
+    requiredSkills = (job?.required_skills as string[]) || [];
+  }
 
   // Fetch opt-in seekers with their resumes and any outreach this recruiter sent
   const { data: seekers, error } = await supabase
@@ -75,27 +94,34 @@ export async function listOptInCandidates(
     resumeMap.set(r.seeker_id as string, skills);
   }
 
-  // Fetch this recruiter's outreach to these seekers
-  const { data: outreachRows } = await supabase
+  // Fetch this recruiter's outreach to these seekers, scoped to the job
+  // when one is given, otherwise general (job_id null) outreach.
+  let outreachQuery = supabase
     .from('candidate_outreach')
     .select('seeker_id, status')
     .eq('recruiter_id', recruiterId)
     .in('seeker_id', seekerIds);
+  outreachQuery = opts.jobId ? outreachQuery.eq('job_id', opts.jobId) : outreachQuery.is('job_id', null);
+  const { data: outreachRows } = await outreachQuery;
 
   const outreachMap = new Map<string, string>();
   for (const row of outreachRows ?? []) {
     outreachMap.set(row.seeker_id as string, row.status as string);
   }
 
-  let candidates: OptInCandidate[] = seekers.map((s) => ({
-    seekerId: s.id as string,
-    name: (s.name as string) || null,
-    email: s.email as string,
-    headline: (s.headline as string) || null,
-    skills: resumeMap.get(s.id as string) ?? [],
-    createdAt: s.created_at as string,
-    outreachStatus: (outreachMap.get(s.id as string) ?? null) as OptInCandidate['outreachStatus'],
-  }));
+  let candidates: OptInCandidate[] = seekers.map((s) => {
+    const skills = resumeMap.get(s.id as string) ?? [];
+    return {
+      seekerId: s.id as string,
+      name: (s.name as string) || null,
+      email: s.email as string,
+      headline: (s.headline as string) || null,
+      skills,
+      matchScore: computeMatchScore(skills, requiredSkills),
+      createdAt: s.created_at as string,
+      outreachStatus: (outreachMap.get(s.id as string) ?? null) as OptInCandidate['outreachStatus'],
+    };
+  });
 
   // Filter by skills if provided
   if (opts.skills && opts.skills.length > 0) {
@@ -118,16 +144,22 @@ export async function listOptInCandidates(
     );
   }
 
+  if (opts.jobId) {
+    candidates.sort((a, b) => b.matchScore - a.matchScore);
+  }
+
   return candidates;
 }
 
 // Send outreach from a recruiter to a seeker — verifies the seeker has
 // opted in before inserting, so the API cannot be abused by posting
-// arbitrary seeker IDs directly.
+// arbitrary seeker IDs directly. jobId is optional: general outreach (no
+// job) vs an invite to apply to a specific posted job.
 export async function sendOutreach(
   recruiterId: string,
   seekerId: string,
-  message: string
+  message: string,
+  jobId: string | null = null
 ): Promise<CandidateOutreach> {
   const supabase = getAdminClient();
 
@@ -144,7 +176,7 @@ export async function sendOutreach(
 
   const { data, error } = await supabase
     .from('candidate_outreach')
-    .insert({ recruiter_id: recruiterId, seeker_id: seekerId, message })
+    .insert({ recruiter_id: recruiterId, seeker_id: seekerId, message, job_id: jobId })
     .select('*')
     .single();
 
@@ -180,7 +212,7 @@ export async function listRecruiterOutreach(
 
   const { data, error } = await supabase
     .from('candidate_outreach')
-    .select('*, job_seekers(name, email, headline)')
+    .select('*, job_seekers(name, email, headline), jobs(title)')
     .eq('recruiter_id', recruiterId)
     .order('created_at', { ascending: false });
 
@@ -202,12 +234,14 @@ export async function listRecruiterOutreach(
 
   return (data ?? []).map((row) => {
     const seeker = row.job_seekers as Record<string, unknown> | null;
+    const job = row.jobs as Record<string, unknown> | null;
     return {
       ...rowToOutreach(row),
       seekerName: (seeker?.name as string) || null,
       seekerEmail: (seeker?.email as string) ?? '',
       seekerHeadline: (seeker?.headline as string) || null,
       seekerSkills: resumeMap.get(row.seeker_id as string) ?? [],
+      jobTitle: (job?.title as string) || null,
     };
   });
 }
@@ -293,6 +327,7 @@ function rowToOutreach(row: Record<string, unknown>): CandidateOutreach {
     id: row.id as string,
     recruiterId: row.recruiter_id as string,
     seekerId: row.seeker_id as string,
+    jobId: (row.job_id as string) || null,
     message: row.message as string,
     status: row.status as CandidateOutreach['status'],
     createdAt: row.created_at as string,

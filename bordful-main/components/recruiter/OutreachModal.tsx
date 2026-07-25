@@ -12,11 +12,15 @@ export function OutreachModal({
   onClose,
   onSent,
   dailyRemaining,
+  jobId,
+  jobTitle,
 }: {
   candidate: OptInCandidate;
   onClose: () => void;
   onSent: (seekerId: string, remaining: number) => void;
   dailyRemaining: number;
+  jobId?: string;
+  jobTitle?: string;
 }) {
   const [message, setMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -38,6 +42,7 @@ export function OutreachModal({
           seekerId: candidate.seekerId,
           seekerEmail: candidate.email,
           message: message.trim(),
+          jobId: jobId ?? null,
         }),
       });
       const result = await res.json();
@@ -83,8 +88,9 @@ export function OutreachModal({
         onClick={(e) => e.stopPropagation()}
       >
         <h2 className="font-semibold text-lg text-zinc-900 dark:text-zinc-50">
-          Message {displayName}
+          {jobTitle ? `Invite ${displayName} to apply` : `Message ${displayName}`}
         </h2>
+        {jobTitle && <p className="mt-0.5 text-sm text-zinc-500 dark:text-zinc-400">{jobTitle}</p>}
         {candidate.headline && (
           <p className="mt-0.5 text-sm text-zinc-500 dark:text-zinc-400">{candidate.headline}</p>
         )}

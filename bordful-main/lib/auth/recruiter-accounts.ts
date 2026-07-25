@@ -3,6 +3,7 @@ import 'server-only';
 import { randomBytes, createHash } from 'node:crypto';
 import bcrypt from 'bcryptjs';
 import { createClient } from '@supabase/supabase-js';
+import { deriveLogoUrl } from '@/lib/utils/website-logo';
 
 const BCRYPT_COST_FACTOR = 12;
 const MIN_PASSWORD_LENGTH = 8;
@@ -17,6 +18,11 @@ export type RecruiterAccount = {
   linkedinUrl: string | null;
   bio: string | null;
   isVerified: boolean;
+  website: string | null;
+  logoUrl: string | null;
+  industry: string | null;
+  companySize: string | null;
+  location: string | null;
 };
 
 export class RecruiterAuthError extends Error {
@@ -57,6 +63,11 @@ function rowToRecruiterAccount(row: Record<string, unknown>): RecruiterAccount {
     linkedinUrl: (row.linkedin_url as string) || null,
     bio: (row.bio as string) || null,
     isVerified: Boolean(row.is_verified),
+    website: (row.website as string) || null,
+    logoUrl: (row.logo_url as string) || null,
+    industry: (row.industry as string) || null,
+    companySize: (row.company_size as string) || null,
+    location: (row.location as string) || null,
   };
 }
 
@@ -154,6 +165,11 @@ export async function updateRecruiterProfile(
     specialties?: string[];
     linkedinUrl?: string | null;
     bio?: string | null;
+    website?: string | null;
+    industry?: string | null;
+    companySize?: string | null;
+    location?: string | null;
+    logoUrl?: string | null;
   }
 ): Promise<RecruiterAccount> {
   const supabase = getAdminClient();
@@ -163,6 +179,16 @@ export async function updateRecruiterProfile(
   if (input.specialties !== undefined) patch.specialties = input.specialties;
   if (input.linkedinUrl !== undefined) patch.linkedin_url = input.linkedinUrl?.trim() || null;
   if (input.bio !== undefined) patch.bio = input.bio?.trim() || null;
+  if (input.website !== undefined) patch.website = input.website?.trim() || null;
+  if (input.industry !== undefined) patch.industry = input.industry?.trim() || null;
+  if (input.companySize !== undefined) patch.company_size = input.companySize?.trim() || null;
+  if (input.location !== undefined) patch.location = input.location?.trim() || null;
+  // Auto-derive the logo from the website unless the caller explicitly overrides it.
+  if (input.logoUrl !== undefined) {
+    patch.logo_url = input.logoUrl?.trim() || null;
+  } else if (input.website !== undefined) {
+    patch.logo_url = deriveLogoUrl(input.website);
+  }
 
   const { data, error } = await supabase
     .from('recruiter_accounts')

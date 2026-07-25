@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { createJob, listOwnerJobs } from '@/lib/jobs/employer-job-actions';
 import { parseJobInput } from '@/lib/jobs/parse-job-input';
-import { getEmployerById } from '@/lib/auth/employers';
+import { getRecruiterAccountById } from '@/lib/auth/recruiter-accounts';
 import { createRateLimiter, getClientIp } from '@/lib/utils/rate-limit';
 
 export const dynamic = 'force-dynamic';
@@ -11,17 +11,17 @@ const isRateLimited = createRateLimiter(10);
 
 export async function GET() {
   const session = await auth();
-  if (!session?.user || session.user.role !== 'employer') {
+  if (!session?.user || session.user.role !== 'recruiter') {
     return NextResponse.json({ error: 'Not signed in.' }, { status: 401 });
   }
 
-  const jobs = await listOwnerJobs({ employerId: session.user.id });
+  const jobs = await listOwnerJobs({ recruiterId: session.user.id });
   return NextResponse.json({ jobs });
 }
 
 export async function POST(request: Request) {
   const session = await auth();
-  if (!session?.user || session.user.role !== 'employer') {
+  if (!session?.user || session.user.role !== 'recruiter') {
     return NextResponse.json({ error: 'Not signed in.' }, { status: 401 });
   }
 
@@ -39,16 +39,17 @@ export async function POST(request: Request) {
     );
   }
 
-  const employer = await getEmployerById(session.user.id);
-  if (!employer?.companyName) {
+  const recruiter = await getRecruiterAccountById(session.user.id);
+  const companyName = recruiter?.agency || recruiter?.name;
+  if (!companyName) {
     return NextResponse.json(
-      { error: 'Add your company name in your profile before posting a job.' },
+      { error: 'Add your agency or name in your profile before posting a job.' },
       { status: 400 }
     );
   }
 
   try {
-    const job = await createJob({ employerId: session.user.id }, employer.companyName, input);
+    const job = await createJob({ recruiterId: session.user.id }, companyName, input);
     return NextResponse.json({ job });
   } catch (error) {
     const msg = error instanceof Error ? error.message : 'Failed to create job.';

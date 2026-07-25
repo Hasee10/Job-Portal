@@ -12,17 +12,17 @@ export const metadata: Metadata = {
 
 export const dynamic = 'force-dynamic';
 
-export default async function EditJobPage({
+export default async function EditRecruiterJobPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
   const session = await auth();
-  if (!session?.user) redirect('/sign-in?callbackUrl=/dashboard/jobs');
-  if (session.user.role !== 'employer') redirect('/');
+  if (!session?.user) redirect('/recruiter/sign-in?callbackUrl=/recruiter/jobs');
+  if (session.user.role !== 'recruiter') redirect('/');
 
   const { id } = await params;
-  const job = await getOwnerJob({ employerId: session.user.id }, id);
+  const job = await getOwnerJob({ recruiterId: session.user.id }, id);
   if (!job) notFound();
 
   return (
@@ -32,7 +32,7 @@ export default async function EditJobPage({
           <h1 className="font-bold text-2xl text-zinc-900 dark:text-zinc-50">Edit job</h1>
           <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">{job.title}</p>
           <div className="mt-8">
-            <JobPostForm job={job} />
+            <JobPostForm apiBasePath="/api/recruiter/jobs" job={job} jobsListPath="/recruiter/jobs" />
           </div>
         </div>
       </div>

@@ -14,7 +14,13 @@ const STATUS_STYLES: Record<ApplicationStatus, string> = {
   hired: 'bg-purple-50 text-purple-700 dark:bg-purple-500/10 dark:text-purple-400',
 };
 
-export function ApplicationCard({ application: initial }: { application: ApplicationWithSeeker }) {
+export function ApplicationCard({
+  application: initial,
+  apiBasePath = '/api/employer/applications',
+}: {
+  application: ApplicationWithSeeker;
+  apiBasePath?: string;
+}) {
   const [application, setApplication] = useState(initial);
   const [isUpdating, setIsUpdating] = useState(false);
   const { toast } = useToast();
@@ -23,7 +29,7 @@ export function ApplicationCard({ application: initial }: { application: Applica
   const setStatus = async (status: ApplicationStatus) => {
     setIsUpdating(true);
     try {
-      const res = await fetch(`/api/employer/applications/${application.id}`, {
+      const res = await fetch(`${apiBasePath}/${application.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status }),

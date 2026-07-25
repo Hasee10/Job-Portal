@@ -15,20 +15,20 @@ export const metadata: Metadata = {
 
 export const dynamic = 'force-dynamic';
 
-export default async function JobApplicationsPage({
+export default async function RecruiterJobApplicationsPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
   const session = await auth();
-  if (!session?.user) redirect('/sign-in?callbackUrl=/dashboard/jobs');
-  if (session.user.role !== 'employer') redirect('/');
+  if (!session?.user) redirect('/recruiter/sign-in?callbackUrl=/recruiter/jobs');
+  if (session.user.role !== 'recruiter') redirect('/');
 
   const { id } = await params;
-  const job = await getOwnerJob({ employerId: session.user.id }, id);
+  const job = await getOwnerJob({ recruiterId: session.user.id }, id);
   if (!job) notFound();
 
-  const applications = await listJobApplications({ employerId: session.user.id }, id);
+  const applications = await listJobApplications({ recruiterId: session.user.id }, id);
   const shortlisted = applications.filter((a) => a.status === 'shortlisted' || a.status === 'hired');
   const others = applications.filter((a) => a.status !== 'shortlisted' && a.status !== 'hired');
 
@@ -38,7 +38,7 @@ export default async function JobApplicationsPage({
         <div className="mx-auto max-w-3xl">
           <Link
             className="inline-flex items-center gap-1 text-sm text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200"
-            href="/dashboard/jobs"
+            href="/recruiter/jobs"
           >
             <ArrowLeft className="h-4 w-4" />
             My jobs
@@ -66,7 +66,7 @@ export default async function JobApplicationsPage({
                   </h2>
                   <div className="mt-3 space-y-3">
                     {shortlisted.map((app) => (
-                      <ApplicationCard application={app} key={app.id} />
+                      <ApplicationCard apiBasePath="/api/recruiter/applications" application={app} key={app.id} />
                     ))}
                   </div>
                 </div>
@@ -78,7 +78,7 @@ export default async function JobApplicationsPage({
                   </h2>
                   <div className="mt-3 space-y-3">
                     {others.map((app) => (
-                      <ApplicationCard application={app} key={app.id} />
+                      <ApplicationCard apiBasePath="/api/recruiter/applications" application={app} key={app.id} />
                     ))}
                   </div>
                 </div>

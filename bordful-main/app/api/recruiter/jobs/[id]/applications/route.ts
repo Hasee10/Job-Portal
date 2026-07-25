@@ -9,11 +9,11 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await auth();
-  if (!session?.user || session.user.role !== 'employer') {
+  if (!session?.user || session.user.role !== 'recruiter') {
     return NextResponse.json({ error: 'Not signed in.' }, { status: 401 });
   }
 
   const { id } = await params;
-  const applications = await listJobApplications({ employerId: session.user.id }, id);
+  const applications = await listJobApplications({ recruiterId: session.user.id }, id);
   return NextResponse.json({ applications });
 }

@@ -3,12 +3,12 @@ import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
 import { auth } from '@/auth';
-import { EmployerCandidateSearch } from '@/components/employer/EmployerCandidateSearch';
+import { CandidateSearch } from '@/components/recruiter/CandidateSearch';
 import { getOwnerJob } from '@/lib/jobs/employer-job-actions';
 import {
-  getEmployerDailyInviteCount,
-  searchCandidatesForJob,
-} from '@/lib/jobs/employer-candidate-actions';
+  getRecruiterDailyOutreachCount,
+  listOptInCandidates,
+} from '@/lib/jobs/candidate-outreach-actions';
 import config from '@/config';
 
 export const metadata: Metadata = {
@@ -18,22 +18,22 @@ export const metadata: Metadata = {
 
 export const dynamic = 'force-dynamic';
 
-export default async function JobCandidatesPage({
+export default async function RecruiterJobCandidatesPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
   const session = await auth();
-  if (!session?.user) redirect('/sign-in?callbackUrl=/dashboard/jobs');
-  if (session.user.role !== 'employer') redirect('/');
+  if (!session?.user) redirect('/recruiter/sign-in?callbackUrl=/recruiter/jobs');
+  if (session.user.role !== 'recruiter') redirect('/');
 
   const { id } = await params;
-  const job = await getOwnerJob({ employerId: session.user.id }, id);
+  const job = await getOwnerJob({ recruiterId: session.user.id }, id);
   if (!job) notFound();
 
   const [candidates, dailyCount] = await Promise.all([
-    searchCandidatesForJob(session.user.id, id),
-    getEmployerDailyInviteCount(session.user.id),
+    listOptInCandidates(session.user.id, { jobId: id }),
+    getRecruiterDailyOutreachCount(session.user.id),
   ]);
   const dailyRemaining = Math.max(0, 20 - dailyCount);
 
@@ -43,7 +43,7 @@ export default async function JobCandidatesPage({
         <div className="mx-auto max-w-5xl">
           <Link
             className="inline-flex items-center gap-1 text-sm text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200"
-            href="/dashboard/jobs"
+            href="/recruiter/jobs"
           >
             <ArrowLeft className="h-4 w-4" />
             My jobs
@@ -57,7 +57,7 @@ export default async function JobCandidatesPage({
           </p>
 
           <div className="mt-8">
-            <EmployerCandidateSearch
+            <CandidateSearch
               initial={candidates}
               initialDailyRemaining={dailyRemaining}
               jobId={id}

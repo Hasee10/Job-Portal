@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import type { CareerLevel, Job } from '@/lib/db/airtable';
-import type { EmployerJob } from '@/lib/jobs/employer-job-actions';
+import type { PostedJob } from '@/lib/jobs/employer-job-actions';
 
 const JOB_TYPES: Job['type'][] = ['Full-time', 'Part-time', 'Contract', 'Freelance'];
 const WORKPLACE_TYPES = ['On-site', 'Hybrid', 'Remote', 'Not specified'] as const;
@@ -21,7 +21,15 @@ const CAREER_LEVELS: CareerLevel[] = [
 const selectClass =
   'flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2';
 
-export function JobPostForm({ job }: { job?: EmployerJob }) {
+export function JobPostForm({
+  job,
+  apiBasePath = '/api/employer/jobs',
+  jobsListPath = '/dashboard/jobs',
+}: {
+  job?: PostedJob;
+  apiBasePath?: string;
+  jobsListPath?: string;
+}) {
   const router = useRouter();
   const { toast } = useToast();
   const isEditing = Boolean(job);
@@ -95,7 +103,7 @@ export function JobPostForm({ job }: { job?: EmployerJob }) {
     };
 
     try {
-      const res = await fetch(isEditing ? `/api/employer/jobs/${job!.id}` : '/api/employer/jobs', {
+      const res = await fetch(isEditing ? `${apiBasePath}/${job!.id}` : apiBasePath, {
         method: isEditing ? 'PATCH' : 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -104,7 +112,7 @@ export function JobPostForm({ job }: { job?: EmployerJob }) {
       if (!res.ok) throw new Error(data.error || 'Failed to save job.');
 
       toast({ title: isEditing ? 'Job updated' : 'Job posted' });
-      router.push('/dashboard/jobs');
+      router.push(jobsListPath);
       router.refresh();
     } catch (err) {
       toast({

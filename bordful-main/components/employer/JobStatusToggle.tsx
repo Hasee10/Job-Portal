@@ -5,7 +5,15 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 
-export function JobStatusToggle({ jobId, isActive }: { jobId: string; isActive: boolean }) {
+export function JobStatusToggle({
+  jobId,
+  isActive,
+  apiBasePath = '/api/employer/jobs',
+}: {
+  jobId: string;
+  isActive: boolean;
+  apiBasePath?: string;
+}) {
   const router = useRouter();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -13,7 +21,7 @@ export function JobStatusToggle({ jobId, isActive }: { jobId: string; isActive: 
   const handleToggle = async () => {
     setIsSubmitting(true);
     try {
-      const res = await fetch(`/api/employer/jobs/${jobId}`, {
+      const res = await fetch(`${apiBasePath}/${jobId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: isActive ? 'close' : 'reopen' }),

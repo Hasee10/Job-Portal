@@ -11,7 +11,7 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await auth();
-  if (!session?.user || session.user.role !== 'employer') {
+  if (!session?.user || session.user.role !== 'recruiter') {
     return NextResponse.json({ error: 'Not signed in.' }, { status: 401 });
   }
 
@@ -23,7 +23,7 @@ export async function PATCH(
   }
 
   try {
-    const application = await updateApplicationStatus({ employerId: session.user.id }, id, status);
+    const application = await updateApplicationStatus({ recruiterId: session.user.id }, id, status);
     return NextResponse.json({ application });
   } catch (error) {
     const msg = error instanceof Error ? error.message : 'Failed to update application.';

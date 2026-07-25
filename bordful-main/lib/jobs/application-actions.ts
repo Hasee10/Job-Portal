@@ -2,6 +2,7 @@ import 'server-only';
 
 import { createClient } from '@supabase/supabase-js';
 import type { ResumeContent } from '@/lib/jobs/resume-actions';
+import type { JobOwner } from '@/lib/jobs/employer-job-actions';
 
 export type ApplicationStatus = 'new' | 'reviewed' | 'shortlisted' | 'rejected' | 'hired';
 
@@ -106,18 +107,20 @@ export async function submitApplication(
 }
 
 export async function listJobApplications(
-  employerId: string,
+  owner: JobOwner,
   jobId: string
 ): Promise<ApplicationWithSeeker[]> {
   const supabase = getAdminClient();
+  const ownerColumn = owner.employerId !== undefined ? 'employer_id' : 'recruiter_id';
+  const ownerIdValue = owner.employerId ?? (owner.recruiterId as string);
 
-  // Scope to the employer's own job - a stray jobId for someone else's
+  // Scope to the owner's own job - a stray jobId for someone else's
   // listing returns nothing rather than leaking applicant data.
   const { data: job } = await supabase
     .from('jobs')
     .select('id')
     .eq('id', jobId)
-    .eq('employer_id', employerId)
+    .eq(ownerColumn, ownerIdValue)
     .maybeSingle();
   if (!job) return [];
 
@@ -140,19 +143,21 @@ export async function listJobApplications(
 }
 
 export async function updateApplicationStatus(
-  employerId: string,
+  owner: JobOwner,
   applicationId: string,
   status: ApplicationStatus
 ): Promise<JobApplication> {
   const supabase = getAdminClient();
+  const ownerColumn = owner.employerId !== undefined ? 'employer_id' : 'recruiter_id';
+  const ownerIdValue = owner.employerId ?? (owner.recruiterId as string);
 
-  // Verify the application belongs to one of this employer's jobs before
+  // Verify the application belongs to one of this owner's jobs before
   // allowing the status change.
   const { data: application } = await supabase
     .from('job_applications')
-    .select('id, job_id, jobs!inner(employer_id)')
+    .select(`id, job_id, jobs!inner(${ownerColumn})`)
     .eq('id', applicationId)
-    .eq('jobs.employer_id', employerId)
+    .eq(`jobs.${ownerColumn}`, ownerIdValue)
     .maybeSingle();
 
   if (!application) throw new Error('Application not found.');
