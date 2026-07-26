@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import { auth } from '@/auth';
 import { HomePage } from '@/components/home/HomePage';
+import { HowItWorksSection } from '@/components/home/HowItWorksSection';
+import { MarketIntelBanner } from '@/components/home/MarketIntelBanner';
 import { TrustSection } from '@/components/home/TrustSection';
 import config from '@/config';
 import { HOMEPAGE_JOBS_LIMIT } from '@/lib/constants/defaults';
@@ -62,12 +64,26 @@ export default async function Home() {
     .slice(0, 50)
     .map(([company]) => company);
 
+  // Real fallback for the testimonials slot when there are no testimonials
+  // yet, instead of an apologetic placeholder - recently posted roles,
+  // which the board always has.
+  const recentlyPostedJobs = [...allJobs]
+    .sort(
+      (a, b) =>
+        new Date(b.posted_date).getTime() - new Date(a.posted_date).getTime()
+    )
+    .slice(0, 6)
+    .map((job) => ({ title: job.title, company: job.company }));
+
   return (
     <>
       <HomePage initialJobs={jobs} isSeeker={isSeeker} totalActiveJobs={totalActiveJobs} />
+      <MarketIntelBanner />
+      <HowItWorksSection />
       <TrustSection
         companiesHiringCount={companiesHiringCount}
         featuredCompanies={featuredCompanies}
+        recentlyPostedJobs={recentlyPostedJobs}
         testimonials={testimonials}
         totalActiveJobs={totalActiveJobs}
       />

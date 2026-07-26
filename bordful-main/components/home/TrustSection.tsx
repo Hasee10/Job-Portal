@@ -7,11 +7,13 @@ export async function TrustSection({
   companiesHiringCount,
   totalActiveJobs,
   featuredCompanies,
+  recentlyPostedJobs,
 }: {
   testimonials: Testimonial[];
   companiesHiringCount: number;
   totalActiveJobs: number;
   featuredCompanies: string[];
+  recentlyPostedJobs: { title: string; company: string }[];
 }) {
   // Resolves real logos for as many of the real companies above as
   // Logo.dev has - anything that doesn't resolve (smaller/regional firms,
@@ -55,15 +57,26 @@ export async function TrustSection({
         )}
 
         {testimonials.length === 0 ? (
-          <div className="mx-auto mt-8 max-w-md rounded-lg border border-dashed p-6 text-center">
-            <p className="font-medium text-sm">
-              We&apos;re collecting stories from job seekers who found their
-              role here.
-            </p>
-            <p className="mt-1 text-xs text-muted-foreground">
-              Check back soon.
-            </p>
-          </div>
+          recentlyPostedJobs.length > 0 && (
+            <div className="mx-auto mt-8 max-w-4xl">
+              <p className="text-center font-medium text-muted-foreground text-xs uppercase tracking-wider">
+                Recently posted
+              </p>
+              <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                {recentlyPostedJobs.map((job, i) => (
+                  <div
+                    className="rounded-lg border bg-background p-4"
+                    key={`${job.title}-${job.company}-${i}`}
+                  >
+                    <p className="truncate font-medium text-sm">{job.title}</p>
+                    <p className="mt-0.5 truncate text-muted-foreground text-xs">
+                      {job.company}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )
         ) : (
           <div className="mx-auto mt-8 grid max-w-4xl gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {testimonials.map((testimonial) => (

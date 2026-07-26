@@ -804,6 +804,7 @@ export const config = {
           { label: 'Job Alerts', link: '/job-alerts' },
         ],
       },
+      { label: 'Market Intel', link: '/intel' },
       {
         label: 'Resources',
         link: '/guides',
@@ -881,9 +882,18 @@ export const config = {
         ],
       },
       {
-        id: 'legal',
+        id: 'market-intel',
         show: true,
         order: 4,
+        title: 'Market Intel',
+        links: [
+          { label: 'Overview', link: '/intel' },
+        ],
+      },
+      {
+        id: 'legal',
+        show: true,
+        order: 5,
         title: 'Legal',
         links: [
           {
