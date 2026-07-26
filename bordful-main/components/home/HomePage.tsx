@@ -6,6 +6,7 @@ import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import { JobCard } from '@/components/jobs/JobCard';
 import { SaveSearchButton } from '@/components/jobs/SaveSearchButton';
 import { useSeekerJobState } from '@/components/jobs/SeekerJobStateContext';
+import { GuestHero } from '@/components/home/GuestHero';
 import { HeroSection } from '@/components/ui/hero-section';
 import {
   JobFilters,
@@ -455,20 +456,22 @@ function HomePageContent({
   if (!isSeeker) {
     return (
       <main className="bg-background">
-        <HeroSection
+        <GuestHero
           badge={config.badge}
+          companiesHiringCount={companiesHiringCountProp}
           description={config.description}
           title={config.title}
+          totalActiveJobs={totalActiveJobs}
         >
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+          <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
             <a
-              className="inline-flex items-center justify-center rounded-md bg-primary px-5 py-2.5 font-medium text-primary-foreground text-sm transition-opacity hover:opacity-90"
+              className="inline-flex items-center justify-center rounded-md bg-white px-5 py-2.5 font-medium text-primary text-sm transition-opacity hover:opacity-90"
               href="/account/sign-in?intent=signup"
             >
               Sign up to browse jobs
             </a>
             <a
-              className="inline-flex items-center justify-center rounded-md border border-zinc-300 bg-background px-5 py-2.5 font-medium text-sm transition-colors hover:bg-accent dark:border-zinc-600"
+              className="inline-flex items-center justify-center rounded-md border border-white/30 px-5 py-2.5 font-medium text-sm text-white transition-colors hover:bg-white/10"
               href="/account/sign-in"
             >
               Sign in
@@ -476,40 +479,10 @@ function HomePageContent({
           </div>
           {/* Risk-reversal micro-copy right under the CTA - reduces
               signup friction anxiety (free, no card, fast). */}
-          <p
-            className="mt-3 text-xs opacity-75"
-            style={{ color: config.ui?.heroStatsColor || 'inherit' }}
-          >
+          <p className="mt-3 text-white/70 text-xs">
             Free forever · No credit card · Takes under a minute
           </p>
-
-          {/* Immediate scale/credibility, right at the decision point
-              instead of buried further down the page - same "big numbers
-              build trust fast" pattern LinkedIn/Indeed lead with. */}
-          <div
-            className="mt-6 flex max-w-[480px] gap-6 text-muted-foreground text-xs"
-            style={{ color: config.ui.heroStatsColor || undefined }}
-          >
-            <div>
-              <div
-                className="font-medium text-foreground"
-                style={{ color: config.ui.heroStatsColor || undefined }}
-              >
-                Open Jobs
-              </div>
-              <span>{totalActiveJobs.toLocaleString()}</span>
-            </div>
-            <div>
-              <div
-                className="font-medium text-foreground"
-                style={{ color: config.ui.heroStatsColor || undefined }}
-              >
-                Companies Hiring
-              </div>
-              <span>{companiesHiringCountProp.toLocaleString()}</span>
-            </div>
-          </div>
-        </HeroSection>
+        </GuestHero>
 
         {/* Curiosity-gap preview: proves there's a real, sizable catalog
             behind the login without exposing a single real listing -
