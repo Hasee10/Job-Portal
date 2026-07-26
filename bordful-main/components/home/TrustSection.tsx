@@ -8,12 +8,14 @@ export async function TrustSection({
   totalActiveJobs,
   featuredCompanies,
   recentlyPostedJobs,
+  isSeeker,
 }: {
   testimonials: Testimonial[];
   companiesHiringCount: number;
   totalActiveJobs: number;
   featuredCompanies: string[];
   recentlyPostedJobs: { title: string; company: string }[];
+  isSeeker: boolean;
 }) {
   // Resolves real logos for as many of the real companies above as
   // Logo.dev has - anything that doesn't resolve (smaller/regional firms,
@@ -57,7 +59,7 @@ export async function TrustSection({
         )}
 
         {testimonials.length === 0 ? (
-          recentlyPostedJobs.length > 0 && (
+          isSeeker && recentlyPostedJobs.length > 0 && (
             <div className="mx-auto mt-8 max-w-4xl">
               <p className="text-center font-medium text-muted-foreground text-xs uppercase tracking-wider">
                 Recently posted

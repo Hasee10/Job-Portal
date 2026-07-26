@@ -83,6 +83,7 @@ export default async function Home() {
       <TrustSection
         companiesHiringCount={companiesHiringCount}
         featuredCompanies={featuredCompanies}
+        isSeeker={isSeeker}
         recentlyPostedJobs={recentlyPostedJobs}
         testimonials={testimonials}
         totalActiveJobs={totalActiveJobs}

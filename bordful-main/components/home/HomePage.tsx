@@ -441,6 +441,37 @@ function HomePageContent({
     return new Set(initialJobs.map((job) => job.company)).size;
   }, [initialJobs]);
 
+  // Guests don't get the job feed at all - no search, no stats tied to job
+  // data, no listings, no filters. Just the hero copy and a sign-in/sign-up
+  // prompt. This is a deliberate reversal of the "show listings to guests
+  // for SEO" approach - a product decision, not a bug.
+  if (!isSeeker) {
+    return (
+      <main className="min-h-screen bg-background">
+        <HeroSection
+          badge={config.badge}
+          description={config.description}
+          title={config.title}
+        >
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <a
+              className="inline-flex items-center justify-center rounded-md bg-primary px-5 py-2.5 font-medium text-primary-foreground text-sm transition-opacity hover:opacity-90"
+              href="/account/sign-in?intent=signup"
+            >
+              Sign up to browse jobs
+            </a>
+            <a
+              className="inline-flex items-center justify-center rounded-md border border-zinc-300 bg-background px-5 py-2.5 font-medium text-sm transition-colors hover:bg-accent dark:border-zinc-600"
+              href="/account/sign-in"
+            >
+              Sign in
+            </a>
+          </div>
+        </HeroSection>
+      </main>
+    );
+  }
+
   return (
     <main className="min-h-screen bg-background">
       <HeroSection
