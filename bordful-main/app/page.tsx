@@ -78,12 +78,21 @@ export default async function Home() {
     .slice(0, 6)
     .map((job) => ({ title: job.title, company: job.company }));
 
+  // Real counts per job type, for the guest homepage's "Browse by category"
+  // section - links out to the existing (unaffected) /jobs/type/[type]
+  // pages rather than exposing any listing on the homepage itself.
+  const jobTypeCounts = new Map<string, number>();
+  for (const job of allJobs) {
+    jobTypeCounts.set(job.type, (jobTypeCounts.get(job.type) ?? 0) + 1);
+  }
+
   return (
     <>
       <HomePage
         companiesHiringCount={companiesHiringCount}
         initialJobs={jobs}
         isSeeker={isSeeker}
+        jobTypeCounts={Object.fromEntries(jobTypeCounts)}
         totalActiveJobs={totalActiveJobs}
       />
       <MarketIntelBanner />
