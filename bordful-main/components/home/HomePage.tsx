@@ -2,9 +2,7 @@
 
 import { formatDistanceToNow, isToday } from 'date-fns';
 import { useRouter, useSearchParams } from 'next/navigation';
-import Link from 'next/link';
 import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
-import { Layers, MousePointerClick, ShieldCheck, Sparkles } from 'lucide-react';
 import { JobCard } from '@/components/jobs/JobCard';
 import { SaveSearchButton } from '@/components/jobs/SaveSearchButton';
 import { useSeekerJobState } from '@/components/jobs/SeekerJobStateContext';
@@ -24,29 +22,10 @@ import config from '@/config';
 import type { LanguageCode } from '@/lib/constants/languages';
 import type { CareerLevel, Job } from '@/lib/db/airtable';
 import { normalizeAnnualSalary } from '@/lib/db/airtable';
-import { JOB_TYPE_DISPLAY_NAMES, type JobType } from '@/lib/constants/job-types';
 import { useJobSearch } from '@/lib/hooks/useJobSearch';
 import { usePagination } from '@/lib/hooks/usePagination';
 import { useSortOrder } from '@/lib/hooks/useSortOrder';
 import { filterJobsBySearch } from '@/lib/utils/filter-jobs';
-
-const WHY_JOBLO = [
-  {
-    icon: Sparkles,
-    title: 'AI-powered matching',
-    description: 'We surface roles that fit your skills, not just keywords.',
-  },
-  {
-    icon: MousePointerClick,
-    title: 'Apply in one click',
-    description: 'No re-typing your resume into ten different forms.',
-  },
-  {
-    icon: ShieldCheck,
-    title: 'Verified employers',
-    description: 'Real companies with real, currently-open roles.',
-  },
-] as const;
 
 type Filters = {
   types: string[];
@@ -89,13 +68,11 @@ function HomePageContent({
   initialJobs,
   totalActiveJobs,
   companiesHiringCount: companiesHiringCountProp,
-  jobTypeCounts,
   isSeeker,
 }: {
   initialJobs: Job[];
   totalActiveJobs: number;
   companiesHiringCount: number;
-  jobTypeCounts: Record<string, number>;
   isSeeker: boolean;
 }) {
   const router = useRouter();
@@ -507,60 +484,6 @@ function HomePageContent({
           </p>
         </GuestHero>
 
-        {/* Browse by category - real counts, links to the existing
-            (untouched) /jobs/type/[type] pages rather than exposing any
-            listing here. Very common job-board homepage pattern (Indeed,
-            LinkedIn Jobs both lead with this right after the hero). */}
-        <div className="border-t bg-background py-10">
-          <div className="container mx-auto px-4">
-            <div className="mx-auto max-w-4xl">
-              <div className="flex items-center gap-2">
-                <Layers aria-hidden="true" className="h-4 w-4 text-muted-foreground" />
-                <h2 className="font-semibold text-sm text-muted-foreground uppercase tracking-wider">
-                  Browse by category
-                </h2>
-              </div>
-              <div className="mt-4 flex flex-wrap gap-2">
-                {(Object.keys(JOB_TYPE_DISPLAY_NAMES) as JobType[])
-                  .filter((type) => (jobTypeCounts[type] ?? 0) > 0)
-                  .map((type) => (
-                    <Link
-                      className="inline-flex items-center gap-1.5 rounded-full border border-zinc-200 bg-white px-4 py-2 text-sm transition-colors hover:border-zinc-300 hover:bg-accent dark:border-zinc-800 dark:bg-zinc-900/60"
-                      href={`/jobs/type/${type.toLowerCase()}`}
-                      key={type}
-                    >
-                      <span className="font-medium text-zinc-900 dark:text-zinc-50">
-                        {JOB_TYPE_DISPLAY_NAMES[type]}
-                      </span>
-                      <span className="text-muted-foreground text-xs">
-                        {(jobTypeCounts[type] ?? 0).toLocaleString()}
-                      </span>
-                    </Link>
-                  ))}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Why JobLo - short trust/differentiation triplet, common on
-            modern job-board landing pages (Wellfound, ZipRecruiter) right
-            before asking for the signup click. */}
-        <div className="border-t bg-muted/20 py-10">
-          <div className="container mx-auto px-4">
-            <div className="mx-auto grid max-w-4xl gap-6 sm:grid-cols-3">
-              {WHY_JOBLO.map(({ icon: Icon, title, description }) => (
-                <div className="text-center" key={title}>
-                  <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
-                    <Icon aria-hidden="true" className="h-4 w-4" />
-                  </div>
-                  <p className="mt-2.5 font-semibold text-sm">{title}</p>
-                  <p className="mt-1 text-muted-foreground text-sm">{description}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
         {/* Curiosity-gap preview: proves there's a real, sizable catalog
             behind the login without exposing a single real listing -
             skeleton/placeholder cards only, no job data. The same pattern
@@ -911,13 +834,11 @@ export function HomePage({
   initialJobs,
   totalActiveJobs,
   companiesHiringCount,
-  jobTypeCounts,
   isSeeker,
 }: {
   initialJobs: Job[];
   totalActiveJobs: number;
   companiesHiringCount: number;
-  jobTypeCounts: Record<string, number>;
   isSeeker: boolean;
 }) {
   return (
@@ -926,7 +847,6 @@ export function HomePage({
         companiesHiringCount={companiesHiringCount}
         initialJobs={initialJobs}
         isSeeker={isSeeker}
-        jobTypeCounts={jobTypeCounts}
         totalActiveJobs={totalActiveJobs}
       />
     </Suspense>
