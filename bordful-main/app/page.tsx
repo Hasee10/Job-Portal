@@ -40,7 +40,10 @@ export default async function Home() {
   const isSeeker = session?.user?.role === 'seeker';
 
   const [jobs, totalActiveJobs, allJobs, testimonials] = await Promise.all([
-    getJobs({ limit: HOMEPAGE_JOBS_LIMIT }),
+    // Guests never render a single job card, so there's no reason to ship
+    // the full job payload (titles, descriptions, salaries) down to their
+    // browser at all - not just unrendered, actually absent from the page.
+    isSeeker ? getJobs({ limit: HOMEPAGE_JOBS_LIMIT }) : Promise.resolve([]),
     getActiveJobsCount(),
     getJobs(),
     listPublishedTestimonials(),
@@ -77,7 +80,12 @@ export default async function Home() {
 
   return (
     <>
-      <HomePage initialJobs={jobs} isSeeker={isSeeker} totalActiveJobs={totalActiveJobs} />
+      <HomePage
+        companiesHiringCount={companiesHiringCount}
+        initialJobs={jobs}
+        isSeeker={isSeeker}
+        totalActiveJobs={totalActiveJobs}
+      />
       <MarketIntelBanner />
       <HowItWorksSection />
       <TrustSection

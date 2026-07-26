@@ -66,10 +66,12 @@ const JOB_VIEW_TABS: { value: JobViewTab; label: string }[] = [
 function HomePageContent({
   initialJobs,
   totalActiveJobs,
+  companiesHiringCount: companiesHiringCountProp,
   isSeeker,
 }: {
   initialJobs: Job[];
   totalActiveJobs: number;
+  companiesHiringCount: number;
   isSeeker: boolean;
 }) {
   const router = useRouter();
@@ -445,15 +447,20 @@ function HomePageContent({
   // data, no listings, no filters. Just the hero copy and a sign-in/sign-up
   // prompt. This is a deliberate reversal of the "show listings to guests
   // for SEO" approach - a product decision, not a bug.
+  //
+  // No min-h-screen here (unlike the seeker <main> below) - that class
+  // forces the wrapper to fill the viewport even though this trimmed-down
+  // hero is short, which left a large dead gap before the next section
+  // (MarketIntelBanner/TrustSection, rendered as siblings in app/page.tsx).
   if (!isSeeker) {
     return (
-      <main className="min-h-screen bg-background">
+      <main className="bg-background">
         <HeroSection
           badge={config.badge}
           description={config.description}
           title={config.title}
         >
-          <div className="flex flex-col gap-3 sm:flex-row">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
             <a
               className="inline-flex items-center justify-center rounded-md bg-primary px-5 py-2.5 font-medium text-primary-foreground text-sm transition-opacity hover:opacity-90"
               href="/account/sign-in?intent=signup"
@@ -467,7 +474,77 @@ function HomePageContent({
               Sign in
             </a>
           </div>
+          {/* Risk-reversal micro-copy right under the CTA - reduces
+              signup friction anxiety (free, no card, fast). */}
+          <p
+            className="mt-3 text-xs opacity-75"
+            style={{ color: config.ui?.heroStatsColor || 'inherit' }}
+          >
+            Free forever · No credit card · Takes under a minute
+          </p>
+
+          {/* Immediate scale/credibility, right at the decision point
+              instead of buried further down the page - same "big numbers
+              build trust fast" pattern LinkedIn/Indeed lead with. */}
+          <div
+            className="mt-6 flex max-w-[480px] gap-6 text-muted-foreground text-xs"
+            style={{ color: config.ui.heroStatsColor || undefined }}
+          >
+            <div>
+              <div
+                className="font-medium text-foreground"
+                style={{ color: config.ui.heroStatsColor || undefined }}
+              >
+                Open Jobs
+              </div>
+              <span>{totalActiveJobs.toLocaleString()}</span>
+            </div>
+            <div>
+              <div
+                className="font-medium text-foreground"
+                style={{ color: config.ui.heroStatsColor || undefined }}
+              >
+                Companies Hiring
+              </div>
+              <span>{companiesHiringCountProp.toLocaleString()}</span>
+            </div>
+          </div>
         </HeroSection>
+
+        {/* Curiosity-gap preview: proves there's a real, sizable catalog
+            behind the login without exposing a single real listing -
+            skeleton/placeholder cards only, no job data. The same pattern
+            LinkedIn/Indeed/Glassdoor use for gated content (blurred
+            previews) rather than showing a blank page after the hero. */}
+        <div className="border-t bg-muted/20 py-10">
+          <div className="container mx-auto px-4">
+            <div className="relative mx-auto max-w-4xl">
+              <div
+                aria-hidden="true"
+                className="grid gap-3 opacity-40 blur-[2px] sm:grid-cols-2 lg:grid-cols-3"
+              >
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <div
+                    className="rounded-lg border bg-background p-4"
+                    key={i}
+                  >
+                    <div className="h-3.5 w-3/4 rounded bg-muted-foreground/30" />
+                    <div className="mt-2 h-3 w-1/2 rounded bg-muted-foreground/20" />
+                    <div className="mt-4 h-3 w-full rounded bg-muted-foreground/10" />
+                  </div>
+                ))}
+              </div>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <a
+                  className="inline-flex items-center justify-center rounded-md bg-primary px-5 py-2.5 font-medium text-primary-foreground text-sm shadow-lg transition-opacity hover:opacity-90"
+                  href="/account/sign-in?intent=signup"
+                >
+                  Sign up to unlock {totalActiveJobs.toLocaleString()} open roles
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
       </main>
     );
   }
@@ -783,15 +860,18 @@ function HomePageContent({
 export function HomePage({
   initialJobs,
   totalActiveJobs,
+  companiesHiringCount,
   isSeeker,
 }: {
   initialJobs: Job[];
   totalActiveJobs: number;
+  companiesHiringCount: number;
   isSeeker: boolean;
 }) {
   return (
     <Suspense>
       <HomePageContent
+        companiesHiringCount={companiesHiringCount}
         initialJobs={initialJobs}
         isSeeker={isSeeker}
         totalActiveJobs={totalActiveJobs}
