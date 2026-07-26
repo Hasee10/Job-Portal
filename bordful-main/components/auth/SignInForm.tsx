@@ -10,6 +10,7 @@ import { PasswordInput } from '@/components/ui/password-input';
 import config from '@/config';
 import { useToast } from '@/hooks/use-toast';
 import { resolveColor } from '@/lib/utils/colors';
+import { safeInternalRedirect } from '@/lib/utils/safe-redirect';
 
 export function SignInForm() {
   const [email, setEmail] = useState('');
@@ -42,7 +43,7 @@ export function SignInForm() {
         return;
       }
 
-      const callbackUrl = searchParams.get('callbackUrl') || '/dashboard';
+      const callbackUrl = safeInternalRedirect(searchParams.get('callbackUrl'), '/dashboard');
       router.push(callbackUrl);
       router.refresh();
     } catch {

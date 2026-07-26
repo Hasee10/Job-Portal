@@ -66,16 +66,25 @@ const JOB_VIEW_TABS: { value: JobViewTab; label: string }[] = [
 function HomePageContent({
   initialJobs,
   totalActiveJobs,
+  isSeeker,
 }: {
   initialJobs: Job[];
   totalActiveJobs: number;
+  isSeeker: boolean;
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { searchTerm } = useJobSearch();
   const { sortOrder } = useSortOrder();
   const { page, setPage } = usePagination();
-  const { savedJobIds, applications, isSeeker } = useSeekerJobState();
+  // savedJobIds/applications are still sourced from the client context (they
+  // genuinely need a client fetch), but whether the tab UI exists in the DOM
+  // at all is driven by the server-checked `isSeeker` prop, not this hook's
+  // own session read - useSession() starts in a 'loading' state on first
+  // client render (before its own fetch to /api/auth/session resolves),
+  // which would otherwise cause the tabs to flash in for a guest on every
+  // load before flipping back out.
+  const { savedJobIds, applications } = useSeekerJobState();
   const [activeView, setActiveView] = useState<JobViewTab>('all');
 
   // Parse initial filters from URL
@@ -578,38 +587,40 @@ function HomePageContent({
         <div className="flex flex-col justify-between gap-4 md:flex-row md:gap-6 lg:gap-8">
           {/* Main Content */}
           <div className="order-2 flex-[3] md:order-1">
-            {/* Job View Tabs */}
+            {/* Job View Tabs - Bookmarked/Applied/Not Interested only exist
+                in the DOM for a signed-in seeker. A guest gets a plain
+                "Recent" label, not a tablist that redirects on click - those
+                tabs have no meaning without an account, so they shouldn't be
+                markup a guest's browser ever receives. */}
             <div className="mb-4 flex items-center justify-between gap-2 border-b">
-              <div
-                aria-label="Job view"
-                className="flex gap-1 overflow-x-auto"
-                role="tablist"
-              >
-                {JOB_VIEW_TABS.map((tab) => (
-                  <button
-                    aria-selected={activeView === tab.value}
-                    className={`whitespace-nowrap border-b-2 px-3 py-2 text-sm font-medium transition-colors ${
-                      activeView === tab.value
-                        ? 'border-zinc-900 text-zinc-900 dark:border-zinc-100 dark:text-zinc-100'
-                        : 'border-transparent text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100'
-                    }`}
-                    key={tab.value}
-                    onClick={() => {
-                      if (tab.value !== 'all' && !isSeeker) {
-                        router.push(
-                          `/account/sign-in?callbackUrl=${encodeURIComponent('/')}`
-                        );
-                        return;
-                      }
-                      setActiveView(tab.value);
-                    }}
-                    role="tab"
-                    type="button"
-                  >
-                    {tab.label}
-                  </button>
-                ))}
-              </div>
+              {isSeeker ? (
+                <div
+                  aria-label="Job view"
+                  className="flex gap-1 overflow-x-auto"
+                  role="tablist"
+                >
+                  {JOB_VIEW_TABS.map((tab) => (
+                    <button
+                      aria-selected={activeView === tab.value}
+                      className={`whitespace-nowrap border-b-2 px-3 py-2 text-sm font-medium transition-colors ${
+                        activeView === tab.value
+                          ? 'border-zinc-900 text-zinc-900 dark:border-zinc-100 dark:text-zinc-100'
+                          : 'border-transparent text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100'
+                      }`}
+                      key={tab.value}
+                      onClick={() => setActiveView(tab.value)}
+                      role="tab"
+                      type="button"
+                    >
+                      {tab.label}
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <div className="whitespace-nowrap border-b-2 border-zinc-900 px-3 py-2 text-sm font-medium text-zinc-900 dark:border-zinc-100 dark:text-zinc-100">
+                  Recent
+                </div>
+              )}
               {activeView === 'all' && (
                 <div className="pb-2">
                   <SaveSearchButton
@@ -741,14 +752,17 @@ function HomePageContent({
 export function HomePage({
   initialJobs,
   totalActiveJobs,
+  isSeeker,
 }: {
   initialJobs: Job[];
   totalActiveJobs: number;
+  isSeeker: boolean;
 }) {
   return (
     <Suspense>
       <HomePageContent
         initialJobs={initialJobs}
+        isSeeker={isSeeker}
         totalActiveJobs={totalActiveJobs}
       />
     </Suspense>

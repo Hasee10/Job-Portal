@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { auth } from '@/auth';
 import { HomePage } from '@/components/home/HomePage';
 import { TrustSection } from '@/components/home/TrustSection';
 import config from '@/config';
@@ -25,10 +26,17 @@ export const metadata: Metadata = generateMetadata({
   },
 });
 
-// Revalidate every 5 minutes
-export const revalidate = 300;
+// This page now branches on session (guest vs. signed-in seeker), so it's
+// rendered per-request rather than ISR-cached - a cached HTML response
+// baked from one visitor's auth() result would leak/misrepresent session
+// state to every other visitor served that same cache entry. The previous
+// `revalidate = 300` no longer applies now that auth() reads cookies here.
+export const dynamic = 'force-dynamic';
 
 export default async function Home() {
+  const session = await auth();
+  const isSeeker = session?.user?.role === 'seeker';
+
   const [jobs, totalActiveJobs, allJobs, testimonials] = await Promise.all([
     getJobs({ limit: HOMEPAGE_JOBS_LIMIT }),
     getActiveJobsCount(),
@@ -56,7 +64,7 @@ export default async function Home() {
 
   return (
     <>
-      <HomePage initialJobs={jobs} totalActiveJobs={totalActiveJobs} />
+      <HomePage initialJobs={jobs} isSeeker={isSeeker} totalActiveJobs={totalActiveJobs} />
       <TrustSection
         companiesHiringCount={companiesHiringCount}
         featuredCompanies={featuredCompanies}

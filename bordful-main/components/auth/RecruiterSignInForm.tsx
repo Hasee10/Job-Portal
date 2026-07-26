@@ -10,6 +10,7 @@ import { PasswordInput } from '@/components/ui/password-input';
 import config from '@/config';
 import { useToast } from '@/hooks/use-toast';
 import { resolveColor } from '@/lib/utils/colors';
+import { safeInternalRedirect } from '@/lib/utils/safe-redirect';
 
 export function RecruiterSignInForm() {
   const [email, setEmail] = useState('');
@@ -41,7 +42,7 @@ export function RecruiterSignInForm() {
         return;
       }
 
-      const callbackUrl = searchParams.get('callbackUrl') || '/recruiter/dashboard';
+      const callbackUrl = safeInternalRedirect(searchParams.get('callbackUrl'), '/recruiter/dashboard');
       router.push(callbackUrl);
       router.refresh();
     } catch {
