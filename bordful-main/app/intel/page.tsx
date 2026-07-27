@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { BarChart3, Bell, Download, LayoutGrid, TrendingUp } from 'lucide-react';
+import Link from 'next/link';
 import { WaitlistForm } from '@/components/market-intel/WaitlistForm';
 import config from '@/config';
 
@@ -51,7 +52,21 @@ export default function MarketIntelLandingPage() {
               Pricing, catalog, and positioning intelligence across Pakistan&rsquo;s
               e-commerce marketplaces - built for marketing research.
             </p>
-            <div className="mt-8 flex justify-center">
+            <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+              <Link
+                className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
+                href="/intel/sign-up"
+              >
+                Create free account
+              </Link>
+              <Link
+                className="rounded-lg border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-900"
+                href="/intel/sign-in"
+              >
+                Sign in
+              </Link>
+            </div>
+            <div className="mt-4 flex justify-center">
               <WaitlistForm />
             </div>
           </div>
@@ -84,7 +99,7 @@ export default function MarketIntelLandingPage() {
               <span className="font-semibold text-zinc-900 dark:text-zinc-50">
                 Sources tracked:
               </span>{' '}
-              Daraz.pk (more marketplaces coming soon)
+              PriceOye.pk and Telemart.pk (more marketplaces coming soon)
             </p>
           </div>
 

@@ -4,7 +4,7 @@ declare module 'next-auth' {
   interface Session {
     user: {
       id: string;
-      role?: 'employer' | 'seeker' | 'recruiter';
+      role?: 'employer' | 'seeker' | 'recruiter' | 'market_analyst';
     } & DefaultSession['user'];
   }
 }
@@ -14,6 +14,7 @@ declare module 'next-auth/jwt' {
     employerId?: string;
     seekerId?: string;
     recruiterId?: string;
-    role?: 'employer' | 'seeker' | 'recruiter';
+    marketAccountId?: string;
+    role?: 'employer' | 'seeker' | 'recruiter' | 'market_analyst';
   }
 }
