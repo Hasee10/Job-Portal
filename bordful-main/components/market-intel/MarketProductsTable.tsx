@@ -1,6 +1,7 @@
 'use client';
 
 import { ExternalLink, Star } from 'lucide-react';
+import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import { PaginationControl } from '@/components/ui/pagination-control';
 import { usePagination } from '@/lib/hooks/usePagination';
@@ -186,15 +187,23 @@ export function MarketProductsTable({
                     </button>
                   </td>
                   <td className="px-4 py-2">
-                    <a
-                      className="inline-flex items-center gap-1 font-medium text-zinc-900 hover:underline dark:text-zinc-50"
-                      href={p.url}
-                      rel="noopener noreferrer"
-                      target="_blank"
-                    >
-                      {p.title}
-                      <ExternalLink aria-hidden="true" className="h-3 w-3 shrink-0 text-zinc-400" />
-                    </a>
+                    <div className="inline-flex items-center gap-1.5">
+                      <Link
+                        className="font-medium text-zinc-900 hover:underline dark:text-zinc-50"
+                        href={`/intel/products/${p.id}`}
+                      >
+                        {p.title}
+                      </Link>
+                      <a
+                        aria-label="View original listing"
+                        className="text-zinc-400 transition-colors hover:text-zinc-600 dark:hover:text-zinc-300"
+                        href={p.url}
+                        rel="noopener noreferrer"
+                        target="_blank"
+                      >
+                        <ExternalLink aria-hidden="true" className="h-3 w-3 shrink-0" />
+                      </a>
+                    </div>
                     {p.brand && <p className="text-xs text-zinc-500 dark:text-zinc-400">{p.brand}</p>}
                   </td>
                   <td className="px-4 py-2 capitalize text-zinc-600 dark:text-zinc-400">{p.platformSlug}</td>
