@@ -4,6 +4,16 @@ This is a snapshot of everything built for Market Intel (Pakistani e-commerce
 price/catalog tracking), extracted out of the `job-portal` repo on 2026-07-27
 so it can become its own product instead of a feature bolted onto JobLo.
 
+**Who it's for**: e-commerce sellers, not generic "market analysts" — the
+whole point of scraping priceoye/telemart/shophive/ishopping/goto/
+sapphireonline/OLX was to give sellers competitive pricing/catalog
+intelligence on what else is out there. This should drive framing, copy, and
+feature priority in the eventual standalone build (e.g. price-position
+alerts and competitor tracking matter more than generic market reporting).
+The existing account/role naming (`market_analyst`, `market_accounts`) predates
+this clarification and doesn't reflect it — worth renaming when this becomes
+a real standalone app rather than carrying it forward as-is.
+
 **This does not run as-is.** It's an archive of source files, not a scaffolded
 standalone app — see "What's missing to run standalone" below.
 
