@@ -6,6 +6,7 @@
   "type": "module",
   "scripts": {
     "start": "tsx src/run.ts",
+    "match-products": "tsx src/match-products.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

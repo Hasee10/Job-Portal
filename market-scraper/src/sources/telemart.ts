@@ -48,6 +48,7 @@ async function scrapeCollection(collectionHandle: string): Promise<RawProduct[]>
         brand: p.vendor || undefined,
         url: `https://telemart.pk/products/${p.handle}`,
         imageUrl: p.images?.[0]?.src,
+        galleryUrls: p.images && p.images.length > 1 ? p.images.map((img) => img.src) : undefined,
         currency: 'PKR',
         price: cheapest ? Number(cheapest.price) : undefined,
         compareAtPrice: cheapest?.compare_at_price ? Number(cheapest.compare_at_price) : undefined,

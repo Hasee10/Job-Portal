@@ -5,6 +5,7 @@ export interface RawProduct {
   brand?: string;
   url: string;
   imageUrl?: string;
+  galleryUrls?: string[];
   currency?: string;
   price?: number;
   compareAtPrice?: number;

@@ -11,6 +11,7 @@ export type MarketProduct = {
   brand: string | null;
   url: string;
   imageUrl: string | null;
+  galleryUrls: string[] | null;
   currency: string;
   price: number | null;
   compareAtPrice: number | null;
@@ -28,7 +29,7 @@ export type PricePoint = {
 };
 
 const PRODUCT_COLUMNS =
-  'id, platform_id, category_slug, title, brand, url, image_url, currency, price, compare_at_price, in_stock, rating, rating_count, last_seen_at';
+  'id, platform_id, category_slug, title, brand, url, image_url, gallery_urls, currency, price, compare_at_price, in_stock, rating, rating_count, last_seen_at';
 
 function getAdminClient() {
   const url = process.env.SUPABASE_URL;
@@ -59,6 +60,7 @@ function mapProductRow(
     brand: (row.brand as string) ?? null,
     url: row.url as string,
     imageUrl: (row.image_url as string) ?? null,
+    galleryUrls: (row.gallery_urls as string[]) ?? null,
     currency: row.currency as string,
     price: (row.price as number) ?? null,
     compareAtPrice: (row.compare_at_price as number) ?? null,
@@ -163,4 +165,36 @@ export async function getSimilarProducts(product: MarketProduct): Promise<Market
   if (error) throw error;
 
   return (rows ?? []).map((row) => mapProductRow(row, platformById));
+}
+
+// market_product_matches stores each cross-platform pair once with a
+// canonical (lower id, higher id) ordering (see market-scraper/src/matching.ts)
+// - the reference product can land on either side, so check both columns.
+// Mobiles only for v1; other categories simply have no rows.
+export async function getCrossPlatformMatches(product: MarketProduct): Promise<MarketProduct[]> {
+  const supabase = getAdminClient();
+
+  const { data: matchRows, error: matchError } = await supabase
+    .from('market_product_matches')
+    .select('product_a_id, product_b_id, confidence')
+    .or(`product_a_id.eq.${product.id},product_b_id.eq.${product.id}`)
+    .order('confidence', { ascending: false });
+  if (matchError) throw matchError;
+  if (!matchRows?.length) return [];
+
+  const otherIds = matchRows.map((row) =>
+    row.product_a_id === product.id ? row.product_b_id : row.product_a_id
+  );
+
+  const [platformById, { data: rows, error }] = await Promise.all([
+    getPlatformMap(supabase),
+    supabase.from('market_products').select(PRODUCT_COLUMNS).in('id', otherIds).eq('is_active', true),
+  ]);
+  if (error) throw error;
+
+  const byId = new Map((rows ?? []).map((row) => [row.id as string, row]));
+  return otherIds
+    .map((id) => byId.get(id))
+    .filter((row) => Boolean(row))
+    .map((row) => mapProductRow(row as Record<string, unknown>, platformById));
 }

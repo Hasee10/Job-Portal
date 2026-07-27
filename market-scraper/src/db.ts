@@ -66,6 +66,7 @@ export async function saveProducts(platformSlug: string, products: RawProduct[])
       brand: p.brand ?? null,
       url: p.url,
       image_url: p.imageUrl ?? null,
+      gallery_urls: p.galleryUrls ?? null,
       currency: p.currency ?? 'PKR',
       price: p.price ?? null,
       compare_at_price: p.compareAtPrice ?? null,
