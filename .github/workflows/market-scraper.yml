@@ -44,4 +44,5 @@ jobs:
           SHOPHIVE_CATEGORIES: apple/iphone,laptops
           ISHOPPING_CATEGORIES: mobiles,laptops
           GOTO_CATEGORIES: computing-gaming,mens-fashion,womens-fashion
+          SAPPHIREONLINE_CATEGORIES: ready-to-wear,unstitched
         run: npm run start

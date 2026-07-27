@@ -2,11 +2,19 @@ import type { SourceFn } from '../types.js';
 import { scrapeGoto } from './goto.js';
 import { scrapeIshopping } from './ishopping.js';
 import { scrapePriceoye } from './priceoye.js';
+import { scrapeSapphireonline } from './sapphireonline.js';
 import { scrapeShophive } from './shophive.js';
 import { scrapeTelemart } from './telemart.js';
 
-// Plain HTTP sources - no browser automation needed.
-export const HTTP_SOURCES: SourceFn[] = [scrapePriceoye, scrapeTelemart, scrapeShophive];
+// Plain HTTP sources - no browser automation needed. Sapphireonline.pk is
+// Salesforce Commerce Cloud with no bot protection on plain fetch, and is a
+// brand-monitoring source (single brand's own store, not a marketplace).
+export const HTTP_SOURCES: SourceFn[] = [
+  scrapePriceoye,
+  scrapeTelemart,
+  scrapeShophive,
+  scrapeSapphireonline,
+];
 
 // Browser-automation sources (CloakBrowser) - for sites that block plain HTTP
 // or need real TLS/session handling. iShopping.pk sits behind Cloudflare
