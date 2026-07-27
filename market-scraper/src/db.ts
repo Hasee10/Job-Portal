@@ -44,15 +44,20 @@ export async function saveProducts(platformSlug: string, products: RawProduct[])
   if (!products.length) return;
 
   const platformId = await getPlatformId(platformSlug);
-  const now = new Date().toISOString();
+  // Captured before any upsert - anything with last_seen_at still older than
+  // this once the run finishes wasn't touched, i.e. it fell out of the
+  // categories we just scraped (sold out / delisted / moved).
+  const runStartedAt = new Date().toISOString();
 
   const dedupedByKey = new Map<string, RawProduct>();
   for (const p of products) {
     dedupedByKey.set(p.externalId, p);
   }
   const deduped = [...dedupedByKey.values()];
+  const categorySlugs = [...new Set(deduped.map((p) => p.categorySlug).filter((c): c is string => Boolean(c)))];
 
   for (const batch of chunk(deduped, UPSERT_BATCH_SIZE)) {
+    const now = new Date().toISOString();
     const rows = batch.map((p) => ({
       platform_id: platformId,
       external_id: p.externalId,
@@ -67,6 +72,7 @@ export async function saveProducts(platformSlug: string, products: RawProduct[])
       in_stock: p.inStock ?? null,
       rating: p.rating ?? null,
       rating_count: p.ratingCount ?? null,
+      is_active: true,
       last_seen_at: now,
     }));
 
@@ -97,6 +103,33 @@ export async function saveProducts(platformSlug: string, products: RawProduct[])
       throw new Error(`market_price_history insert failed: ${historyRes.status} ${await historyRes.text()}`);
     }
   }
+
+  await markStaleProducts(platformId, categorySlugs, runStartedAt);
+}
+
+/**
+ * Flips is_active to false for any previously-active product in a category
+ * we just scraped, but that didn't show up in this run's results - it fell
+ * out of the listing (sold out, delisted, or moved categories). Scoped to
+ * categorySlugs so we never touch products in categories this run didn't
+ * cover (e.g. a category config change, or a category that errored and
+ * produced zero results - see safeRun in pipeline.ts).
+ */
+async function markStaleProducts(platformId: string, categorySlugs: string[], runStartedAt: string): Promise<void> {
+  if (!categorySlugs.length) return;
+
+  const categoryFilter = categorySlugs.map((c) => encodeURIComponent(c)).join(',');
+  const res = await fetch(
+    `${config.supabaseUrl}/rest/v1/market_products?platform_id=eq.${platformId}&category_slug=in.(${categoryFilter})&last_seen_at=lt.${encodeURIComponent(runStartedAt)}&is_active=eq.true`,
+    {
+      method: 'PATCH',
+      headers: headers({ Prefer: 'return=minimal' }),
+      body: JSON.stringify({ is_active: false }),
+    },
+  );
+  if (!res.ok) {
+    throw new Error(`market_products stale-marking failed: ${res.status} ${await res.text()}`);
+  }
 }
 
 /**
@@ -113,15 +146,18 @@ export async function saveClassifiedListings(
   if (!listings.length) return;
 
   const platformId = await getPlatformId(platformSlug);
-  const now = new Date().toISOString();
+  // See saveProducts' runStartedAt comment - same staleness technique.
+  const runStartedAt = new Date().toISOString();
 
   const dedupedByKey = new Map<string, RawClassifiedListing>();
   for (const l of listings) {
     dedupedByKey.set(l.externalId, l);
   }
   const deduped = [...dedupedByKey.values()];
+  const categorySlugs = [...new Set(deduped.map((l) => l.categorySlug).filter((c): c is string => Boolean(c)))];
 
   for (const batch of chunk(deduped, UPSERT_BATCH_SIZE)) {
+    const now = new Date().toISOString();
     const rows = batch.map((l) => ({
       platform_id: platformId,
       external_id: l.externalId,
@@ -169,5 +205,33 @@ export async function saveClassifiedListings(
         `market_classified_price_history insert failed: ${historyRes.status} ${await historyRes.text()}`,
       );
     }
+  }
+
+  await markStaleClassifiedListings(platformId, categorySlugs, runStartedAt);
+}
+
+/**
+ * Same idea as markStaleProducts - flips status to 'inactive' for listings
+ * in a scraped category that weren't seen this run (sold, taken down, or
+ * expired off OLX).
+ */
+async function markStaleClassifiedListings(
+  platformId: string,
+  categorySlugs: string[],
+  runStartedAt: string,
+): Promise<void> {
+  if (!categorySlugs.length) return;
+
+  const categoryFilter = categorySlugs.map((c) => encodeURIComponent(c)).join(',');
+  const res = await fetch(
+    `${config.supabaseUrl}/rest/v1/market_classified_listings?platform_id=eq.${platformId}&category_slug=in.(${categoryFilter})&last_seen_at=lt.${encodeURIComponent(runStartedAt)}&status=eq.active`,
+    {
+      method: 'PATCH',
+      headers: headers({ Prefer: 'return=minimal' }),
+      body: JSON.stringify({ status: 'inactive' }),
+    },
+  );
+  if (!res.ok) {
+    throw new Error(`market_classified_listings stale-marking failed: ${res.status} ${await res.text()}`);
   }
 }
