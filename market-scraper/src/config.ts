@@ -18,6 +18,7 @@ export const config = {
   telemartCollections: splitList(process.env.TELEMART_COLLECTIONS) as string[],
   shophiveCategories: splitList(process.env.SHOPHIVE_CATEGORIES) as string[],
   ishoppingCategories: splitList(process.env.ISHOPPING_CATEGORIES) as string[],
+  gotoCategories: splitList(process.env.GOTO_CATEGORIES) as string[],
 
   logLevel: process.env.LOG_LEVEL ?? 'info',
 };
