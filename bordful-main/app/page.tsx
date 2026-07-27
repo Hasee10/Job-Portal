@@ -78,12 +78,28 @@ export default async function Home() {
     .slice(0, 6)
     .map((job) => ({ title: job.title, company: job.company }));
 
+  // Real activity numbers for the guest homepage's stats band - computed
+  // server-side here since guests get an empty `jobs` array (see above),
+  // so HomePageContent's own client-side useMemo versions of these (which
+  // run against `initialJobs`) would be 0 for a guest.
+  const now = Date.now();
+  const oneDayAgo = now - 24 * 60 * 60 * 1000;
+  const oneWeekAgo = now - 7 * 24 * 60 * 60 * 1000;
+  const jobsAddedToday = allJobs.filter(
+    (job) => new Date(job.posted_date).getTime() > oneDayAgo
+  ).length;
+  const jobsThisWeek = allJobs.filter(
+    (job) => new Date(job.posted_date).getTime() > oneWeekAgo
+  ).length;
+
   return (
     <>
       <HomePage
         companiesHiringCount={companiesHiringCount}
         initialJobs={jobs}
         isSeeker={isSeeker}
+        jobsAddedToday={jobsAddedToday}
+        jobsThisWeek={jobsThisWeek}
         totalActiveJobs={totalActiveJobs}
       />
       <MarketIntelBanner />

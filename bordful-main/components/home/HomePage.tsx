@@ -3,6 +3,7 @@
 import { formatDistanceToNow, isToday } from 'date-fns';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
+import { ArrowRight, Briefcase, Search } from 'lucide-react';
 import { JobCard } from '@/components/jobs/JobCard';
 import { SaveSearchButton } from '@/components/jobs/SaveSearchButton';
 import { useSeekerJobState } from '@/components/jobs/SeekerJobStateContext';
@@ -68,11 +69,15 @@ function HomePageContent({
   initialJobs,
   totalActiveJobs,
   companiesHiringCount: companiesHiringCountProp,
+  jobsAddedToday: jobsAddedTodayProp,
+  jobsThisWeek: jobsThisWeekProp,
   isSeeker,
 }: {
   initialJobs: Job[];
   totalActiveJobs: number;
   companiesHiringCount: number;
+  jobsAddedToday: number;
+  jobsThisWeek: number;
   isSeeker: boolean;
 }) {
   const router = useRouter();
@@ -587,6 +592,79 @@ function HomePageContent({
             </div>
           </div>
         </div>
+
+        {/* Bold stats band - real numbers, big treatment. Distinct from
+            TrustSection's prose-style stat sentence further down: this is
+            a scannable grid, meant to land fast rather than be read. */}
+        <div className="border-t bg-background py-12">
+          <div className="container mx-auto px-4">
+            <div className="mx-auto grid max-w-3xl grid-cols-2 gap-6 text-center sm:grid-cols-4">
+              {[
+                { label: 'Open roles', value: totalActiveJobs },
+                { label: 'Added today', value: jobsAddedTodayProp },
+                { label: 'This week', value: jobsThisWeekProp },
+                { label: 'Companies hiring', value: companiesHiringCountProp },
+              ].map(({ label, value }) => (
+                <div key={label}>
+                  <p className="font-bold text-2xl text-zinc-900 tracking-tight sm:text-3xl dark:text-zinc-50">
+                    {value.toLocaleString()}
+                  </p>
+                  <p className="mt-1 text-muted-foreground text-xs">{label}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Built for both sides - a multi-sided marketplace (seekers,
+            employers, recruiters) benefits from telling guests that
+            up front, and it doubles as a navigational hint toward /join
+            for whichever side actually applies to them. */}
+        <div className="border-t bg-muted/20 py-14">
+          <div className="container mx-auto px-4">
+            <div className="mx-auto grid max-w-4xl gap-5 sm:grid-cols-2">
+              <div className="rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
+                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
+                  <Search aria-hidden="true" className="h-4 w-4" />
+                </span>
+                <h3 className="mt-4 font-semibold text-base text-zinc-900 dark:text-zinc-50">
+                  Job seekers
+                </h3>
+                <p className="mt-1.5 text-muted-foreground text-sm">
+                  Get matched by AI, apply in one click, and let recruiters
+                  find you.
+                </p>
+                <a
+                  className="mt-4 inline-flex items-center gap-1 font-medium text-primary text-sm hover:underline"
+                  href="/account/sign-in?intent=signup"
+                >
+                  Get started
+                  <ArrowRight aria-hidden="true" className="h-3.5 w-3.5" />
+                </a>
+              </div>
+
+              <div className="rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
+                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
+                  <Briefcase aria-hidden="true" className="h-4 w-4" />
+                </span>
+                <h3 className="mt-4 font-semibold text-base text-zinc-900 dark:text-zinc-50">
+                  Employers &amp; recruiters
+                </h3>
+                <p className="mt-1.5 text-muted-foreground text-sm">
+                  Post a role or search candidates who are open to hearing
+                  from you.
+                </p>
+                <a
+                  className="mt-4 inline-flex items-center gap-1 font-medium text-primary text-sm hover:underline"
+                  href="/join"
+                >
+                  Get started
+                  <ArrowRight aria-hidden="true" className="h-3.5 w-3.5" />
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
       </main>
     );
   }
@@ -903,11 +981,15 @@ export function HomePage({
   initialJobs,
   totalActiveJobs,
   companiesHiringCount,
+  jobsAddedToday,
+  jobsThisWeek,
   isSeeker,
 }: {
   initialJobs: Job[];
   totalActiveJobs: number;
   companiesHiringCount: number;
+  jobsAddedToday: number;
+  jobsThisWeek: number;
   isSeeker: boolean;
 }) {
   return (
@@ -916,6 +998,8 @@ export function HomePage({
         companiesHiringCount={companiesHiringCount}
         initialJobs={initialJobs}
         isSeeker={isSeeker}
+        jobsAddedToday={jobsAddedToday}
+        jobsThisWeek={jobsThisWeek}
         totalActiveJobs={totalActiveJobs}
       />
     </Suspense>
