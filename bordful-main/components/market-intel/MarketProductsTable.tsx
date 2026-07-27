@@ -2,7 +2,11 @@
 
 import { ExternalLink, Star } from 'lucide-react';
 import { useMemo, useState } from 'react';
+import { PaginationControl } from '@/components/ui/pagination-control';
+import { usePagination } from '@/lib/hooks/usePagination';
 import type { MarketProduct } from '@/lib/market-intel/products';
+
+const PRODUCTS_PER_PAGE = 50;
 
 function formatPrice(currency: string, value: number | null): string {
   if (value === null) return '—';
@@ -27,6 +31,7 @@ export function MarketProductsTable({
   const [watchedOnly, setWatchedOnly] = useState(false);
   const [watched, setWatched] = useState<Set<string>>(() => new Set(initialWatchedIds));
   const [pendingIds, setPendingIds] = useState<Set<string>>(new Set());
+  const { page, setPage } = usePagination();
 
   async function toggleWatch(productId: string) {
     if (pendingIds.has(productId)) return;
@@ -88,19 +93,27 @@ export function MarketProductsTable({
     });
   }, [initial, search, platform, category, watchedOnly, watched]);
 
+  function updateFilter<T>(setter: (value: T) => void, value: T) {
+    setter(value);
+    setPage(1);
+  }
+
+  const startIndex = (page - 1) * PRODUCTS_PER_PAGE;
+  const paginated = filtered.slice(startIndex, startIndex + PRODUCTS_PER_PAGE);
+
   return (
     <div>
       <div className="flex flex-wrap items-center gap-3">
         <input
           className="w-full max-w-xs rounded-md border border-zinc-200 bg-white px-3 py-1.5 text-sm dark:border-zinc-800 dark:bg-zinc-900"
-          onChange={(e) => setSearch(e.target.value)}
+          onChange={(e) => updateFilter(setSearch, e.target.value)}
           placeholder="Search title or brand..."
           type="text"
           value={search}
         />
         <select
           className="rounded-md border border-zinc-200 bg-white px-3 py-1.5 text-sm dark:border-zinc-800 dark:bg-zinc-900"
-          onChange={(e) => setPlatform(e.target.value)}
+          onChange={(e) => updateFilter(setPlatform, e.target.value)}
           value={platform}
         >
           <option value="all">All platforms</option>
@@ -112,7 +125,7 @@ export function MarketProductsTable({
         </select>
         <select
           className="rounded-md border border-zinc-200 bg-white px-3 py-1.5 text-sm dark:border-zinc-800 dark:bg-zinc-900"
-          onChange={(e) => setCategory(e.target.value)}
+          onChange={(e) => updateFilter(setCategory, e.target.value)}
           value={category}
         >
           <option value="all">All categories</option>
@@ -126,7 +139,7 @@ export function MarketProductsTable({
           <input
             checked={watchedOnly}
             className="h-3.5 w-3.5"
-            onChange={(e) => setWatchedOnly(e.target.checked)}
+            onChange={(e) => updateFilter(setWatchedOnly, e.target.checked)}
             type="checkbox"
           />
           Watchlist only ({watched.size})
@@ -153,7 +166,7 @@ export function MarketProductsTable({
             </tr>
           </thead>
           <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
-            {filtered.map((p) => {
+            {paginated.map((p) => {
               const discount = discountPercent(p.price, p.compareAtPrice);
               return (
                 <tr key={p.id} className="hover:bg-zinc-50 dark:hover:bg-zinc-900/40">
@@ -228,6 +241,10 @@ export function MarketProductsTable({
           </tbody>
         </table>
       </div>
+
+      {filtered.length > PRODUCTS_PER_PAGE && (
+        <PaginationControl itemsPerPage={PRODUCTS_PER_PAGE} totalItems={filtered.length} />
+      )}
     </div>
   );
 }

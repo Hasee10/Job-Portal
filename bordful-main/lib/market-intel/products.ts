@@ -29,23 +29,40 @@ function getAdminClient() {
   return createClient(url, key, { auth: { persistSession: false } });
 }
 
+const FETCH_PAGE_SIZE = 1000;
+
+// Supabase/PostgREST caps a single request at 1000 rows regardless of
+// .limit() - a plain query silently dropped everything past the first 1000
+// once total inventory across all platforms grew past that (later-scraped
+// platforms, sorted last_seen_at desc, pushed earlier ones out of the
+// window entirely). Page through with .range() to get everything.
+async function fetchAllProducts(supabase: ReturnType<typeof getAdminClient>) {
+  const rows: Array<Record<string, unknown>> = [];
+  for (let from = 0; ; from += FETCH_PAGE_SIZE) {
+    const { data, error } = await supabase
+      .from('market_products')
+      .select(
+        'id, platform_id, category_slug, title, brand, url, image_url, currency, price, compare_at_price, in_stock, rating, rating_count, last_seen_at'
+      )
+      .order('last_seen_at', { ascending: false })
+      .range(from, from + FETCH_PAGE_SIZE - 1);
+    if (error) throw error;
+    if (!data?.length) break;
+    rows.push(...data);
+    if (data.length < FETCH_PAGE_SIZE) break;
+  }
+  return rows;
+}
+
 export async function listMarketProducts(): Promise<MarketProduct[]> {
   const supabase = getAdminClient();
 
-  const [{ data: platforms, error: platformsError }, { data: products, error: productsError }] =
-    await Promise.all([
-      supabase.from('market_platforms').select('id, slug, name'),
-      supabase
-        .from('market_products')
-        .select(
-          'id, platform_id, category_slug, title, brand, url, image_url, currency, price, compare_at_price, in_stock, rating, rating_count, last_seen_at'
-        )
-        .order('last_seen_at', { ascending: false })
-        .limit(1000),
-    ]);
+  const [{ data: platforms, error: platformsError }, products] = await Promise.all([
+    supabase.from('market_platforms').select('id, slug, name'),
+    fetchAllProducts(supabase),
+  ]);
 
   if (platformsError) throw platformsError;
-  if (productsError) throw productsError;
 
   const platformById = new Map((platforms ?? []).map((p) => [p.id, p]));
 
