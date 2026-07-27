@@ -1,11 +1,14 @@
 name: Market Scraper
 
-# Runs every 12 hours on GitHub's own cloud runners, same cadence as the job
-# scraper (see scrape.yml). Writes to market_* Supabase tables only - fully
-# separate from job-portal data, see market-scraper/migrations/001_create_market_tables.sql.
+# Runs every 2 days on GitHub's own cloud runners. Writes to market_* Supabase
+# tables only - fully separate from job-portal data, see
+# market-scraper/migrations/001_create_market_tables.sql.
+# Note: cron's day-of-month step (*/2) resets at the start of each month, so
+# the gap is "every 2 days" in practice but can shrink to 1 day across a
+# month boundary (e.g. day 31 -> day 1) - not worth a workaround for this cadence.
 on:
   schedule:
-    - cron: "30 */12 * * *"
+    - cron: "30 3 */2 * *"
   workflow_dispatch: {}
 
 permissions:
