@@ -39,4 +39,8 @@ jobs:
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           CLOAKBROWSER_LICENSE_KEY: ${{ secrets.CLOAKBROWSER_LICENSE_KEY }}
           SCRAPER_PROXY: ${{ secrets.SCRAPER_PROXY }}
+          PRICEOYE_CATEGORIES: mobiles,laptops
+          TELEMART_COLLECTIONS: mobiles-tablets,laptops-1
+          SHOPHIVE_CATEGORIES: apple/iphone,laptops
+          ISHOPPING_CATEGORIES: mobiles,laptops
         run: npm run start
