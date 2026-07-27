@@ -94,3 +94,45 @@ Carried forward from `overview.md`/`HP.md`, now slightly sharper:
 2. **First customer:** narrowed to "FMCG/brand marketing teams," not resolved — the `/intel` waitlist already collects the right signal (company name field) to start validating this for real.
 3. **Real legal review of Daraz's ToS** before any scraping (managed or in-house) begins.
 4. **Pricing tiers** — now anchored against Prisync/Price2Spy's $40–400/mo range instead of a blank guess, still not decided.
+
+---
+
+## 8. Expanded source candidate list, by vertical (client request: "make sure nothing is missed")
+
+This is a roadmap list, not a v1 commitment — §2's "Daraz + one electronics site" recommendation stands for what actually gets built first. This section exists so nothing plausible gets overlooked when scoping phase 2+.
+
+| Vertical | Platforms | Notes |
+|---|---|---|
+| **General marketplace** | Daraz.pk, AliExpress Pakistan | Daraz ~35% share (§2). AliExpress PK reportedly grew ~28% with 15M+ active users — cross-border pricing (CNY→PKR) makes it a messier comparison set than domestic sites, worth flagging separately rather than lumping with local competitors. |
+| **Electronics** | PriceOye.pk, Telemart.pk, iShopping.pk, Symbios.pk | iShopping.pk (est. 2011) and Symbios.pk are both established electronics-heavy generalists — reasonable phase-2 additions once Daraz+PriceOye/Telemart prove the model. |
+| **Fashion** | Sapphireonline.pk (#1 fashion site), Khaadi, Gul Ahmed, Alkaram, Nishat Linen, Zellbury | These are individual **brand** stores, not marketplaces — tracking them answers "what's this brand charging on their own site" rather than "who's cheapest across sellers." Different product (brand-monitoring vs. marketplace price comparison) — worth a separate section in the pitch to FMCG clients rather than folding into the Daraz-style catalog view. |
+| **Grocery / quick-commerce** | Naheed.pk (hypermarket, own delivery), Foodpanda/Pandamart, Krave Mart, Bazaar (B2B-leaning, 5,000+ SKUs), Careem Mart | Naheed is the closest fit to the Daraz-style "scrape a catalog" model. Foodpanda/Krave Mart/Careem Mart are quick-commerce apps (React Native / heavy JS, no meaningful desktop catalog) — much harder to scrape than a standard e-commerce site, lower priority. |
+| **Pharmacy / health & beauty** | Dvago.pk, Sehat.com.pk, Dawaai, Tabiyat.pk, Derma.pk | A genuinely distinct vertical (regulated products, prescription vs. OTC split) — plausible standalone offering ("pharma pricing intel") later, not a natural fit to bundle into the same first release as general retail. |
+| **Furniture / home** | Homeshopping.pk | Smaller, less defended than Daraz — a reasonable "phase 2, in-house scraping" candidate per §6's architecture, alongside PriceOye/Telemart. |
+| **Classifieds (different data shape)** | OLX Pakistan | Peer-to-peer listings, not retailer catalogs — prices are asks, not fixed list prices, and there's no single "seller" to track. Useful for used-goods market signal, but it's a different product surface than catalog/price tracking — don't bolt it onto the same schema without a separate design pass. |
+
+**A gap in the original v1 framing worth surfacing directly: social commerce.** Up to ~35% of Pakistan's online retail is estimated to move through Facebook, Instagram, TikTok, and WhatsApp storefronts rather than dedicated websites — a large enough slice that a client pitching this as "market intelligence" may reasonably ask why it's not covered. It isn't in v1 scope, and shouldn't be pitched as if it will be soon: there's no catalog page to scrape, pricing lives in DM/WhatsApp threads, and platform ToS + API access for this kind of monitoring is a materially different (and harder) legal and technical problem than reading a public product page. Worth naming explicitly as an acknowledged gap in the pitch rather than letting a client discover it's missing — "we track structured marketplace/retailer data; social-storefront monitoring is a distinct problem we're not solving in v1" is an honest, defensible line.
+
+---
+
+## 9. Making this "enterprise-level" — diagnosis, not a build plan
+
+The client's ask was to make the platform "intriguing," "next level," "enterprise." Concretely, the gap between what §4's MVP scope (catalog + price history + watchlist + export) delivers and what makes a B2B buyer perceive something as *enterprise* is less about more scraping and more about these, roughly in order of leverage-per-effort:
+
+1. **Turn raw data into a narrative, not a table.** Prisync/Price2Spy both ship dashboards full of numbers. The actual differentiator available here — and the one that fits this codebase, since the job-portal side already has an AI-provider decision on record ([[joblo_feature_roadmap_decisions]] — Mistral + OpenRouter) — is an AI-generated weekly narrative digest: "Competitor X cut prices on 12 SKUs this week, average -8%, concentrated in the skincare category" instead of a spreadsheet the client has to interpret themselves. This is the single highest-perceived-value, lowest-additional-scraping change available.
+2. **Branded, shareable outputs.** A PDF/exportable "market position report" a brand manager can forward to their own leadership, with the client's logo on it — this is what makes a tool feel like something a marketing team can justify budget for, versus an internal dashboard only the person who bought it ever opens.
+3. **Alerting that matches how marketing teams actually work.** Not just "price changed" — threshold-based alerts ("competitor undercut you by >5%"), new-product-launch detection (a competitor SKU appearing that wasn't there last scrape), and stock-out detection (a competitor going out of stock is a real-time opportunity signal). This is a natural extension of the `market_alerts_sent` table already scoped in `overview.md` §2.3, not new architecture.
+4. **API access for the data, not just a UI.** Enterprise buyers expect to pipe data into their own BI tools (Power BI, Looker, Sheets) rather than being locked into someone else's dashboard. A read-only REST/export API is a standard "enterprise tier" checkbox for exactly this reason.
+5. **Multi-seat accounts with roles.** A brand's marketing team is rarely one login — enterprise pricing tiers are usually gated by seats + permissions (who can edit watchlists vs. who can only view reports), not just usage volume. This maps directly onto the `market_analyst` role pattern already flagged as the plan (reusing the existing seeker/employer/recruiter multi-role scaffolding).
+6. **Category/industry benchmarking, not just head-to-head competitor tracking.** "Where does this brand sit vs. the category average" is a step up from "here's what your 3 named competitors charge" — it's the kind of aggregate view that requires enough tracked data to be credible, so it's a natural phase-2/3 feature once the platform has enough history, not a v1 claim.
+
+None of this requires touching the job portal or expanding the initial scraping scope beyond what §2 already recommends — it's about what's built on top of the same Daraz/PriceOye data once it exists, which is why it's framed as diagnosis rather than a v1 commitment.
+
+---
+
+## 10. Segregation and job-portal scope — confirmed
+
+Per the client's explicit instruction, two hard constraints for this initiative:
+
+- **Market Intel stays a separate product surface.** Per `overview.md` §2.3, its tables (`market_platforms`, `market_products`, `market_price_history`, etc.) are deliberately namespaced apart from the job-portal schema — this already reflects a real prior incident (a table-name collision, fixed in commit `598bd14`) that makes the separation a learned constraint, not just a preference. The `/intel` route, `market_analyst` role, and any future scraping pipeline are additive — nothing about this plan touches `jobs`, the recruiter marketplace, employer ATS, or any of the job-portal's existing tables or routes.
+- **No job-portal edits without explicit sign-off.** The client was explicit: job-portal functionality is "almost complete and done and nothing needs any edits or corrections of any sorts until our sir tells us to edit anything." This research and diagnosis phase makes no code changes to `bordful-main/` beyond what's already documented (the `/intel` waitlist page). Any future Market Intel implementation work will be scoped and built as a genuinely separate initiative, not folded into ongoing job-portal maintenance.

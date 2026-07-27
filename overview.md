@@ -158,3 +158,54 @@ Consolidated from above, since this doc is meant to hand off to a design-focused
 3. **One scraper source, one product table, one price-history table:** prove the pipeline end-to-end before adding sources.
 4. **First real dashboard view** answering whatever question came out of open question #4 above.
 5. **Alerts/watchlists, export, additional sources** — everything else, once the core loop is validated.
+
+---
+
+## 7. Concrete build plan — what gets built, and how (answers "what and how")
+
+This resolves §3/§5's open decisions into one recommended path, and turns §6's sketch into an actually buildable sequence. Nothing here has been built yet — this is the plan to review before any of it starts, consistent with the "no job-portal edits, and this is a genuinely separate tool" constraint already agreed (see `research.md` §10).
+
+### 7.0 What "segregated" means concretely
+
+- **New Python package, not a folder inside `job-scraper/`:** `market-scraper/` at the repo root, sibling to `job-scraper/`, with its own `requirements.txt`, its own `.env`, its own scheduled task. It mirrors `job-scraper/jobscraper/`'s shape (`sources/`, `db.py`, `pipeline.py`, `run.py`, `config.py`) because that pattern is already proven, not because the two packages share any code. Zero imports between them.
+- **New Supabase tables, not reused ones:** `market_platforms`, `market_products`, `market_price_history`, `market_categories`, `market_accounts`, `market_watchlists`, `market_alerts_sent` (§2.3) — new tables, new migration, no foreign keys into `jobs`/`companies`/any job-portal table. A market-intel row can reference another market-intel row; it never references a job-portal row.
+- **New Next.js surface, reusing only generic infra:** `/intel/*` routes (dashboard, watchlists, settings), `lib/market-intel/*` (already has a start: `waitlist-actions.ts`, the `/api/market-intel/waitlist` route). Reuses the *mechanism* other roles already use — NextAuth JWT role union, the Resend/Gmail-SMTP email sender, the admin Supabase client — but every Market Intel table, page, and API route is net-new, additive code. Nothing in `app/jobs`, `app/dashboard` (employer), `app/recruiter`, or the job-portal schema is touched.
+
+### 7.1 Phase 1 — Prove the pipeline (1 source, no UI beyond what exists)
+
+**What:** one working scraper (Daraz, via Apify's hosted actor per §1) writing into `market_products` + `market_price_history` on a schedule, plus a `market_scraper/run.py` entry point mirroring `job-scraper/run.py`.
+
+**How:**
+- Call Apify's Daraz actor via their API (`ApifyClient` Python SDK or plain `httpx` against their REST API — matches the existing `httpx`-only style in `job-scraper/jobscraper/db.py`, no new dependency class).
+- Normalize Apify's response shape into the `market_products`/`market_price_history` rows, upsert via Supabase PostgREST (same `service_role` key + `httpx` batch-upsert pattern as `job-scraper/jobscraper/db.py:47`, just pointed at the new tables).
+- Schedule via the same mechanism already used for the job scraper (Windows Scheduled Task locally per `install_task.ps1`, or GitHub Actions per the CI workflow already wired for job-scraper — whichever the client prefers for production).
+- **No dashboard yet.** Success criterion for this phase is purely "rows are landing correctly and price history is accumulating" — verified via direct Supabase table queries, not a UI.
+
+### 7.2 Phase 2 — Auth scaffolding + minimal dashboard
+
+**What:** `market_analyst` role, sign-in/sign-up pages, and a dashboard that shows exactly one thing: a searchable/filterable table of tracked Daraz products with current price + a sparkline of price history.
+
+**How:**
+- Copy the recruiter account pattern file-for-file: `lib/auth/recruiter-accounts.ts` → `lib/auth/market-accounts.ts`, `app/recruiter/sign-in` → `app/intel/sign-in`, etc. Add `market_analyst` to the NextAuth JWT role union (`auth.ts` / wherever the role type is declared) — additive, one new union member, doesn't change existing role behavior.
+- `market_accounts` table holds company name + contact email + plan tier (even if only one tier exists at launch — keeps the column from being a later migration).
+- Dashboard is a server component reading `market_products` + latest `market_price_history` row per product, no client-side state beyond filters — matches how the existing job list/search pages are built, so it's a familiar pattern to extend rather than a new architecture.
+- `AuthNavStatus`'s existing role-branch (§4) gets one more `case` for `market_analyst` → `/intel/dashboard`. Additive line, not a rewrite of that component.
+
+### 7.3 Phase 3 — Second source + watchlists + price-change alerts
+
+**What:** add one electronics site (PriceOye or Telemart, whichever the §2/§7.0 spike confirms is easier — likely in-house Playwright scraping per §6's architecture, since neither needs Apify's level of anti-bot defense-busting). Add watchlists (track a brand/product subset) and threshold-based price-drop/rise alerts.
+
+**How:**
+- New source file in `market-scraper/sources/browser/` (Playwright + the stealth/proxy pattern from `research.md` §6) — same "one file per source" shape as `job-scraper/jobscraper/sources/browser/*.py`.
+- `market_watchlists` (account_id, target type, target id, alert rule) + `market_alerts_sent` (dedup log) — same dedup-log shape already used for recruiter outreach caps, so no new pattern to design.
+- Alert delivery reuses the existing email-sending infra (Gmail SMTP, per the job-alerts digest cron) rather than standing up a new provider.
+
+### 7.4 Phase 4 — The "enterprise" layer (from `research.md` §9)
+
+Only after the core loop (scrape → store → view → alert) is proven and at least one real client is using it. In priority order: AI-generated weekly digest narrative (reuses the Mistral/OpenRouter provider decision already on record), branded PDF export, an undercut/new-SKU/stock-out alert set beyond simple price-change, a read-only export API, then category benchmarking once enough price history exists to make an aggregate credible.
+
+### 7.5 What still needs a decision before Phase 1 starts
+
+Everything in §5 is still open — in particular: product name/branding (§3.1), and whether `/join` becomes a two-tier chooser or Market Intel gets its own separate entry page (§4). Phase 1 (§7.1) doesn't depend on either — it's pure backend/data — so it can start without those being settled, but Phase 2's dashboard and sign-up pages do need at least a placeholder name and an entry-point decision before that phase begins.
+
+**Rough sequencing estimate** (effort shape, not a committed timeline): Phase 1 is the smallest lift — it's one source, one direction of data flow, no UI. Phase 2 is the next-smallest because it's copying an existing, proven pattern three times over rather than inventing one. Phase 3 is larger — a second scraper needs its own anti-bot handling, and watchlists/alerts are new product surface. Phase 4 is open-ended by design; it's meant to be built incrementally against real client feedback, not shipped as one block.
