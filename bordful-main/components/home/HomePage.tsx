@@ -457,7 +457,7 @@ function HomePageContent({
   // No min-h-screen here (unlike the seeker <main> below) - that class
   // forces the wrapper to fill the viewport even though this trimmed-down
   // hero is short, which left a large dead gap before the next section
-  // (MarketIntelBanner/TrustSection, rendered as siblings in app/page.tsx).
+  // (TrustSection, rendered as a sibling in app/page.tsx).
   if (!isSeeker) {
     return (
       <main className="bg-background">

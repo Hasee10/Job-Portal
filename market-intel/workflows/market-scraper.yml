@@ -1,8 +1,14 @@
 name: Market Scraper
 
+# Archived out of the JobLo repo (job-portal) into market-intel/ as its own
+# product - this workflow isn't active anywhere until it's copied into
+# .github/workflows/ of wherever Market Intel actually gets deployed, at
+# which point working-directory below likely becomes "." instead of
+# "market-intel/scraper" (path here reflects this archive's current layout).
+#
 # Runs every 2 days on GitHub's own cloud runners. Writes to market_* Supabase
 # tables only - fully separate from job-portal data, see
-# market-scraper/migrations/001_create_market_tables.sql.
+# market-intel/scraper/migrations/001_create_market_tables.sql.
 # Note: cron's day-of-month step (*/2) resets at the start of each month, so
 # the gap is "every 2 days" in practice but can shrink to 1 day across a
 # month boundary (e.g. day 31 -> day 1) - not worth a workaround for this cadence.
@@ -20,7 +26,7 @@ jobs:
     timeout-minutes: 30
     defaults:
       run:
-        working-directory: market-scraper
+        working-directory: market-intel/scraper
     steps:
       - uses: actions/checkout@v7
 
@@ -28,7 +34,7 @@ jobs:
         with:
           node-version: "22"
           cache: "npm"
-          cache-dependency-path: market-scraper/package-lock.json
+          cache-dependency-path: market-intel/scraper/package-lock.json
 
       - name: Install dependencies
         run: npm install --prefer-offline

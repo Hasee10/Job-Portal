@@ -44,8 +44,6 @@ export function AuthNavStatus({
         ? '/account'
         : session.user.role === 'recruiter'
         ? '/recruiter/dashboard'
-        : session.user.role === 'market_analyst'
-        ? '/intel/dashboard'
         : '/dashboard';
     const displayName = session.user.name || session.user.email;
 

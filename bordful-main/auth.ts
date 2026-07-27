@@ -5,7 +5,6 @@ import LinkedIn from 'next-auth/providers/linkedin';
 import config from '@/config';
 import { verifyEmployerCredentials } from '@/lib/auth/employers';
 import { verifyRecruiterCredentials } from '@/lib/auth/recruiter-accounts';
-import { verifyMarketAnalystCredentials } from '@/lib/auth/market-accounts';
 import { upsertJobSeeker } from '@/lib/auth/job-seekers';
 import { sendEmail } from '@/lib/email/smtp';
 import { renderSeekerWelcomeEmail } from '@/lib/email/templates/seeker-welcome';
@@ -70,17 +69,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           };
         }
 
-        if (accountType === 'market_analyst') {
-          const account = await verifyMarketAnalystCredentials(email, password);
-          if (!account) return null;
-          return {
-            id: account.id,
-            email: account.email,
-            name: account.companyName,
-            accountType: 'market_analyst',
-          };
-        }
-
         const employer = await verifyEmployerCredentials(email, password);
         if (!employer) {
           return null;
@@ -108,9 +96,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         if (u.accountType === 'recruiter') {
           token.recruiterId = user.id;
           token.role = 'recruiter';
-        } else if (u.accountType === 'market_analyst') {
-          token.marketAccountId = user.id;
-          token.role = 'market_analyst';
         } else {
           token.employerId = user.id;
           token.role = 'employer';
@@ -154,12 +139,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           session.user.id = token.seekerId as string;
         } else if (token.role === 'recruiter') {
           session.user.id = token.recruiterId as string;
-        } else if (token.role === 'market_analyst') {
-          session.user.id = token.marketAccountId as string;
         } else {
           session.user.id = token.employerId as string;
         }
-        session.user.role = token.role as 'employer' | 'seeker' | 'recruiter' | 'market_analyst' | undefined;
+        session.user.role = token.role as 'employer' | 'seeker' | 'recruiter' | undefined;
       }
       return session;
     },

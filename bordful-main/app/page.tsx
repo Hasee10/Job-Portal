@@ -2,7 +2,6 @@ import type { Metadata } from 'next';
 import { auth } from '@/auth';
 import { HomePage } from '@/components/home/HomePage';
 import { HowItWorksSection } from '@/components/home/HowItWorksSection';
-import { MarketIntelBanner } from '@/components/home/MarketIntelBanner';
 import { TrustSection } from '@/components/home/TrustSection';
 import config from '@/config';
 import { HOMEPAGE_JOBS_LIMIT } from '@/lib/constants/defaults';
@@ -102,7 +101,6 @@ export default async function Home() {
         jobsThisWeek={jobsThisWeek}
         totalActiveJobs={totalActiveJobs}
       />
-      <MarketIntelBanner />
       <HowItWorksSection />
       <TrustSection
         companiesHiringCount={companiesHiringCount}
