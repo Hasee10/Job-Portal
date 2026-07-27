@@ -30,8 +30,13 @@ jobs:
       - name: Install dependencies
         run: npm install --prefer-offline
 
+      - name: Install Chromium OS dependencies (for CloakBrowser)
+        run: npx playwright-core install-deps chromium
+
       - name: Run market scraper
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          CLOAKBROWSER_LICENSE_KEY: ${{ secrets.CLOAKBROWSER_LICENSE_KEY }}
+          SCRAPER_PROXY: ${{ secrets.SCRAPER_PROXY }}
         run: npm run start

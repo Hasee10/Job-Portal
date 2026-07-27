@@ -17,6 +17,7 @@ export const config = {
   priceoyeCategories: splitList(process.env.PRICEOYE_CATEGORIES) as string[],
   telemartCollections: splitList(process.env.TELEMART_COLLECTIONS) as string[],
   shophiveCategories: splitList(process.env.SHOPHIVE_CATEGORIES) as string[],
+  ishoppingCategories: splitList(process.env.ISHOPPING_CATEGORIES) as string[],
 
   logLevel: process.env.LOG_LEVEL ?? 'info',
 };
