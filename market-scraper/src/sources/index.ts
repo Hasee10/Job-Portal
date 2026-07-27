@@ -1,6 +1,7 @@
-import type { SourceFn } from '../types.js';
+import type { ClassifiedSourceFn, SourceFn } from '../types.js';
 import { scrapeGoto } from './goto.js';
 import { scrapeIshopping } from './ishopping.js';
+import { scrapeOlx } from './olx.js';
 import { scrapePriceoye } from './priceoye.js';
 import { scrapeSapphireonline } from './sapphireonline.js';
 import { scrapeShophive } from './shophive.js';
@@ -22,3 +23,7 @@ export const HTTP_SOURCES: SourceFn[] = [
 // cert (needs ignoreHTTPSErrors) and thin/inconsistent category inventory -
 // see scrapeGoto's category list.
 export const BROWSER_SOURCES: SourceFn[] = [scrapeIshopping, scrapeGoto];
+
+// Classifieds sources - write to market_classified_listings instead of
+// market_products, see types.ts / migrations/007.
+export const CLASSIFIED_SOURCES: ClassifiedSourceFn[] = [scrapeOlx];

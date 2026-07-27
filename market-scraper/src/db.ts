@@ -1,5 +1,5 @@
 import { config, requireDatabase } from './config.js';
-import type { RawProduct } from './types.js';
+import type { RawClassifiedListing, RawProduct } from './types.js';
 
 const UPSERT_BATCH_SIZE = 200;
 
@@ -95,6 +95,79 @@ export async function saveProducts(platformSlug: string, products: RawProduct[])
     });
     if (!historyRes.ok) {
       throw new Error(`market_price_history insert failed: ${historyRes.status} ${await historyRes.text()}`);
+    }
+  }
+}
+
+/**
+ * Upserts listings into market_classified_listings (by platform_id +
+ * external_id) and appends one row per listing into
+ * market_classified_price_history. See migrations/007 for why classifieds
+ * get their own tables instead of market_products/market_price_history.
+ */
+export async function saveClassifiedListings(
+  platformSlug: string,
+  listings: RawClassifiedListing[],
+): Promise<void> {
+  requireDatabase();
+  if (!listings.length) return;
+
+  const platformId = await getPlatformId(platformSlug);
+  const now = new Date().toISOString();
+
+  const dedupedByKey = new Map<string, RawClassifiedListing>();
+  for (const l of listings) {
+    dedupedByKey.set(l.externalId, l);
+  }
+  const deduped = [...dedupedByKey.values()];
+
+  for (const batch of chunk(deduped, UPSERT_BATCH_SIZE)) {
+    const rows = batch.map((l) => ({
+      platform_id: platformId,
+      external_id: l.externalId,
+      category_slug: l.categorySlug ?? null,
+      title: l.title,
+      url: l.url,
+      image_url: l.imageUrl ?? null,
+      currency: l.currency ?? 'PKR',
+      price: l.price ?? null,
+      condition: l.condition ?? null,
+      city: l.city ?? null,
+      seller_type: l.sellerType ?? null,
+      posted_at: l.postedAt ?? null,
+      status: 'active',
+      last_seen_at: now,
+    }));
+
+    const res = await fetch(
+      `${config.supabaseUrl}/rest/v1/market_classified_listings?on_conflict=platform_id,external_id`,
+      {
+        method: 'POST',
+        headers: headers({ Prefer: 'resolution=merge-duplicates,return=representation' }),
+        body: JSON.stringify(rows),
+      },
+    );
+    if (!res.ok) {
+      throw new Error(`market_classified_listings upsert failed: ${res.status} ${await res.text()}`);
+    }
+
+    const saved = (await res.json()) as Array<{ id: string; price: number | null }>;
+    const historyRows = saved.map((row) => ({
+      listing_id: row.id,
+      price: row.price,
+      status: 'active',
+      recorded_at: now,
+    }));
+
+    const historyRes = await fetch(`${config.supabaseUrl}/rest/v1/market_classified_price_history`, {
+      method: 'POST',
+      headers: headers({ Prefer: 'return=minimal' }),
+      body: JSON.stringify(historyRows),
+    });
+    if (!historyRes.ok) {
+      throw new Error(
+        `market_classified_price_history insert failed: ${historyRes.status} ${await historyRes.text()}`,
+      );
     }
   }
 }

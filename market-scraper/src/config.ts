@@ -20,6 +20,7 @@ export const config = {
   ishoppingCategories: splitList(process.env.ISHOPPING_CATEGORIES) as string[],
   gotoCategories: splitList(process.env.GOTO_CATEGORIES) as string[],
   sapphireonlineCategories: splitList(process.env.SAPPHIREONLINE_CATEGORIES) as string[],
+  olxCategories: splitList(process.env.OLX_CATEGORIES) as string[],
 
   logLevel: process.env.LOG_LEVEL ?? 'info',
 };

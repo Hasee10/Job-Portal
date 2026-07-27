@@ -1,6 +1,6 @@
-import { saveProducts } from './db.js';
-import { BROWSER_SOURCES, HTTP_SOURCES } from './sources/index.js';
-import type { SourceFn, SourceResult } from './types.js';
+import { saveClassifiedListings, saveProducts } from './db.js';
+import { BROWSER_SOURCES, CLASSIFIED_SOURCES, HTTP_SOURCES } from './sources/index.js';
+import type { ClassifiedSourceFn, ClassifiedSourceResult, SourceFn, SourceResult } from './types.js';
 
 interface SourceRunSummary {
   platformSlug: string;
@@ -20,6 +20,18 @@ async function safeRun(source: SourceFn): Promise<SourceRunSummary> {
   }
 }
 
+async function safeRunClassified(source: ClassifiedSourceFn): Promise<SourceRunSummary> {
+  try {
+    const result: ClassifiedSourceResult = await source();
+    await saveClassifiedListings(result.platformSlug, result.listings);
+    return { platformSlug: result.platformSlug, productCount: result.listings.length };
+  } catch (err) {
+    const message = (err as Error).message;
+    console.error('[pipeline] classified source failed:', message);
+    return { platformSlug: source.name, productCount: 0, error: message };
+  }
+}
+
 export async function run(): Promise<void> {
   const summaries: SourceRunSummary[] = [];
 
@@ -28,6 +40,9 @@ export async function run(): Promise<void> {
   }
   for (const source of BROWSER_SOURCES) {
     summaries.push(await safeRun(source));
+  }
+  for (const source of CLASSIFIED_SOURCES) {
+    summaries.push(await safeRunClassified(source));
   }
 
   const zeroResult = summaries.filter((s) => !s.error && s.productCount === 0);
