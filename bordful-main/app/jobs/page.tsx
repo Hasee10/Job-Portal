@@ -277,6 +277,13 @@ export default async function JobsDirectoryPage() {
                           title={type}
                         />
                       ))}
+                    {jobCounts.locations.remote > 0 && (
+                      <CategoryCard
+                        count={jobCounts.locations.remote}
+                        href="/jobs/location/remote"
+                        title="Remote"
+                      />
+                    )}
                   </div>
                   <div>
                     <Button

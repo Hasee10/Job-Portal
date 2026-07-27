@@ -320,6 +320,23 @@ const JOBS_LIST_COLUMNS =
   'timezone_requirements,workplace_city,workplace_country,languages,' +
   'employer_id,accepts_applications';
 
+// The same posting frequently gets pulled in by more than one scraper query
+// (e.g. Jooble matches it under several keyword/location combos, each with a
+// different tracking apply_url), so DB-level dedup on apply_url alone doesn't
+// catch it. Collapse by normalized title+company here, keeping the most
+// recently posted row of each group (rows already arrive newest-first).
+function dedupeJobs(jobs: Job[]): Job[] {
+  const seen = new Set<string>();
+  const result: Job[] = [];
+  for (const job of jobs) {
+    const key = `${job.title.trim().toLowerCase()}|${job.company.trim().toLowerCase()}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    result.push(job);
+  }
+  return result;
+}
+
 export const getJobs = cache(
   async (options?: { limit?: number }): Promise<Job[]> => {
     const supabase = getSupabaseClient();
@@ -336,7 +353,10 @@ export const getJobs = cache(
 
       const { data, error } = await query;
       if (error) throw error;
-      return (data ?? []).map((row) => rowToJob(row as unknown as Record<string, unknown>, { lite: true }));
+      const jobs = (data ?? []).map((row) =>
+        rowToJob(row as unknown as Record<string, unknown>, { lite: true })
+      );
+      return dedupeJobs(jobs);
     } catch {
       return [];
     }

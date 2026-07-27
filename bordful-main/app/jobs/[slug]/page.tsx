@@ -445,6 +445,23 @@ export default async function JobPostPage({
               >
                 {job.description}
               </ReactMarkdown>
+              {/^.*[…]$|\.\.\.\s*$/.test(job.description.trim()) &&
+                job.apply_url && (
+                  <p className="not-prose mt-4 text-gray-500 text-sm">
+                    This listing was imported from{' '}
+                    {job.job_source_name || 'an external source'} and only
+                    includes a partial description.{' '}
+                    <a
+                      className="text-blue-600 hover:text-blue-800"
+                      href={job.apply_url}
+                      rel="noopener noreferrer"
+                      target="_blank"
+                    >
+                      Read the full posting on the original site
+                    </a>
+                    .
+                  </p>
+                )}
             </div>
           </div>
 
