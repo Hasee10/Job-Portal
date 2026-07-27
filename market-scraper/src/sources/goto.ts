@@ -13,11 +13,38 @@ function parsePriceText(text: string | undefined): number | undefined {
   return Number.isFinite(value) ? value : undefined;
 }
 
+// Each category page also embeds a schema.org ItemList JSON-LD block with a
+// per-product availability URL (schema.org/InStock or /OutOfStock), keyed by
+// product url - the DOM grid itself has no stock class, so this is the only
+// reliable stock signal.
+function parseStockByUrl($: cheerio.CheerioAPI): Map<string, boolean> {
+  const stockByUrl = new Map<string, boolean>();
+  $('script[type="application/ld+json"]').each((_, el) => {
+    let data: unknown;
+    try {
+      data = JSON.parse($(el).contents().text());
+    } catch {
+      return;
+    }
+    const items = (data as { itemListElement?: unknown[] })?.itemListElement;
+    if (!Array.isArray(items)) return;
+    for (const item of items) {
+      const url = (item as { url?: string })?.url;
+      const availability = (item as { offers?: { availability?: string } })?.offers?.availability;
+      if (url && availability) {
+        stockByUrl.set(url, /InStock$/i.test(availability));
+      }
+    }
+  });
+  return stockByUrl;
+}
+
 // The site's analyticsData JSON attribute has unescaped inner quotes, so real
 // HTML parsers (cheerio included) truncate it - can't rely on it. Parse the
 // visible DOM instead.
 function parseCards($: cheerio.CheerioAPI, categoryPath: string): RawProduct[] {
   const products: RawProduct[] = [];
+  const stockByUrl = parseStockByUrl($);
 
   $('.item-inner').each((_, el) => {
     const card = $(el);
@@ -43,6 +70,7 @@ function parseCards($: cheerio.CheerioAPI, categoryPath: string): RawProduct[] {
       currency: 'PKR',
       price,
       compareAtPrice: compareAtPrice && compareAtPrice > (price ?? 0) ? compareAtPrice : undefined,
+      inStock: stockByUrl.get(href),
     });
   });
 

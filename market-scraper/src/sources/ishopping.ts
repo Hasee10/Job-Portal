@@ -40,6 +40,10 @@ function parseCards($: cheerio.CheerioAPI, categoryPath: string): RawProduct[] {
       currency: 'PKR',
       price,
       compareAtPrice: compareAtPrice && compareAtPrice > (price ?? 0) ? compareAtPrice : undefined,
+      // Same Magento family as Shophive - no per-item stock markup in the
+      // grid, so a listed item is treated as in stock (default catalog only
+      // lists enabled/purchasable products).
+      inStock: true,
     });
   });
 

@@ -56,6 +56,10 @@ async function scrapeCategory(categorySlug: string): Promise<RawProduct[]> {
       compareAtPrice,
       rating,
       ratingCount,
+      // PriceOye's category grid has no per-item stock badge (the
+      // "in_stock" class that exists on the page belongs to a filter-sidebar
+      // icon, not the product card) - listed items are purchasable.
+      inStock: true,
     });
   });
 

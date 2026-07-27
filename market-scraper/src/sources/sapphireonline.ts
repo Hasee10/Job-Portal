@@ -59,6 +59,9 @@ async function scrapeCategoryPage(categorySlug: string, start: number): Promise<
       currency: 'PKR',
       price,
       compareAtPrice: compareAtPrice && compareAtPrice > (price ?? 0) ? compareAtPrice : undefined,
+      // No per-item stock markup in the SFCC search grid - listed items are
+      // treated as in stock.
+      inStock: true,
     });
   });
 
