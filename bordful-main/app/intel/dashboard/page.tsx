@@ -5,6 +5,7 @@ import { SignOutButton } from '@/components/auth/SignOutButton';
 import { MarketProductsTable } from '@/components/market-intel/MarketProductsTable';
 import { getMarketAccountById } from '@/lib/auth/market-accounts';
 import { listMarketProducts } from '@/lib/market-intel/products';
+import { listWatchlistProductIds } from '@/lib/market-intel/watchlist';
 import config from '@/config';
 
 export const metadata: Metadata = {
@@ -19,9 +20,10 @@ export default async function MarketIntelDashboardPage() {
   if (!session?.user) redirect('/intel/sign-in?callbackUrl=/intel/dashboard');
   if (session.user.role !== 'market_analyst') redirect('/');
 
-  const [account, products] = await Promise.all([
+  const [account, products, watchedIds] = await Promise.all([
     getMarketAccountById(session.user.id),
     listMarketProducts(),
+    listWatchlistProductIds(session.user.id),
   ]);
 
   return (
@@ -39,7 +41,7 @@ export default async function MarketIntelDashboardPage() {
           </div>
 
           <div className="mt-8">
-            <MarketProductsTable initial={products} />
+            <MarketProductsTable initial={products} initialWatchedIds={watchedIds} />
           </div>
         </div>
       </div>
