@@ -484,36 +484,105 @@ function HomePageContent({
           </p>
         </GuestHero>
 
-        {/* Curiosity-gap preview: proves there's a real, sizable catalog
-            behind the login without exposing a single real listing -
-            skeleton/placeholder cards only, no job data. The same pattern
-            LinkedIn/Indeed/Glassdoor use for gated content (blurred
-            previews) rather than showing a blank page after the hero. */}
-        <div className="border-t bg-muted/20 py-10">
+        {/* Product showcase: one confident, real-looking mockup instead of
+            a blurred/gimmicky "unlock" overlay. Built from our own JobCard
+            visual language (title, salary chip, match ring, Apply button)
+            so it reads as genuine product UI, not a generic template - the
+            content is illustrative (no real listing data), same as how
+            Indeed's own feature-page mockups use a demo persona rather
+            than real user data. */}
+        <div className="border-t bg-muted/20 py-14">
           <div className="container mx-auto px-4">
-            <div className="relative mx-auto max-w-4xl">
-              <div
-                aria-hidden="true"
-                className="grid gap-3 opacity-40 blur-[2px] sm:grid-cols-2 lg:grid-cols-3"
-              >
-                {Array.from({ length: 6 }).map((_, i) => (
-                  <div
-                    className="rounded-lg border bg-background p-4"
-                    key={i}
-                  >
-                    <div className="h-3.5 w-3/4 rounded bg-muted-foreground/30" />
-                    <div className="mt-2 h-3 w-1/2 rounded bg-muted-foreground/20" />
-                    <div className="mt-4 h-3 w-full rounded bg-muted-foreground/10" />
-                  </div>
-                ))}
-              </div>
-              <div className="absolute inset-0 flex items-center justify-center">
+            <div className="mx-auto grid max-w-5xl gap-10 md:grid-cols-2 md:items-center md:gap-12">
+              <div>
+                <p className="font-semibold text-primary text-xs uppercase tracking-wider">
+                  See it in action
+                </p>
+                <h2 className="mt-2 font-bold text-2xl text-zinc-900 tracking-tight sm:text-3xl dark:text-zinc-50">
+                  Know your fit before you apply.
+                </h2>
+                <p className="mt-3 max-w-sm text-muted-foreground text-sm">
+                  Every role you see comes with an AI match score based on your
+                  actual skills - so you spend your applications on roles worth
+                  applying to.
+                </p>
                 <a
-                  className="inline-flex items-center justify-center rounded-md bg-primary px-5 py-2.5 font-medium text-primary-foreground text-sm shadow-lg transition-opacity hover:opacity-90"
+                  className="mt-6 inline-flex items-center justify-center rounded-md bg-primary px-5 py-2.5 font-medium text-primary-foreground text-sm transition-opacity hover:opacity-90"
                   href="/account/sign-in?intent=signup"
                 >
-                  Sign up to unlock {totalActiveJobs.toLocaleString()} open roles
+                  Sign up to browse {totalActiveJobs.toLocaleString()} open roles
                 </a>
+              </div>
+
+              <div className="relative mx-auto w-full max-w-sm">
+                {/* Accent card peeking from behind for depth */}
+                <div className="absolute -right-3 -top-3 h-full w-full rounded-2xl bg-primary/10" />
+                <div className="relative rounded-2xl border border-zinc-200 bg-white p-5 shadow-xl dark:border-zinc-800 dark:bg-zinc-900">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="font-semibold text-sm text-zinc-900 dark:text-zinc-50">
+                        Senior Product Designer
+                      </p>
+                      <p className="mt-0.5 text-muted-foreground text-xs">
+                        Northline Studio · Remote · Full-time
+                      </p>
+                    </div>
+                    <span className="shrink-0 rounded-full border border-zinc-200 px-2 py-0.5 text-[11px] text-zinc-500 dark:border-zinc-700">
+                      $95k–$130k
+                    </span>
+                  </div>
+
+                  <div className="mt-4 flex flex-wrap gap-1.5">
+                    <span className="rounded-full bg-muted px-2 py-0.5 text-[11px] text-muted-foreground">
+                      Figma
+                    </span>
+                    <span className="rounded-full bg-muted px-2 py-0.5 text-[11px] text-muted-foreground">
+                      Design Systems
+                    </span>
+                    <span className="rounded-full bg-muted px-2 py-0.5 text-[11px] text-muted-foreground">
+                      Prototyping
+                    </span>
+                  </div>
+
+                  <div className="mt-5 flex items-center justify-between border-t pt-4 dark:border-zinc-800">
+                    <div className="flex items-center gap-2">
+                      <div className="relative flex h-9 w-9 items-center justify-center">
+                        <svg className="h-9 w-9 -rotate-90" viewBox="0 0 36 36">
+                          <circle
+                            className="text-primary/15"
+                            cx="18"
+                            cy="18"
+                            fill="none"
+                            r="15"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                          />
+                          <circle
+                            className="text-primary"
+                            cx="18"
+                            cy="18"
+                            fill="none"
+                            r="15"
+                            stroke="currentColor"
+                            strokeDasharray={2 * Math.PI * 15}
+                            strokeDashoffset={2 * Math.PI * 15 * 0.08}
+                            strokeLinecap="round"
+                            strokeWidth="4"
+                          />
+                        </svg>
+                        <span className="absolute font-bold text-[9px] text-primary">
+                          92%
+                        </span>
+                      </div>
+                      <span className="text-[11px] text-muted-foreground">
+                        AI match
+                      </span>
+                    </div>
+                    <span className="inline-flex items-center rounded-md bg-primary px-3 py-1.5 font-medium text-primary-foreground text-xs">
+                      Apply Now
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
