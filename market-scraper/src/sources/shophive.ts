@@ -53,6 +53,10 @@ async function scrapeCategoryPage(categoryPath: string, page: number): Promise<R
       currency: 'PKR',
       price,
       compareAtPrice: compareAtPrice && compareAtPrice > (price ?? 0) ? compareAtPrice : undefined,
+      // Shophive's category grid has no per-item stock markup (no
+      // "sold out"/"notify me" class or label) - Magento's default catalog
+      // only lists enabled, purchasable products, so a listed item is in stock.
+      inStock: true,
     });
   });
 
