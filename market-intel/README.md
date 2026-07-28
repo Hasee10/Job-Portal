@@ -75,11 +75,15 @@ you'd need to supply:
 
 ## Database
 
-Still lives in the **same Supabase project** as JobLo, in tables prefixed
-`market_` plus `market_accounts` — these were always isolated by naming, not
-by a separate database, and moving them wasn't part of this extraction. If
-Market Intel becomes a genuinely separate deployment, decide then whether it
-needs its own Supabase project or can keep sharing this one.
+As of 2026-07-28 the `market_*`/`market_accounts` tables were dropped from
+JobLo's shared Supabase project entirely — see `drop-from-shared-supabase.sql`
+in this folder for the teardown script (run manually via the Supabase SQL
+Editor, confirmed gone via a fresh read-only query afterward). No backup was
+taken first, per explicit user confirmation. `scraper/migrations/001-010`
+still define the schema `scraper/` expects to write to — running Market Intel
+again (standalone or otherwise) means re-applying those migrations against
+wherever it's actually deployed, most likely a new, separate Supabase
+project rather than JobLo's.
 
 ## What changed on the JobLo side
 
