@@ -56,17 +56,22 @@ const nextConfig: NextConfig = {
           // in development, which a strict CSP otherwise silently blocks (no
           // client JS runs at all, but no visible error without checking the
           // console). Production builds don't eval(), so prod stays strict.
+          // 'wasm-unsafe-eval' is always allowed - @react-pdf/renderer compiles
+          // a WebAssembly module client-side for PDF export, and this keyword
+          // (unlike 'unsafe-eval') only permits WASM compilation, not JS eval.
+          // connect-src allows data: for the same reason - the wasm binary is
+          // fetched from a data: URI rather than a same-origin request.
           {
             key: 'Content-Security-Policy',
             value: [
               "default-src 'self'",
-              `script-src 'self' 'unsafe-inline'${
+              `script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'${
                 process.env.NODE_ENV === 'development' ? " 'unsafe-eval'" : ''
               }`,
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' data: https:",
               "font-src 'self' data:",
-              "connect-src 'self'",
+              "connect-src 'self' data:",
               "object-src 'none'",
               "base-uri 'self'",
               "form-action 'self'",

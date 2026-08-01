@@ -22,11 +22,12 @@ export function useResumePanel(): ResumePanelContextValue {
   return ctx;
 }
 
-// Wraps a job page's content: when the tailoring panel opens, the wrapped
-// content gets pushed left (margin-right, desktop only) to make room for the
-// panel on the right, rather than the panel floating over everything as a
-// plain overlay. The margin tracks the panel's collapsed/expanded width so
-// the push stays in sync when the user widens the panel.
+// Mounted once in the root layout (wrapping Nav + page content + Footer) so
+// that opening the tailoring panel pushes the whole site chrome left
+// (margin-right, desktop only) in sync, not just the job page's own content
+// - otherwise the nav bar stays full-width and gets hidden behind the fixed
+// panel. The margin tracks the panel's collapsed/expanded width so the push
+// stays in sync when the user widens the panel.
 export function ResumePanelProvider({ children }: { children: React.ReactNode }) {
   const [job, setJob] = useState<PanelJobRef | null>(null);
   const [isExpanded, setIsExpanded] = useState(false);
