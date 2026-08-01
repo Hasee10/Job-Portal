@@ -1,7 +1,7 @@
 import 'server-only';
 
 import { createClient } from '@supabase/supabase-js';
-import { computeMatchScore } from '@/lib/jobs/application-actions';
+import { computeSkillsOverlapScore } from '@/lib/jobs/match-scoring';
 
 export type JobCandidate = {
   seekerId: string;
@@ -111,7 +111,7 @@ export async function searchCandidatesForJob(
       email: s.email as string,
       headline: (s.headline as string) || null,
       skills,
-      matchScore: computeMatchScore(skills, requiredSkills),
+      matchScore: computeSkillsOverlapScore(skills, requiredSkills),
       createdAt: s.created_at as string,
       inviteStatus: (inviteMap.get(s.id as string) ?? null) as JobCandidate['inviteStatus'],
     };

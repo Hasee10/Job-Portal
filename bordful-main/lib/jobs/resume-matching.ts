@@ -2,7 +2,7 @@ import type { Job } from '@/lib/db/airtable';
 
 const TAG_SPLIT_REGEX = /[,;\n]+/;
 
-function splitSkills(value: string | null | undefined): string[] {
+export function splitSkills(value: string | null | undefined): string[] {
   if (!value) return [];
   return value
     .split(TAG_SPLIT_REGEX)
@@ -13,6 +13,8 @@ function splitSkills(value: string | null | undefined): string[] {
 export type ResumeJobMatch = {
   job: Job;
   matchedSkills: string[];
+  aiScore?: number;
+  aiReasoning?: string;
 };
 
 // Overlaps the seeker's resume skills against each job's Airtable `skills`

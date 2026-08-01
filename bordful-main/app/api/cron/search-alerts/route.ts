@@ -14,7 +14,9 @@ import {
   listSeekerResumesForMatching,
   markSeekerResumeMatched,
 } from '@/lib/jobs/resume-actions';
-import { matchJobsBySkills } from '@/lib/jobs/resume-matching';
+import { matchJobsBySkills, splitSkills, type ResumeJobMatch } from '@/lib/jobs/resume-matching';
+import { scoreJobMatch } from '@/lib/jobs/match-scoring';
+import type { ResumeContent } from '@/lib/jobs/resume-actions';
 import { generateJobSlug } from '@/lib/utils/slugify';
 
 export const dynamic = 'force-dynamic';
@@ -94,15 +96,23 @@ async function processFrequency(
 }
 
 const MAX_RESUME_MATCHES_PER_EMAIL = 10;
+// AI scoring is one model call per job - bounded to the top few overlap
+// matches per seeker so a run with many subscribers can't blow the cron's
+// maxDuration. The rest still show in the email with the plain skill list.
+const MAX_AI_SCORED_MATCHES_PER_EMAIL = 3;
 
-function buildResumeMatchEmailHtml(matches: { job: Job; matchedSkills: string[] }[]): string {
+function buildResumeMatchEmailHtml(matches: ResumeJobMatch[]): string {
   const rows = matches
-    .map(({ job, matchedSkills }) => {
+    .map(({ job, matchedSkills, aiScore, aiReasoning }) => {
       const url = `${config.url}/jobs/${generateJobSlug(job.title, job.company)}`;
+      const detail =
+        aiScore !== undefined
+          ? `${aiScore}% match${aiReasoning ? ` &mdash; ${h(aiReasoning)}` : ''}`
+          : `Matches: ${matchedSkills.map(h).join(', ')}`;
       return `<li style="margin-bottom:12px;">
         <a href="${h(url)}" style="font-weight:600;color:#18181b;text-decoration:none;">${h(job.title)}</a>
         <div style="color:#71717a;font-size:13px;">${h(job.company)}${job.workplace_city ? ` &middot; ${h(job.workplace_city)}` : ''}</div>
-        <div style="color:#a1a1aa;font-size:12px;">Matches: ${matchedSkills.map(h).join(', ')}</div>
+        <div style="color:#a1a1aa;font-size:12px;">${detail}</div>
       </li>`;
     })
     .join('');
@@ -116,6 +126,27 @@ function buildResumeMatchEmailHtml(matches: { job: Job; matchedSkills: string[] 
       <p style="color:#a1a1aa;font-size:12px;">You&rsquo;re receiving this because you uploaded a resume on ${h(config.title)}.</p>
     </div>
   `;
+}
+
+// Mutates the top few matches in place, adding an AI fit score/reasoning.
+// Sequential and capped (not Promise.all across all matches) so one slow
+// seeker's resume can't fan out into dozens of concurrent AI calls across
+// a run with many subscribers.
+async function enrichTopMatchesWithAiScore(
+  matches: ResumeJobMatch[],
+  resume: ResumeContent
+): Promise<void> {
+  for (const match of matches.slice(0, MAX_AI_SCORED_MATCHES_PER_EMAIL)) {
+    const result = await scoreJobMatch(resume, {
+      title: match.job.title,
+      description: match.job.description,
+      skills: splitSkills(match.job.skills),
+    });
+    if (result.method === 'ai') {
+      match.aiScore = result.score;
+      match.aiReasoning = result.reasoning;
+    }
+  }
 }
 
 async function processResumeMatches(jobs: Job[]): Promise<number> {
@@ -138,6 +169,8 @@ async function processResumeMatches(jobs: Job[]): Promise<number> {
       MAX_RESUME_MATCHES_PER_EMAIL
     );
     if (scored.length === 0) continue;
+
+    await enrichTopMatchesWithAiScore(scored, resume.content);
 
     try {
       await sendEmail({

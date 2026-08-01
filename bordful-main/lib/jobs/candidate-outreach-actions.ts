@@ -1,7 +1,7 @@
 import 'server-only';
 
 import { createClient } from '@supabase/supabase-js';
-import { computeMatchScore } from '@/lib/jobs/application-actions';
+import { computeSkillsOverlapScore } from '@/lib/jobs/match-scoring';
 
 export type CandidateOutreach = {
   id: string;
@@ -117,7 +117,7 @@ export async function listOptInCandidates(
       email: s.email as string,
       headline: (s.headline as string) || null,
       skills,
-      matchScore: computeMatchScore(skills, requiredSkills),
+      matchScore: computeSkillsOverlapScore(skills, requiredSkills),
       createdAt: s.created_at as string,
       outreachStatus: (outreachMap.get(s.id as string) ?? null) as OptInCandidate['outreachStatus'],
     };

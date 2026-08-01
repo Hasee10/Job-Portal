@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { JobAssistantWidget } from '@/components/employer/JobAssistantWidget';
 import { useToast } from '@/hooks/use-toast';
 import type { CareerLevel, Job } from '@/lib/db/airtable';
 import type { PostedJob } from '@/lib/jobs/employer-job-actions';
@@ -127,6 +128,7 @@ export function JobPostForm({
   };
 
   return (
+    <>
     <form className="space-y-6" onSubmit={handleSubmit}>
       <div className="space-y-1.5">
         <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300" htmlFor="job-title">
@@ -353,5 +355,20 @@ export function JobPostForm({
         </Button>
       </div>
     </form>
+
+    <JobAssistantWidget
+      draft={{
+        title,
+        description,
+        type,
+        workplaceType,
+        workplaceCity,
+        workplaceCountry,
+        skills,
+        requiredSkills: requiredSkillsRaw.split(',').map((s) => s.trim()).filter(Boolean),
+      }}
+      onApplyDescription={setDescription}
+    />
+    </>
   );
 }

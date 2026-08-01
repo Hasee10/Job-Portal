@@ -3,6 +3,7 @@ import 'server-only';
 import { createClient } from '@supabase/supabase-js';
 import type { ResumeContent } from '@/lib/jobs/resume-actions';
 import type { JobOwner } from '@/lib/jobs/employer-job-actions';
+import { scoreJobMatch } from '@/lib/jobs/match-scoring';
 
 export type ApplicationStatus = 'new' | 'reviewed' | 'shortlisted' | 'rejected' | 'hired';
 
@@ -58,17 +59,6 @@ function rowToApplication(row: Record<string, unknown>): JobApplication {
   };
 }
 
-// Percentage overlap between a resume's skills and a job's required skills.
-// No required skills set means every applicant scores 100 - the employer
-// hasn't opted into auto-shortlisting criteria, so nothing gets auto-flagged
-// out based on a signal they never configured.
-export function computeMatchScore(resumeSkills: string[], requiredSkills: string[]): number {
-  if (requiredSkills.length === 0) return 100;
-  const normalizedResumeSkills = new Set(resumeSkills.map((s) => s.trim().toLowerCase()));
-  const matched = requiredSkills.filter((s) => normalizedResumeSkills.has(s.trim().toLowerCase()));
-  return Math.round((matched.length / requiredSkills.length) * 100);
-}
-
 export async function submitApplication(
   seekerId: string,
   jobId: string,
@@ -78,7 +68,9 @@ export async function submitApplication(
 
   const { data: job, error: jobError } = await supabase
     .from('jobs')
-    .select('id, accepts_applications, required_skills, auto_shortlist_threshold, is_active')
+    .select(
+      'id, title, description, accepts_applications, required_skills, auto_shortlist_threshold, is_active'
+    )
     .eq('id', jobId)
     .maybeSingle();
 
@@ -88,13 +80,18 @@ export async function submitApplication(
   }
 
   const requiredSkills = (job.required_skills as string[]) || [];
-  const matchScore = computeMatchScore(input.resumeSnapshot.skills, requiredSkills);
+  const match = await scoreJobMatch(input.resumeSnapshot, {
+    title: job.title as string,
+    description: job.description as string | null,
+    skills: requiredSkills,
+  });
+  const matchScore = match.score;
   const threshold = (job.auto_shortlist_threshold as number) ?? 70;
   // Auto-shortlisting only fires when the employer/recruiter has actually
-  // configured required skills. With no criteria set, computeMatchScore
-  // returns 100 for everyone (so no one is unfairly penalized) - but that
-  // would otherwise auto-shortlist every single applicant regardless of
-  // fit, which isn't a real signal and shouldn't bypass manual review.
+  // configured required skills. With no criteria set, the score defaults to
+  // 100 for everyone (so no one is unfairly penalized) - but that would
+  // otherwise auto-shortlist every single applicant regardless of fit,
+  // which isn't a real signal and shouldn't bypass manual review.
   const autoShortlisted = requiredSkills.length > 0 && matchScore >= threshold;
 
   const { data, error } = await supabase
