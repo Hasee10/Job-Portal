@@ -6,6 +6,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { ApplyButton } from '@/components/jobs/ApplyButton';
 import { GenerateResumeButton } from '@/components/jobs/GenerateResumeButton';
+import { ResumePanelProvider } from '@/components/jobs/ResumePanelProvider';
 import { JobApplicationActions } from '@/components/jobs/JobApplicationActions';
 import { SaveJobButton } from '@/components/jobs/SaveJobButton';
 import { ClientBreadcrumb } from '@/components/ui/client-breadcrumb';
@@ -256,6 +257,7 @@ export default async function JobPostPage({
     <main className="container py-6">
       <JobSchema job={job} slug={slug} />
 
+      <ResumePanelProvider>
       <div className="flex flex-col gap-4 md:flex-row lg:gap-8">
         {/* Main content */}
         <article className="order-1 flex-[3]">
@@ -297,7 +299,12 @@ export default async function JobPostPage({
                     jobTitle={job.title}
                   />
                   <SaveJobButton jobId={job.id} />
-                  <GenerateResumeButton jobId={job.id} />
+                  <GenerateResumeButton
+                    jobCompany={job.company}
+                    jobId={job.id}
+                    jobSlug={slug}
+                    jobTitle={job.title}
+                  />
                 </div>
               </div>
             </div>
@@ -591,6 +598,7 @@ export default async function JobPostPage({
           </div>
         </aside>
       </div>
+      </ResumePanelProvider>
     </main>
   );
 }

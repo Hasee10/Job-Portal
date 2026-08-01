@@ -4,24 +4,31 @@ import { Sparkles } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
+import { useResumePanel } from '@/components/jobs/ResumePanelProvider';
 
 export function GenerateResumeButton({
   jobId,
+  jobSlug,
+  jobTitle,
+  jobCompany,
   className = '',
 }: {
   jobId: string;
+  jobSlug: string;
+  jobTitle: string;
+  jobCompany: string;
   className?: string;
 }) {
   const { status } = useSession();
   const router = useRouter();
+  const { open } = useResumePanel();
 
   const handleClick = () => {
-    const target = `/account/resume?jobId=${encodeURIComponent(jobId)}`;
     if (status !== 'authenticated') {
-      router.push(`/account/sign-in?callbackUrl=${encodeURIComponent(target)}`);
+      router.push(`/account/sign-in?callbackUrl=${encodeURIComponent(`/jobs/${jobSlug}`)}`);
       return;
     }
-    router.push(target);
+    open({ id: jobId, title: jobTitle, company: jobCompany });
   };
 
   return (

@@ -4,24 +4,35 @@ import { useState } from 'react';
 import { Bot, Loader2, Send, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import type { ResumeContent } from '@/lib/jobs/resume-actions';
 
 type ChatMessage = { role: 'user' | 'assistant'; content: string };
 
-// Floating assistant for the Resume builder page: drafts/improves a summary,
-// answers questions about how the builder/tailoring feature works, and
-// reviews the resume. Rewritten summaries come back as plain text (per the
-// route's system prompt) so they can be inserted directly into the form.
+// Loosely typed on purpose: this widget is reused both on the Resume
+// builder page (ResumeContent shape) and inside the job-page tailoring
+// panel (TailoredResumeContent shape, which has bullets[] instead of a
+// single description string per role) - the API route only stringifies
+// whatever's here for grounding context, it doesn't need a strict shape.
+type ResumeDraft = Record<string, unknown>;
+
+// Assistant for resume help: drafts/improves a summary, answers questions
+// about how the builder/tailoring feature works, and reviews the resume.
+// Rewritten summaries come back as plain text (per the route's system
+// prompt) so they can be inserted directly into the form. `variant`
+// controls whether this renders as the usual floating bottom-right bubble
+// (Resume builder page) or as an always-open panel filling its parent
+// (embedded inside the job-page tailoring panel).
 export function ResumeAssistantWidget({
   content,
   targetJob,
   onApplySummary,
+  variant = 'floating',
 }: {
-  content: ResumeContent;
+  content: ResumeDraft;
   targetJob?: { title: string; company: string } | null;
   onApplySummary: (text: string) => void;
+  variant?: 'floating' | 'embedded';
 }) {
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(variant === 'embedded');
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -69,28 +80,28 @@ export function ResumeAssistantWidget({
   // chat answer or FAQ response.
   const looksLikeFieldText = (text: string) => text.length > 120;
 
-  return (
-    <div className="fixed bottom-6 right-6 z-50">
-      {isOpen && (
-        <div className="mb-3 flex h-[28rem] w-80 flex-col rounded-xl border border-zinc-200 bg-background shadow-xl dark:border-zinc-800 sm:w-96">
-          <div className="flex items-center justify-between border-b border-zinc-200 px-4 py-3 dark:border-zinc-800">
-            <div className="flex items-center gap-2">
-              <Bot className="h-4 w-4 text-primary" />
-              <span className="font-semibold text-sm text-zinc-900 dark:text-zinc-50">
-                Resume assistant
-              </span>
-            </div>
-            <button
-              aria-label="Close assistant"
-              className="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200"
-              onClick={() => setIsOpen(false)}
-              type="button"
-            >
-              <X className="h-4 w-4" />
-            </button>
+  const panelBody = (
+    <>
+      {variant === 'floating' && (
+        <div className="flex items-center justify-between border-b border-zinc-200 px-4 py-3 dark:border-zinc-800">
+          <div className="flex items-center gap-2">
+            <Bot className="h-4 w-4 text-primary" />
+            <span className="font-semibold text-sm text-zinc-900 dark:text-zinc-50">
+              Resume assistant
+            </span>
           </div>
+          <button
+            aria-label="Close assistant"
+            className="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200"
+            onClick={() => setIsOpen(false)}
+            type="button"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+      )}
 
-          <div className="flex-1 space-y-3 overflow-y-auto px-4 py-3">
+      <div className="flex-1 space-y-3 overflow-y-auto px-4 py-3">
             {messages.length === 0 && (
               <div className="space-y-2">
                 <p className="text-xs text-zinc-500 dark:text-zinc-400">
@@ -172,6 +183,22 @@ export function ResumeAssistantWidget({
               <Send className="h-4 w-4" />
             </Button>
           </form>
+    </>
+  );
+
+  if (variant === 'embedded') {
+    return (
+      <div className="flex h-full max-h-[26rem] flex-col rounded-xl border border-zinc-200 bg-background dark:border-zinc-800">
+        {panelBody}
+      </div>
+    );
+  }
+
+  return (
+    <div className="fixed bottom-6 right-6 z-50">
+      {isOpen && (
+        <div className="mb-3 flex h-[28rem] w-80 flex-col rounded-xl border border-zinc-200 bg-background shadow-xl dark:border-zinc-800 sm:w-96">
+          {panelBody}
         </div>
       )}
 
