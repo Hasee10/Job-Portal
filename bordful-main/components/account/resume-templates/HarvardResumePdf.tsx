@@ -1,5 +1,26 @@
-import { Document, Page, StyleSheet, Text, View } from '@react-pdf/renderer';
+import { Document, Font, Page, StyleSheet, Text, View } from '@react-pdf/renderer';
 import type { TailoredResumeContent } from '@/lib/jobs/tailored-resume-types';
+
+// The base-14 "Times-Roman"/"Times-Bold" aliases aren't real embedded fonts -
+// react-pdf asks whatever PDF viewer opens the file to substitute its own
+// serif font and line metrics, which is why the same PDF looked tight in one
+// viewer and had huge gaps between wrapped bullet lines in another. Tinos is
+// a metric-compatible open-source match for Times New Roman; registering and
+// embedding it directly makes line spacing identical in every viewer.
+// react-pdf's font loader requires an absolute URL (it checks with is-url,
+// which a root-relative path fails) - this only ever runs client-side (this
+// component is rendered inside a pdf()/toBlob() call from a click handler),
+// so window.location.origin is always available by the time it matters.
+const fontBaseUrl = typeof window === 'undefined' ? '' : window.location.origin;
+Font.register({
+  family: 'Tinos',
+  fonts: [
+    { src: `${fontBaseUrl}/fonts/Tinos-Regular.ttf` },
+    { src: `${fontBaseUrl}/fonts/Tinos-Bold.ttf`, fontWeight: 'bold' },
+    { src: `${fontBaseUrl}/fonts/Tinos-Italic.ttf`, fontStyle: 'italic' },
+    { src: `${fontBaseUrl}/fonts/Tinos-BoldItalic.ttf`, fontWeight: 'bold', fontStyle: 'italic' },
+  ],
+});
 
 // PDF version of the same Harvard-style layout as HarvardResumePreview.tsx.
 const styles = StyleSheet.create({
@@ -7,18 +28,18 @@ const styles = StyleSheet.create({
     paddingVertical: 20,
     paddingHorizontal: 50,
     fontSize: 9.3,
-    fontFamily: 'Times-Roman',
+    fontFamily: 'Tinos',
     color: '#18181b',
   },
   header: { textAlign: 'center', marginBottom: 6 },
-  name: { fontSize: 14.5, fontFamily: 'Times-Bold', letterSpacing: 1 },
+  name: { fontSize: 14.5, fontWeight: 'bold', letterSpacing: 1 },
   contact: { fontSize: 8.3, color: '#52525b', marginTop: 2 },
   headline: { fontSize: 9.3, fontStyle: 'italic', marginTop: 2 },
   summary: { marginBottom: 5, lineHeight: 1.1 },
   section: { marginBottom: 5 },
   sectionTitle: {
     fontSize: 9.3,
-    fontFamily: 'Times-Bold',
+    fontWeight: 'bold',
     letterSpacing: 1,
     textTransform: 'uppercase',
     borderBottomWidth: 1,
@@ -28,7 +49,7 @@ const styles = StyleSheet.create({
   },
   entry: { marginBottom: 3 },
   entryRow: { flexDirection: 'row', justifyContent: 'space-between' },
-  entryTitle: { fontFamily: 'Times-Bold' },
+  entryTitle: { fontWeight: 'bold' },
   entryDates: { fontSize: 8.3, color: '#52525b' },
   bullet: { flexDirection: 'row', marginTop: 0, paddingLeft: 9 },
   bulletDot: { width: 9, lineHeight: 1.12 },
