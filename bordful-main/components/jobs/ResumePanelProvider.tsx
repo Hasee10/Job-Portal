@@ -23,18 +23,40 @@ export function useResumePanel(): ResumePanelContextValue {
 }
 
 // Wraps a job page's content: when the tailoring panel opens, the wrapped
-// content gets pushed left (margin-right) to make room for the panel on the
-// right, rather than the panel floating over everything as a plain overlay.
+// content gets pushed left (margin-right, desktop only) to make room for the
+// panel on the right, rather than the panel floating over everything as a
+// plain overlay. The margin tracks the panel's collapsed/expanded width so
+// the push stays in sync when the user widens the panel.
 export function ResumePanelProvider({ children }: { children: React.ReactNode }) {
   const [job, setJob] = useState<PanelJobRef | null>(null);
+  const [isExpanded, setIsExpanded] = useState(false);
   const isOpen = job !== null;
 
   return (
-    <ResumePanelContext.Provider value={{ open: setJob }}>
-      <div className={cn('transition-[margin] duration-300 ease-in-out', isOpen && 'lg:mr-[440px]')}>
+    <ResumePanelContext.Provider
+      value={{
+        open: (nextJob) => {
+          setJob(nextJob);
+          setIsExpanded(false);
+        },
+      }}
+    >
+      <div
+        className={cn(
+          'transition-[margin] duration-300 ease-in-out',
+          isOpen && (isExpanded ? 'lg:mr-[760px]' : 'lg:mr-[440px]')
+        )}
+      >
         {children}
       </div>
-      {job && <TailoredResumePanel job={job} onClose={() => setJob(null)} />}
+      {job && (
+        <TailoredResumePanel
+          isExpanded={isExpanded}
+          job={job}
+          onClose={() => setJob(null)}
+          onToggleExpand={() => setIsExpanded((v) => !v)}
+        />
+      )}
     </ResumePanelContext.Provider>
   );
 }
