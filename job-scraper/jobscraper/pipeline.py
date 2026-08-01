@@ -5,6 +5,7 @@ from pathlib import Path
 
 from jobscraper import config, db, scoring, sweeper
 from jobscraper.classify import classify_career_level, classify_employment_type
+from jobscraper.enrichment import enrich_jobs
 from jobscraper.sanitize import clean_description
 from jobscraper.sources import API_SOURCES
 from jobscraper.sources.base import get_run_results, record_skipped, reset_run_results, safe_fetch
@@ -30,12 +31,17 @@ def collect_api_sources() -> list[dict]:
     return jobs
 
 
-def collect_browser_sources(muse_jobs: list[dict]) -> list[dict]:
+def collect_browser_sources(muse_jobs: list[dict], jooble_jobs: list[dict]) -> tuple[list[dict], dict]:
     """Runs BROWSER_SOURCES, and - in the same browser session - resolves
     The Muse's real apply URLs for the API-sourced jobs passed in (mutates
-    them in place; see themuse_resolver for why this needs a real browser).
+    them in place; see themuse_resolver for why this needs a real browser),
+    then runs description enrichment for truncated Jooble postings
+    (jooble_jobs, mutated in place - see jobscraper/enrichment.py), reusing
+    this same session for its browser fallback tier instead of paying
+    Chromium startup cost again.
     """
     jobs: list[dict] = []
+    enrichment_stats = {"attempted": 0, "succeeded": 0, "failed": 0}
     try:
         with browser_session() as browser:
             for module in BROWSER_SOURCES:
@@ -50,18 +56,27 @@ def collect_browser_sources(muse_jobs: list[dict]) -> list[dict]:
                 resolve_themuse_apply_urls(browser, muse_jobs)
             except Exception:
                 logger.exception("themuse apply-url resolution failed, keeping fallback URLs")
+
+            if config.ENABLE_DESCRIPTION_ENRICHMENT:
+                try:
+                    enrichment_stats = enrich_jobs(browser, jooble_jobs)
+                except Exception:
+                    logger.exception(
+                        "description enrichment stage failed, keeping original Jooble descriptions"
+                    )
     except Exception:
         logger.exception(
             "browser session failed to start (CloakBrowser binary missing? "
             "run `python -m cloakbrowser install`) - skipping all browser sources"
         )
-    return jobs
+    return jobs, enrichment_stats
 
 
 def _write_summary(
     upserted: int,
     deactivated_by_source: dict[str, int],
     sweeper_marked: int | None,
+    enrichment_stats: dict,
 ) -> None:
     """Writes a compact JSON summary of the run - read back by the GitHub
     Actions workflow to build a $GITHUB_STEP_SUMMARY block, so a bad run
@@ -80,6 +95,7 @@ def _write_summary(
         "deactivated_by_source": deactivated_by_source,
         "sweeper_marked": sweeper_marked,
         "sources_needing_attention": zero_or_errored,
+        "description_enrichment": enrichment_stats,
     }
     SUMMARY_FILE.write_text(json.dumps(summary, indent=2), encoding="utf-8")
 
@@ -93,6 +109,12 @@ def _write_summary(
             flag = " <-- 0 jobs, check this" if r["count"] == 0 else ""
             logger.info("  %-15s %d jobs%s", r["source"], r["count"], flag)
     logger.info("upserted=%d sweeper_marked=%s deactivated=%s", upserted, sweeper_marked, deactivated_by_source)
+    logger.info(
+        "description enrichment: attempted=%d succeeded=%d failed=%d",
+        enrichment_stats.get("attempted", 0),
+        enrichment_stats.get("succeeded", 0),
+        enrichment_stats.get("failed", 0),
+    )
 
 
 def run(include_browser_sources: bool = True, run_sweeper: bool = True) -> None:
@@ -101,9 +123,13 @@ def run(include_browser_sources: bool = True, run_sweeper: bool = True) -> None:
 
     all_jobs = collect_api_sources()
     presence_reconciled_jobs: dict[str, list[dict]] = {s: [] for s in PRESENCE_RECONCILED_SOURCES}
+    enrichment_stats: dict = {"attempted": 0, "succeeded": 0, "failed": 0}
     if include_browser_sources:
         muse_jobs = [job for job in all_jobs if job.get("source") == "themuse"]
-        browser_jobs = collect_browser_sources(muse_jobs)
+        # all_jobs mutated in place by collect_browser_sources for any Jooble
+        # job it enriches (Jooble is API-only, so its entries already live
+        # in all_jobs at this point).
+        browser_jobs, enrichment_stats = collect_browser_sources(muse_jobs, all_jobs)
         for source in PRESENCE_RECONCILED_SOURCES:
             presence_reconciled_jobs[source] = [
                 job for job in browser_jobs if job.get("source") == source
@@ -152,4 +178,4 @@ def run(include_browser_sources: bool = True, run_sweeper: bool = True) -> None:
         )
 
     sweeper_marked = sweeper.sweep() if run_sweeper else None
-    _write_summary(written, deactivated_by_source, sweeper_marked)
+    _write_summary(written, deactivated_by_source, sweeper_marked, enrichment_stats)

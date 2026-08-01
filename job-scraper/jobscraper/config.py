@@ -138,6 +138,14 @@ SKIP_SOURCES = {
 
 LOG_LEVEL = os.environ.get("LOG_LEVEL", "INFO")
 
+# Fetches full descriptions for truncated Jooble postings (see
+# jobscraper/enrichment.py) - fail-soft and time-budgeted, so this is safe
+# to leave on by default; set ENABLE_DESCRIPTION_ENRICHMENT=false to disable
+# without a code change if it ever needs to be turned off quickly.
+ENABLE_DESCRIPTION_ENRICHMENT = (
+    os.environ.get("ENABLE_DESCRIPTION_ENRICHMENT", "true").strip().lower() != "false"
+)
+
 # How long a job stays in the table after being marked discontinued before
 # retention_cleanup.py permanently deletes it. Supabase's free tier caps the
 # database at 500MB total; the sweeper only ever sets is_active=false, so
