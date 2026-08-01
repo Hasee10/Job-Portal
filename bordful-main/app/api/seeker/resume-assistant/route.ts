@@ -15,6 +15,21 @@ const MAX_MESSAGE_LENGTH = 4000;
 
 type ChatMessage = { role: 'user' | 'assistant'; content: string };
 
+// The model is told not to use markdown, but strip it defensively anyway -
+// asterisks/hashes/backticks rendered literally (not as bold/headers) in the
+// plain-text chat bubble/textarea, which just looked like broken AI slop.
+function stripMarkdown(text: string): string {
+  return text
+    .replace(/^```[a-z]*\n?/gim, '')
+    .replace(/```\s*$/gim, '')
+    .replace(/\*\*(.+?)\*\*/g, '$1')
+    .replace(/(?<!\w)\*(?!\s)(.+?)(?<!\s)\*(?!\w)/g, '$1')
+    .replace(/^#{1,6}\s+/gm, '')
+    .replace(/^[-*_]{3,}\s*$/gm, '')
+    .replace(/^[ \t]*[-*]\s+/gm, '- ')
+    .trim();
+}
+
 type ResumeDraft = {
   fullName?: string;
   headline?: string;
@@ -58,9 +73,11 @@ ${PLATFORM_CONTEXT}
 
 Rules:
 - When asked to write or rewrite a specific field (summary, headline, or an experience bullet), respond with ONLY that text (no preamble like "Here's a draft:") so it can be pasted directly into the form.
+- Never use markdown syntax anywhere in your replies - no **bold**, no # headings, no backticks, no asterisk bullets. Plain text only, plain hyphens (-) for lists.
 - For everything else (review feedback, questions, brainstorming), respond conversationally and concisely.
 - Never invent facts about the seeker's work history, employers, or skills beyond what they've told you or is already in their saved resume content.
-- If the resume looks fine, say so briefly rather than inventing nitpicks.`;
+- If the resume looks fine, say so briefly rather than inventing nitpicks.
+- This chat cannot generate a full tailored resume for a specific job - if asked, tell the user to use the "Tailor for a job" section further down this page instead, which is built for that.`;
 
 export async function POST(request: Request) {
   const session = await auth();
@@ -100,7 +117,7 @@ export async function POST(request: Request) {
       { temperature: 0.5, maxTokens: 1200 }
     );
 
-    return NextResponse.json({ reply: output });
+    return NextResponse.json({ reply: stripMarkdown(output) });
   } catch (error) {
     if (error instanceof AIProviderError && error.notConfigured) {
       return NextResponse.json(
