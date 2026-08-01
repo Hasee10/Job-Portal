@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
+import { ResumeAssistantWidget } from '@/components/account/ResumeAssistantWidget';
 import type {
   ResumeContent,
   ResumeEducation,
@@ -461,6 +462,12 @@ export function ResumeBuilder({
           )}
         </div>
       </div>
+
+      <ResumeAssistantWidget
+        content={content}
+        onApplySummary={(text) => setContent((p) => ({ ...p, summary: text }))}
+        targetJob={targetJob}
+      />
     </div>
   );
 }
