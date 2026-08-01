@@ -220,9 +220,12 @@ export function ResumeBuilder({
       const a = document.createElement('a');
       a.href = url;
       a.download = `${tailoredResume.fullName || 'resume'}-tailored.pdf`;
+      document.body.appendChild(a);
       a.click();
+      a.remove();
       URL.revokeObjectURL(url);
-    } catch {
+    } catch (error) {
+      console.error('[ResumeBuilder] PDF generation failed:', error);
       toast({
         title: 'Could not generate PDF',
         description: 'Please try again.',

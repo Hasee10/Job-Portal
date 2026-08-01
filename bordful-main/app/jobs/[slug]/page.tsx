@@ -254,10 +254,10 @@ export default async function JobPostPage({
   }
 
   return (
+    <ResumePanelProvider>
     <main className="container py-6">
       <JobSchema job={job} slug={slug} />
 
-      <ResumePanelProvider>
       <div className="flex flex-col gap-4 md:flex-row lg:gap-8">
         {/* Main content */}
         <article className="order-1 flex-[3]">
@@ -598,7 +598,7 @@ export default async function JobPostPage({
           </div>
         </aside>
       </div>
-      </ResumePanelProvider>
     </main>
+    </ResumePanelProvider>
   );
 }

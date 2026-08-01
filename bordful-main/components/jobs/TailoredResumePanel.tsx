@@ -35,6 +35,7 @@ export function TailoredResumePanel({
   const [needsResume, setNeedsResume] = useState(false);
   const [tailoredResume, setTailoredResume] = useState<TailoredResumeContent | null>(null);
   const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
+  const [pdfError, setPdfError] = useState<string | null>(null);
 
   useEffect(() => {
     if (status !== 'authenticated') return;
@@ -88,6 +89,7 @@ export function TailoredResumePanel({
   const handleDownloadPdf = async () => {
     if (!tailoredResume) return;
     setIsDownloadingPdf(true);
+    setPdfError(null);
     try {
       const [{ pdf }, { HarvardResumePdf }] = await Promise.all([
         import('@react-pdf/renderer'),
@@ -98,8 +100,13 @@ export function TailoredResumePanel({
       const a = document.createElement('a');
       a.href = url;
       a.download = `${tailoredResume.fullName || 'resume'}-tailored.pdf`;
+      document.body.appendChild(a);
       a.click();
+      a.remove();
       URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('[TailoredResumePanel] PDF generation failed:', err);
+      setPdfError('Could not generate the PDF. Please try again.');
     } finally {
       setIsDownloadingPdf(false);
     }
@@ -179,6 +186,7 @@ export function TailoredResumePanel({
                 {isDownloadingPdf ? 'Preparing PDF...' : 'Download as PDF'}
               </Button>
             </div>
+            {pdfError && <p className="text-xs text-red-600 dark:text-red-400">{pdfError}</p>}
             <div className="rounded-md border">
               <HarvardResumePreview resume={tailoredResume} />
             </div>
