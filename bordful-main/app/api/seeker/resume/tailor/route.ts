@@ -5,6 +5,10 @@ import { aiChatCompletion } from '@/lib/ai/provider';
 import { AIProviderError } from '@/lib/ai/types';
 import { checkAndIncrementResumeTailorUsage } from '@/lib/jobs/entitlements-actions';
 import type { ResumeContent } from '@/lib/jobs/resume-actions';
+import {
+  isTailoredResumeContent,
+  type TailoredResumeContent,
+} from '@/lib/jobs/tailored-resume-types';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 30;
@@ -95,23 +99,15 @@ export async function POST(request: Request) {
     );
   }
 
-  const formattingRules =
-    'Output plain text only, formatted like a real document ready to paste ' +
-    'into an email or application form: no markdown syntax whatsoever - no ' +
-    '**bold**, no # headings, no backticks, no asterisk bullets. Use plain ' +
-    'hyphens (-) for any list items and blank lines between sections. Do ' +
-    'not include any preamble, explanation, or commentary ("Here is your ' +
-    'tailored resume:", "Sure, here\'s...") before or after the content - ' +
-    'output only the resume or letter itself, nothing else. Only use ' +
-    'contact details (email, phone, address) that are explicitly given to ' +
-    'you below - if none is given, omit the contact line entirely. Never ' +
-    'invent a placeholder email like name@example.com or any other ' +
+  const contactRule =
+    'Only use contact details (email, phone, address) that are explicitly ' +
+    'given to you below - if none is given, leave the contact field empty. ' +
+    'Never invent a placeholder email like name@example.com or any other ' +
     'placeholder contact info.';
-
-  const systemPrompt =
-    mode === 'cover-letter'
-      ? `You are an expert career coach. Write a concise, specific, and honest cover letter (max 350 words) based only on the facts in the resume provided. Do not invent experience, skills, or achievements that are not in the resume. Address why the candidate fits this specific role. Write in a natural, human voice - not generic AI phrasing ("I am excited to apply", "I believe I would be a great fit"). ${formattingRules}`
-      : `You are an expert resume writer. Rewrite the given resume content to better emphasize the experience and skills most relevant to the target job. Do not invent experience, skills, employers, or achievements that are not present in the original resume - only reorder, re-emphasize, and rephrase what is already there. Structure it like a real resume: name and headline on top, then section headers in ALL CAPS (EXPERIENCE, EDUCATION, SKILLS). ${formattingRules}`;
+  const factsRule =
+    'Do not invent experience, skills, employers, or achievements that are ' +
+    'not present in the original resume - only reorder, re-emphasize, and ' +
+    'rephrase what is already there.';
 
   const userPrompt = [
     jobTitle ? `Target role: ${jobTitle}${jobCompany ? ` at ${jobCompany}` : ''}` : null,
@@ -121,16 +117,122 @@ export async function POST(request: Request) {
     .filter(Boolean)
     .join('\n\n');
 
-  try {
-    const output = await aiChatCompletion(
-      [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userPrompt },
-      ],
-      { temperature: 0.4, maxTokens: 1200 }
-    );
+  if (mode === 'cover-letter') {
+    const formattingRules =
+      'Output plain text only, formatted like a real document ready to ' +
+      'paste into an email or application form: no markdown syntax ' +
+      'whatsoever - no **bold**, no # headings, no backticks, no asterisk ' +
+      'bullets. Use plain hyphens (-) for any list items and blank lines ' +
+      'between sections. Do not include any preamble, explanation, or ' +
+      'commentary ("Here is your cover letter:", "Sure, here\'s...") ' +
+      `before or after the content - output only the letter itself, nothing else. ${contactRule}`;
+    const systemPrompt = `You are an expert career coach. Write a concise, specific, and honest cover letter (max 350 words) based only on the facts in the resume provided. ${factsRule} Address why the candidate fits this specific role. Write in a natural, human voice - not generic AI phrasing ("I am excited to apply", "I believe I would be a great fit"). ${formattingRules}`;
 
-    return NextResponse.json({ output: stripMarkdown(output) });
+    try {
+      const output = await aiChatCompletion(
+        [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt },
+        ],
+        { temperature: 0.4, maxTokens: 1200 }
+      );
+      return NextResponse.json({ kind: 'text', output: stripMarkdown(output) });
+    } catch (error) {
+      if (error instanceof AIProviderError && error.notConfigured) {
+        return NextResponse.json(
+          { error: 'AI tailoring is not available yet on this deployment.' },
+          { status: 503 }
+        );
+      }
+      console.error('[api/seeker/resume/tailor] AI request failed:', error);
+      return NextResponse.json(
+        { error: 'Failed to generate tailored content. Please try again.' },
+        { status: 502 }
+      );
+    }
+  }
+
+  // Resume mode returns structured JSON (not a text blob) so the client can
+  // render it as a real document and let the user live-edit individual
+  // fields before exporting to PDF - see HarvardResumePreview/Pdf.
+  const jsonShapeInstructions =
+    'Respond with ONLY a single JSON object (no markdown code fence, no ' +
+    'preamble, no commentary before or after) matching exactly this shape:\n' +
+    '{"fullName": string, "contact": string, "headline": string, ' +
+    '"summary": string, "experience": [{"title": string, "company": ' +
+    'string, "dates": string, "bullets": string[]}], "education": ' +
+    '[{"school": string, "degree": string, "year": string}], "skills": ' +
+    'string[]}\n' +
+    'Rewrite bullets and summary to emphasize what is most relevant to the ' +
+    'target job. Keep the same roles/schools/years as the original resume - ' +
+    `only rephrase and reorder content within each. ${factsRule} ${contactRule}`;
+  const systemPrompt = `You are an expert resume writer producing a tailored, ATS-friendly resume for a specific job. ${jsonShapeInstructions}`;
+
+  function extractJson(raw: string): unknown {
+    const start = raw.indexOf('{');
+    const end = raw.lastIndexOf('}');
+    if (start === -1 || end === -1 || end < start) {
+      throw new Error('No JSON object found in AI response');
+    }
+    return JSON.parse(raw.slice(start, end + 1));
+  }
+
+  function normalizeTailoredResume(parsed: unknown): TailoredResumeContent {
+    if (!isTailoredResumeContent(parsed)) {
+      throw new Error('AI response did not match the expected resume shape');
+    }
+    return {
+      fullName: parsed.fullName,
+      contact: parsed.contact ?? '',
+      headline: parsed.headline,
+      summary: parsed.summary,
+      experience: parsed.experience.map((entry) => ({
+        title: entry?.title ?? '',
+        company: entry?.company ?? '',
+        dates: entry?.dates ?? '',
+        bullets: Array.isArray(entry?.bullets) ? entry.bullets.filter((b) => typeof b === 'string') : [],
+      })),
+      education: parsed.education.map((entry) => ({
+        school: entry?.school ?? '',
+        degree: entry?.degree ?? '',
+        year: entry?.year ?? '',
+      })),
+      skills: parsed.skills.filter((s) => typeof s === 'string'),
+    };
+  }
+
+  const conversation: { role: 'system' | 'user' | 'assistant'; content: string }[] = [
+    { role: 'system', content: systemPrompt },
+    { role: 'user', content: userPrompt },
+  ];
+
+  try {
+    let lastRawOutput = '';
+    let tailored: TailoredResumeContent | null = null;
+
+    // One retry: if the model's first reply isn't valid/complete JSON, tell
+    // it so explicitly and ask again, rather than failing the whole request
+    // over a formatting slip.
+    for (let attempt = 0; attempt < 2 && !tailored; attempt++) {
+      lastRawOutput = await aiChatCompletion(conversation, { temperature: 0.4, maxTokens: 1800 });
+      try {
+        tailored = normalizeTailoredResume(extractJson(lastRawOutput));
+      } catch {
+        conversation.push({ role: 'assistant', content: lastRawOutput });
+        conversation.push({
+          role: 'user',
+          content:
+            'That was not a single valid JSON object matching the required shape. ' +
+            'Respond again with ONLY the corrected JSON object, nothing else.',
+        });
+      }
+    }
+
+    if (!tailored) {
+      throw new Error('AI did not return a valid structured resume after retrying');
+    }
+
+    return NextResponse.json({ kind: 'resume', output: tailored });
   } catch (error) {
     if (error instanceof AIProviderError && error.notConfigured) {
       return NextResponse.json(

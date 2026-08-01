@@ -6,11 +6,13 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { ResumeAssistantWidget } from '@/components/account/ResumeAssistantWidget';
+import { HarvardResumePreview } from '@/components/account/resume-templates/HarvardResumePreview';
 import type {
   ResumeContent,
   ResumeEducation,
   ResumeExperience,
 } from '@/lib/jobs/resume-actions';
+import type { TailoredResumeContent } from '@/lib/jobs/tailored-resume-types';
 
 const EMPTY_RESUME_CONTENT: ResumeContent = {
   fullName: '',
@@ -48,7 +50,12 @@ export function ResumeBuilder({
   const [jobDescription, setJobDescription] = useState('');
   const [mode, setMode] = useState<'resume' | 'cover-letter'>('resume');
   const [isTailoring, setIsTailoring] = useState(false);
-  const [tailoredOutput, setTailoredOutput] = useState<string | null>(null);
+  // Cover-letter mode returns plain text; resume mode returns a structured,
+  // live-editable document (see /api/seeker/resume/tailor) rendered with
+  // HarvardResumePreview and exportable as a PDF with the same layout.
+  const [tailoredText, setTailoredText] = useState<string | null>(null);
+  const [tailoredResume, setTailoredResume] = useState<TailoredResumeContent | null>(null);
+  const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
   const [tailorError, setTailorError] = useState<string | null>(null);
   const [upgradeRequired, setUpgradeRequired] = useState(false);
 
@@ -148,7 +155,8 @@ export function ResumeBuilder({
     }
     setIsTailoring(true);
     setTailorError(null);
-    setTailoredOutput(null);
+    setTailoredText(null);
+    setTailoredResume(null);
     setUpgradeRequired(false);
     try {
       const response = await fetch('/api/seeker/resume/tailor', {
@@ -165,13 +173,63 @@ export function ResumeBuilder({
         setUpgradeRequired(Boolean(data.upgradeRequired));
         throw new Error(data.error || 'Failed to generate tailored content.');
       }
-      setTailoredOutput(data.output);
+      if (data.kind === 'resume') {
+        setTailoredResume(data.output as TailoredResumeContent);
+      } else {
+        setTailoredText(data.output as string);
+      }
     } catch (error) {
       setTailorError(
         error instanceof Error ? error.message : 'Something went wrong.'
       );
     } finally {
       setIsTailoring(false);
+    }
+  };
+
+  const updateTailoredResume = (patch: Partial<TailoredResumeContent>) => {
+    setTailoredResume((prev) => (prev ? { ...prev, ...patch } : prev));
+  };
+
+  const updateTailoredExperience = (
+    index: number,
+    patch: Partial<TailoredResumeContent['experience'][number]>
+  ) => {
+    setTailoredResume((prev) =>
+      prev
+        ? {
+            ...prev,
+            experience: prev.experience.map((entry, i) =>
+              i === index ? { ...entry, ...patch } : entry
+            ),
+          }
+        : prev
+    );
+  };
+
+  const handleDownloadPdf = async () => {
+    if (!tailoredResume) return;
+    setIsDownloadingPdf(true);
+    try {
+      const [{ pdf }, { HarvardResumePdf }] = await Promise.all([
+        import('@react-pdf/renderer'),
+        import('@/components/account/resume-templates/HarvardResumePdf'),
+      ]);
+      const blob = await pdf(<HarvardResumePdf resume={tailoredResume} />).toBlob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${tailoredResume.fullName || 'resume'}-tailored.pdf`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      toast({
+        title: 'Could not generate PDF',
+        description: 'Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsDownloadingPdf(false);
     }
   };
 
@@ -455,9 +513,93 @@ export function ResumeBuilder({
           {tailorError && !upgradeRequired && (
             <p className="text-sm text-red-600 dark:text-red-400">{tailorError}</p>
           )}
-          {tailoredOutput && (
+          {tailoredText && (
             <div className="rounded-md border bg-zinc-50 p-4 text-sm whitespace-pre-wrap dark:bg-zinc-900">
-              {tailoredOutput}
+              {tailoredText}
+            </div>
+          )}
+
+          {tailoredResume && (
+            <div className="mt-2 grid gap-6 lg:grid-cols-2">
+              <div className="space-y-3">
+                <p className="text-sm font-medium">Edit tailored resume</p>
+                <div className="grid gap-2 sm:grid-cols-2">
+                  <Input
+                    onChange={(e) => updateTailoredResume({ fullName: e.target.value })}
+                    placeholder="Full name"
+                    value={tailoredResume.fullName}
+                  />
+                  <Input
+                    onChange={(e) => updateTailoredResume({ contact: e.target.value })}
+                    placeholder="Contact (email/phone)"
+                    value={tailoredResume.contact}
+                  />
+                </div>
+                <Input
+                  onChange={(e) => updateTailoredResume({ headline: e.target.value })}
+                  placeholder="Headline"
+                  value={tailoredResume.headline}
+                />
+                <Textarea
+                  onChange={(e) => updateTailoredResume({ summary: e.target.value })}
+                  placeholder="Summary"
+                  rows={3}
+                  value={tailoredResume.summary}
+                />
+
+                {tailoredResume.experience.map((entry, i) => (
+                  <div className="rounded-md border p-3" key={`tailored-experience-${i}`}>
+                    <div className="grid gap-2 sm:grid-cols-2">
+                      <Input
+                        onChange={(e) => updateTailoredExperience(i, { title: e.target.value })}
+                        placeholder="Title"
+                        value={entry.title}
+                      />
+                      <Input
+                        onChange={(e) => updateTailoredExperience(i, { company: e.target.value })}
+                        placeholder="Company"
+                        value={entry.company}
+                      />
+                    </div>
+                    <Input
+                      className="mt-2"
+                      onChange={(e) => updateTailoredExperience(i, { dates: e.target.value })}
+                      placeholder="Dates"
+                      value={entry.dates}
+                    />
+                    <Textarea
+                      className="mt-2"
+                      onChange={(e) =>
+                        updateTailoredExperience(i, {
+                          bullets: e.target.value.split('\n'),
+                        })
+                      }
+                      placeholder="One bullet point per line"
+                      rows={4}
+                      value={entry.bullets.join('\n')}
+                    />
+                  </div>
+                ))}
+
+                <Input
+                  onChange={(e) =>
+                    updateTailoredResume({
+                      skills: e.target.value.split(',').map((s) => s.trim()).filter(Boolean),
+                    })
+                  }
+                  placeholder="Skills (comma-separated)"
+                  value={tailoredResume.skills.join(', ')}
+                />
+
+                <Button disabled={isDownloadingPdf} onClick={handleDownloadPdf} type="button">
+                  {isDownloadingPdf ? 'Preparing PDF...' : 'Download as PDF'}
+                </Button>
+              </div>
+
+              <div>
+                <p className="mb-2 text-sm font-medium">Preview</p>
+                <HarvardResumePreview resume={tailoredResume} />
+              </div>
             </div>
           )}
         </div>
