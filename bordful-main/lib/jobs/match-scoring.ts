@@ -19,6 +19,26 @@ export function computeSkillsOverlapScore(resumeSkills: string[], jobSkills: str
   return Math.round((matched.length / jobSkills.length) * 100);
 }
 
+// Splits a job's skill list into what the resume already covers vs. what's
+// missing, for the gap-breakdown shown alongside a fit score. Case/whitespace
+// insensitive to match computeSkillsOverlapScore's own comparison.
+export function diffSkills(
+  resumeSkills: string[],
+  jobSkills: string[]
+): { matchedSkills: string[]; missingSkills: string[] } {
+  const normalizedResumeSkills = new Set(resumeSkills.map((s) => s.trim().toLowerCase()));
+  const matchedSkills: string[] = [];
+  const missingSkills: string[] = [];
+  for (const skill of jobSkills) {
+    if (normalizedResumeSkills.has(skill.trim().toLowerCase())) {
+      matchedSkills.push(skill);
+    } else {
+      missingSkills.push(skill);
+    }
+  }
+  return { matchedSkills, missingSkills };
+}
+
 const SCORING_SYSTEM_PROMPT =
   'You score how well a candidate fits a job, using only the resume and job ' +
   'details given - never invent experience or requirements not present in ' +

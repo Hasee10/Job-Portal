@@ -4,37 +4,37 @@ import type { TailoredResumeContent } from '@/lib/jobs/tailored-resume-types';
 // PDF version of the same Harvard-style layout as HarvardResumePreview.tsx.
 const styles = StyleSheet.create({
   page: {
-    paddingVertical: 48,
-    paddingHorizontal: 56,
-    fontSize: 10.5,
+    paddingVertical: 20,
+    paddingHorizontal: 50,
+    fontSize: 9.3,
     fontFamily: 'Times-Roman',
     color: '#18181b',
   },
-  header: { textAlign: 'center', marginBottom: 16 },
-  name: { fontSize: 16, fontFamily: 'Times-Bold', letterSpacing: 1 },
-  contact: { fontSize: 9, color: '#52525b', marginTop: 3 },
-  headline: { fontSize: 10.5, fontStyle: 'italic', marginTop: 3 },
-  summary: { marginBottom: 14, lineHeight: 1.4 },
-  section: { marginBottom: 14 },
+  header: { textAlign: 'center', marginBottom: 6 },
+  name: { fontSize: 14.5, fontFamily: 'Times-Bold', letterSpacing: 1 },
+  contact: { fontSize: 8.3, color: '#52525b', marginTop: 2 },
+  headline: { fontSize: 9.3, fontStyle: 'italic', marginTop: 2 },
+  summary: { marginBottom: 5, lineHeight: 1.1 },
+  section: { marginBottom: 5 },
   sectionTitle: {
-    fontSize: 10.5,
+    fontSize: 9.3,
     fontFamily: 'Times-Bold',
     letterSpacing: 1,
     textTransform: 'uppercase',
     borderBottomWidth: 1,
     borderBottomColor: '#a1a1aa',
-    paddingBottom: 3,
-    marginBottom: 6,
+    paddingBottom: 2,
+    marginBottom: 3,
   },
-  entry: { marginBottom: 8 },
+  entry: { marginBottom: 3 },
   entryRow: { flexDirection: 'row', justifyContent: 'space-between' },
   entryTitle: { fontFamily: 'Times-Bold' },
-  entryDates: { fontSize: 9, color: '#52525b' },
-  bullet: { flexDirection: 'row', marginTop: 2, paddingLeft: 10 },
-  bulletDot: { width: 10, lineHeight: 1.35 },
-  bulletText: { flex: 1, lineHeight: 1.35 },
-  eduRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 3 },
-  skills: { lineHeight: 1.4 },
+  entryDates: { fontSize: 8.3, color: '#52525b' },
+  bullet: { flexDirection: 'row', marginTop: 0, paddingLeft: 9 },
+  bulletDot: { width: 9, lineHeight: 1.12 },
+  bulletText: { flex: 1, lineHeight: 1.12 },
+  eduRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 2 },
+  skills: { lineHeight: 1.15 },
 });
 
 export function HarvardResumePdf({ resume }: { resume: TailoredResumeContent }) {
@@ -79,7 +79,7 @@ export function HarvardResumePdf({ resume }: { resume: TailoredResumeContent }) 
         )}
 
         {resume.education.length > 0 && (
-          <View style={styles.section}>
+          <View style={styles.section} wrap={false}>
             <Text style={styles.sectionTitle}>Education</Text>
             {resume.education.map((entry, i) => (
               <View key={i} style={styles.eduRow}>
@@ -94,7 +94,7 @@ export function HarvardResumePdf({ resume }: { resume: TailoredResumeContent }) 
         )}
 
         {resume.skills.length > 0 && (
-          <View style={styles.section}>
+          <View style={styles.section} wrap={false}>
             <Text style={styles.sectionTitle}>Skills</Text>
             <Text style={styles.skills}>{resume.skills.join(' · ')}</Text>
           </View>

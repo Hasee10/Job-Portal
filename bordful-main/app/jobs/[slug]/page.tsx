@@ -7,6 +7,7 @@ import remarkGfm from 'remark-gfm';
 import { ApplyButton } from '@/components/jobs/ApplyButton';
 import { GenerateResumeButton } from '@/components/jobs/GenerateResumeButton';
 import { JobApplicationActions } from '@/components/jobs/JobApplicationActions';
+import { JobFitBadge } from '@/components/jobs/JobFitBadge';
 import { SaveJobButton } from '@/components/jobs/SaveJobButton';
 import { ClientBreadcrumb } from '@/components/ui/client-breadcrumb';
 import { JobDetailsSidebar } from '@/components/ui/job-details-sidebar';
@@ -305,6 +306,7 @@ export default async function JobPostPage({
                   />
                 </div>
               </div>
+              <JobFitBadge jobId={job.id} />
             </div>
           </div>
 
