@@ -34,11 +34,13 @@ export function HarvardResumePreview({ resume }: { resume: TailoredResumeContent
                   </span>
                   <span className="text-xs text-zinc-600 dark:text-zinc-400">{entry.dates}</span>
                 </div>
-                {entry.bullets.length > 0 && (
+                {entry.bullets.filter((bullet) => bullet.trim().length > 0).length > 0 && (
                   <ul className="mt-1 list-disc space-y-0.5 pl-5 text-sm">
-                    {entry.bullets.map((bullet, j) => (
-                      <li key={j}>{bullet}</li>
-                    ))}
+                    {entry.bullets
+                      .filter((bullet) => bullet.trim().length > 0)
+                      .map((bullet, j) => (
+                        <li key={j}>{bullet}</li>
+                      ))}
                   </ul>
                 )}
               </div>
