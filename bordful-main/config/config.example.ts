@@ -743,15 +743,18 @@ export const config = {
     title: 'Caliber', // The text shown in the navigation bar
     logo: {
       enabled: true, // Set to true to use a custom logo instead of icon + text
-      src: '/caliber.svg', // Path to your logo image (place it in the public directory)
-      width: 140, // Width of the logo in pixels
-      height: 40, // Height of the logo in pixels
+      // Compact "C" monogram badge - the full wordmark (used on the sign-in
+      // page and footer) turns into an illegible blob at nav height, so the
+      // nav gets this self-contained colored icon instead.
+      src: '/caliber-icon.svg',
+      width: 36, // Width of the logo in pixels
+      height: 36, // Height of the logo in pixels
       alt: 'Caliber', // Alt text for the logo
     },
-    // White-stroke variant swapped in automatically for dark mode (see
-    // Nav's logoSrc logic) - the black-stroke logo.src above is invisible
-    // against a dark background otherwise.
-    logoDark: '/caliber-light.svg',
+    // The icon mark above has its own colored background, so it already
+    // works on both light and dark nav bars - no separate dark variant
+    // needed (see Nav's logoSrc logic).
+    logoDark: '/caliber-icon.svg',
     github: {
       show: false, // GitHub removed for now — add your own repo link later
       url: '',

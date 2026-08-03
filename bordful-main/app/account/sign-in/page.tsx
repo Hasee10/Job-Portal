@@ -1,10 +1,9 @@
-import { LogIn } from 'lucide-react';
 import type { Metadata } from 'next';
+import Image from 'next/image';
 import Link from 'next/link';
 import { Suspense } from 'react';
 import { SeekerSignInButtons } from '@/components/auth/SeekerSignInButtons';
 import config from '@/config';
-import { resolveColor } from '@/lib/utils/colors';
 
 export const metadata: Metadata = {
   title: `Sign In | ${config.title}`,
@@ -31,12 +30,22 @@ export default async function SeekerSignInPage({
       <div className="container mx-auto px-4">
         <div className="mx-auto w-full max-w-md">
           <div className="mb-8 text-center">
-            <div
-              className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl text-white"
-              style={{ backgroundColor: resolveColor(config.ui.primaryColor) }}
-            >
-              <LogIn aria-hidden="true" className="h-6 w-6" />
-            </div>
+            <Image
+              alt={config.nav.logo.alt}
+              className="mx-auto mb-6 dark:hidden"
+              height={40}
+              priority
+              src="/caliber.svg"
+              width={140}
+            />
+            <Image
+              alt={config.nav.logo.alt}
+              className="mx-auto mb-6 hidden dark:block"
+              height={40}
+              priority
+              src="/caliber-light.svg"
+              width={140}
+            />
             <h1 className="font-bold text-3xl tracking-tight">
               {isSignUp ? 'Create your account' : 'Sign in'}
             </h1>
