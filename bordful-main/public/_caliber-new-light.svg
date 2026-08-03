@@ -1,0 +1,26 @@
+<svg viewBox="-10 0 456 130" xmlns="http://www.w3.org/2000/svg">
+  <g fill="none" stroke="white" stroke-width="24" stroke-linecap="round" stroke-linejoin="round">
+    <!-- C (capital) -->
+    <path d="M89.1,28.9 A44,44 0 1,0 89.1,91.1"/>
+    <!-- a (lowercase: bowl + short stem) -->
+    <circle cx="132" cy="75" r="29"/>
+    <path d="M161,46 L161,104"/>
+    <!-- L (capital: ascender + foot) -->
+    <path d="M175,16 L175,104 L209,104"/>
+    <!-- i (lowercase: x-height stem + bowtie above) -->
+    <path d="M223,46 L223,104"/>
+    <path d="M223,35 L223,46" stroke-width="8"/>
+    <path d="M207,19 Q216,16 223,27 Q216,38 207,35 Q203,27 207,19 Z" fill="white" stroke="none"/>
+    <path d="M239,19 Q230,16 223,27 Q230,38 239,35 Q243,27 239,19 Z" fill="white" stroke="none"/>
+    <rect x="218" y="19" width="10" height="16" rx="3" fill="white" stroke="none"/>
+    <!-- b (lowercase: ascender + bowl) -->
+    <path d="M253,16 L253,104"/>
+    <circle cx="279" cy="75" r="29"/>
+    <!-- e (lowercase: bowl + crossbar) -->
+    <circle cx="351" cy="75" r="29"/>
+    <path d="M322,75 L380,75"/>
+    <!-- r (lowercase: x-height stem + arm) -->
+    <path d="M394,46 L394,104"/>
+    <path d="M394,46 A18,18 0 0,1 422,64"/>
+  </g>
+</svg>
