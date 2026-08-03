@@ -6,7 +6,6 @@ import type { Job } from '@/lib/db/airtable';
 import {
   listSavedSearchesForNotification,
   markSavedSearchNotified,
-  type SavedSearchForNotification,
   type SavedSearchFrequency,
 } from '@/lib/jobs/saved-search-actions';
 import { matchesSavedSearch } from '@/lib/jobs/saved-search-matching';
@@ -18,40 +17,27 @@ import { matchJobsBySkills, splitSkills, type ResumeJobMatch } from '@/lib/jobs/
 import { scoreJobMatch } from '@/lib/jobs/match-scoring';
 import type { ResumeContent } from '@/lib/jobs/resume-actions';
 import { generateJobSlug } from '@/lib/utils/slugify';
+import { renderJobMatchDigestEmail, type JobMatchDigestRow } from '@/lib/email/templates/job-match-digest';
+import {
+  listRecruitersForCandidateDigest,
+  findNewCandidatesForRecruiter,
+  markCandidateDigestSent,
+} from '@/lib/jobs/candidate-outreach-actions';
+import { renderRecruiterCandidateDigestEmail } from '@/lib/email/templates/recruiter-candidate-digest';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
 
 const MAX_JOBS_PER_EMAIL = 15;
 
-function h(s: string): string {
-  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-}
-
-function buildEmailHtml(
-  search: SavedSearchForNotification,
-  matches: Job[]
-): string {
-  const rows = matches
-    .slice(0, MAX_JOBS_PER_EMAIL)
-    .map((job) => {
-      const url = `${config.url}/jobs/${generateJobSlug(job.title, job.company)}`;
-      return `<li style="margin-bottom:12px;">
-        <a href="${h(url)}" style="font-weight:600;color:#18181b;text-decoration:none;">${h(job.title)}</a>
-        <div style="color:#71717a;font-size:13px;">${h(job.company)}${job.workplace_city ? ` &middot; ${h(job.workplace_city)}` : ''}</div>
-      </li>`;
-    })
-    .join('');
-
-  return `
-    <div style="font-family:sans-serif;max-width:560px;margin:0 auto;">
-      <h2 style="color:#18181b;">${matches.length} new job${matches.length > 1 ? 's' : ''} match &ldquo;${h(search.name)}&rdquo;</h2>
-      <p style="color:#71717a;">Based on your saved search on ${h(config.title)}.</p>
-      <ul style="list-style:none;padding:0;">${rows}</ul>
-      <p><a href="${h(config.url)}" style="color:#18181b;">Browse all jobs</a></p>
-      <p style="color:#a1a1aa;font-size:12px;">You&rsquo;re receiving this because you saved this search on ${h(config.title)}. Manage your saved searches from your account page.</p>
-    </div>
-  `;
+function jobToDigestRow(job: Job, detail: string): JobMatchDigestRow {
+  return {
+    title: job.title,
+    company: job.company,
+    city: job.workplace_city,
+    url: `${config.url}/jobs/${generateJobSlug(job.title, job.company)}`,
+    detail,
+  };
 }
 
 async function processFrequency(
@@ -74,10 +60,17 @@ async function processFrequency(
     if (matches.length === 0) continue;
 
     try {
+      const { subject, html } = renderJobMatchDigestEmail({
+        headline: `${matches.length} new job${matches.length > 1 ? 's' : ''} match "${search.name}"`,
+        contextLine: `Based on your saved search on ${config.title}.`,
+        matches: matches.slice(0, MAX_JOBS_PER_EMAIL).map((job) => jobToDigestRow(job, '')),
+        browseUrl: config.url,
+        reasonForReceiving: 'you saved this search',
+      });
       await sendEmail({
         to: search.seekerEmail,
-        subject: `${matches.length} new job${matches.length > 1 ? 's' : ''} matching "${search.name}"`,
-        html: buildEmailHtml(search, matches),
+        subject,
+        html,
       });
       await markSavedSearchNotified(search.id, [
         ...search.notifiedJobIds,
@@ -101,31 +94,13 @@ const MAX_RESUME_MATCHES_PER_EMAIL = 10;
 // maxDuration. The rest still show in the email with the plain skill list.
 const MAX_AI_SCORED_MATCHES_PER_EMAIL = 3;
 
-function buildResumeMatchEmailHtml(matches: ResumeJobMatch[]): string {
-  const rows = matches
-    .map(({ job, matchedSkills, aiScore, aiReasoning }) => {
-      const url = `${config.url}/jobs/${generateJobSlug(job.title, job.company)}`;
-      const detail =
-        aiScore !== undefined
-          ? `${aiScore}% match${aiReasoning ? ` &mdash; ${h(aiReasoning)}` : ''}`
-          : `Matches: ${matchedSkills.map(h).join(', ')}`;
-      return `<li style="margin-bottom:12px;">
-        <a href="${h(url)}" style="font-weight:600;color:#18181b;text-decoration:none;">${h(job.title)}</a>
-        <div style="color:#71717a;font-size:13px;">${h(job.company)}${job.workplace_city ? ` &middot; ${h(job.workplace_city)}` : ''}</div>
-        <div style="color:#a1a1aa;font-size:12px;">${detail}</div>
-      </li>`;
-    })
-    .join('');
-
-  return `
-    <div style="font-family:sans-serif;max-width:560px;margin:0 auto;">
-      <h2 style="color:#18181b;">${matches.length} new job${matches.length > 1 ? 's' : ''} match your resume skills</h2>
-      <p style="color:#71717a;">Based on the resume you uploaded to ${h(config.title)}.</p>
-      <ul style="list-style:none;padding:0;">${rows}</ul>
-      <p><a href="${h(config.url)}" style="color:#18181b;">Browse all jobs</a></p>
-      <p style="color:#a1a1aa;font-size:12px;">You&rsquo;re receiving this because you uploaded a resume on ${h(config.title)}.</p>
-    </div>
-  `;
+function resumeMatchToDigestRow(match: ResumeJobMatch): JobMatchDigestRow {
+  const { job, matchedSkills, aiScore, aiReasoning } = match;
+  const detail =
+    aiScore !== undefined
+      ? `${aiScore}% match${aiReasoning ? ` — ${aiReasoning}` : ''}`
+      : `Matches: ${matchedSkills.join(', ')}`;
+  return jobToDigestRow(job, detail);
 }
 
 // Mutates the top few matches in place, adding an AI fit score/reasoning.
@@ -173,10 +148,17 @@ async function processResumeMatches(jobs: Job[]): Promise<number> {
     await enrichTopMatchesWithAiScore(scored, resume.content);
 
     try {
+      const { subject, html } = renderJobMatchDigestEmail({
+        headline: `${scored.length} new job${scored.length > 1 ? 's' : ''} match your resume skills`,
+        contextLine: `Based on the resume you uploaded to ${config.title}.`,
+        matches: scored.map(resumeMatchToDigestRow),
+        browseUrl: config.url,
+        reasonForReceiving: 'you uploaded a resume',
+      });
       await sendEmail({
         to: resume.seekerEmail,
-        subject: `${scored.length} new job${scored.length > 1 ? 's' : ''} match your resume skills`,
-        html: buildResumeMatchEmailHtml(scored),
+        subject,
+        html,
       });
       await markSeekerResumeMatched(resume.seekerId, [
         ...resume.matchedJobIds,
@@ -186,6 +168,45 @@ async function processResumeMatches(jobs: Job[]): Promise<number> {
     } catch (error) {
       console.error(
         `[cron/search-alerts] Failed to notify resume matches for seeker ${resume.seekerId}:`,
+        error
+      );
+    }
+  }
+
+  return sent;
+}
+
+const MAX_CANDIDATES_PER_DIGEST = 10;
+
+async function processRecruiterCandidateDigests(): Promise<number> {
+  const recruiters = await listRecruitersForCandidateDigest();
+  let sent = 0;
+
+  for (const recruiter of recruiters) {
+    const candidates = await findNewCandidatesForRecruiter(
+      recruiter.id,
+      recruiter.specialties,
+      recruiter.lastCandidateDigestAt
+    );
+    if (candidates.length === 0) continue;
+
+    try {
+      const { subject, html } = renderRecruiterCandidateDigestEmail({
+        recruiterName: recruiter.name,
+        candidates: candidates.slice(0, MAX_CANDIDATES_PER_DIGEST).map((c) => ({
+          name: c.name || 'A candidate',
+          headline: c.headline,
+          skills: c.skills,
+          matchScore: c.matchScore,
+        })),
+        browseUrl: `${process.env.NEXTAUTH_URL ?? ''}/recruiter/dashboard`,
+      });
+      await sendEmail({ to: recruiter.email, subject, html });
+      await markCandidateDigestSent(recruiter.id);
+      sent++;
+    } catch (error) {
+      console.error(
+        `[cron/search-alerts] Failed to notify recruiter ${recruiter.id} of new candidates:`,
         error
       );
     }
@@ -214,6 +235,7 @@ export async function GET(request: Request) {
     totalSent += await processFrequency(frequency, jobs);
   }
   totalSent += await processResumeMatches(jobs);
+  totalSent += await processRecruiterCandidateDigests();
 
   return NextResponse.json({ ok: true, sent: totalSent });
 }

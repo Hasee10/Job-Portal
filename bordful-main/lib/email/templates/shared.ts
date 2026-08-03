@@ -11,6 +11,20 @@ export const EMAIL_BRAND_COLOR = '#164e63';
 export const EMAIL_BRAND_COLOR_DARK = '#0d3a49';
 export const EMAIL_ACCENT_COLOR = '#38bdf8';
 
+// HTML-escapes a value before it's interpolated into email markup - every
+// template that embeds user-supplied text (names, messages, job titles)
+// must run it through this first. Previously duplicated verbatim in five
+// different route files; consolidated here so there's exactly one place
+// to get it right.
+export function h(s: string): string {
+  return s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 // Same square "C" mark as app/icon.svg (the site favicon) - inlined as an
 // <svg> rather than an <img src> since most email clients strip external
 // image loading by default until the user explicitly allows it, and this
@@ -43,6 +57,10 @@ export function emailHeader(): string {
 export function emailFooter(options?: {
   isReceipt?: boolean;
   audience?: 'employer' | 'seeker' | 'recruiter';
+  // Overrides the default "you created an account" line - for
+  // notification-type sends (outreach, application alerts, digests) where
+  // that framing doesn't apply. Takes precedence over `audience`.
+  customBottomLine?: string;
 }): string {
   // Both of these are transactional (account-creation confirmation, payment
   // receipt) rather than marketing sends, so an unsubscribe link isn't
@@ -50,13 +68,15 @@ export function emailFooter(options?: {
   // entirely rather than emitting a merge-tag placeholder (like
   // {{unsubscribe_url}}) that wouldn't actually get replaced when this HTML
   // is passed through the provider's API as a raw property value.
-  const bottomLine = options?.isReceipt
-    ? 'This is a receipt for your records - keep it for your files.'
-    : options?.audience === 'seeker'
-      ? "You're receiving this because you created a Caliber job seeker account."
-      : options?.audience === 'recruiter'
-        ? "You're receiving this because you created a Caliber recruiter account."
-        : "You're receiving this because you created a Caliber employer account.";
+  const bottomLine = options?.customBottomLine
+    ? options.customBottomLine
+    : options?.isReceipt
+      ? 'This is a receipt for your records - keep it for your files.'
+      : options?.audience === 'seeker'
+        ? "You're receiving this because you created a Caliber job seeker account."
+        : options?.audience === 'recruiter'
+          ? "You're receiving this because you created a Caliber recruiter account."
+          : "You're receiving this because you created a Caliber employer account.";
 
   return `<table align="center" width="100%" cellpadding="0" cellspacing="0" role="presentation">
   <tr><td style="height: 1px; line-height: 1px; font-size: 0; background: #ececef;">&nbsp;</td></tr>

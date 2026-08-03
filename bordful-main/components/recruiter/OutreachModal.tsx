@@ -43,6 +43,7 @@ export function OutreachModal({
           seekerEmail: candidate.email,
           message: message.trim(),
           jobId: jobId ?? null,
+          jobTitle: jobTitle ?? null,
         }),
       });
       const result = await res.json();

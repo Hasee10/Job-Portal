@@ -322,6 +322,113 @@ export async function getSeekerUnreadCount(seekerId: string): Promise<number> {
   return count ?? 0;
 }
 
+export type RecruiterForDigest = {
+  id: string;
+  email: string;
+  name: string;
+  specialties: string[];
+  lastCandidateDigestAt: string | null;
+};
+
+// Recruiters eligible for the new-candidates digest: verified, with at least
+// one specialty to match against (an empty specialty list can't produce a
+// meaningful "matching candidates" email).
+export async function listRecruitersForCandidateDigest(): Promise<RecruiterForDigest[]> {
+  const supabase = getAdminClient();
+  const { data, error } = await supabase
+    .from('recruiter_accounts')
+    .select('id, email, name, specialties, last_candidate_digest_at')
+    .eq('is_verified', true);
+
+  if (error) throw error;
+
+  return (data ?? [])
+    .filter((r) => Array.isArray(r.specialties) && r.specialties.length > 0)
+    .map((r) => ({
+      id: r.id as string,
+      email: r.email as string,
+      name: r.name as string,
+      specialties: r.specialties as string[],
+      lastCandidateDigestAt: (r.last_candidate_digest_at as string) || null,
+    }));
+}
+
+export type NewMatchingCandidate = {
+  seekerId: string;
+  name: string | null;
+  headline: string | null;
+  skills: string[];
+  matchScore: number;
+};
+
+// Opt-in seekers created since the recruiter's last digest, scored against
+// the recruiter's specialties (used as a stand-in for "required skills"
+// since a digest isn't scoped to one job posting). Excludes seekers this
+// recruiter has already reached out to, general or job-scoped.
+export async function findNewCandidatesForRecruiter(
+  recruiterId: string,
+  specialties: string[],
+  since: string | null
+): Promise<NewMatchingCandidate[]> {
+  const supabase = getAdminClient();
+
+  let query = supabase
+    .from('job_seekers')
+    .select('id, name, headline, created_at')
+    .eq('open_to_recruiters', true)
+    .order('created_at', { ascending: false });
+  if (since) query = query.gt('created_at', since);
+
+  const { data: seekers, error } = await query;
+  if (error) throw error;
+  if (!seekers || seekers.length === 0) return [];
+
+  const seekerIds = seekers.map((s) => s.id as string);
+
+  const { data: resumes } = await supabase
+    .from('seeker_resumes')
+    .select('seeker_id, content')
+    .in('seeker_id', seekerIds);
+
+  const resumeMap = new Map<string, string[]>();
+  for (const r of resumes ?? []) {
+    const skills = (r.content as { skills?: string[] })?.skills ?? [];
+    resumeMap.set(r.seeker_id as string, skills);
+  }
+
+  const { data: alreadyContacted } = await supabase
+    .from('candidate_outreach')
+    .select('seeker_id')
+    .eq('recruiter_id', recruiterId)
+    .in('seeker_id', seekerIds);
+  const contactedSet = new Set((alreadyContacted ?? []).map((r) => r.seeker_id as string));
+
+  const candidates: NewMatchingCandidate[] = seekers
+    .filter((s) => !contactedSet.has(s.id as string))
+    .map((s) => {
+      const skills = resumeMap.get(s.id as string) ?? [];
+      return {
+        seekerId: s.id as string,
+        name: (s.name as string) || null,
+        headline: (s.headline as string) || null,
+        skills,
+        matchScore: computeSkillsOverlapScore(skills, specialties),
+      };
+    })
+    .filter((c) => c.matchScore > 0)
+    .sort((a, b) => b.matchScore - a.matchScore);
+
+  return candidates;
+}
+
+export async function markCandidateDigestSent(recruiterId: string): Promise<void> {
+  const supabase = getAdminClient();
+  await supabase
+    .from('recruiter_accounts')
+    .update({ last_candidate_digest_at: new Date().toISOString() })
+    .eq('id', recruiterId);
+}
+
 function rowToOutreach(row: Record<string, unknown>): CandidateOutreach {
   return {
     id: row.id as string,

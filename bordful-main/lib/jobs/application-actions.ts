@@ -63,7 +63,7 @@ export async function submitApplication(
   seekerId: string,
   jobId: string,
   input: { resumeSnapshot: ResumeContent; coverLetter: string | null }
-): Promise<JobApplication> {
+): Promise<{ application: JobApplication; jobTitle: string }> {
   const supabase = getAdminClient();
 
   const { data: job, error: jobError } = await supabase
@@ -115,7 +115,7 @@ export async function submitApplication(
     throw toError(error, 'Failed to submit application.');
   }
 
-  return rowToApplication(data);
+  return { application: rowToApplication(data), jobTitle: job.title as string };
 }
 
 export async function listJobApplications(
@@ -194,4 +194,50 @@ export async function hasSeekerApplied(seekerId: string, jobId: string): Promise
     .eq('job_id', jobId)
     .maybeSingle();
   return Boolean(data);
+}
+
+export type JobOwnerContact = {
+  type: 'employer' | 'recruiter';
+  email: string;
+  name: string;
+};
+
+// A job is owned by exactly one of employer_id/recruiter_id (see JobOwner in
+// employer-job-actions.ts) - this resolves whichever one is set into contact
+// details, so notification emails don't need to care which account type
+// posted the job.
+export async function getJobOwnerContact(jobId: string): Promise<JobOwnerContact | null> {
+  const supabase = getAdminClient();
+  const { data: job } = await supabase
+    .from('jobs')
+    .select('employer_id, recruiter_id')
+    .eq('id', jobId)
+    .maybeSingle();
+  if (!job) return null;
+
+  if (job.recruiter_id) {
+    const { data: recruiter } = await supabase
+      .from('recruiter_accounts')
+      .select('email, name')
+      .eq('id', job.recruiter_id)
+      .maybeSingle();
+    if (!recruiter) return null;
+    return { type: 'recruiter', email: recruiter.email as string, name: recruiter.name as string };
+  }
+
+  if (job.employer_id) {
+    const { data: employer } = await supabase
+      .from('employers')
+      .select('email, company_name')
+      .eq('id', job.employer_id)
+      .maybeSingle();
+    if (!employer) return null;
+    return {
+      type: 'employer',
+      email: employer.email as string,
+      name: (employer.company_name as string) || (employer.email as string),
+    };
+  }
+
+  return null;
 }

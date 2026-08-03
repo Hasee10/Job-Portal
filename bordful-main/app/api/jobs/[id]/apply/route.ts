@@ -1,10 +1,12 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { AIProviderError } from '@/lib/ai/types';
-import { submitApplication } from '@/lib/jobs/application-actions';
+import { submitApplication, getJobOwnerContact } from '@/lib/jobs/application-actions';
 import { getSeekerResume } from '@/lib/jobs/resume-actions';
 import { extractResumeFromPdf } from '@/lib/jobs/resume-extraction';
 import { createRateLimiter, getClientIp } from '@/lib/utils/rate-limit';
+import { sendEmail } from '@/lib/email/smtp';
+import { renderApplicationReceivedEmail } from '@/lib/email/templates/application-received';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 30;
@@ -59,10 +61,34 @@ export async function POST(
   }
 
   try {
-    const application = await submitApplication(session.user.id, id, {
+    const { application, jobTitle } = await submitApplication(session.user.id, id, {
       resumeSnapshot,
       coverLetter,
     });
+
+    // Notify the job owner — fire-and-catch so email failure never blocks the application.
+    try {
+      const owner = await getJobOwnerContact(id);
+      if (owner) {
+        const applicantName = session.user.name || session.user.email || 'A candidate';
+        const pipelineUrl =
+          owner.type === 'recruiter'
+            ? `${process.env.NEXTAUTH_URL ?? ''}/recruiter/jobs/${id}/applications`
+            : `${process.env.NEXTAUTH_URL ?? ''}/dashboard/jobs/${id}/applications`;
+        const { subject, html } = renderApplicationReceivedEmail({
+          ownerType: owner.type,
+          applicantName,
+          jobTitle,
+          matchScore: application.matchScore,
+          autoShortlisted: application.autoShortlisted,
+          pipelineUrl,
+        });
+        await sendEmail({ to: owner.email, subject, html });
+      }
+    } catch (emailErr) {
+      console.error('[api/jobs/[id]/apply] owner notification email failed:', emailErr);
+    }
+
     return NextResponse.json({ application });
   } catch (error) {
     const msg = error instanceof Error ? error.message : 'Failed to submit application.';
