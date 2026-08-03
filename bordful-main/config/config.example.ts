@@ -744,8 +744,8 @@ export const config = {
     logo: {
       enabled: true, // Set to true to use a custom logo instead of icon + text
       src: '/caliber.svg', // Path to your logo image (place it in the public directory)
-      width: 81, // Width of the logo in pixels
-      height: 30, // Height of the logo in pixels
+      width: 140, // Width of the logo in pixels
+      height: 40, // Height of the logo in pixels
       alt: 'Caliber', // Alt text for the logo
     },
     // White-stroke variant swapped in automatically for dark mode (see
@@ -840,8 +840,8 @@ export const config = {
         enabled: true,
         // Use different image from navbar if needed (e.g., light logo for dark footer)
         src: '/caliber-light.svg', // Path to footer-specific logo (light version)
-        width: 81,
-        height: 30,
+        width: 112,
+        height: 32,
         alt: 'Caliber',
       },
     },

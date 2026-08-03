@@ -1,8 +1,10 @@
+import { LogIn } from 'lucide-react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Suspense } from 'react';
 import { SeekerSignInButtons } from '@/components/auth/SeekerSignInButtons';
 import config from '@/config';
+import { resolveColor } from '@/lib/utils/colors';
 
 export const metadata: Metadata = {
   title: `Sign In | ${config.title}`,
@@ -25,35 +27,54 @@ export default async function SeekerSignInPage({
   const isSignUp = intent === 'signup';
 
   return (
-    <main className="min-h-[60vh] bg-background py-16">
+    <main className="flex min-h-[calc(100vh-3.5rem)] items-center bg-gradient-to-b from-zinc-50 to-white py-16 dark:from-zinc-950 dark:to-background">
       <div className="container mx-auto px-4">
-        <div className="mx-auto mb-8 max-w-md text-center">
-          <h1 className="font-bold text-2xl">
-            {isSignUp ? 'Create your account' : 'Sign in'}
-          </h1>
-          <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-            Save jobs and keep track of what you&apos;ve applied to. No
-            password to remember - just continue with your Google or LinkedIn
-            account{isSignUp ? ' to get started' : ''}.
+        <div className="mx-auto w-full max-w-md">
+          <div className="mb-8 text-center">
+            <div
+              className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl text-white"
+              style={{ backgroundColor: resolveColor(config.ui.primaryColor) }}
+            >
+              <LogIn aria-hidden="true" className="h-6 w-6" />
+            </div>
+            <h1 className="font-bold text-3xl tracking-tight">
+              {isSignUp ? 'Create your account' : 'Sign in'}
+            </h1>
+            <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
+              Save jobs and keep track of what you&apos;ve applied to. No
+              password to remember - just continue with your Google or
+              LinkedIn account{isSignUp ? ' to get started' : ''}.
+            </p>
+          </div>
+
+          {/* useSearchParams() (for the post-login callbackUrl) requires a
+              Suspense boundary in the App Router. */}
+          <Suspense fallback={null}>
+            <SeekerSignInButtons />
+          </Suspense>
+
+          <p className="mt-6 text-center text-xs text-zinc-500 dark:text-zinc-500">
+            Free forever · No spam · Takes under a minute
           </p>
+
+          <div className="mt-8 space-y-2 border-zinc-200 border-t pt-6 text-center dark:border-zinc-800">
+            <p className="text-sm text-zinc-600 dark:text-zinc-400">
+              Hiring?{' '}
+              <Link className="font-medium underline hover:no-underline" href="/sign-up">
+                Post a job
+              </Link>
+            </p>
+            <p className="text-sm text-zinc-600 dark:text-zinc-400">
+              Are you a recruiter?{' '}
+              <Link
+                className="font-medium underline hover:no-underline"
+                href="/recruiter/sign-up"
+              >
+                Recruiter sign up
+              </Link>
+            </p>
+          </div>
         </div>
-        {/* useSearchParams() (for the post-login callbackUrl) requires a
-            Suspense boundary in the App Router. */}
-        <Suspense fallback={null}>
-          <SeekerSignInButtons />
-        </Suspense>
-        <p className="mt-6 text-center text-sm text-zinc-600 dark:text-zinc-400">
-          Hiring?{' '}
-          <Link className="underline hover:no-underline" href="/sign-up">
-            Post a job
-          </Link>
-        </p>
-        <p className="mt-2 text-center text-sm text-zinc-600 dark:text-zinc-400">
-          Are you a recruiter?{' '}
-          <Link className="underline hover:no-underline" href="/recruiter/sign-up">
-            Recruiter sign up
-          </Link>
-        </p>
       </div>
     </main>
   );
