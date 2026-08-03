@@ -31,20 +31,20 @@ export default async function SeekerSignInPage({
         <div className="mx-auto w-full max-w-md">
           <div className="mb-8 text-center">
             <Image
-              alt={config.nav.logo.alt}
+              alt=""
               className="mx-auto mb-6 dark:hidden"
-              height={40}
+              height={48}
               priority
-              src="/caliber.svg"
-              width={140}
+              src="/caliber-bowtie.svg"
+              width={80}
             />
             <Image
-              alt={config.nav.logo.alt}
+              alt=""
               className="mx-auto mb-6 hidden dark:block"
-              height={40}
+              height={48}
               priority
-              src="/caliber-light.svg"
-              width={140}
+              src="/caliber-bowtie-light.svg"
+              width={80}
             />
             <h1 className="font-bold text-3xl tracking-tight">
               {isSignUp ? 'Create your account' : 'Sign in'}
