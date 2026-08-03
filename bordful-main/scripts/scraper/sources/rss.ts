@@ -70,7 +70,7 @@ export async function scrapeRss(config: RssSourceConfig): Promise<ScrapedJob[]> 
   console.log(`[${config.name}] Fetching RSS: ${config.feedUrl}`);
 
   const res = await fetch(config.feedUrl, {
-    headers: { 'User-Agent': 'Joblo-Aggregator/1.0 (+https://joblo.app)' },
+    headers: { 'User-Agent': 'Caliber-Aggregator/1.0 (+https://caliber.app)' },
     signal: AbortSignal.timeout(15_000),
   });
 

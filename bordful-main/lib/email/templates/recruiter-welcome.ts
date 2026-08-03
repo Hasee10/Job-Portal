@@ -31,7 +31,7 @@ export function renderRecruiterWelcomeEmail({
       <tr>
         <td style="padding: 40px 40px 4px;">
           <div style="display: inline-block; font-size: 12px; font-weight: 700; color: ${EMAIL_BRAND_COLOR}; background: #ecf4f6; padding: 4px 10px; border-radius: 100px; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 18px;">Recruiter account</div>
-          <h1 style="margin: 0 0 14px; font-size: 26px; line-height: 1.3; font-weight: 800; color: #18181b; letter-spacing: -0.01em;">Welcome to JobLo, ${name} 👋</h1>
+          <h1 style="margin: 0 0 14px; font-size: 26px; line-height: 1.3; font-weight: 800; color: #18181b; letter-spacing: -0.01em;">Welcome to Caliber, ${name} 👋</h1>
           <p style="margin: 0 0 28px; font-size: 15px; line-height: 1.65; color: #52525b;">Your recruiter account is live. Start discovering candidates who are open to opportunities and reach out directly.</p>
           <table cellpadding="0" cellspacing="0" role="presentation">
             <tr>
@@ -65,7 +65,7 @@ export function renderRecruiterWelcomeEmail({
   `);
 
   return {
-    subject: "Welcome to JobLo - let's find your first candidate",
+    subject: "Welcome to Caliber - let's find your first candidate",
     html,
   };
 }

@@ -173,7 +173,7 @@ seo: {
     enabled: true,
     enhancedStructuredData: true,
     defaultEmploymentType: "FULL_TIME",
-    defaultJobLocationType: "TELECOMMUTE", // For remote jobs
+    defaultCalibercationType: "TELECOMMUTE", // For remote jobs
   }
 }
 ```

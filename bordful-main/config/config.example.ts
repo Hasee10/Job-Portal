@@ -143,7 +143,7 @@ export const config = {
       // Branded gradient (matches ui.primaryColor #164e63) replaces the
       // generic stock-photo swirl background - ties the hero to the site's
       // actual identity instead of a random blue/black image with no
-      // connection to Joblo, and drops an external image dependency.
+      // connection to Caliber, and drops an external image dependency.
       enabled: true, // Set to true to enable gradient background
       type: 'linear' as 'linear' | 'radial', // Type of gradient: "linear" or "radial"
       direction: '135deg', // For linear gradients: "to right", "to bottom", "45deg", etc.
@@ -274,8 +274,8 @@ export const config = {
       show: true,
 
       // Logo source path (direct path from public folder)
-      // Examples: "/joblo.svg", "/logo/my-logo.png", etc.
-      src: '/joblo-light.svg',
+      // Examples: "/caliber.svg", "/logo/my-logo.png", etc.
+      src: '/caliber-light.svg',
 
       // Logo dimensions
       width: 185, // IMPORTANT: Use a fixed pixel value, "auto" doesn't work reliably
@@ -332,7 +332,7 @@ export const config = {
         show: true,
 
         // Logo source path (direct path from public folder)
-        src: '/joblo-light.svg',
+        src: '/caliber-light.svg',
 
         // Logo dimensions
         width: 185, // IMPORTANT: Use a fixed pixel value
@@ -405,7 +405,7 @@ export const config = {
 
       // Description text under the heading
       description:
-        "Get notified when new jobs are posted. We'll also subscribe you to Joblo newsletter.",
+        "Get notified when new jobs are posted. We'll also subscribe you to Caliber newsletter.",
 
       // Form fields configuration
       fields: {
@@ -621,14 +621,14 @@ export const config = {
         title: 'General Questions',
         items: [
           {
-            question: 'What is Joblo?',
+            question: 'What is Caliber?',
             answer:
-              'Joblo is a modern, minimal job board built with Next.js, Tailwind CSS, and Supabase. It features static generation, client-side search, and a clean UI with Geist font.',
+              'Caliber is a modern, minimal job board built with Next.js, Tailwind CSS, and Supabase. It features static generation, client-side search, and a clean UI with Geist font.',
           },
           {
-            question: 'Is Joblo free to use?',
+            question: 'Is Caliber free to use?',
             answer:
-              'Yes, browsing jobs on Joblo is completely free. You can search and apply to any listed role at no cost.',
+              'Yes, browsing jobs on Caliber is completely free. You can search and apply to any listed role at no cost.',
           },
           {
             question: 'How often are job listings updated?',
@@ -681,27 +681,27 @@ export const config = {
         title: 'Technical Questions',
         items: [
           {
-            question: 'What technologies does Joblo use?',
+            question: 'What technologies does Caliber use?',
             answer:
-              'Joblo is built with Next.js, Tailwind CSS, and uses Supabase as the backend.\n\n## Core Technologies\n\n* **Next.js**: For server-side rendering and static site generation\n* **Tailwind CSS**: For utility-first styling\n* **Supabase**: As a flexible backend database\n* **TypeScript**: For type safety and better developer experience\n\nIt also features Incremental Static Regeneration (ISR) for real-time updates and client-side search with memoization.',
+              'Caliber is built with Next.js, Tailwind CSS, and uses Supabase as the backend.\n\n## Core Technologies\n\n* **Next.js**: For server-side rendering and static site generation\n* **Tailwind CSS**: For utility-first styling\n* **Supabase**: As a flexible backend database\n* **TypeScript**: For type safety and better developer experience\n\nIt also features Incremental Static Regeneration (ISR) for real-time updates and client-side search with memoization.',
             isRichText: true,
           },
           {
-            question: 'Can I customize Joblo for my own job board?',
+            question: 'Can I customize Caliber for my own job board?',
             answer:
-              'Yes, Joblo is designed to be easily customizable. You can modify the configuration file to change the branding, navigation, and other aspects of the job board.\n\n### Key customization options:\n\n- **Branding**: Change the logo, colors, and text\n- **Navigation**: Add or remove menu items\n- **Features**: Enable or disable features like job alerts and RSS feeds\n- **Layout**: Modify the layout and styling\n\nFor more advanced customization, you can extend the codebase to add new features.\n\n```typescript\n// Example config customization\nconst config = {\n  title: "My Custom Job Board",\n  description: "Find your dream job here",\n  // ... more configuration\n};\n```',
+              'Yes, Caliber is designed to be easily customizable. You can modify the configuration file to change the branding, navigation, and other aspects of the job board.\n\n### Key customization options:\n\n- **Branding**: Change the logo, colors, and text\n- **Navigation**: Add or remove menu items\n- **Features**: Enable or disable features like job alerts and RSS feeds\n- **Layout**: Modify the layout and styling\n\nFor more advanced customization, you can extend the codebase to add new features.\n\n```typescript\n// Example config customization\nconst config = {\n  title: "My Custom Job Board",\n  description: "Find your dream job here",\n  // ... more configuration\n};\n```',
             isRichText: true,
           },
           {
-            question: 'Is Joblo SEO-friendly?',
+            question: 'Is Caliber SEO-friendly?',
             answer:
-              'Yes, Joblo includes comprehensive SEO features such as:\n\n1. Automatic XML sitemap generation\n2. Programmatic robots.txt\n3. SEO-friendly URLs with descriptive job slugs\n4. Dynamic sitemap updates every 5 minutes\n5. Structured data for job postings\n\n> "SEO is not just about being search engine-friendly, but also about creating a better user experience."',
+              'Yes, Caliber includes comprehensive SEO features such as:\n\n1. Automatic XML sitemap generation\n2. Programmatic robots.txt\n3. SEO-friendly URLs with descriptive job slugs\n4. Dynamic sitemap updates every 5 minutes\n5. Structured data for job postings\n\n> "SEO is not just about being search engine-friendly, but also about creating a better user experience."',
             isRichText: true,
           },
           {
-            question: 'How do I deploy my Joblo job board?',
+            question: 'How do I deploy my Caliber job board?',
             answer:
-              'Joblo can be deployed to various platforms, with Vercel being the recommended option.\n\n## Deployment Steps\n\n1. Fork the repository\n2. Create your `config.ts` file\n3. Connect your repository to Vercel\n4. Configure environment variables\n5. Deploy!\n\n### Environment Variables\n\n| Variable | Description | Required |\n|----------|-------------|----------|\n| `SUPABASE_URL` | Your Supabase project URL | Yes |\n| `SUPABASE_ANON_KEY` | Your Supabase anon/public API key | Yes |\n| `NEXT_PUBLIC_APP_URL` | Your site URL | Yes |\n\nFor more detailed instructions, please refer to the deployment documentation.',
+              'Caliber can be deployed to various platforms, with Vercel being the recommended option.\n\n## Deployment Steps\n\n1. Fork the repository\n2. Create your `config.ts` file\n3. Connect your repository to Vercel\n4. Configure environment variables\n5. Deploy!\n\n### Environment Variables\n\n| Variable | Description | Required |\n|----------|-------------|----------|\n| `SUPABASE_URL` | Your Supabase project URL | Yes |\n| `SUPABASE_ANON_KEY` | Your Supabase anon/public API key | Yes |\n| `NEXT_PUBLIC_APP_URL` | Your site URL | Yes |\n\nFor more detailed instructions, please refer to the deployment documentation.',
             isRichText: true,
           },
         ],
@@ -740,18 +740,18 @@ export const config = {
 
   // Navigation
   nav: {
-    title: 'Joblo', // The text shown in the navigation bar
+    title: 'Caliber', // The text shown in the navigation bar
     logo: {
       enabled: true, // Set to true to use a custom logo instead of icon + text
-      src: '/joblo.svg', // Path to your logo image (place it in the public directory)
+      src: '/caliber.svg', // Path to your logo image (place it in the public directory)
       width: 81, // Width of the logo in pixels
       height: 30, // Height of the logo in pixels
-      alt: 'Joblo', // Alt text for the logo
+      alt: 'Caliber', // Alt text for the logo
     },
     // White-stroke variant swapped in automatically for dark mode (see
     // Nav's logoSrc logic) - the black-stroke logo.src above is invisible
     // against a dark background otherwise.
-    logoDark: '/joblo-light.svg',
+    logoDark: '/caliber-light.svg',
     github: {
       show: false, // GitHub removed for now — add your own repo link later
       url: '',
@@ -839,10 +839,10 @@ export const config = {
       logo: {
         enabled: true,
         // Use different image from navbar if needed (e.g., light logo for dark footer)
-        src: '/joblo-light.svg', // Path to footer-specific logo (light version)
+        src: '/caliber-light.svg', // Path to footer-specific logo (light version)
         width: 81,
         height: 30,
-        alt: 'Joblo',
+        alt: 'Caliber',
       },
     },
 
@@ -923,7 +923,7 @@ export const config = {
     copyright: {
       show: true,
       startYear: 2024,
-      text: '© 2024-2026 Joblo. All rights reserved.',
+      text: '© 2024-2026 Caliber. All rights reserved.',
     },
 
     // Built with section
@@ -977,7 +977,7 @@ export const config = {
     // Page title and description
     title: 'Get Your Role Seen',
     description:
-      'Joblo aggregates thousands of jobs. Featuring yours puts it at the top, above the noise.',
+      'Caliber aggregates thousands of jobs. Featuring yours puts it at the top, above the noise.',
 
     // Hero image configuration (overrides global setting)
     heroImage: {
@@ -1015,7 +1015,7 @@ export const config = {
 
     // Plans configuration
     //
-    // Model note: Joblo is an aggregator - the feed is mostly jobs scraped
+    // Model note: Caliber is an aggregator - the feed is mostly jobs scraped
     // from many sources. Charging employers to *post* into that feed doesn't
     // work (their listing drowns among thousands of free aggregated ones).
     // So the paid product is *visibility*: getting a role pinned/highlighted
@@ -1186,7 +1186,7 @@ export const config = {
           description:
             'Our support team is available to help you with any questions or issues you might have.',
           buttonText: 'Contact via Email',
-          buttonLink: 'mailto:hello@joblo.com',
+          buttonLink: 'mailto:hello@caliber.com',
           icon: 'Mail', // Lucide icon name
         },
         {
@@ -1209,8 +1209,8 @@ export const config = {
     contactInfo: {
       title: 'Contact Information',
       description: "Here's how you can reach us directly.",
-      companyName: 'Joblo',
-      email: 'hello@joblo.com',
+      companyName: 'Caliber',
+      email: 'hello@caliber.com',
       phone: '',
       address: '',
     },
@@ -1245,7 +1245,7 @@ export const config = {
     // Badge text for the about hero
     badge: 'About Us',
     // Title for the about page hero section
-    title: 'About Joblo',
+    title: 'About Caliber',
     // Description for the about page
     description:
       'Learn more about our mission to connect talent with opportunity.',
@@ -1295,12 +1295,12 @@ export const config = {
     // Schema.org structured data customization
     schema: {
       // Company name for the schema
-      companyName: 'Joblo',
+      companyName: 'Caliber',
       // Description for the schema
       description:
         'Connect talented professionals with meaningful opportunities',
       // Logo URL for the schema
-      logo: '/joblo.svg',
+      logo: '/caliber.svg',
     },
   },
 
@@ -1401,7 +1401,7 @@ export const config = {
     buttonText: 'Report',
 
     // Email address to send reports to
-    email: 'hello@joblo.com',
+    email: 'hello@caliber.com',
 
     // Subject line for the report email
     emailSubject: 'Job Report: [Job Title]',

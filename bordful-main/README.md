@@ -1,12 +1,12 @@
-# Joblo: Job Board Powered by Next.js, Supabase & n8n
+# Caliber: Job Board Powered by Next.js, Supabase & n8n
 
-Joblo is a modern, minimal job board built with Next.js, Tailwind CSS, and Supabase. Job
+Caliber is a modern, minimal job board built with Next.js, Tailwind CSS, and Supabase. Job
 listings aren't entered by hand — a set of [n8n](https://n8n.io) workflows (in the sibling
 [`n8n-workflows/`](../n8n-workflows/README.md) directory) automatically scrapes, normalizes,
 scores, and upserts postings from 9 external job sources into a Supabase `jobs` table every
 6 hours. This portal reads that table and renders it as a searchable, filterable job board.
 
-Joblo started life as [Bordful](https://github.com/craftled/bordful), an open-source Next.js
+Caliber started life as [Bordful](https://github.com/craftled/bordful), an open-source Next.js
 job board template originally built on Airtable. The frontend, theming system, and SEO
 tooling are still Bordful's — the data layer has been swapped for Supabase, and the
 collection pipeline (n8n) is new.
@@ -168,7 +168,7 @@ deliberate hardening choices:
 
 ## Branding
 
-The site is branded **Joblo**, with a custom logo (`public/joblo.svg` / `joblo-light.svg`)
+The site is branded **Caliber**, with a custom logo (`public/caliber.svg` / `caliber-light.svg`)
 in the site config at `config/config.example.ts`. Social links (GitHub, LinkedIn, X,
 Bluesky, Reddit) are currently disabled (`show: false`) in the nav config — set `show: true`
 and add a URL under `config.nav.<platform>` when you're ready to link real accounts.
@@ -275,13 +275,13 @@ n8n-workflows/               # Sibling directory (outside bordful-main) — see 
                               # live Supabase service_role + source API keys)
 
 public/
-  joblo.svg, joblo-light.svg # Site logo (nav / footer)
+  caliber.svg, caliber-light.svg # Site logo (nav / footer)
   assets/social/              # Social icon assets (icons currently disabled in nav)
 ```
 
 ## Salary Structure
 
-Joblo includes a sophisticated salary handling system with multiple currencies and formats:
+Caliber includes a sophisticated salary handling system with multiple currencies and formats:
 
 - Support for 50+ global currencies and cryptocurrencies with proper symbols (₿, Ξ)
 - Smart currency display with intelligent spacing based on currency type

@@ -31,8 +31,8 @@ export function renderWelcomeEmail({
       <tr>
         <td style="padding: 40px 40px 4px;">
           <div style="display: inline-block; font-size: 12px; font-weight: 700; color: ${EMAIL_BRAND_COLOR}; background: #ecf4f6; padding: 4px 10px; border-radius: 100px; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 18px;">Employer account</div>
-          <h1 style="margin: 0 0 14px; font-size: 26px; line-height: 1.3; font-weight: 800; color: #18181b; letter-spacing: -0.01em;">Welcome to JobLo, ${companyName} 👋</h1>
-          <p style="margin: 0 0 28px; font-size: 15px; line-height: 1.65; color: #52525b;">Your employer account is live. You're one step from getting your role in front of thousands of candidates browsing JobLo every day.</p>
+          <h1 style="margin: 0 0 14px; font-size: 26px; line-height: 1.3; font-weight: 800; color: #18181b; letter-spacing: -0.01em;">Welcome to Caliber, ${companyName} 👋</h1>
+          <p style="margin: 0 0 28px; font-size: 15px; line-height: 1.65; color: #52525b;">Your employer account is live. You're one step from getting your role in front of thousands of candidates browsing Caliber every day.</p>
           <table cellpadding="0" cellspacing="0" role="presentation">
             <tr>
               <td style="background: ${EMAIL_BRAND_COLOR}; border-radius: 8px; box-shadow: 0 2px 8px rgba(22, 78, 99, 0.35);">
@@ -65,7 +65,7 @@ export function renderWelcomeEmail({
   `);
 
   return {
-    subject: "Welcome to JobLo - let's get your first job posted",
+    subject: "Welcome to Caliber - let's get your first job posted",
     html,
   };
 }

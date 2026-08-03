@@ -11,13 +11,13 @@ export const EMAIL_BRAND_COLOR = '#164e63';
 export const EMAIL_BRAND_COLOR_DARK = '#0d3a49';
 export const EMAIL_ACCENT_COLOR = '#38bdf8';
 
-// Same square "J" mark as app/icon.svg (the site favicon) - inlined as an
+// Same square "C" mark as app/icon.svg (the site favicon) - inlined as an
 // <svg> rather than an <img src> since most email clients strip external
 // image loading by default until the user explicitly allows it, and this
 // mark is simple enough to render reliably inline everywhere.
 export const LOGO_SVG = `<svg width="22" height="22" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
   <rect width="32" height="32" rx="8" fill="#ffffff"></rect>
-  <path d="M14 8 L14 20 A6 6 0 0 1 4 24" fill="none" stroke="${EMAIL_BRAND_COLOR}" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"></path>
+  <path d="M23,11 A9,9 0 1 0 23,21" fill="none" stroke="${EMAIL_BRAND_COLOR}" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"></path>
 </svg>`;
 
 export function emailHeader(): string {
@@ -28,7 +28,7 @@ export function emailHeader(): string {
         <tr>
           <td style="padding-right: 9px; vertical-align: middle;">${LOGO_SVG}</td>
           <td style="vertical-align: middle;">
-            <span style="font-size: 19px; font-weight: 800; color: #ffffff; letter-spacing: -0.01em;">JobLo</span>
+            <span style="font-size: 19px; font-weight: 800; color: #ffffff; letter-spacing: -0.01em;">Caliber</span>
           </td>
         </tr>
       </table>
@@ -53,10 +53,10 @@ export function emailFooter(options?: {
   const bottomLine = options?.isReceipt
     ? 'This is a receipt for your records - keep it for your files.'
     : options?.audience === 'seeker'
-      ? "You're receiving this because you created a JobLo job seeker account."
+      ? "You're receiving this because you created a Caliber job seeker account."
       : options?.audience === 'recruiter'
-        ? "You're receiving this because you created a JobLo recruiter account."
-        : "You're receiving this because you created a JobLo employer account.";
+        ? "You're receiving this because you created a Caliber recruiter account."
+        : "You're receiving this because you created a Caliber employer account.";
 
   return `<table align="center" width="100%" cellpadding="0" cellspacing="0" role="presentation">
   <tr><td style="height: 1px; line-height: 1px; font-size: 0; background: #ececef;">&nbsp;</td></tr>
@@ -66,9 +66,9 @@ export function emailFooter(options?: {
         options?.isReceipt
           ? 'Need a hand? Contact us at'
           : 'Questions? Reply anytime or write to'
-      } <a href="mailto:hello@joblo.com" style="color: ${EMAIL_BRAND_COLOR}; font-weight: 600; text-decoration: none;">hello@joblo.com</a></p>
+      } <a href="mailto:hello@caliber.com" style="color: ${EMAIL_BRAND_COLOR}; font-weight: 600; text-decoration: none;">hello@caliber.com</a></p>
       <p style="margin: 0 0 14px; font-size: 12px; color: #a1a1aa; line-height: 1.6;">${bottomLine}</p>
-      <p style="margin: 0; font-size: 12px; color: #d4d4d8; font-weight: 600; letter-spacing: 0.02em;">JOBLO, INC.</p>
+      <p style="margin: 0; font-size: 12px; color: #d4d4d8; font-weight: 600; letter-spacing: 0.02em;">CALIBER, INC.</p>
     </td>
   </tr>
 </table>`;
@@ -87,7 +87,7 @@ export function wrapEmailBody(innerHtml: string): string {
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>JobLo</title>
+<title>Caliber</title>
 </head>
 <body style="margin: 0; padding: 0; background-color: #eef1f4; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;">
   <table align="center" width="100%" cellpadding="0" cellspacing="0" role="presentation" style="background-color: #eef1f4;">

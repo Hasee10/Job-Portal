@@ -60,7 +60,7 @@ export function createFeed(baseUrl: string, feedConfig: FeedConfig): Feed {
     favicon: `${baseUrl}/favicon.ico`,
     copyright: `All rights reserved ${new Date().getFullYear()}`,
     updated: new Date(),
-    generator: 'Joblo Job Board',
+    generator: 'Caliber Job Board',
     feedLinks: {
       rss2: `${baseUrl}/feed.xml`,
       json: `${baseUrl}/feed.json`,

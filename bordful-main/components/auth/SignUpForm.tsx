@@ -83,7 +83,7 @@ export function SignUpForm() {
       }
 
       toast({
-        title: 'Welcome to Joblo',
+        title: 'Welcome to Caliber',
         description: 'Your employer account is ready.',
       });
       router.push('/dashboard');

@@ -338,7 +338,7 @@ export const config = {
       enabled: true,
       enhancedStructuredData: true,
       defaultEmploymentType: "FULL_TIME",
-      defaultJobLocationType: "TELECOMMUTE",
+      defaultCalibercationType: "TELECOMMUTE",
     },
   },
 };
@@ -382,7 +382,7 @@ seo: {
     enabled: true,
     enhancedStructuredData: true,
     defaultEmploymentType: "FULL_TIME",
-    defaultJobLocationType: "TELECOMMUTE",
+    defaultCalibercationType: "TELECOMMUTE",
   },
 },
 ```

@@ -358,7 +358,7 @@ seo: {
     enabled: true,
     enhancedStructuredData: true,
     defaultEmploymentType: "FULL_TIME",
-    defaultJobLocationType: "TELECOMMUTE",
+    defaultCalibercationType: "TELECOMMUTE",
   },
   
   // OpenGraph settings for social sharing

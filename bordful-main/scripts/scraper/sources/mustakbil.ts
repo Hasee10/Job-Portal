@@ -25,7 +25,7 @@ async function fetchPage(url: string): Promise<string | null> {
   try {
     const res = await fetch(url, {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (compatible; Joblo-Aggregator/1.0; +https://joblo.app)',
+        'User-Agent': 'Mozilla/5.0 (compatible; Caliber-Aggregator/1.0; +https://caliber.app)',
         'Accept': 'text/html,application/xhtml+xml',
         'Accept-Language': 'en-US,en;q=0.9',
       },

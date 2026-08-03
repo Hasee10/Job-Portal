@@ -106,7 +106,7 @@ export function renderPurchaseConfirmationEmail({
   `);
 
   return {
-    subject: `Your JobLo receipt - ${planName} plan confirmed`,
+    subject: `Your Caliber receipt - ${planName} plan confirmed`,
     html,
   };
 }
