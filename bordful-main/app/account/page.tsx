@@ -1,3 +1,4 @@
+import { Bell, Bookmark, CheckCircle2, FileText, Mail, Sparkles } from 'lucide-react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
@@ -17,6 +18,28 @@ import { getSeekerUnreadInviteCount } from '@/lib/jobs/employer-candidate-action
 import { generateJobSlug } from '@/lib/utils/slugify';
 
 const MAX_RECOMMENDED_JOBS = 10;
+
+function StatTile({
+  label,
+  count,
+  icon,
+}: {
+  label: string;
+  count: number;
+  icon: React.ReactNode;
+}) {
+  return (
+    <div className="rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900/60">
+      <div className="flex items-center gap-2 text-zinc-500 dark:text-zinc-400">
+        {icon}
+        <span className="text-xs font-medium">{label}</span>
+      </div>
+      <p className="mt-1.5 font-bold text-2xl text-zinc-900 dark:text-zinc-50">
+        {count}
+      </p>
+    </div>
+  );
+}
 
 export const metadata: Metadata = {
   title: `My Account | ${config.title}`,
@@ -70,7 +93,7 @@ export default async function AccountPage() {
   return (
     <main className="min-h-[60vh] bg-background py-16">
       <div className="container mx-auto px-4">
-        <div className="mx-auto max-w-2xl">
+        <div className="mx-auto max-w-3xl">
           <div className="flex items-center gap-3">
             <h1 className="font-bold text-2xl">
               Welcome, {session.user.name || session.user.email}
@@ -90,10 +113,36 @@ export default async function AccountPage() {
             )}
           </p>
 
+          <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <StatTile
+              count={savedJobs.length}
+              icon={<Bookmark aria-hidden="true" className="h-3.5 w-3.5" />}
+              label="Saved jobs"
+            />
+            <StatTile
+              count={appliedJobs.length}
+              icon={<CheckCircle2 aria-hidden="true" className="h-3.5 w-3.5" />}
+              label="Applied"
+            />
+            <StatTile
+              count={savedSearches.length}
+              icon={<Bell aria-hidden="true" className="h-3.5 w-3.5" />}
+              label="Saved searches"
+            />
+            <StatTile
+              count={unreadInbox}
+              icon={<Mail aria-hidden="true" className="h-3.5 w-3.5" />}
+              label="Unread inbox"
+            />
+          </div>
+
           {recommendedJobs.length > 0 && (
             <div className="mt-8 rounded-lg border p-6">
               <div className="flex items-center justify-between">
-                <h2 className="font-semibold text-lg">Recommended for you</h2>
+                <h2 className="flex items-center gap-2 font-semibold text-lg">
+                  <Sparkles aria-hidden="true" className="h-5 w-5 text-zinc-400" />
+                  Recommended for you
+                </h2>
                 <Link
                   className="text-sm text-zinc-600 hover:underline dark:text-zinc-400"
                   href="/account/onboarding"
@@ -121,7 +170,10 @@ export default async function AccountPage() {
           )}
 
           <div className="mt-8 rounded-lg border p-6">
-            <h2 className="font-semibold text-lg">Saved jobs</h2>
+            <h2 className="flex items-center gap-2 font-semibold text-lg">
+              <Bookmark aria-hidden="true" className="h-5 w-5 text-zinc-400" />
+              Saved jobs
+            </h2>
             {savedJobs.length === 0 ? (
               <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
                 Nothing saved yet - bookmark a listing from the jobs board and
@@ -158,7 +210,10 @@ export default async function AccountPage() {
           </div>
 
           <div className="mt-6 rounded-lg border p-6">
-            <h2 className="font-semibold text-lg">Applications</h2>
+            <h2 className="flex items-center gap-2 font-semibold text-lg">
+              <CheckCircle2 aria-hidden="true" className="h-5 w-5 text-zinc-400" />
+              Applications
+            </h2>
             {applicationEntries.length === 0 ? (
               <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
                 Mark a job as applied from its listing page and it&apos;ll show
@@ -192,17 +247,23 @@ export default async function AccountPage() {
           </div>
 
           <div className="mt-6 rounded-lg border p-6">
-            <h2 className="font-semibold text-lg">Saved searches</h2>
+            <h2 className="flex items-center gap-2 font-semibold text-lg">
+              <Bell aria-hidden="true" className="h-5 w-5 text-zinc-400" />
+              Saved searches
+            </h2>
             <SavedSearchesList savedSearches={savedSearches} />
           </div>
 
           <div className="mt-6 rounded-lg border p-6">
             <div className="flex items-center justify-between gap-4">
-              <div>
-                <h2 className="font-semibold text-lg">Resume builder</h2>
-                <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-                  Build your resume and tailor it for specific jobs with AI.
-                </p>
+              <div className="flex items-center gap-3">
+                <FileText aria-hidden="true" className="h-5 w-5 shrink-0 text-zinc-400" />
+                <div>
+                  <h2 className="font-semibold text-lg">Resume builder</h2>
+                  <p className="mt-0.5 text-sm text-zinc-600 dark:text-zinc-400">
+                    Build your resume and tailor it for specific jobs with AI.
+                  </p>
+                </div>
               </div>
               <Link
                 className="shrink-0 rounded-md border px-4 py-2 font-medium text-sm hover:bg-accent"
@@ -215,20 +276,23 @@ export default async function AccountPage() {
 
           <div className="mt-6 rounded-lg border p-6">
             <div className="flex items-center justify-between gap-4">
-              <div>
-                <h2 className="font-semibold text-lg flex items-center gap-2">
-                  Inbox
-                  {unreadInbox > 0 && (
-                    <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-bold">
-                      {unreadInbox}
-                    </span>
-                  )}
-                </h2>
-                <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-                  {unreadInbox > 0
-                    ? `${unreadInbox} new message${unreadInbox > 1 ? 's' : ''} from recruiters and employers.`
-                    : 'Manage recruiter and employer outreach and your visibility settings.'}
-                </p>
+              <div className="flex items-center gap-3">
+                <Mail aria-hidden="true" className="h-5 w-5 shrink-0 text-zinc-400" />
+                <div>
+                  <h2 className="font-semibold text-lg flex items-center gap-2">
+                    Inbox
+                    {unreadInbox > 0 && (
+                      <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-bold">
+                        {unreadInbox}
+                      </span>
+                    )}
+                  </h2>
+                  <p className="mt-0.5 text-sm text-zinc-600 dark:text-zinc-400">
+                    {unreadInbox > 0
+                      ? `${unreadInbox} new message${unreadInbox > 1 ? 's' : ''} from recruiters and employers.`
+                      : 'Manage recruiter and employer outreach and your visibility settings.'}
+                  </p>
+                </div>
               </div>
               <Link
                 className="shrink-0 rounded-md border px-4 py-2 font-medium text-sm hover:bg-accent"
