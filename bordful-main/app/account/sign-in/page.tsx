@@ -33,7 +33,7 @@ export default async function SeekerSignInPage({
             <Image
               alt=""
               className="mx-auto mb-6 dark:hidden"
-              height={48}
+              height={60}
               priority
               src="/caliber-bowtie.svg"
               width={80}
@@ -41,7 +41,7 @@ export default async function SeekerSignInPage({
             <Image
               alt=""
               className="mx-auto mb-6 hidden dark:block"
-              height={48}
+              height={60}
               priority
               src="/caliber-bowtie-light.svg"
               width={80}
