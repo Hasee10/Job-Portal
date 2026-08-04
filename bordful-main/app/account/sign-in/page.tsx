@@ -26,16 +26,16 @@ export default async function SeekerSignInPage({
   const isSignUp = intent === 'signup';
 
   return (
-    <main className="flex min-h-[calc(100vh-3.5rem)] items-center bg-gradient-to-b from-zinc-50 to-white py-16 dark:from-zinc-950 dark:to-background">
+    <main className="min-h-[calc(100vh-3.5rem)] bg-gradient-to-b from-zinc-50 to-white py-10 dark:from-zinc-950 dark:to-background">
       <div className="container mx-auto px-4">
-        <div className="mx-auto mb-8 w-full max-w-2xl overflow-hidden rounded-2xl bg-[#042454] p-6 sm:p-8">
+        <div className="mx-auto mb-8 w-full max-w-2xl overflow-hidden rounded-2xl border border-zinc-200 bg-white p-6 sm:p-8 dark:border-zinc-800 dark:bg-zinc-900/60">
           <Image
             alt="A recruiter and a job seeker connecting through Caliber, signing in with Google or LinkedIn"
             className="mx-auto h-auto w-full"
-            height={1024}
+            height={657}
             priority
             src="/signin-illustration.png"
-            width={1536}
+            width={1417}
           />
         </div>
 
