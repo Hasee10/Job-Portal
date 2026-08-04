@@ -7,8 +7,8 @@
 // tables are the only layout primitive that reliably renders identically
 // across Gmail, Apple Mail, and Outlook.
 
-export const EMAIL_BRAND_COLOR = '#164e63';
-export const EMAIL_BRAND_COLOR_DARK = '#0d3a49';
+export const EMAIL_BRAND_COLOR = '#042454';
+export const EMAIL_BRAND_COLOR_DARK = '#021830';
 export const EMAIL_ACCENT_COLOR = '#38bdf8';
 
 // HTML-escapes a value before it's interpolated into email markup - every

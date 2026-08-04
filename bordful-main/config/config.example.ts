@@ -135,12 +135,12 @@ export const config = {
   ui: {
     // Hero section background color (CSS color value)
     // Can be hex, rgb, hsl, etc. Leave empty for default.
-    heroBackgroundColor: '#005450', // Example: light gray background
+    heroBackgroundColor: '#042454', // Example: light gray background
 
     // Hero section gradient background
     // Takes precedence over heroBackgroundColor when enabled
     heroGradient: {
-      // Branded gradient (matches ui.primaryColor #164e63) replaces the
+      // Branded gradient (matches ui.primaryColor #0982AC) replaces the
       // generic stock-photo swirl background - ties the hero to the site's
       // actual identity instead of a random blue/black image with no
       // connection to Caliber, and drops an external image dependency.
@@ -149,9 +149,9 @@ export const config = {
       direction: '135deg', // For linear gradients: "to right", "to bottom", "45deg", etc.
       // For radial gradients: "circle", "ellipse at center", etc.
       colors: [
-        '#0f3a4d', // Start color (deep teal)
-        '#164e63', // Middle color (brand primary)
-        '#1e6a87', // End color (lighter teal)
+        '#065C79', // Start color (deep blue)
+        '#0982AC', // Middle color (brand primary)
+        '#0BA6DA', // End color (lighter blue)
       ],
       // Optional stops for precise control (0-100%)
       // If not provided, colors will be evenly distributed
@@ -172,7 +172,7 @@ export const config = {
       // Optional overlay for better text readability
       overlay: {
         enabled: true, // Set to true to enable a color overlay
-        color: 'rgba(22, 78, 99, 0.75)', // Brand teal (#164e63) tint
+        color: 'rgba(9, 130, 172, 0.75)', // Brand blue (#0982AC) tint
         opacity: 0.75, // Opacity value from 0 to 1 (alternative to using rgba)
       },
     },
@@ -215,7 +215,7 @@ export const config = {
 
     // Primary color used throughout the site (buttons, links, etc.)
     // Can be hex, rgb, hsl, etc. Leave empty for default.
-    primaryColor: '#164e63', // Example: amber color
+    primaryColor: '#0982AC', // Example: amber color
 
     // Optional: Configure an image for the right side of the hero section
     // Free-to-use (no attribution required), verified live 2026-07: Photo by

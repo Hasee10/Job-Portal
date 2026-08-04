@@ -8,7 +8,7 @@ import { Briefcase, CheckCircle2, Sparkles } from 'lucide-react';
 // so the color scheme still reads as one product, just a different layout/
 // visual on this one page.
 const BRAND_GRADIENT =
-  'linear-gradient(135deg, #0f3a4d 0%, #164e63 50%, #1e6a87 100%)';
+  'linear-gradient(135deg, #065C79 0%, #0982AC 50%, #0BA6DA 100%)';
 
 export function GuestHero({
   badge,
