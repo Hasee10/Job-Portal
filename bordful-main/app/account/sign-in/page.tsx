@@ -28,24 +28,19 @@ export default async function SeekerSignInPage({
   return (
     <main className="flex min-h-[calc(100vh-3.5rem)] items-center bg-gradient-to-b from-zinc-50 to-white py-16 dark:from-zinc-950 dark:to-background">
       <div className="container mx-auto px-4">
+        <div className="mx-auto mb-8 w-full max-w-2xl overflow-hidden rounded-2xl bg-[#042454] p-6 sm:p-8">
+          <Image
+            alt="A recruiter and a job seeker connecting through Caliber, signing in with Google or LinkedIn"
+            className="mx-auto h-auto w-full"
+            height={1024}
+            priority
+            src="/signin-illustration.png"
+            width={1536}
+          />
+        </div>
+
         <div className="mx-auto w-full max-w-md">
           <div className="mb-8 text-center">
-            <Image
-              alt=""
-              className="mx-auto mb-6 dark:hidden"
-              height={60}
-              priority
-              src="/caliber-bowtie.svg"
-              width={80}
-            />
-            <Image
-              alt=""
-              className="mx-auto mb-6 hidden dark:block"
-              height={60}
-              priority
-              src="/caliber-bowtie-light.svg"
-              width={80}
-            />
             <h1 className="font-bold text-3xl tracking-tight">
               {isSignUp ? 'Create your account' : 'Sign in'}
             </h1>
