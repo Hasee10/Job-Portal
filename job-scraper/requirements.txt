@@ -1,5 +1,5 @@
 httpx==0.28.1
-feedparser==6.0.12
+feedparser==6.0.14
 python-dotenv==1.2.2
 beautifulsoup4==4.15.0
 lxml==6.1.1
