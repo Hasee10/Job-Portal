@@ -445,10 +445,40 @@ export function Nav() {
 
   return (
     <header className="relative z-40 border-border border-b bg-background">
+      {/* Utility bar - desktop only. Carries the stuff visitors aren't here
+          for by default (audience routing, social, theme, account) so the
+          main bar below can stay purely wayfinding: logo, destinations, one
+          action. */}
+      <div className="hidden border-border/60 border-b bg-muted/40 lg:block">
+        <div className="container mx-auto px-4">
+          <div className="flex h-10 items-center justify-between text-xs">
+            <div className="flex items-center gap-4">
+              <Link
+                className="text-zinc-500 transition-colors hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
+                href="/sign-up"
+              >
+                For employers
+              </Link>
+              <Link
+                className="text-zinc-500 transition-colors hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
+                href="/recruiter/sign-up"
+              >
+                For recruiters
+              </Link>
+            </div>
+            <div className="flex items-center gap-4">
+              {renderSocialLinks()}
+              <ThemeToggle />
+              <AuthNavStatus variant="desktop" />
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div className="container mx-auto px-4">
         <nav
           aria-label="Main navigation"
-          className="flex h-14 items-center justify-between"
+          className="flex h-16 items-center justify-between lg:h-[76px]"
         >
           {/* Brand */}
           <Link
@@ -524,53 +554,44 @@ export function Nav() {
             </button>
           </div>
 
-          {/* Desktop navigation */}
+          {/* Desktop navigation - primary destinations plus the one action,
+              nothing else competing for attention (see utility bar above) */}
           <div className="hidden items-center lg:flex">
-            {/* Primary Navigation */}
             <nav
               aria-label="Primary"
-              className="mr-4 flex items-center space-x-2 whitespace-nowrap"
+              className="mr-6 flex items-center space-x-1 whitespace-nowrap"
             >
               {renderDesktopNavItems()}
             </nav>
 
-            {/* Social links and post job */}
-            <div className="flex items-center whitespace-nowrap">
-              {renderSocialLinks()}
-
-              <ThemeToggle />
-
-              <AuthNavStatus className="ml-4" variant="desktop" />
-
-              {config.nav.postJob.show && (
-                <Button
-                  asChild
-                  className="ml-5 gap-1.5 whitespace-nowrap text-xs"
-                  size="xs"
-                  style={
-                    config.nav.postJob.variant === 'primary'
-                      ? {
-                          backgroundColor: resolveColor(config.ui.primaryColor),
-                        }
-                      : undefined
-                  }
-                  variant={config.nav.postJob.variant || 'default'}
+            {config.nav.postJob.show && (
+              <Button
+                asChild
+                className="gap-1.5 whitespace-nowrap text-xs"
+                size="sm"
+                style={
+                  config.nav.postJob.variant === 'primary'
+                    ? {
+                        backgroundColor: resolveColor(config.ui.primaryColor),
+                      }
+                    : undefined
+                }
+                variant={config.nav.postJob.variant || 'default'}
+              >
+                <Link
+                  href={config.nav.postJob.link}
+                  {...(config.nav.postJob.external
+                    ? { target: '_blank', rel: 'noopener noreferrer' }
+                    : {})}
                 >
-                  <Link
-                    href={config.nav.postJob.link}
-                    {...(config.nav.postJob.external
-                      ? { target: '_blank', rel: 'noopener noreferrer' }
-                      : {})}
-                  >
-                    {config.nav.postJob.label}
-                    <Briefcase
-                      aria-hidden="true"
-                      className="ml-1 h-3.5 w-3.5"
-                    />
-                  </Link>
-                </Button>
-              )}
-            </div>
+                  {config.nav.postJob.label}
+                  <Briefcase
+                    aria-hidden="true"
+                    className="ml-1 h-3.5 w-3.5"
+                  />
+                </Link>
+              </Button>
+            )}
           </div>
         </nav>
 
@@ -580,6 +601,24 @@ export function Nav() {
               aria-label="Mobile navigation"
               className="flex flex-col px-4 py-4"
             >
+              {/* Audience routing (mirrors the desktop utility bar) */}
+              <div className="mb-2 flex items-center gap-4 px-4 pb-3">
+                <Link
+                  className="text-sm text-zinc-500 dark:text-zinc-400"
+                  href="/sign-up"
+                  onClick={() => setIsOpen(false)}
+                >
+                  For employers
+                </Link>
+                <Link
+                  className="text-sm text-zinc-500 dark:text-zinc-400"
+                  href="/recruiter/sign-up"
+                  onClick={() => setIsOpen(false)}
+                >
+                  For recruiters
+                </Link>
+              </div>
+
               {/* Primary Navigation */}
               {renderMobileNavItems()}
 
