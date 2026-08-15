@@ -3,6 +3,7 @@ from jobscraper.sources import (
     arbeitnow,
     ats_boards,
     brightspyre,
+    freehire,
     himalayas,
     jobicy,
     jooble,
@@ -32,6 +33,13 @@ from jobscraper.sources import (
 # (see each module's docstring). Rozee.pk (Pakistan) and Upwork are
 # CloakBrowser-based instead (Cloudflare-gated) - see sources/browser/.
 #
+# freehire (multi-market, tech-focused) added 2026-08 after evaluating
+# ai-job-search (MadsLorentzen/ai-job-search) for reusable scraping
+# techniques - its own freehire-search CLI pointed at a clean, keyless,
+# ToS-fine public API. Its LinkedIn public-guest-endpoint technique was
+# deliberately NOT adopted: LinkedIn's own ToS prohibits automated access,
+# same category this pipeline already treats Indeed/Glassdoor/Naukri/
+# ZipRecruiter with caution for - see freehire.py's docstring.
 API_SOURCES = [
     remotive,
     arbeitnow,
@@ -42,6 +50,7 @@ API_SOURCES = [
     weworkremotely,
     himalayas,
     jobicy,
+    freehire,
     ats_boards,
     brightspyre,
     mustakbil,
