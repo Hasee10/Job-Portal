@@ -13,7 +13,7 @@ export default function robots(): MetadataRoute.Robots {
       // Disallow any potential admin or private routes
       disallow: ['/api/subscribe/*', '/api/encharge-logs/*'],
     },
-    sitemap: `${baseUrl}/sitemap.xml`,
+    sitemap: [`${baseUrl}/sitemap.xml`, `${baseUrl}/sitemap-procurement.xml`],
     host: baseUrl,
   };
 }

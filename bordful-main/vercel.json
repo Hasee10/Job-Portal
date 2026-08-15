@@ -3,6 +3,10 @@
     {
       "path": "/api/cron/search-alerts",
       "schedule": "0 13 * * *"
+    },
+    {
+      "path": "/api/cron/procurement-sweep",
+      "schedule": "30 13 * * *"
     }
   ]
 }

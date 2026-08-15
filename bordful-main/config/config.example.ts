@@ -785,10 +785,13 @@ export const config = {
         | 'ghost'
         | 'link', // Button variant
     },
-    // Kept to 4 top-level items on purpose - About/Pricing/Contact and Job
-    // Alerts used to sit as their own flat links next to the two existing
-    // dropdowns, which crowded the desktop bar. They're folded into
-    // "Jobs"/"Company" dropdowns instead so the primary row stays short.
+    // Kept to a small number of top-level items on purpose - About/Pricing/
+    // Contact and Job Alerts used to sit as their own flat links next to the
+    // two existing dropdowns, which crowded the desktop bar. They're folded
+    // into "Jobs"/"Company" dropdowns instead so the primary row stays
+    // short. Procurement is a deliberate exception (proc.md §2/§7): it's a
+    // separate product surface, not a job-board feature, so it gets its own
+    // top-level slot rather than living inside "Jobs".
     menu: [
       { label: 'Home', link: '/' },
       {
@@ -804,6 +807,7 @@ export const config = {
           { label: 'Job Alerts', link: '/job-alerts' },
         ],
       },
+      { label: 'Procurement', link: '/procurement' },
       {
         label: 'Resources',
         link: '/guides',
