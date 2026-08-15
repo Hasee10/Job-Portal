@@ -73,6 +73,11 @@ export default async function ProcurementTendersPage({
       <HeroSection
         badge="Global tenders"
         description={`Aggregated daily from TED (EU Tenders Electronic Daily) and PPRA (Pakistan). ${totalActive.toLocaleString()} tenders currently open.`}
+        heroImage={{
+          enabled: true,
+          src: '/procurement-hero.png',
+          alt: 'Caliber’s AI matching engine scoring verified vendors against open tenders',
+        }}
         title={`${totalActive.toLocaleString()} open tenders worldwide`}
       >
         <form action="/procurement/tenders" className="flex max-w-md gap-2" method="GET">
