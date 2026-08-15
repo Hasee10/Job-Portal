@@ -1,10 +1,13 @@
 name: Tender Scraper
 
-# Daily aggregation of external tender notices (currently TED - EU Tenders
-# Electronic Daily) into public.scraped_tenders, browsable at
-# /procurement/tenders. Separate from the Job Scraper workflow since it's a
-# different domain (tenders, not jobs) and a different table - kept
-# independent so a failure/change in one never blocks the other.
+# Daily aggregation of external tender notices - TED (EU Tenders
+# Electronic Daily) and PPRA (Pakistan's federal procurement authority) -
+# into public.scraped_tenders, browsable at /procurement/tenders. Separate
+# from the Job Scraper workflow since it's a different domain (tenders, not
+# jobs) and a different table - kept independent so a failure/change in one
+# never blocks the other. Adding another source is a new module under
+# scripts/tender-scraper/sources/ plus one line in index.ts's SOURCES list -
+# nothing here needs to change.
 on:
   schedule:
     - cron: "0 6 * * *"

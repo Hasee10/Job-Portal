@@ -11,6 +11,12 @@ dotenv.config({ path: resolve(process.cwd(), '.env.local') });
 
 import { deactivateExpiredTenders, upsertTender } from './db';
 import { scrapeTed } from './sources/ted';
+import { scrapePpra } from './sources/ppra';
+
+const SOURCES: { name: string; scrape: () => Promise<import('./types').ScrapedTender[]> }[] = [
+  { name: 'ted', scrape: scrapeTed },
+  { name: 'ppra', scrape: scrapePpra },
+];
 
 async function main() {
   console.log(`\n=== Caliber Tender Scraper — ${new Date().toISOString()} ===`);
@@ -19,23 +25,25 @@ async function main() {
   let updated = 0;
   let errors = 0;
 
-  try {
-    const tenders = await scrapeTed();
-    console.log(`[ted] Fetched ${tenders.length} notices`);
+  for (const { name, scrape } of SOURCES) {
+    try {
+      const tenders = await scrape();
+      console.log(`[${name}] Fetched ${tenders.length} notices`);
 
-    for (const tender of tenders) {
-      try {
-        const result = await upsertTender(tender);
-        if (result === 'inserted') inserted++;
-        else updated++;
-      } catch (e) {
-        errors++;
-        console.error(`[ted] DB error for "${tender.title}":`, (e as Error).message);
+      for (const tender of tenders) {
+        try {
+          const result = await upsertTender(tender);
+          if (result === 'inserted') inserted++;
+          else updated++;
+        } catch (e) {
+          errors++;
+          console.error(`[${name}] DB error for "${tender.title}":`, (e as Error).message);
+        }
       }
+    } catch (e) {
+      errors++;
+      console.error(`[${name}] Source failed:`, (e as Error).message);
     }
-  } catch (e) {
-    errors++;
-    console.error('[ted] Source failed:', (e as Error).message);
   }
 
   const deactivated = await deactivateExpiredTenders();

@@ -51,7 +51,7 @@ export default async function ProcurementTendersPage({
           </h1>
           <p className="mt-2 text-zinc-600 dark:text-zinc-400">
             Public procurement notices aggregated daily. Currently sourced from TED (EU Tenders
-            Electronic Daily).
+            Electronic Daily) and PPRA (Pakistan Public Procurement Regulatory Authority).
           </p>
 
           <div className="mt-6 flex flex-wrap gap-2">
