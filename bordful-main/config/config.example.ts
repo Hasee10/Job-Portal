@@ -348,9 +348,14 @@ export const config = {
 
   // Marketing & SEO
   badge: '',
-  title: 'Discover and Apply to Your Dream Jobs Today',
+  // This is the site-wide title suffix (every page's <title> reads
+  // "{Page} | {this}") and the default meta description - left over from
+  // before the matchmaking repositioning, still pure job-board copy on
+  // every single tab and search result regardless of which product
+  // surface (jobs or procurement) the visitor is actually on.
+  title: 'AI Matchmaking for Jobs and Procurement',
   description:
-    'Browse curated opportunities from leading companies. Updated daily with the latest positions.',
+    'Caliber matches candidates to roles and buyers to vendors - one AI-powered platform for job seekers, employers, recruiters, and procurement teams.',
   url:
     process.env.NEXT_PUBLIC_APP_URL ||
     (process.env.NODE_ENV === 'development'
