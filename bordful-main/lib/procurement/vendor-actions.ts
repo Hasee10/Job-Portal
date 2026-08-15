@@ -133,6 +133,40 @@ export async function getVendorById(vendorId: string): Promise<VendorAccount | n
   return data ? rowToVendor(data) : null;
 }
 
+// Public directory listing (mirrors listActiveRecruiters() in
+// lib/jobs/recruiter-actions.ts, same "verified accounts only" gate). A
+// recruiter-linked vendor's verification comes from the underlying
+// recruiter_accounts.is_verified flag, not a separate one on
+// vendor_accounts itself - nothing in Phase 1 ever sets that column, since
+// every row today is auto-provisioned via getOrCreateVendorForRecruiter.
+// The vendor_accounts.is_verified column only matters for the not-yet-built
+// standalone (non-recruiter) path.
+export async function listVerifiedVendors(): Promise<VendorAccount[]> {
+  const supabase = getAdminClient();
+
+  const { data: vendors, error } = await supabase
+    .from('vendor_accounts')
+    .select('*')
+    .order('created_at', { ascending: false });
+  if (error) throw toError(error, 'Failed to load vendors.');
+  if (!vendors || vendors.length === 0) return [];
+
+  const recruiterIds = vendors.map((v) => v.recruiter_id as string | null).filter(Boolean) as string[];
+  const verifiedRecruiterIds = new Set<string>();
+  if (recruiterIds.length > 0) {
+    const { data: recruiters } = await supabase
+      .from('recruiter_accounts')
+      .select('id, is_verified')
+      .in('id', recruiterIds)
+      .eq('is_verified', true);
+    for (const r of recruiters ?? []) verifiedRecruiterIds.add(r.id as string);
+  }
+
+  return vendors
+    .filter((v) => (v.recruiter_id ? verifiedRecruiterIds.has(v.recruiter_id as string) : v.is_verified))
+    .map(rowToVendor);
+}
+
 // Resolves the calling session to a vendor_accounts id. Only 'recruiter' is
 // wired up in Phase 1 - standalone (non-recruiter) vendor login isn't built
 // yet, so a 'vendor' role never actually occurs today, but the branch is

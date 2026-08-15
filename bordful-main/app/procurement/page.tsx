@@ -37,6 +37,14 @@ export default function ProcurementLandingPage() {
               I'm a vendor
             </Link>
           </div>
+          <p className="mt-4 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-muted-foreground text-sm">
+            <Link className="text-primary underline underline-offset-4 hover:opacity-80" href="/procurement/vendors">
+              Browse registered suppliers &rarr;
+            </Link>
+            <Link className="text-primary underline underline-offset-4 hover:opacity-80" href="/procurement/tenders">
+              Browse global tenders &rarr;
+            </Link>
+          </p>
         </div>
       </div>
 

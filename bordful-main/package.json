@@ -12,6 +12,7 @@
     "scrape:rss": "npx tsx scripts/scraper/index.ts rss",
     "scrape:mustakbil": "npx tsx scripts/scraper/index.ts mustakbil",
     "scrape:naukrigulf": "npx tsx scripts/scraper/index.ts naukrigulf",
+    "scrape:tenders": "npx tsx scripts/tender-scraper/index.ts",
     "test": "vitest run",
     "test:watch": "vitest"
   },
