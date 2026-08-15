@@ -20,6 +20,7 @@
 // across sources that don't share a real classification standard).
 import * as cheerio from 'cheerio';
 import type { ScrapedTender } from '../types';
+import { fetchWithRetry } from '../http';
 
 const BASE = 'https://epms.ppra.gov.pk';
 const LIST_PATH = '/public/tenders/active-tenders';
@@ -52,16 +53,30 @@ function parseDeadline(dateText: string, timeText: string): string | undefined {
   return Number.isNaN(parsed.getTime()) ? undefined : parsed.toISOString();
 }
 
+// The "Advertised" column ("Aug 15, 2026", date only) - previously not
+// captured at all, which meant every PPRA tender had a null
+// publication_date: no "Published" line on its card, and "Newest first"
+// sort couldn't order PPRA tenders against each other or against TED.
+function parsePublicationDate(dateText: string): string | undefined {
+  if (!dateText) return undefined;
+  const parsed = new Date(`${dateText} GMT+0500`);
+  return Number.isNaN(parsed.getTime()) ? undefined : parsed.toISOString().slice(0, 10);
+}
+
 async function fetchPage(url: string): Promise<string | null> {
   try {
-    const res = await fetch(url, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (compatible; Caliber-Aggregator/1.0; +https://caliber.app)',
-        Accept: 'text/html,application/xhtml+xml',
-        'Accept-Language': 'en-US,en;q=0.9',
+    const res = await fetchWithRetry(
+      url,
+      {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (compatible; Caliber-Aggregator/1.0; +https://caliber.app)',
+          Accept: 'text/html,application/xhtml+xml',
+          'Accept-Language': 'en-US,en;q=0.9',
+        },
+        signal: AbortSignal.timeout(20_000),
       },
-      signal: AbortSignal.timeout(20_000),
-    });
+      { label: 'ppra' }
+    );
     if (!res.ok) {
       console.warn(`[ppra] HTTP ${res.status} for ${url}`);
       return null;
@@ -86,6 +101,7 @@ function parseListPage(html: string, cpvPrefix: string): ScrapedTender[] {
     const title = detailsCell.find('strong').first().text().trim();
     const orgCell = $(cells[3]);
     const org = orgCell.find('.tender-org').first().text().trim();
+    const advertisedDate = $(cells[5]).text().trim();
     const closingCell = $(cells[6]);
     const closingDate = closingCell.find('strong').first().text().trim();
     const closingTime = closingCell.find('small').first().text().trim();
@@ -100,7 +116,7 @@ function parseListPage(html: string, cpvPrefix: string): ScrapedTender[] {
       buyerName: org || undefined,
       country: 'PAK',
       cpvCodes: [cpvPrefix],
-      publicationDate: undefined, // "Advertised" date isn't in the fields we select - deadline is what matters for this feed
+      publicationDate: parsePublicationDate(advertisedDate),
       deadlineDate: parseDeadline(closingDate, closingTime),
       url: `${BASE}${detailHref}`,
     });

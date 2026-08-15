@@ -27,10 +27,11 @@
 // request) is the public notice detail page - used as the stored URL.
 import type { ScrapedTender } from '../types';
 import { TENDER_CATEGORIES } from '../../../lib/procurement/tender-categories';
+import { fetchWithRetry } from '../http';
 
 const SEARCH_URL = 'https://api.ted.europa.eu/v3/notices/search';
 const PAGE_SIZE = 250;
-const MAX_PAGES = 10; // hard cap (2500 notices/run) - generous margin over observed steady-state daily volume
+const MAX_PAGES = 16; // hard cap (4000 notices/run) - raised alongside the category expansion from 3 to 6 divisions
 
 type TedNotice = {
   ND?: string;
@@ -82,16 +83,20 @@ export async function scrapeTed(lookbackDays = 2): Promise<ScrapedTender[]> {
 
   const tenders: ScrapedTender[] = [];
   for (let page = 1; page <= MAX_PAGES; page++) {
-    const res = await fetch(SEARCH_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        query,
-        page,
-        limit: PAGE_SIZE,
-        fields: ['ND', 'PD', 'DD', 'CY', 'TI', 'buyer-name', 'classification-cpv'],
-      }),
-    });
+    const res = await fetchWithRetry(
+      SEARCH_URL,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          query,
+          page,
+          limit: PAGE_SIZE,
+          fields: ['ND', 'PD', 'DD', 'CY', 'TI', 'buyer-name', 'classification-cpv'],
+        }),
+      },
+      { label: 'ted' }
+    );
 
     if (!res.ok) {
       throw new Error(`TED search failed: HTTP ${res.status} ${await res.text()}`);

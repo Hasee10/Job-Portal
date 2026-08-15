@@ -9,7 +9,7 @@ import { resolve } from 'path';
 dotenv.config({ path: resolve(process.cwd(), '../job-scraper/.env') });
 dotenv.config({ path: resolve(process.cwd(), '.env.local') });
 
-import { deactivateExpiredTenders, upsertTender } from './db';
+import { deactivateExpiredTenders, deactivateStaleUndatedTenders, upsertTender } from './db';
 import { scrapeTed } from './sources/ted';
 import { scrapePpra } from './sources/ppra';
 
@@ -46,7 +46,7 @@ async function main() {
     }
   }
 
-  const deactivated = await deactivateExpiredTenders();
+  const deactivated = (await deactivateExpiredTenders()) + (await deactivateStaleUndatedTenders());
 
   console.log(
     `Done — inserted: ${inserted}, updated: ${updated}, deactivated: ${deactivated}, errors: ${errors}`

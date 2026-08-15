@@ -60,3 +60,27 @@ export async function deactivateExpiredTenders(): Promise<number> {
   if (error) throw error;
   return data?.length ?? 0;
 }
+
+const UNDATED_TENDER_MAX_AGE_DAYS = 60;
+
+// Some notices never carry a usable deadline (PPRA's "Advertised" date
+// isn't captured at all yet, and a handful of TED notice types omit DD) -
+// those rows have no deadline_date for deactivateExpiredTenders to ever
+// act on, so without this they'd accumulate as "active" forever. Age them
+// out from creation instead, once they're old enough that the underlying
+// opportunity has almost certainly closed either way.
+export async function deactivateStaleUndatedTenders(): Promise<number> {
+  const supabase = getSupabase();
+  const cutoff = new Date(Date.now() - UNDATED_TENDER_MAX_AGE_DAYS * 24 * 60 * 60 * 1000).toISOString();
+
+  const { data, error } = await supabase
+    .from('scraped_tenders')
+    .update({ is_active: false, updated_at: new Date().toISOString() })
+    .eq('is_active', true)
+    .is('deadline_date', null)
+    .lt('created_at', cutoff)
+    .select('id');
+
+  if (error) throw error;
+  return data?.length ?? 0;
+}
