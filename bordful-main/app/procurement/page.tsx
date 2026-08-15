@@ -14,9 +14,9 @@ export default function ProcurementLandingPage() {
     <main className="bg-background">
       <div className="border-b bg-muted/20">
         <div className="container mx-auto px-4 py-16 text-center">
-          <p className="font-semibold text-primary text-xs uppercase tracking-wider">Procurement</p>
+          <p className="font-semibold text-primary text-xs uppercase tracking-wider">Matchmaking for procurement</p>
           <h1 className="mx-auto mt-2 max-w-2xl font-bold text-3xl text-zinc-900 tracking-tight sm:text-4xl dark:text-zinc-50">
-            Source vendors the way real procurement teams do
+            The same matchmaking engine, built for sourcing vendors
           </h1>
           <p className="mx-auto mt-4 max-w-xl text-muted-foreground text-sm sm:text-base">
             One engine for RFIs, RFQs, RFPs, and full tender-grade sourcing — invite vendors,
