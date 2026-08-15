@@ -7,11 +7,19 @@ import { useSeekerJobState } from '@/components/jobs/SeekerJobStateContext';
 import { Button } from '@/components/ui/button';
 
 export function JobApplicationActions({ jobId }: { jobId: string }) {
-  const { status } = useSession();
+  const { data: session, status } = useSession();
   const { applications, setApplication, clearApplication } =
     useSeekerJobState();
   const router = useRouter();
   const current = applications[jobId];
+
+  // Same seeker-only enforcement as SaveJobButton (see its comment) -
+  // /api/seeker/applications 401s for any other role, so a signed-in
+  // employer/recruiter would otherwise see these buttons flip state and
+  // silently revert with no explanation.
+  if (status === 'authenticated' && session?.user?.role && session.user.role !== 'seeker') {
+    return null;
+  }
 
   const handle = (target: 'applied' | 'not_interested') => {
     if (status !== 'authenticated') {

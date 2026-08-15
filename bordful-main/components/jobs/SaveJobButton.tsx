@@ -13,10 +13,20 @@ export function SaveJobButton({
   jobId: string;
   className?: string;
 }) {
-  const { status } = useSession();
+  const { data: session, status } = useSession();
   const { savedJobIds, toggleSave } = useSeekerJobState();
   const router = useRouter();
   const isSaved = savedJobIds.has(jobId);
+
+  // Saving is seeker-only server-side (see /api/seeker/saved-jobs) - a
+  // signed-in non-seeker (employer/recruiter) would previously pass the
+  // "is anyone signed in" check below, see the button optimistically fill
+  // in, then silently revert with no explanation when the request 401s.
+  // Hiding the button entirely for that case is more honest than letting
+  // them click something that can never actually work for their account.
+  if (status === 'authenticated' && session?.user?.role && session.user.role !== 'seeker') {
+    return null;
+  }
 
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault();

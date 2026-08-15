@@ -79,6 +79,30 @@ export function ApplyModal({
     );
   }
 
+  // Applications are seeker-only server-side (see /api/jobs/[id]/apply) - an
+  // employer/recruiter session would previously reach the real form below,
+  // fill it out, and get back a misleading "Not signed in" error on submit
+  // even though they clearly are signed in, just as the wrong role.
+  if (session.user.role !== 'seeker') {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={onClose}>
+        <div
+          className="w-full max-w-sm rounded-xl border border-zinc-200 bg-white p-6 text-center shadow-xl dark:border-zinc-800 dark:bg-zinc-900"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <p className="font-semibold text-zinc-900 dark:text-zinc-50">Applications are for job seekers</p>
+          <p className="mt-1.5 text-sm text-zinc-500">
+            This account is signed in as {session.user.role === 'recruiter' ? 'a recruiter' : 'an employer'}.
+            Sign in with a job seeker account to apply.
+          </p>
+          <Button className="mt-4 w-full" onClick={onClose} variant="outline">
+            Close
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={onClose}>
       <div
