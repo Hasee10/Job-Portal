@@ -31,30 +31,30 @@ export default function ProcurementLandingPage() {
       >
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
           <Link
-            className="inline-flex items-center justify-center rounded-md bg-primary px-5 py-2.5 font-medium text-primary-foreground text-sm hover:opacity-90"
+            className="inline-flex items-center justify-center rounded-md bg-white px-5 py-2.5 font-medium text-primary text-sm hover:opacity-90"
             href="/procurement/requests"
           >
             Go to my requests
           </Link>
           <Link
-            className="inline-flex items-center justify-center rounded-md border px-5 py-2.5 font-medium text-sm hover:bg-accent"
+            className="inline-flex items-center justify-center rounded-md border border-white/40 px-5 py-2.5 font-medium text-sm text-white hover:bg-white/10"
             href="/procurement/vendor"
           >
             I'm a vendor
           </Link>
         </div>
-        <p className="flex flex-wrap items-center gap-x-4 gap-y-1 text-muted-foreground text-sm">
-          <Link className="text-primary underline underline-offset-4 hover:opacity-80" href="/procurement/vendors">
+        <p className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-white/80">
+          <Link className="text-white underline underline-offset-4 hover:opacity-80" href="/procurement/vendors">
             Browse registered suppliers &rarr;
           </Link>
-          <Link className="text-primary underline underline-offset-4 hover:opacity-80" href="/procurement/tenders">
+          <Link className="text-white underline underline-offset-4 hover:opacity-80" href="/procurement/tenders">
             Browse global tenders &rarr;
           </Link>
         </p>
-        <div className="flex flex-wrap items-center gap-x-5 gap-y-2 border-t pt-4 text-xs">
+        <div className="flex flex-wrap items-center gap-x-5 gap-y-2 border-white/20 border-t pt-4 text-xs">
           {FEATURE_POINTS.map(({ icon: Icon, label }) => (
-            <span className="flex items-center gap-1.5 text-muted-foreground" key={label}>
-              <Icon aria-hidden="true" className="h-3.5 w-3.5 text-primary" />
+            <span className="flex items-center gap-1.5 text-white/80" key={label}>
+              <Icon aria-hidden="true" className="h-3.5 w-3.5 text-white" />
               {label}
             </span>
           ))}
