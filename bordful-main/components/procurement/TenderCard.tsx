@@ -23,6 +23,20 @@ function daysUntil(deadline: string): number {
   return Math.ceil(ms / (1000 * 60 * 60 * 24));
 }
 
+// tender.url comes verbatim from an external, unauthenticated source (TED's
+// API response / a scraped PPRA href) with no scheme validation before it's
+// stored - rendering it as an <a href> unchecked would let a malicious
+// notice (e.g. a `javascript:` URL) execute in a visitor's browser on click.
+// Only ever render it as a live link once it's confirmed http(s).
+function safeHref(url: string): string | undefined {
+  try {
+    const parsed = new URL(url);
+    return parsed.protocol === 'http:' || parsed.protocol === 'https:' ? url : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 function DeadlineChip({ deadlineDate }: { deadlineDate: string | null }) {
   if (!deadlineDate) return null;
   const days = daysUntil(deadlineDate);
@@ -45,13 +59,15 @@ function DeadlineChip({ deadlineDate }: { deadlineDate: string | null }) {
 
 export function TenderCard({ tender }: { tender: ScrapedTenderRow }) {
   const category = categoryLabel(tender.cpvCodes);
+  const href = safeHref(tender.url);
 
   return (
     <a
-      className="block rounded-lg border p-4 transition-all hover:border-gray-400 sm:p-5 dark:hover:border-zinc-600"
-      href={tender.url}
+      className="block rounded-lg border p-4 transition-all hover:border-gray-400 sm:p-5 dark:hover:border-zinc-600 aria-disabled:pointer-events-none aria-disabled:opacity-60"
+      aria-disabled={!href}
+      href={href ?? '#'}
       rel="noopener noreferrer"
-      target="_blank"
+      target={href ? '_blank' : undefined}
     >
       <div className="flex flex-wrap items-start justify-between gap-2">
         <h2 className="line-clamp-2 font-medium text-base">{tender.title}</h2>
