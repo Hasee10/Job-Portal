@@ -932,7 +932,7 @@ export const config = {
     copyright: {
       show: true,
       startYear: 2024,
-      text: '© 2024-2026 Caliber. All rights reserved.',
+      text: 'Caliber. All rights reserved.',
     },
 
     // Built with section
