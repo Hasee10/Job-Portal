@@ -3,8 +3,8 @@
 # dependencies
 /node_modules
 
-# lockfiles
-package-lock.json
+# lockfiles - package-lock.json is committed (see below) so CI gets a
+# deterministic install instead of resolving the tree fresh every run.
 yarn.lock
 pnpm-lock.yaml
 bun.lockb
