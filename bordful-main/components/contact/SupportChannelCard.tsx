@@ -1,9 +1,7 @@
 import {
   ArrowRight,
   ArrowUpRight,
-  Github,
   HelpCircle,
-  Linkedin,
   type LucideIcon,
   Mail,
   MessageSquare,
@@ -30,9 +28,16 @@ const iconMap: Record<string, LucideIcon> = {
   HelpCircle,
   Phone,
   MessageSquare,
-  Github,
-  Linkedin,
   Rss,
+};
+
+// Brand/logo marks aren't part of lucide-react (dropped from the icon set
+// upstream) - rendered from the same static SVG assets footer.tsx already
+// uses for these platforms instead.
+const BRAND_ICON_SRC: Record<string, string> = {
+  Twitter: '/assets/social/twitter.svg',
+  Github: '/assets/social/github.svg',
+  Linkedin: '/assets/social/linkedin.svg',
 };
 
 export function SupportChannelCard({
@@ -42,12 +47,11 @@ export function SupportChannelCard({
   buttonLink,
   icon,
 }: SupportChannelCardProps) {
-  // Check if it's Twitter icon
-  const isTwitterIcon = icon === 'Twitter';
+  const brandIconSrc = BRAND_ICON_SRC[icon];
 
   // Get the icon component or use HelpCircle as fallback. Only rendered when
-  // isTwitterIcon is false (see JSX below), so this is never actually used
-  // for the Twitter case, but keeping it non-nullable keeps the type honest.
+  // brandIconSrc is unset (see JSX below), so this is never actually used
+  // for a brand icon, but keeping it non-nullable keeps the type honest.
   const IconComponent = iconMap[icon] || HelpCircle;
 
   const isExternalLink =
@@ -57,13 +61,13 @@ export function SupportChannelCard({
     <div className="flex h-full flex-col rounded-lg border p-5 transition-all hover:border-gray-400">
       <div className="space-y-3 pb-2">
         <div>
-          {isTwitterIcon ? (
+          {brandIconSrc ? (
             <div className="relative h-5 w-5">
               <Image
-                alt="Twitter/X"
+                alt={`${icon} logo`}
                 className="object-contain"
                 height={20}
-                src="/assets/social/twitter.svg"
+                src={brandIconSrc}
                 width={20}
               />
             </div>
