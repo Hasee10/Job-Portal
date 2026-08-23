@@ -72,9 +72,16 @@ export async function extractResumeFromPdf(file: File): Promise<ResumeContent> {
   let rawText: string;
   try {
     const buffer = Buffer.from(await file.arrayBuffer());
-    const pdfParse = (await import('pdf-parse')).default;
-    const parsed = await pdfParse(buffer);
-    rawText = parsed.text.trim();
+    // v2's API is class-based (no more default-export function call) - see
+    // pdf-parse's own "Getting Started with v2" migration note.
+    const { PDFParse } = await import('pdf-parse');
+    const parser = new PDFParse({ data: buffer });
+    try {
+      const parsed = await parser.getText();
+      rawText = parsed.text.trim();
+    } finally {
+      await parser.destroy();
+    }
   } catch (error) {
     console.error('[resume-extraction] PDF parsing failed:', error);
     throw new Error("Couldn't read that PDF. Try a different file.");
