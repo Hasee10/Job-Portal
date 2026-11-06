@@ -1,10 +1,10 @@
 // Main scraper runner.
-// Usage: bun scripts/scraper/index.ts [source]
+// Usage: npx tsx scripts/scraper/index.ts [source]
 // Examples:
-//   bun scripts/scraper/index.ts              — run all sources
-//   bun scripts/scraper/index.ts rss          — RSS feeds only
-//   bun scripts/scraper/index.ts mustakbil    — Mustakbil only
-//   bun scripts/scraper/index.ts naukrigulf   — NaukriGulf only
+//   npx tsx scripts/scraper/index.ts              — run all sources
+//   npx tsx scripts/scraper/index.ts rss          — RSS feeds only
+//   npx tsx scripts/scraper/index.ts mustakbil    — Mustakbil only
+//   npx tsx scripts/scraper/index.ts naukrigulf   — NaukriGulf only
 
 import dotenv from 'dotenv';
 import { resolve } from 'path';

@@ -58,8 +58,9 @@ pipeline, migrations, and verification checklist.
 
 ### Prerequisites
 
-- **Node.js 18+** (or [Bun](https://bun.sh) — `package.json` scripts assume Bun, but
-  everything works with plain `npm`/`npx` too; that's what these instructions use)
+- **Node.js 18+** — `package.json` scripts use plain `npm`/`npx`; that's what these
+  instructions use. (Bun also works if you install deps with it yourself, but it isn't
+  the supported path — see the root [README](../README.md#dependency-management).)
 - A **Supabase project** — either your own, or the one already wired up for this
   deployment (ask whoever set up the n8n workflows for the project URL and anon key)
 - (Optional, only if you're changing what jobs get collected) An **n8n instance** — see
