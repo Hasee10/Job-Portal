@@ -53,7 +53,7 @@ or via `ATS_EXTRA_BOARDS` in `.env`. A starter list of ~30 well-known
 companies is included; add your own by finding a company's `/careers` page
 and reading the board token out of its URL.
 
-### Browser-rendered sources (via CloakBrowser, `../CloakBrowser-main`)
+### Browser-rendered sources (via CloakBrowser, installed from PyPI — see `requirements.txt`)
 
 | Source | Link | ToS status |
 |---|---|---|
@@ -67,12 +67,11 @@ and reading the board token out of its URL.
 
 **Dropped:** Jobright.ai turned out to be a genuine "Sign In / Join Now"
 gated AI job-matching product with no public listings at all - not a
-bot-blocking problem CloakBrowser could work around. The module is still in
-`jobscraper/sources/browser/jobright.py` for reference but isn't wired into
-`BROWSER_SOURCES`. Automating a login with a real personal account was
-considered and rejected - see the conversation history for the reasoning
-(Google actively blocks automated sign-in, and it would mean storing a real
-account password in `.env`/GitHub secrets).
+bot-blocking problem CloakBrowser could work around. The module was removed
+(it was never wired into `BROWSER_SOURCES`). Automating a login with a real
+personal account was considered and rejected - see the conversation history
+for the reasoning (Google actively blocks automated sign-in, and it would
+mean storing a real account password in `.env`/GitHub secrets).
 
 **Read this before enabling the ToS-restricted sources.** Indeed, Glassdoor,
 Naukri, and ZipRecruiter all explicitly forbid automated access in their
