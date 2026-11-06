@@ -1,6 +1,6 @@
 # Job Portal
 
-A job board (product name: **JobLo**) that aggregates listings from 20+ sources and presents them in a searchable interface, with accounts and workflows for job seekers, employers, and recruiters. A separate Procurement/RFx module (RFI/RFQ/RFP/tender workflows for vendors and buyers) runs alongside it. Job seekers browse anonymously; posting, applying, and procurement workflows require an account.
+A job board (product name: **JobLo**) that aggregates listings from 20+ sources and presents them in a searchable interface, with accounts and workflows for job seekers, employers, and recruiters. A separate Procurement/RFx module (RFI/RFQ/RFP/tender workflows for vendors and buyers) runs alongside it. Browsing `/jobs` requires a signed-in account (gated deliberately in `bordful-main/middleware.ts` — see commit `10f9d47`); posting, applying, and procurement workflows also require an account.
 
 ---
 
@@ -84,8 +84,13 @@ Job-Portal/
 │                                part of this application, kept for reference/spin-out.
 │
 └── .github/workflows/
-    ├── scrape.yml              Scheduled scraper (Python + Node.js, every 12 h)
-    └── secret-scan.yml         Gitleaks scan on every push / PR
+    ├── scrape.yml                      Scheduled job scraper (Python + Node.js RSS, every 12 h)
+    ├── tender-scraper-cron.yml         Scheduled tender scraper (daily)
+    ├── job-alerts-cron.yml             Triggers /api/cron/search-alerts (every 6 h)
+    ├── guide-content-cron.yml          Triggers /api/cron/generate-guides (monthly)
+    ├── masterclass-discovery-cron.yml  Triggers /api/cron/discover-masterclasses (monthly)
+    ├── keepalive.yml                   Monthly no-op push so GitHub doesn't disable the cron jobs
+    └── secret-scan.yml                 Gitleaks scan on every push / PR
 ```
 
 ---
@@ -151,28 +156,40 @@ All of the above are accessed exclusively server-side using the Supabase `servic
 
 Go to **Settings → Secrets and variables → Actions** and add:
 
-| Secret | Description |
-|---|---|
-| `COCKROACH_DATABASE_URL_CI` | **Stale name** — `.github/workflows/scrape.yml` still references this from the abandoned CockroachDB attempt. Not verified against the live GitHub Actions configuration as part of this cleanup; if the scheduled scraper job is running successfully today, this secret may actually hold a Supabase URL under a leftover name rather than evidence CockroachDB is live. |
-| `ADZUNA_APP_ID` / `ADZUNA_APP_KEY` | Adzuna API credentials |
-| `JOOBLE_API_KEY` | Jooble API key |
-| `SCRAPER_PROXY` | Optional residential proxy |
-| `CLOAKBROWSER_LICENSE_KEY` | Optional CloakBrowser license |
+Verified directly against every workflow file under `.github/workflows/` (no stale secret names remain — `COCKROACH_DATABASE_URL_CI` was checked for and does not appear anywhere in the current workflows):
+
+| Secret | Description | Used by |
+|---|---|---|
+| `SUPABASE_URL` / `SUPABASE_SERVICE_ROLE_KEY` | Live Supabase credentials | `scrape.yml`, `tender-scraper-cron.yml` |
+| `ADZUNA_APP_ID` / `ADZUNA_APP_KEY` | Adzuna API credentials | `scrape.yml` |
+| `JOOBLE_API_KEY` | Jooble API key | `scrape.yml` |
+| `SCRAPER_PROXY` | Optional residential proxy | `scrape.yml` |
+| `CLOAKBROWSER_LICENSE_KEY` | Optional CloakBrowser Pro license | `scrape.yml` |
+| `CRON_SECRET` | Optional bearer token for `/api/cron/*` — workflows run without it (unauthenticated) if unset | `job-alerts-cron.yml`, `guide-content-cron.yml`, `masterclass-discovery-cron.yml` |
+
+Repository **variable** (not secret) `PORTAL_URL` — set under Settings → Secrets and variables → Actions → Variables — only needed if the deployed app is on a custom domain rather than the default `*.vercel.app` one.
 
 ---
+
+## Dependency Management
+
+**npm is the single supported package manager** for `bordful-main`. Only `package-lock.json` is tracked; there is no `bun.lock` and no `packageManager` pin. This matches what's actually used everywhere outside a developer's own machine:
+- Every CI workflow that installs JS dependencies (`scrape.yml`, `tender-scraper-cron.yml`) runs `npm ci` against `package-lock.json`.
+- `package.json` scripts (`dev`, `build`, `start`, `lint`, `format`) invoke `next`/`ultracite` directly — no `bun`/`bunx` prefix.
+
+A `bun.lock` previously existed alongside `package-lock.json` and had drifted out of sync with `package.json` (it still listed `pg`/`airtable` after those were removed as unused dependencies) — it has been deleted rather than reconciled, since nothing in this project's CI or deployment path reads it. If you prefer Bun locally, `bun install` will generate its own lockfile, but don't commit it — npm is what's verified to work in CI and should stay the single source of truth.
 
 ## Running Locally
 
 ### Web App
 
-Requires: Node.js 20+ (project scripts are written for Bun, but `npm`/`npx` work identically against the same `package.json`/`package-lock.json`).
+Requires: Node.js 20+.
 
 ```bash
 cd bordful-main
 
 # Install dependencies
 npm install
-# (or: bun install, if you have Bun)
 
 # Set up environment
 cp .env.example .env.local
@@ -292,9 +309,15 @@ One additional note: GitHub will **disable scheduled workflows on inactive repos
 
 ---
 
-## Known Security Item
+## Known Security Item — UNRESOLVED (P0)
 
-`leaks.md` in this repo records a historical credential-leak incident (a Supabase `service_role` key committed in `n8n-workflows/`) and its remediation checklist. As of this cleanup, the leaked files have been untracked from the git index, but **whether the key itself was rotated and whether history was purged has not been re-verified here** — see `leaks.md` for the full incident record and required owner actions. This cleanup did not touch credential handling.
+`leaks.md` records a Supabase `service_role` key committed in `n8n-workflows/` (commit `48803df`, 2026-07-01). Status verified directly, 2026-11-06:
+
+- **The key has not been rotated.** The `SUPABASE_SERVICE_ROLE_KEY` currently in `bordful-main/.env.local` hashes identically (SHA-256) to the key present in the leaked commit — confirmed without ever displaying either value. It is the same live, still-valid credential.
+- The leaked files were untracked from the git index (`258e4e2`) but **history has not been purged** (no `git filter-repo` run) and the repository is confirmed public, so the key remains publicly fetchable from the commit history today.
+- The RLS portion of the incident (`leaks.md` §4 — three tables with RLS disabled and public `anon` write access) **is confirmed fixed on the live database**, verified via Supabase's own security advisor: `job_application_submissions`, `employer_candidate_invites`, and `market_intel_waitlist` all now show RLS enabled with zero policies (correct deny-by-default for `anon`/`authenticated`).
+
+**Required owner action, in order (see `leaks.md` §3 for full detail):** rotate the `service_role` key in the Supabase dashboard → update it in Vercel, GitHub Actions secrets, every developer's local `.env.local`, and the n8n instance → then purge the leaked commits from git history and ask GitHub Support to expire cached objects. No credential values were printed, copied, or changed as part of this verification, and rotation was not attempted (requires Supabase dashboard access/authorization this task does not have).
 
 ---
 

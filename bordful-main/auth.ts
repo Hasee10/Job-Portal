@@ -15,8 +15,10 @@ const isRateLimited = createRateLimiter(10);
 
 // Two account types share this one NextAuth instance: employers (email
 // + password, via Credentials) and job seekers (Google/LinkedIn OAuth).
-// They're distinguished by `token.role` in the callbacks below - job
-// listings themselves stay fully anonymous/browsable either way. JWT
+// They're distinguished by `token.role` in the callbacks below. Job
+// listings were originally anonymous/browsable, but middleware.ts now
+// gates all of /jobs behind a session (see that file's comment and
+// commit 10f9d47) - this module itself doesn't enforce that gate. JWT
 // session strategy: the session is a signed, encrypted cookie with no
 // server-side session table to manage, which keeps this simple while
 // still getting Auth.js's hardened cookie defaults (httpOnly, Secure in
