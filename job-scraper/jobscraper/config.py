@@ -11,9 +11,6 @@ load_dotenv(ROOT_DIR / ".env")
 SUPABASE_URL = os.environ.get("SUPABASE_URL", "").rstrip("/")
 SUPABASE_SERVICE_ROLE_KEY = os.environ.get("SUPABASE_SERVICE_ROLE_KEY", "")
 
-# CockroachDB - FROZEN (hit monthly RU limit).
-COCKROACH_DATABASE_URL = os.environ.get("COCKROACH_DATABASE_URL", "")
-
 ADZUNA_APP_ID = os.environ.get("ADZUNA_APP_ID", "")
 ADZUNA_APP_KEY = os.environ.get("ADZUNA_APP_KEY", "")
 
