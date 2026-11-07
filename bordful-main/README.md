@@ -1,5 +1,16 @@
 # Caliber: Job Board Powered by Next.js, Supabase & n8n
 
+> **This file describes an earlier stage of this app** (read-only job board, n8n-driven
+> collection, anon-key-only reads, no accounts). The app has since grown employer/recruiter
+> accounts, NextAuth (Credentials + Google/LinkedIn OAuth), job applications, a procurement
+> module, and a Python + Node scraper pipeline (`job-scraper/`, `bordful-main/scripts/`) run
+> from GitHub Actions — none of which this file covers, and its "Configure environment
+> variables" step below (`EMAIL_PROVIDER=encharge`) is stale: the app sends email via Gmail
+> SMTP (`GMAIL_USER`/`GMAIL_APP_PASSWORD`), not Encharge. **For accurate setup steps and the
+> full environment variable reference, see the root [`README.md`](../README.md)** — this
+> file is kept for its still-relevant frontend/theming/SEO documentation (below) and hasn't
+> been fully rewritten for the current architecture.
+
 Caliber is a modern, minimal job board built with Next.js, Tailwind CSS, and Supabase. Job
 listings aren't entered by hand — a set of [n8n](https://n8n.io) workflows (in the sibling
 [`n8n-workflows/`](../n8n-workflows/README.md) directory) automatically scrapes, normalizes,
@@ -111,24 +122,17 @@ click "Execute workflow."
 cp .env.example .env.local
 ```
 
-Edit `.env.local`:
-
-```env
-# Supabase (job data source) — read with the anon/public key, never service_role
-SUPABASE_URL=https://your-project-ref.supabase.co
-SUPABASE_ANON_KEY=your_supabase_anon_key_here
-
-# Site URL
-NEXT_PUBLIC_APP_URL=http://localhost:3000
-
-# Optional: job alert emails
-EMAIL_PROVIDER=encharge
-ENCHARGE_WRITE_KEY=your_encharge_write_key_here
-```
+Edit `.env.local`. This is now a much longer list than the original template's (Supabase
+service-role access, NextAuth, OAuth, Gmail SMTP, cron auth) — see
+[`.env.example`](.env.example) for the full set with placeholders, or the root
+[`README.md`](../README.md#environment-variables) for the complete reference table of what
+each one does and whether it's required. There is no `EMAIL_PROVIDER`/`ENCHARGE_WRITE_KEY`
+anymore; job-related email now goes through `GMAIL_USER`/`GMAIL_APP_PASSWORD`.
 
 > ⚠️ Never commit `.env.local` or share it — it's already excluded via `.gitignore`.
-> Without `SUPABASE_URL`/`SUPABASE_ANON_KEY` set, the app still runs, it just renders zero
-> jobs (the data layer fails gracefully rather than crashing).
+> Without `SUPABASE_URL`/`SUPABASE_SERVICE_ROLE_KEY` set, most of the app (auth, job
+> posting, applications) won't function; see the root README's Environment Variables
+> section for which variables are required versus optional.
 
 ### Step 5: Run the dev server
 
@@ -353,14 +357,11 @@ Recommended: Vercel (best Next.js support).
    npx next build
    ```
 2. Push to GitHub (`.env.local` is already gitignored) and import the repo in Vercel.
-3. In Vercel → Settings → Environment Variables, add:
-   ```
-   SUPABASE_URL = https://your-project-ref.supabase.co
-   SUPABASE_ANON_KEY = your_supabase_anon_key
-   NEXT_PUBLIC_APP_URL = https://your-domain.vercel.app
-   EMAIL_PROVIDER = encharge
-   ENCHARGE_WRITE_KEY = your_encharge_write_key
-   ```
+3. In Vercel → Settings → Environment Variables, add every variable listed in
+   [`.env.example`](.env.example) (or the root [`README.md`](../README.md#environment-variables)'s
+   reference table) with its real production value — `EMAIL_PROVIDER`/`ENCHARGE_WRITE_KEY` are
+   not part of this list; it is now a longer set covering Supabase, NextAuth, OAuth, and Gmail
+   SMTP at minimum.
 4. Deploy.
 
 n8n and Supabase are independent of this deployment step — the portal will start rendering
