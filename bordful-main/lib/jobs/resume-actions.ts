@@ -1,6 +1,6 @@
-import 'server-only';
+import "server-only";
 
-import { createClient } from '@supabase/supabase-js';
+import { createClient } from "@supabase/supabase-js";
 
 export type ResumeExperience = {
   title: string;
@@ -26,9 +26,9 @@ export type ResumeContent = {
 };
 
 export const EMPTY_RESUME_CONTENT: ResumeContent = {
-  fullName: '',
-  headline: '',
-  summary: '',
+  fullName: "",
+  headline: "",
+  summary: "",
   experience: [],
   education: [],
   skills: [],
@@ -50,7 +50,7 @@ function getAdminClient() {
   const url = process.env.SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!url || !key) {
-    throw new Error('Database is not configured on this deployment.');
+    throw new Error("Database is not configured on this deployment.");
   }
   return createClient(url, key, { auth: { persistSession: false } });
 }
@@ -71,9 +71,9 @@ export async function getSeekerResume(
 ): Promise<SeekerResume | null> {
   const supabase = getAdminClient();
   const { data, error } = await supabase
-    .from('seeker_resumes')
-    .select('*')
-    .eq('seeker_id', seekerId)
+    .from("seeker_resumes")
+    .select("*")
+    .eq("seeker_id", seekerId)
     .maybeSingle();
 
   if (error) throw error;
@@ -89,8 +89,8 @@ export async function listSeekerResumesForMatching(): Promise<
 > {
   const supabase = getAdminClient();
   const { data, error } = await supabase
-    .from('seeker_resumes')
-    .select('*, job_seekers(email)');
+    .from("seeker_resumes")
+    .select("*, job_seekers(email)");
 
   if (error) throw error;
 
@@ -113,12 +113,12 @@ export async function markSeekerResumeMatched(
 ): Promise<void> {
   const supabase = getAdminClient();
   const { error } = await supabase
-    .from('seeker_resumes')
+    .from("seeker_resumes")
     .update({
       last_matched_at: new Date().toISOString(),
       matched_job_ids: matchedJobIds.slice(-MAX_MATCHED_JOB_IDS),
     })
-    .eq('seeker_id', seekerId);
+    .eq("seeker_id", seekerId);
   if (error) throw error;
 }
 
@@ -128,16 +128,16 @@ export async function saveSeekerResume(
 ): Promise<SeekerResume> {
   const supabase = getAdminClient();
   const { data, error } = await supabase
-    .from('seeker_resumes')
+    .from("seeker_resumes")
     .upsert(
       {
         seeker_id: seekerId,
         content,
         updated_at: new Date().toISOString(),
       },
-      { onConflict: 'seeker_id' }
+      { onConflict: "seeker_id" }
     )
-    .select('*')
+    .select("*")
     .single();
 
   if (error) throw error;

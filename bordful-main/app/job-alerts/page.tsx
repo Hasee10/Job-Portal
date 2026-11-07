@@ -1,43 +1,43 @@
-import { Bell, Info, LogIn } from 'lucide-react';
-import type { Metadata } from 'next';
-import Link from 'next/link';
-import { redirect } from 'next/navigation';
-import { auth } from '@/auth';
-import { CompactJobCardList } from '@/components/jobs/CompactJobCardList';
-import { HeroSection } from '@/components/ui/hero-section';
-import { MetadataBreadcrumb } from '@/components/ui/metadata-breadcrumb';
-import config from '@/config';
-import { LATEST_JOBS_COUNT } from '@/lib/constants/defaults';
-import { getJobs } from '@/lib/db/airtable.server';
+import { Bell, Info, LogIn } from "lucide-react";
+import type { Metadata } from "next";
+import Link from "next/link";
+import { redirect } from "next/navigation";
+import { auth } from "@/auth";
+import { CompactJobCardList } from "@/components/jobs/CompactJobCardList";
+import { HeroSection } from "@/components/ui/hero-section";
+import { MetadataBreadcrumb } from "@/components/ui/metadata-breadcrumb";
+import config from "@/config";
+import { LATEST_JOBS_COUNT } from "@/lib/constants/defaults";
+import { getJobs } from "@/lib/db/airtable.server";
 
 // Add metadata for SEO
 export const metadata: Metadata = {
-  title: 'Job Alerts | Get Notified of New Opportunities',
+  title: "Job Alerts | Get Notified of New Opportunities",
   description:
     config.jobAlerts.form?.description ||
-    'Subscribe to job alerts and get notified when new opportunities are posted.',
+    "Subscribe to job alerts and get notified when new opportunities are posted.",
   keywords:
-    'job alerts, job notifications, career alerts, employment updates, job subscription',
+    "job alerts, job notifications, career alerts, employment updates, job subscription",
   openGraph: {
-    title: 'Job Alerts | Get Notified of New Opportunities',
+    title: "Job Alerts | Get Notified of New Opportunities",
     description:
       config.jobAlerts.form?.description ||
-      'Subscribe to job alerts and get notified when new opportunities are posted.',
-    type: 'website',
+      "Subscribe to job alerts and get notified when new opportunities are posted.",
+    type: "website",
     url: `${config.url}/job-alerts`,
   },
   twitter: {
-    card: 'summary_large_image',
-    title: 'Job Alerts | Get Notified of New Opportunities',
+    card: "summary_large_image",
+    title: "Job Alerts | Get Notified of New Opportunities",
     description:
       config.jobAlerts.form?.description ||
-      'Subscribe to job alerts and get notified when new opportunities are posted.',
+      "Subscribe to job alerts and get notified when new opportunities are posted.",
   },
   alternates: {
     canonical: `${config.url}/job-alerts`,
     languages: {
       en: `${config.url}/job-alerts`,
-      'x-default': `${config.url}/job-alerts`,
+      "x-default": `${config.url}/job-alerts`,
     },
   },
 };
@@ -48,7 +48,7 @@ export const revalidate = 300;
 export default async function JobAlertsPage() {
   // Redirect to home page if job alerts feature is disabled
   if (!config.jobAlerts?.enabled) {
-    redirect('/');
+    redirect("/");
   }
 
   // Fetch the latest jobs
@@ -56,19 +56,19 @@ export default async function JobAlertsPage() {
   const latestJobs = allJobs.slice(0, LATEST_JOBS_COUNT); // Show latest jobs
 
   const session = await auth();
-  const isSeeker = session?.user?.role === 'seeker';
-  const isEmployer = session?.user?.role === 'employer';
+  const isSeeker = session?.user?.role === "seeker";
+  const isEmployer = session?.user?.role === "employer";
 
   return (
     <main className="min-h-screen bg-background">
       <HeroSection
-        badge={config.jobAlerts.hero?.badge || 'Job Alerts'}
+        badge={config.jobAlerts.hero?.badge || "Job Alerts"}
         description={
           config.jobAlerts.hero?.description ||
-          'Subscribe to job alerts and get notified when new opportunities are posted.'
+          "Subscribe to job alerts and get notified when new opportunities are posted."
         }
         heroImage={config.jobAlerts.heroImage}
-        title={config.jobAlerts.hero?.title || 'Get Jobs Right to Your Inbox'}
+        title={config.jobAlerts.hero?.title || "Get Jobs Right to Your Inbox"}
       />
 
       <div className="container mx-auto px-4 py-12">
@@ -94,9 +94,9 @@ export default async function JobAlertsPage() {
                   Save a search to start getting alerts
                 </p>
                 <p className="mt-1.5 text-sm text-zinc-600 dark:text-zinc-400">
-                  Head to the homepage, run a search with the filters you
-                  care about, and hit &quot;Save search&quot; - we&apos;ll
-                  email you when matching jobs are posted.
+                  Head to the homepage, run a search with the filters you care
+                  about, and hit &quot;Save search&quot; - we&apos;ll email you
+                  when matching jobs are posted.
                 </p>
                 <Link
                   className="mt-5 inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 font-medium text-primary-foreground text-sm transition-opacity hover:opacity-90"
@@ -114,9 +114,9 @@ export default async function JobAlertsPage() {
                   Alerts are for job seeker accounts
                 </p>
                 <p className="mt-1.5 text-sm text-zinc-600 dark:text-zinc-400">
-                  Saved search alerts are for job seeker accounts. Sign in
-                  with a Google or LinkedIn seeker account (not your employer
-                  login) to use them.
+                  Saved search alerts are for job seeker accounts. Sign in with
+                  a Google or LinkedIn seeker account (not your employer login)
+                  to use them.
                 </p>
               </div>
             ) : (

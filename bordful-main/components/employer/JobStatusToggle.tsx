@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
-import { useToast } from '@/hooks/use-toast';
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
 
 export function JobStatusToggle({
   jobId,
   isActive,
-  apiBasePath = '/api/employer/jobs',
+  apiBasePath = "/api/employer/jobs",
 }: {
   jobId: string;
   isActive: boolean;
@@ -22,23 +22,28 @@ export function JobStatusToggle({
     setIsSubmitting(true);
     try {
       const res = await fetch(`${apiBasePath}/${jobId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: isActive ? 'close' : 'reopen' }),
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: isActive ? "close" : "reopen" }),
       });
       if (!res.ok) throw new Error();
-      toast({ title: isActive ? 'Job closed' : 'Job reopened' });
+      toast({ title: isActive ? "Job closed" : "Job reopened" });
       router.refresh();
     } catch {
-      toast({ title: 'Failed to update job', variant: 'destructive' });
+      toast({ title: "Failed to update job", variant: "destructive" });
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <Button disabled={isSubmitting} onClick={handleToggle} size="sm" variant="outline">
-      {isActive ? 'Close job' : 'Reopen job'}
+    <Button
+      disabled={isSubmitting}
+      onClick={handleToggle}
+      size="sm"
+      variant="outline"
+    >
+      {isActive ? "Close job" : "Reopen job"}
     </Button>
   );
 }

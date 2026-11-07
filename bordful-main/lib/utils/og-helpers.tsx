@@ -1,21 +1,21 @@
-import { ImageResponse } from 'next/og';
-import config from '@/config';
+import { ImageResponse } from "next/og";
+import config from "@/config";
 import {
   DEFAULT_LOGO_HEIGHT,
   DEFAULT_LOGO_WIDTH,
-} from '@/lib/constants/defaults';
+} from "@/lib/constants/defaults";
 import {
   getFontFamilyCSS,
   getFontInfo,
   loadGoogleFontData,
   prepareImageResponseFonts,
-} from '@/lib/utils/font-utils';
-import { fetchImageAsDataURI } from '@/lib/utils/image-utils';
+} from "@/lib/utils/font-utils";
+import { fetchImageAsDataURI } from "@/lib/utils/image-utils";
 import {
   createLinearGradient,
   hexToRGBA,
   type ProcessedOGConfig,
-} from '@/lib/utils/og-config';
+} from "@/lib/utils/og-config";
 
 export interface LogoConfig {
   show?: boolean;
@@ -38,17 +38,17 @@ export async function processLogo(
   logoConfig: LogoConfig
 ): Promise<ProcessedLogoConfig> {
   const enabled = logoConfig.show !== false;
-  const src = logoConfig.src || '';
+  const src = logoConfig.src || "";
   const height =
-    typeof logoConfig.height === 'number'
+    typeof logoConfig.height === "number"
       ? logoConfig.height
       : DEFAULT_LOGO_HEIGHT;
   const width =
-    typeof logoConfig.width === 'number'
+    typeof logoConfig.width === "number"
       ? logoConfig.width
       : DEFAULT_LOGO_WIDTH;
 
-  let dataUri = '';
+  let dataUri = "";
   if (enabled && src) {
     dataUri = await fetchImageAsDataURI(src, config.url);
   }
@@ -94,7 +94,7 @@ export async function prepareOGAssets(parsedConfig: ProcessedOGConfig) {
 export async function prepareBackgroundImage(
   backgroundImage?: string | null
 ): Promise<string> {
-  if (!backgroundImage) return '';
+  if (!backgroundImage) return "";
 
   return await fetchImageAsDataURI(backgroundImage, config.url);
 }
@@ -116,7 +116,7 @@ export async function createOGImageResponse(
         parsedConfig.gradientStartOpacity,
         parsedConfig.gradientEndOpacity
       )
-    : '';
+    : "";
 
   const backgroundColorRGBA = hexToRGBA(
     parsedConfig.backgroundColor,
@@ -148,10 +148,10 @@ export async function createOGImageResponse(
       style={{
         width: `${SHARED_STYLES.DIMENSIONS.WIDTH}px`,
         height: `${SHARED_STYLES.DIMENSIONS.HEIGHT}px`,
-        position: 'relative',
-        overflow: 'hidden',
-        display: 'flex',
-        flexDirection: 'column',
+        position: "relative",
+        overflow: "hidden",
+        display: "flex",
+        flexDirection: "column",
       }}
     >
       {/* Background Image Layer */}
@@ -161,26 +161,25 @@ export async function createOGImageResponse(
           height={SHARED_STYLES.DIMENSIONS.HEIGHT}
           src={bgImageDataUri}
           style={{
-            position: 'absolute',
+            position: "absolute",
             top: 0,
             left: 0,
-            width: '100%',
-            height: '100%',
-            objectFit: 'cover',
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
           }}
           width={SHARED_STYLES.DIMENSIONS.WIDTH}
         />
-      )
-}
+      )}
 
       {/* Background Color Overlay */}
       <div
         style={{
-          position: 'absolute',
+          position: "absolute",
           top: 0,
           left: 0,
-          width: '100%',
-          height: '100%',
+          width: "100%",
+          height: "100%",
           backgroundColor: backgroundColorRGBA,
         }}
       />
@@ -189,11 +188,11 @@ export async function createOGImageResponse(
       {parsedConfig.gradientEnabled && (
         <div
           style={{
-            position: 'absolute',
+            position: "absolute",
             top: 0,
             left: 0,
-            width: '100%',
-            height: '100%',
+            width: "100%",
+            height: "100%",
             background: gradientCSS,
           }}
         />
@@ -202,16 +201,16 @@ export async function createOGImageResponse(
       {/* Content Container */}
       <div
         style={{
-          position: 'relative',
-          width: '100%',
-          height: '100%',
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'space-between',
-          alignItems: 'flex-start',
-          color: 'white',
+          position: "relative",
+          width: "100%",
+          height: "100%",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "space-between",
+          alignItems: "flex-start",
+          color: "white",
           fontFamily: fontFamilyCSS,
-          textAlign: 'left',
+          textAlign: "left",
           padding: `${SHARED_STYLES.DIMENSIONS.PADDING}px`,
           zIndex: SHARED_STYLES.Z_INDEX.CONTENT,
         }}
@@ -225,7 +224,7 @@ export async function createOGImageResponse(
             style={{
               height: `${logoConfig.height}px`,
               width: `${logoConfig.width}px`,
-              objectFit: 'contain',
+              objectFit: "contain",
             }}
             width={logoConfig.width}
           />
@@ -234,9 +233,9 @@ export async function createOGImageResponse(
         {/* Text container for title and description */}
         <div
           style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'flex-start',
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "flex-start",
           }}
         >
           <h1
@@ -244,9 +243,9 @@ export async function createOGImageResponse(
               fontSize: `${SHARED_STYLES.FONTS.TITLE_SIZE}px`,
               fontWeight: SHARED_STYLES.FONTS.TITLE_WEIGHT,
               color: parsedConfig.titleColor,
-              margin: '0 0 20px 0',
+              margin: "0 0 20px 0",
               lineHeight: SHARED_STYLES.FONTS.TITLE_LINE_HEIGHT,
-              textAlign: 'left',
+              textAlign: "left",
               maxWidth: `${SHARED_STYLES.DIMENSIONS.CONTENT_WIDTH}px`,
             }}
           >
@@ -260,7 +259,7 @@ export async function createOGImageResponse(
               maxWidth: `${SHARED_STYLES.DIMENSIONS.CONTENT_WIDTH}px`,
               margin: 0,
               lineHeight: SHARED_STYLES.FONTS.DESCRIPTION_LINE_HEIGHT,
-              textAlign: 'left',
+              textAlign: "left",
             }}
           >
             {parsedConfig.siteDescription}
@@ -276,8 +275,8 @@ export async function createOGImageResponse(
       // hits instead of re-rendering per request (same rationale as the
       // per-job OG route in og-job-helpers.tsx).
       headers: {
-        'Cache-Control':
-          'public, immutable, no-transform, max-age=86400, stale-while-revalidate=604800',
+        "Cache-Control":
+          "public, immutable, no-transform, max-age=86400, stale-while-revalidate=604800",
       },
     }
   );

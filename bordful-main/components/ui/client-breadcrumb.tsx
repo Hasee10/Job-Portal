@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { usePathname } from 'next/navigation';
-import { PageBreadcrumb } from './server-breadcrumb';
+import { usePathname } from "next/navigation";
+import { PageBreadcrumb } from "./server-breadcrumb";
 
 type ClientBreadcrumbProps = {
   /**

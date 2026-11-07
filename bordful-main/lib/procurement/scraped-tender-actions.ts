@@ -1,7 +1,7 @@
-import 'server-only';
+import "server-only";
 
-import { createClient } from '@supabase/supabase-js';
-import { TENDER_CATEGORIES } from './tender-categories';
+import { createClient } from "@supabase/supabase-js";
+import { TENDER_CATEGORIES } from "./tender-categories";
 
 export type ScrapedTenderRow = {
   id: string;
@@ -18,7 +18,8 @@ export type ScrapedTenderRow = {
 function getAdminClient() {
   const url = process.env.SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key) throw new Error('Database is not configured on this deployment.');
+  if (!url || !key)
+    throw new Error("Database is not configured on this deployment.");
   return createClient(url, key, { auth: { persistSession: false } });
 }
 
@@ -42,7 +43,7 @@ function rowToTender(row: Record<string, unknown>): ScrapedTenderRow {
 // at this table's scale (a few hundred new rows/day).
 const FETCH_WINDOW = 3000;
 
-export type TenderSort = 'newest' | 'deadline';
+export type TenderSort = "newest" | "deadline";
 
 export type TenderListOpts = {
   categories?: string[]; // CPV prefixes, e.g. ['72', '45']
@@ -73,9 +74,9 @@ async function fetchActiveWindow(): Promise<ScrapedTenderRow[]> {
 
   for (let offset = 0; offset < FETCH_WINDOW; offset += POSTGREST_PAGE_SIZE) {
     const { data, error } = await supabase
-      .from('scraped_tenders')
-      .select('*')
-      .eq('is_active', true)
+      .from("scraped_tenders")
+      .select("*")
+      .eq("is_active", true)
       .range(offset, Math.min(offset + POSTGREST_PAGE_SIZE, FETCH_WINDOW) - 1);
 
     if (error) throw error;
@@ -87,12 +88,17 @@ async function fetchActiveWindow(): Promise<ScrapedTenderRow[]> {
   return rows.map(rowToTender);
 }
 
-function applyFilters(tenders: ScrapedTenderRow[], opts: TenderListOpts): ScrapedTenderRow[] {
+function applyFilters(
+  tenders: ScrapedTenderRow[],
+  opts: TenderListOpts
+): ScrapedTenderRow[] {
   let result = tenders;
 
   if (opts.categories && opts.categories.length > 0) {
     const categories = opts.categories;
-    result = result.filter((t) => t.cpvCodes.some((code) => categories.some((c) => code.startsWith(c))));
+    result = result.filter((t) =>
+      t.cpvCodes.some((code) => categories.some((c) => code.startsWith(c)))
+    );
   }
   if (opts.sources && opts.sources.length > 0) {
     const sources = new Set(opts.sources);
@@ -105,25 +111,36 @@ function applyFilters(tenders: ScrapedTenderRow[], opts: TenderListOpts): Scrape
   if (opts.query && opts.query.trim()) {
     const q = opts.query.trim().toLowerCase();
     result = result.filter(
-      (t) => t.title.toLowerCase().includes(q) || (t.buyerName ?? '').toLowerCase().includes(q)
+      (t) =>
+        t.title.toLowerCase().includes(q) ||
+        (t.buyerName ?? "").toLowerCase().includes(q)
     );
   }
 
   return result;
 }
 
-function sortTenders(tenders: ScrapedTenderRow[], sort: TenderSort): ScrapedTenderRow[] {
+function sortTenders(
+  tenders: ScrapedTenderRow[],
+  sort: TenderSort
+): ScrapedTenderRow[] {
   const sorted = [...tenders];
-  if (sort === 'deadline') {
+  if (sort === "deadline") {
     sorted.sort((a, b) => {
       if (!a.deadlineDate) return 1;
       if (!b.deadlineDate) return -1;
-      return new Date(a.deadlineDate).getTime() - new Date(b.deadlineDate).getTime();
+      return (
+        new Date(a.deadlineDate).getTime() - new Date(b.deadlineDate).getTime()
+      );
     });
   } else {
     sorted.sort((a, b) => {
-      const aDate = a.publicationDate ? new Date(a.publicationDate).getTime() : 0;
-      const bDate = b.publicationDate ? new Date(b.publicationDate).getTime() : 0;
+      const aDate = a.publicationDate
+        ? new Date(a.publicationDate).getTime()
+        : 0;
+      const bDate = b.publicationDate
+        ? new Date(b.publicationDate).getTime()
+        : 0;
       return bDate - aDate;
     });
   }
@@ -135,7 +152,7 @@ export async function listActiveTenders(
 ): Promise<{ tenders: ScrapedTenderRow[]; total: number }> {
   const all = await fetchActiveWindow();
   const filtered = applyFilters(all, opts);
-  const sorted = sortTenders(filtered, opts.sort ?? 'newest');
+  const sorted = sortTenders(filtered, opts.sort ?? "newest");
 
   const total = sorted.length;
   const perPage = opts.perPage ?? 20;
@@ -162,14 +179,17 @@ export async function getTenderFacets(): Promise<TenderFacets> {
   const categories = TENDER_CATEGORIES.map((c) => ({
     cpvPrefix: c.cpvPrefix,
     label: c.label,
-    count: all.filter((t) => t.cpvCodes.some((code) => code.startsWith(c.cpvPrefix))).length,
+    count: all.filter((t) =>
+      t.cpvCodes.some((code) => code.startsWith(c.cpvPrefix))
+    ).length,
   }));
 
   const sourceCounts = new Map<string, number>();
   const countryCounts = new Map<string, number>();
   for (const t of all) {
     sourceCounts.set(t.source, (sourceCounts.get(t.source) ?? 0) + 1);
-    if (t.country) countryCounts.set(t.country, (countryCounts.get(t.country) ?? 0) + 1);
+    if (t.country)
+      countryCounts.set(t.country, (countryCounts.get(t.country) ?? 0) + 1);
   }
 
   const sources = Array.from(sourceCounts.entries())

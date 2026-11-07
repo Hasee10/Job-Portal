@@ -8,6 +8,6 @@ export class AIProviderError extends Error {
     public notConfigured = false
   ) {
     super(message);
-    this.name = 'AIProviderError';
+    this.name = "AIProviderError";
   }
 }

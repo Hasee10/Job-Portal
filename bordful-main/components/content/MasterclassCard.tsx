@@ -1,8 +1,8 @@
-import { Clock, Play } from 'lucide-react';
-import Image from 'next/image';
-import { getGuideCategoryStyle } from '@/lib/constants/guide-categories';
-import type { Masterclass } from '@/lib/content/masterclass-actions';
-import { getYouTubeThumbnailUrl } from '@/lib/content/masterclass-video';
+import { Clock, Play } from "lucide-react";
+import Image from "next/image";
+import { getGuideCategoryStyle } from "@/lib/constants/guide-categories";
+import type { Masterclass } from "@/lib/content/masterclass-actions";
+import { getYouTubeThumbnailUrl } from "@/lib/content/masterclass-video";
 
 function formatDuration(minutes: number | null): string | null {
   if (!minutes) return null;
@@ -41,7 +41,11 @@ export function MasterclassCard({
         )}
         <div className="absolute inset-0 flex items-center justify-center bg-black/0 transition-colors group-hover:bg-black/20">
           <div className="flex h-11 w-11 items-center justify-center rounded-full bg-white/90 text-zinc-900 shadow-md transition-transform group-hover:scale-110 dark:bg-zinc-950/90 dark:text-zinc-50">
-            <Play aria-hidden="true" className="ml-0.5 h-4 w-4" fill="currentColor" />
+            <Play
+              aria-hidden="true"
+              className="ml-0.5 h-4 w-4"
+              fill="currentColor"
+            />
           </div>
         </div>
         {duration && (
@@ -66,7 +70,7 @@ export function MasterclassCard({
           <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
             {[masterclass.instructorName, masterclass.instructorTitle]
               .filter(Boolean)
-              .join(' · ')}
+              .join(" · ")}
           </p>
         )}
         {masterclass.description && (

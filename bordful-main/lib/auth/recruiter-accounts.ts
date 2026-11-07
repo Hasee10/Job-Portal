@@ -1,9 +1,9 @@
-import 'server-only';
+import "server-only";
 
-import { randomBytes, createHash } from 'node:crypto';
-import bcrypt from 'bcryptjs';
-import { createClient } from '@supabase/supabase-js';
-import { deriveLogoUrl } from '@/lib/utils/website-logo';
+import { randomBytes, createHash } from "node:crypto";
+import bcrypt from "bcryptjs";
+import { createClient } from "@supabase/supabase-js";
+import { deriveLogoUrl } from "@/lib/utils/website-logo";
 
 const BCRYPT_COST_FACTOR = 12;
 const MIN_PASSWORD_LENGTH = 8;
@@ -28,10 +28,15 @@ export type RecruiterAccount = {
 export class RecruiterAuthError extends Error {
   constructor(
     message: string,
-    public code: 'invalid_email' | 'weak_password' | 'email_taken' | 'invalid_credentials' | 'db_unavailable'
+    public code:
+      | "invalid_email"
+      | "weak_password"
+      | "email_taken"
+      | "invalid_credentials"
+      | "db_unavailable"
   ) {
     super(message);
-    this.name = 'RecruiterAuthError';
+    this.name = "RecruiterAuthError";
   }
 }
 
@@ -42,15 +47,15 @@ function getAdminClient() {
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!url || !key) {
     throw new RecruiterAuthError(
-      'Database is not configured on this deployment.',
-      'db_unavailable'
+      "Database is not configured on this deployment.",
+      "db_unavailable"
     );
   }
   return createClient(url, key, { auth: { persistSession: false } });
 }
 
 function hashToken(token: string): string {
-  return createHash('sha256').update(token).digest('hex');
+  return createHash("sha256").update(token).digest("hex");
 }
 
 function rowToRecruiterAccount(row: Record<string, unknown>): RecruiterAccount {
@@ -80,37 +85,40 @@ export async function createRecruiterAccount(
   const normalizedEmail = email.trim().toLowerCase();
 
   if (!EMAIL_REGEX.test(normalizedEmail)) {
-    throw new RecruiterAuthError('Enter a valid email address.', 'invalid_email');
+    throw new RecruiterAuthError(
+      "Enter a valid email address.",
+      "invalid_email"
+    );
   }
   if (password.length < MIN_PASSWORD_LENGTH) {
     throw new RecruiterAuthError(
       `Password must be at least ${MIN_PASSWORD_LENGTH} characters.`,
-      'weak_password'
+      "weak_password"
     );
   }
   if (!name.trim()) {
-    throw new RecruiterAuthError('Name is required.', 'invalid_credentials');
+    throw new RecruiterAuthError("Name is required.", "invalid_credentials");
   }
 
   const supabase = getAdminClient();
   const passwordHash = await bcrypt.hash(password, BCRYPT_COST_FACTOR);
 
   const { data, error } = await supabase
-    .from('recruiter_accounts')
+    .from("recruiter_accounts")
     .insert({
       email: normalizedEmail,
       password_hash: passwordHash,
       name: name.trim(),
       agency: agency?.trim() || null,
     })
-    .select('*')
+    .select("*")
     .single();
 
   if (error) {
-    if (error.code === '23505') {
+    if (error.code === "23505") {
       throw new RecruiterAuthError(
-        'An account with this email already exists.',
-        'email_taken'
+        "An account with this email already exists.",
+        "email_taken"
       );
     }
     throw error;
@@ -127,13 +135,13 @@ export async function verifyRecruiterCredentials(
   const normalizedEmail = email.trim().toLowerCase();
 
   const { data } = await supabase
-    .from('recruiter_accounts')
-    .select('*')
-    .eq('email', normalizedEmail)
+    .from("recruiter_accounts")
+    .select("*")
+    .eq("email", normalizedEmail)
     .maybeSingle();
 
   if (!data) {
-    await bcrypt.compare(password, '$2a$12$' + 'a'.repeat(53));
+    await bcrypt.compare(password, "$2a$12$" + "a".repeat(53));
     return null;
   }
 
@@ -148,9 +156,9 @@ export async function getRecruiterAccountById(
 ): Promise<RecruiterAccount | null> {
   const supabase = getAdminClient();
   const { data, error } = await supabase
-    .from('recruiter_accounts')
-    .select('*')
-    .eq('id', id)
+    .from("recruiter_accounts")
+    .select("*")
+    .eq("id", id)
     .maybeSingle();
 
   if (error) throw error;
@@ -173,16 +181,23 @@ export async function updateRecruiterProfile(
   }
 ): Promise<RecruiterAccount> {
   const supabase = getAdminClient();
-  const patch: Record<string, unknown> = { updated_at: new Date().toISOString() };
+  const patch: Record<string, unknown> = {
+    updated_at: new Date().toISOString(),
+  };
   if (input.name !== undefined) patch.name = input.name.trim();
   if (input.agency !== undefined) patch.agency = input.agency?.trim() || null;
   if (input.specialties !== undefined) patch.specialties = input.specialties;
-  if (input.linkedinUrl !== undefined) patch.linkedin_url = input.linkedinUrl?.trim() || null;
+  if (input.linkedinUrl !== undefined)
+    patch.linkedin_url = input.linkedinUrl?.trim() || null;
   if (input.bio !== undefined) patch.bio = input.bio?.trim() || null;
-  if (input.website !== undefined) patch.website = input.website?.trim() || null;
-  if (input.industry !== undefined) patch.industry = input.industry?.trim() || null;
-  if (input.companySize !== undefined) patch.company_size = input.companySize?.trim() || null;
-  if (input.location !== undefined) patch.location = input.location?.trim() || null;
+  if (input.website !== undefined)
+    patch.website = input.website?.trim() || null;
+  if (input.industry !== undefined)
+    patch.industry = input.industry?.trim() || null;
+  if (input.companySize !== undefined)
+    patch.company_size = input.companySize?.trim() || null;
+  if (input.location !== undefined)
+    patch.location = input.location?.trim() || null;
   // Auto-derive the logo from the website unless the caller explicitly overrides it.
   if (input.logoUrl !== undefined) {
     patch.logo_url = input.logoUrl?.trim() || null;
@@ -191,10 +206,10 @@ export async function updateRecruiterProfile(
   }
 
   const { data, error } = await supabase
-    .from('recruiter_accounts')
+    .from("recruiter_accounts")
     .update(patch)
-    .eq('id', id)
-    .select('*')
+    .eq("id", id)
+    .select("*")
     .single();
 
   if (error) throw error;
@@ -207,19 +222,19 @@ export async function createRecruiterPasswordResetToken(
   const supabase = getAdminClient();
   const normalizedEmail = email.trim().toLowerCase();
 
-  const rawToken = randomBytes(32).toString('hex');
+  const rawToken = randomBytes(32).toString("hex");
   const tokenHash = hashToken(rawToken);
   const expiresAt = new Date(Date.now() + RESET_TOKEN_TTL_MS).toISOString();
 
   const { data } = await supabase
-    .from('recruiter_accounts')
+    .from("recruiter_accounts")
     .update({
       reset_token_hash: tokenHash,
       reset_token_expires_at: expiresAt,
       updated_at: new Date().toISOString(),
     })
-    .eq('email', normalizedEmail)
-    .select('id');
+    .eq("email", normalizedEmail)
+    .select("id");
 
   return data && data.length > 0 ? rawToken : null;
 }
@@ -231,7 +246,7 @@ export async function resetRecruiterPasswordWithToken(
   if (newPassword.length < MIN_PASSWORD_LENGTH) {
     throw new RecruiterAuthError(
       `Password must be at least ${MIN_PASSWORD_LENGTH} characters.`,
-      'weak_password'
+      "weak_password"
     );
   }
 
@@ -241,16 +256,16 @@ export async function resetRecruiterPasswordWithToken(
   const now = new Date().toISOString();
 
   const { data } = await supabase
-    .from('recruiter_accounts')
+    .from("recruiter_accounts")
     .update({
       password_hash: passwordHash,
       reset_token_hash: null,
       reset_token_expires_at: null,
       updated_at: now,
     })
-    .eq('reset_token_hash', tokenHash)
-    .gt('reset_token_expires_at', now)
-    .select('id');
+    .eq("reset_token_hash", tokenHash)
+    .gt("reset_token_expires_at", now)
+    .select("id");
 
   return Boolean(data && data.length > 0);
 }

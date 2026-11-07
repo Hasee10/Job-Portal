@@ -1,18 +1,18 @@
-import 'server-only';
+import "server-only";
 
-import axios from 'axios';
+import axios from "axios";
 import {
   insertDraftMasterclass,
   listAllMasterclassVideoUrls,
-} from './masterclass-actions';
+} from "./masterclass-actions";
 import {
   MASTERCLASS_CATEGORY_KEYWORDS,
   MASTERCLASS_CHANNEL_ALLOWLIST,
   MASTERCLASS_RELEVANCE_KEYWORDS,
   type MasterclassChannel,
-} from './masterclass-channels';
+} from "./masterclass-channels";
 
-const YOUTUBE_API_BASE = 'https://www.googleapis.com/youtube/v3';
+const YOUTUBE_API_BASE = "https://www.googleapis.com/youtube/v3";
 const UPLOADS_PER_CHANNEL = 5;
 const MAX_NEW_DRAFTS_PER_RUN = 3;
 
@@ -43,7 +43,7 @@ async function getUploadsPlaylistId(channelId: string): Promise<string | null> {
     `${YOUTUBE_API_BASE}/channels`,
     {
       params: {
-        part: 'contentDetails',
+        part: "contentDetails",
         id: channelId,
         key: getApiKey(),
       },
@@ -62,7 +62,7 @@ async function getRecentUploads(
     `${YOUTUBE_API_BASE}/playlistItems`,
     {
       params: {
-        part: 'snippet,contentDetails',
+        part: "snippet,contentDetails",
         playlistId,
         maxResults: UPLOADS_PER_CHANNEL,
         key: getApiKey(),
@@ -93,8 +93,8 @@ async function getVideoDurationsMinutes(
     `${YOUTUBE_API_BASE}/videos`,
     {
       params: {
-        part: 'contentDetails',
-        id: videoIds.join(','),
+        part: "contentDetails",
+        id: videoIds.join(","),
         key: getApiKey(),
       },
       timeout: 15_000,
@@ -156,8 +156,8 @@ export async function discoverNewMasterclasses(): Promise<DiscoverMasterclassesR
       const uploads = await getRecentUploads(uploadsPlaylistId);
       const candidates = uploads.filter((item) => {
         const videoId = item.contentDetails?.videoId;
-        const title = item.snippet?.title ?? '';
-        const description = item.snippet?.description ?? '';
+        const title = item.snippet?.title ?? "";
+        const description = item.snippet?.description ?? "";
         if (!(videoId && title)) return false;
         const url = `https://www.youtube.com/watch?v=${videoId}`;
         if (existingUrls.has(url)) return false;

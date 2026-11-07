@@ -1,10 +1,8 @@
-import { NextResponse } from 'next/server';
-import {
-  archiveOldestPublishedGuidesOverCap,
-} from '@/lib/content/guide-actions';
-import { generateDraftGuides } from '@/lib/content/guide-generation';
+import { NextResponse } from "next/server";
+import { archiveOldestPublishedGuidesOverCap } from "@/lib/content/guide-actions";
+import { generateDraftGuides } from "@/lib/content/guide-generation";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
 // New drafts per run - kept small since each one is a real AI call and
@@ -19,14 +17,13 @@ const PUBLISHED_GUIDE_CAP = 12;
 
 export async function GET(request: Request) {
   const secret = process.env.CRON_SECRET;
-  if (!secret || request.headers.get('authorization') !== `Bearer ${secret}`) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!secret || request.headers.get("authorization") !== `Bearer ${secret}`) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const generation = await generateDraftGuides(DRAFTS_PER_RUN);
-  const archivedIds = await archiveOldestPublishedGuidesOverCap(
-    PUBLISHED_GUIDE_CAP
-  );
+  const archivedIds =
+    await archiveOldestPublishedGuidesOverCap(PUBLISHED_GUIDE_CAP);
 
   return NextResponse.json({
     ok: true,

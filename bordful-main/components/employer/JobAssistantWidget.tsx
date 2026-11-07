@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { Bot, Loader2, Send, X } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
+import { useState } from "react";
+import { Bot, Loader2, Send, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
-type ChatMessage = { role: 'user' | 'assistant'; content: string };
+type ChatMessage = { role: "user" | "assistant"; content: string };
 
 type JobDraft = {
   title?: string;
@@ -19,10 +19,10 @@ type JobDraft = {
 };
 
 const SUGGESTIONS = [
-  'Write a description from this title',
-  'Make it sound less corporate',
+  "Write a description from this title",
+  "Make it sound less corporate",
   'What does "required skills" actually do?',
-  'Review my draft before I publish',
+  "Review my draft before I publish",
 ];
 
 // Floating assistant for the Post-a-Job form: drafts/rewrites descriptions,
@@ -38,7 +38,7 @@ export function JobAssistantWidget({
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [input, setInput] = useState('');
+  const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -46,23 +46,32 @@ export function JobAssistantWidget({
     const trimmed = text.trim();
     if (!trimmed || isLoading) return;
 
-    const nextMessages: ChatMessage[] = [...messages, { role: 'user', content: trimmed }];
+    const nextMessages: ChatMessage[] = [
+      ...messages,
+      { role: "user", content: trimmed },
+    ];
     setMessages(nextMessages);
-    setInput('');
+    setInput("");
     setIsLoading(true);
     setError(null);
 
     try {
-      const res = await fetch('/api/employer/job-assistant', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch("/api/employer/job-assistant", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ messages: nextMessages, draft }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Failed to reach the assistant.');
-      setMessages([...nextMessages, { role: 'assistant', content: data.reply }]);
+      if (!res.ok)
+        throw new Error(data.error || "Failed to reach the assistant.");
+      setMessages([
+        ...nextMessages,
+        { role: "assistant", content: data.reply },
+      ]);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to reach the assistant.');
+      setError(
+        err instanceof Error ? err.message : "Failed to reach the assistant."
+      );
     } finally {
       setIsLoading(false);
     }
@@ -99,8 +108,8 @@ export function JobAssistantWidget({
             {messages.length === 0 && (
               <div className="space-y-2">
                 <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                  Ask me to draft or improve your job description, explain a field, or review
-                  your post before you publish.
+                  Ask me to draft or improve your job description, explain a
+                  field, or review your post before you publish.
                 </p>
                 <div className="flex flex-wrap gap-1.5">
                   {SUGGESTIONS.map((s) => (
@@ -119,31 +128,35 @@ export function JobAssistantWidget({
 
             {messages.map((m, i) => (
               <div
-                className={cn('flex', m.role === 'user' ? 'justify-end' : 'justify-start')}
+                className={cn(
+                  "flex",
+                  m.role === "user" ? "justify-end" : "justify-start"
+                )}
                 key={i}
               >
                 <div
                   className={cn(
-                    'max-w-[85%] whitespace-pre-wrap rounded-lg px-3 py-2 text-sm',
-                    m.role === 'user'
-                      ? 'bg-primary text-primary-foreground'
-                      : 'bg-zinc-100 text-zinc-800 dark:bg-zinc-800 dark:text-zinc-100'
+                    "max-w-[85%] whitespace-pre-wrap rounded-lg px-3 py-2 text-sm",
+                    m.role === "user"
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-zinc-100 text-zinc-800 dark:bg-zinc-800 dark:text-zinc-100"
                   )}
                 >
                   {m.content}
-                  {m.role === 'assistant' && looksLikeDescription(m.content) && (
-                    <div className="mt-2">
-                      <Button
-                        className="h-7 px-2 text-xs"
-                        onClick={() => onApplyDescription(m.content)}
-                        size="sm"
-                        type="button"
-                        variant="outline"
-                      >
-                        Use as description
-                      </Button>
-                    </div>
-                  )}
+                  {m.role === "assistant" &&
+                    looksLikeDescription(m.content) && (
+                      <div className="mt-2">
+                        <Button
+                          className="h-7 px-2 text-xs"
+                          onClick={() => onApplyDescription(m.content)}
+                          size="sm"
+                          type="button"
+                          variant="outline"
+                        >
+                          Use as description
+                        </Button>
+                      </div>
+                    )}
                 </div>
               </div>
             ))}
@@ -173,7 +186,11 @@ export function JobAssistantWidget({
               placeholder="Ask the assistant…"
               value={input}
             />
-            <Button disabled={isLoading || !input.trim()} size="icon" type="submit">
+            <Button
+              disabled={isLoading || !input.trim()}
+              size="icon"
+              type="submit"
+            >
               <Send className="h-4 w-4" />
             </Button>
           </form>
@@ -181,7 +198,7 @@ export function JobAssistantWidget({
       )}
 
       <Button
-        aria-label={isOpen ? 'Close job assistant' : 'Open job assistant'}
+        aria-label={isOpen ? "Close job assistant" : "Open job assistant"}
         className="h-12 w-12 rounded-full shadow-lg"
         onClick={() => setIsOpen((v) => !v)}
         size="icon"

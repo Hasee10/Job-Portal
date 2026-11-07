@@ -1,5 +1,12 @@
-import { Document, Font, Page, StyleSheet, Text, View } from '@react-pdf/renderer';
-import type { TailoredResumeContent } from '@/lib/jobs/tailored-resume-types';
+import {
+  Document,
+  Font,
+  Page,
+  StyleSheet,
+  Text,
+  View,
+} from "@react-pdf/renderer";
+import type { TailoredResumeContent } from "@/lib/jobs/tailored-resume-types";
 
 // The base-14 "Times-Roman"/"Times-Bold" aliases aren't real embedded fonts -
 // react-pdf asks whatever PDF viewer opens the file to substitute its own
@@ -11,14 +18,18 @@ import type { TailoredResumeContent } from '@/lib/jobs/tailored-resume-types';
 // which a root-relative path fails) - this only ever runs client-side (this
 // component is rendered inside a pdf()/toBlob() call from a click handler),
 // so window.location.origin is always available by the time it matters.
-const fontBaseUrl = typeof window === 'undefined' ? '' : window.location.origin;
+const fontBaseUrl = typeof window === "undefined" ? "" : window.location.origin;
 Font.register({
-  family: 'Tinos',
+  family: "Tinos",
   fonts: [
     { src: `${fontBaseUrl}/fonts/Tinos-Regular.ttf` },
-    { src: `${fontBaseUrl}/fonts/Tinos-Bold.ttf`, fontWeight: 'bold' },
-    { src: `${fontBaseUrl}/fonts/Tinos-Italic.ttf`, fontStyle: 'italic' },
-    { src: `${fontBaseUrl}/fonts/Tinos-BoldItalic.ttf`, fontWeight: 'bold', fontStyle: 'italic' },
+    { src: `${fontBaseUrl}/fonts/Tinos-Bold.ttf`, fontWeight: "bold" },
+    { src: `${fontBaseUrl}/fonts/Tinos-Italic.ttf`, fontStyle: "italic" },
+    {
+      src: `${fontBaseUrl}/fonts/Tinos-BoldItalic.ttf`,
+      fontWeight: "bold",
+      fontStyle: "italic",
+    },
   ],
 });
 
@@ -28,47 +39,63 @@ const styles = StyleSheet.create({
     paddingVertical: 20,
     paddingHorizontal: 50,
     fontSize: 9.3,
-    fontFamily: 'Tinos',
-    color: '#18181b',
+    fontFamily: "Tinos",
+    color: "#18181b",
   },
-  header: { textAlign: 'center', marginBottom: 6 },
-  name: { fontSize: 14.5, fontWeight: 'bold', letterSpacing: 1 },
-  contact: { fontSize: 8.3, color: '#52525b', marginTop: 2 },
-  headline: { fontSize: 9.3, fontStyle: 'italic', marginTop: 2 },
+  header: { textAlign: "center", marginBottom: 6 },
+  name: { fontSize: 14.5, fontWeight: "bold", letterSpacing: 1 },
+  contact: { fontSize: 8.3, color: "#52525b", marginTop: 2 },
+  headline: { fontSize: 9.3, fontStyle: "italic", marginTop: 2 },
   summary: { marginBottom: 5, lineHeight: 1.1 },
   section: { marginBottom: 5 },
   sectionTitle: {
     fontSize: 9.3,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     letterSpacing: 1,
-    textTransform: 'uppercase',
+    textTransform: "uppercase",
     borderBottomWidth: 1,
-    borderBottomColor: '#a1a1aa',
+    borderBottomColor: "#a1a1aa",
     paddingBottom: 2,
     marginBottom: 3,
   },
   entry: { marginBottom: 3 },
-  entryRow: { flexDirection: 'row', justifyContent: 'space-between' },
-  entryTitle: { fontWeight: 'bold' },
-  entryDates: { fontSize: 8.3, color: '#52525b' },
-  bullet: { flexDirection: 'row', marginTop: 0, paddingLeft: 9 },
+  entryRow: { flexDirection: "row", justifyContent: "space-between" },
+  entryTitle: { fontWeight: "bold" },
+  entryDates: { fontSize: 8.3, color: "#52525b" },
+  bullet: { flexDirection: "row", marginTop: 0, paddingLeft: 9 },
   bulletDot: { width: 9, lineHeight: 1.12 },
   bulletText: { flex: 1, lineHeight: 1.12 },
-  eduRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 2 },
+  eduRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 2,
+  },
   skills: { lineHeight: 1.15 },
 });
 
-export function HarvardResumePdf({ resume }: { resume: TailoredResumeContent }) {
+export function HarvardResumePdf({
+  resume,
+}: {
+  resume: TailoredResumeContent;
+}) {
   return (
     <Document>
       <Page size="A4" style={styles.page}>
         <View style={styles.header}>
-          <Text style={styles.name}>{(resume.fullName || 'Your Name').toUpperCase()}</Text>
-          {resume.contact ? <Text style={styles.contact}>{resume.contact}</Text> : null}
-          {resume.headline ? <Text style={styles.headline}>{resume.headline}</Text> : null}
+          <Text style={styles.name}>
+            {(resume.fullName || "Your Name").toUpperCase()}
+          </Text>
+          {resume.contact ? (
+            <Text style={styles.contact}>{resume.contact}</Text>
+          ) : null}
+          {resume.headline ? (
+            <Text style={styles.headline}>{resume.headline}</Text>
+          ) : null}
         </View>
 
-        {resume.summary ? <Text style={styles.summary}>{resume.summary}</Text> : null}
+        {resume.summary ? (
+          <Text style={styles.summary}>{resume.summary}</Text>
+        ) : null}
 
         {resume.experience.length > 0 && (
           <View style={styles.section}>
@@ -78,7 +105,7 @@ export function HarvardResumePdf({ resume }: { resume: TailoredResumeContent }) 
                 <View style={styles.entryRow} wrap={false}>
                   <Text style={styles.entryTitle}>
                     {entry.title}
-                    {entry.company ? `, ${entry.company}` : ''}
+                    {entry.company ? `, ${entry.company}` : ""}
                   </Text>
                   <Text style={styles.entryDates}>{entry.dates}</Text>
                 </View>
@@ -106,7 +133,7 @@ export function HarvardResumePdf({ resume }: { resume: TailoredResumeContent }) 
               <View key={i} style={styles.eduRow}>
                 <Text>
                   {entry.degree}
-                  {entry.school ? `, ${entry.school}` : ''}
+                  {entry.school ? `, ${entry.school}` : ""}
                 </Text>
                 <Text style={styles.entryDates}>{entry.year}</Text>
               </View>
@@ -117,7 +144,7 @@ export function HarvardResumePdf({ resume }: { resume: TailoredResumeContent }) 
         {resume.skills.length > 0 && (
           <View style={styles.section} wrap={false}>
             <Text style={styles.sectionTitle}>Skills</Text>
-            <Text style={styles.skills}>{resume.skills.join(' · ')}</Text>
+            <Text style={styles.skills}>{resume.skills.join(" · ")}</Text>
           </View>
         )}
       </Page>

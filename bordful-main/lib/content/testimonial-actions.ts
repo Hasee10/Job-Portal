@@ -1,6 +1,6 @@
-import 'server-only';
+import "server-only";
 
-import { createClient } from '@supabase/supabase-js';
+import { createClient } from "@supabase/supabase-js";
 
 export type Testimonial = {
   id: string;
@@ -15,7 +15,7 @@ function getAdminClient() {
   const url = process.env.SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!url || !key) {
-    throw new Error('Database is not configured on this deployment.');
+    throw new Error("Database is not configured on this deployment.");
   }
   return createClient(url, key, { auth: { persistSession: false } });
 }
@@ -36,10 +36,10 @@ function rowToTestimonial(row: Record<string, unknown>): Testimonial {
 export async function listPublishedTestimonials(): Promise<Testimonial[]> {
   const supabase = getAdminClient();
   const { data, error } = await supabase
-    .from('testimonials')
-    .select('*')
-    .eq('is_published', true)
-    .order('display_order', { ascending: true });
+    .from("testimonials")
+    .select("*")
+    .eq("is_published", true)
+    .order("display_order", { ascending: true });
 
   if (error) throw error;
   return (data ?? []).map(rowToTestimonial);

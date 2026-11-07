@@ -1,6 +1,6 @@
-import { CompanyLogoMarquee } from '@/components/home/CompanyLogoMarquee';
-import type { Testimonial } from '@/lib/content/testimonial-actions';
-import { getCompanyLogoUrls } from '@/lib/utils/company-logo';
+import { CompanyLogoMarquee } from "@/components/home/CompanyLogoMarquee";
+import type { Testimonial } from "@/lib/content/testimonial-actions";
+import { getCompanyLogoUrls } from "@/lib/utils/company-logo";
 
 export async function TrustSection({
   testimonials,
@@ -24,7 +24,10 @@ export async function TrustSection({
   const logoUrls = await getCompanyLogoUrls(featuredCompanies);
   const companiesWithLogos = featuredCompanies
     .filter((company) => logoUrls.has(company))
-    .map((company) => ({ name: company, logoUrl: logoUrls.get(company) as string }));
+    .map((company) => ({
+      name: company,
+      logoUrl: logoUrls.get(company) as string,
+    }));
 
   return (
     <div className="border-t bg-muted/20">
@@ -33,11 +36,11 @@ export async function TrustSection({
           <p className="text-muted-foreground text-sm">
             <span className="font-semibold text-foreground">
               {totalActiveJobs.toLocaleString()}
-            </span>{' '}
-            open roles right now, across{' '}
+            </span>{" "}
+            open roles right now, across{" "}
             <span className="font-semibold text-foreground">
               {companiesHiringCount.toLocaleString()}
-            </span>{' '}
+            </span>{" "}
             companies currently hiring on the board.
           </p>
         </div>
@@ -59,7 +62,8 @@ export async function TrustSection({
         )}
 
         {testimonials.length === 0 ? (
-          isSeeker && recentlyPostedJobs.length > 0 && (
+          isSeeker &&
+          recentlyPostedJobs.length > 0 && (
             <div className="mx-auto mt-8 max-w-4xl">
               <p className="text-center font-medium text-muted-foreground text-xs uppercase tracking-wider">
                 Recently posted
@@ -113,10 +117,10 @@ export async function TrustSection({
                     </span>
                     {(testimonial.authorTitle || testimonial.authorCompany) && (
                       <>
-                        {', '}
+                        {", "}
                         {[testimonial.authorTitle, testimonial.authorCompany]
                           .filter(Boolean)
-                          .join(' at ')}
+                          .join(" at ")}
                       </>
                     )}
                   </span>

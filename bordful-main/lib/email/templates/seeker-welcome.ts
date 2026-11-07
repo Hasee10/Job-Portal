@@ -1,4 +1,9 @@
-import { EMAIL_BRAND_COLOR, emailFooter, emailHeader, wrapEmailBody } from './shared';
+import {
+  EMAIL_BRAND_COLOR,
+  emailFooter,
+  emailHeader,
+  wrapEmailBody,
+} from "./shared";
 
 export type SeekerWelcomeEmailData = {
   name: string;
@@ -9,16 +14,21 @@ export function renderSeekerWelcomeEmail({
   name,
   onboardingUrl,
 }: SeekerWelcomeEmailData): { subject: string; html: string } {
-  const step = (n: number, title: string, description: string, isLast: boolean) => `
+  const step = (
+    n: number,
+    title: string,
+    description: string,
+    isLast: boolean
+  ) => `
     <tr>
-      <td width="36" style="vertical-align: top; padding: ${isLast ? '0' : '0 0 20px'} 0;">
+      <td width="36" style="vertical-align: top; padding: ${isLast ? "0" : "0 0 20px"} 0;">
         <table cellpadding="0" cellspacing="0" role="presentation">
           <tr>
             <td width="28" height="28" align="center" valign="middle" style="background: ${EMAIL_BRAND_COLOR}; border-radius: 50%; font-size: 13px; font-weight: 700; color: #ffffff;">${n}</td>
           </tr>
         </table>
       </td>
-      <td style="vertical-align: top; padding: 0 0 ${isLast ? '0' : '20px'} 14px;">
+      <td style="vertical-align: top; padding: 0 0 ${isLast ? "0" : "20px"} 14px;">
         <div style="font-size: 14px; font-weight: 700; color: #18181b;">${title}</div>
         <div style="font-size: 13px; color: #71717a; margin-top: 3px; line-height: 1.5;">${description}</div>
       </td>
@@ -53,15 +63,15 @@ export function renderSeekerWelcomeEmail({
         <td style="padding: 28px 40px 36px;">
           <div style="font-size: 12px; font-weight: 700; color: #a1a1aa; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 18px;">Get started in 3 steps</div>
           <table cellpadding="0" cellspacing="0" role="presentation" width="100%">
-            ${step(1, 'Answer a few quick questions', "Tell us the roles, salary range and remote preferences you're after.", false)}
-            ${step(2, 'Build or upload your resume', "We'll parse it and match you against open roles by skill.", false)}
-            ${step(3, 'Save jobs and set up alerts', 'Bookmark listings and get emailed when new matches go live.', true)}
+            ${step(1, "Answer a few quick questions", "Tell us the roles, salary range and remote preferences you're after.", false)}
+            ${step(2, "Build or upload your resume", "We'll parse it and match you against open roles by skill.", false)}
+            ${step(3, "Save jobs and set up alerts", "Bookmark listings and get emailed when new matches go live.", true)}
           </table>
         </td>
       </tr>
     </table>
 
-    ${emailFooter({ audience: 'seeker' })}
+    ${emailFooter({ audience: "seeker" })}
   `);
 
   return {

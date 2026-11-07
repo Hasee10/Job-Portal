@@ -1,24 +1,24 @@
-import { Globe } from 'lucide-react';
-import type { Metadata } from 'next';
-import Link from 'next/link';
-import { HeroSection } from '@/components/ui/hero-section';
-import { MetadataBreadcrumb } from '@/components/ui/metadata-breadcrumb';
-import config from '@/config';
-import type { Country } from '@/lib/constants/countries';
-import type { LocationCounts } from '@/lib/constants/locations';
+import { Globe } from "lucide-react";
+import type { Metadata } from "next";
+import Link from "next/link";
+import { HeroSection } from "@/components/ui/hero-section";
+import { MetadataBreadcrumb } from "@/components/ui/metadata-breadcrumb";
+import config from "@/config";
+import type { Country } from "@/lib/constants/countries";
+import type { LocationCounts } from "@/lib/constants/locations";
 import {
   createLocationSlug,
   formatLocationTitle,
-} from '@/lib/constants/locations';
-import { getJobs } from '@/lib/db/airtable.server';
-import { generateMetadata } from '@/lib/utils/metadata';
+} from "@/lib/constants/locations";
+import { getJobs } from "@/lib/db/airtable.server";
+import { generateMetadata } from "@/lib/utils/metadata";
 
 // Generate metadata for SEO
 export const metadata: Metadata = generateMetadata({
   title: `Browse Jobs by Location | ${config.title}`,
   description:
-    'Explore tech jobs by location. Find remote opportunities or positions in your preferred country.',
-  path: '/jobs/locations',
+    "Explore tech jobs by location. Find remote opportunities or positions in your preferred country.",
+  path: "/jobs/locations",
 });
 
 // Revalidate page every 5 minutes
@@ -34,7 +34,7 @@ function LocationCard({ href, title, count }: LocationCardProps) {
   return (
     <Link
       aria-label={`Browse ${count.toLocaleString()} ${title} ${
-        count === 1 ? 'position' : 'positions'
+        count === 1 ? "position" : "positions"
       }`}
       className="block rounded-lg border p-4 transition-all hover:border-gray-400 sm:p-5"
       href={href}
@@ -42,7 +42,7 @@ function LocationCard({ href, title, count }: LocationCardProps) {
       <div className="space-y-1.5 sm:space-y-2">
         <h2 className="font-medium text-sm sm:text-base">{title}</h2>
         <div className="text-gray-500 dark:text-gray-500 text-xs sm:text-sm">
-          {count.toLocaleString()} {count === 1 ? 'position' : 'positions'}{' '}
+          {count.toLocaleString()} {count === 1 ? "position" : "positions"}{" "}
           available
         </div>
       </div>
@@ -56,7 +56,7 @@ export default async function LocationsPage() {
   // Aggregate job counts by location
   const locationCounts = jobs.reduce<LocationCounts>(
     (acc, job) => {
-      if (job.workplace_type === 'Remote') {
+      if (job.workplace_type === "Remote") {
         acc.remote += 1;
       }
       if (job.workplace_country) {
@@ -111,9 +111,9 @@ export default async function LocationsPage() {
           <div className="mb-6">
             <MetadataBreadcrumb
               items={[
-                { name: 'Home', url: '/' },
-                { name: 'Jobs', url: '/jobs' },
-                { name: 'Locations', url: '/jobs/locations' },
+                { name: "Home", url: "/" },
+                { name: "Jobs", url: "/jobs" },
+                { name: "Locations", url: "/jobs/locations" },
               ]}
               metadata={metadata}
               pathname="/jobs/locations"

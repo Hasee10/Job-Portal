@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import {
   Briefcase,
@@ -6,23 +6,23 @@ import {
   ChevronDown,
   Menu,
   X,
-} from 'lucide-react';
-import { useTheme } from 'next-themes';
-import Image from 'next/image';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+} from "lucide-react";
+import { useTheme } from "next-themes";
+import Image from "next/image";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
   type ReactNode,
   useCallback,
   useEffect,
   useRef,
   useState,
-} from 'react';
-import { AuthNavStatus } from '@/components/auth/AuthNavStatus';
-import { Button } from '@/components/ui/button';
-import { ThemeToggle } from '@/components/ui/theme-toggle';
-import config from '@/config';
-import { resolveColor } from '@/lib/utils/colors';
+} from "react";
+import { AuthNavStatus } from "@/components/auth/AuthNavStatus";
+import { Button } from "@/components/ui/button";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
+import config from "@/config";
+import { resolveColor } from "@/lib/utils/colors";
 
 // Brand icon component that uses the configured icon name or falls back to BriefcaseBusiness
 function BrandIcon() {
@@ -64,11 +64,13 @@ function NavLink({
   isActive,
   onClick,
   children,
-  className = '',
+  className = "",
 }: NavLinkProps) {
-  const baseClasses = 'text-sm px-2.5 py-1 rounded-lg transition-colors';
-  const activeClasses = 'text-zinc-900 dark:text-zinc-100 bg-zinc-100 dark:bg-zinc-800';
-  const inactiveClasses = 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-800';
+  const baseClasses = "text-sm px-2.5 py-1 rounded-lg transition-colors";
+  const activeClasses =
+    "text-zinc-900 dark:text-zinc-100 bg-zinc-100 dark:bg-zinc-800";
+  const inactiveClasses =
+    "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-800";
 
   const linkClasses = `${baseClasses} ${
     isActive ? activeClasses : inactiveClasses
@@ -107,10 +109,10 @@ function SocialIcon({ src, alt }: SocialIconProps) {
         height={16}
         src={src}
         style={{
-          width: '16px',
-          height: '16px',
+          width: "16px",
+          height: "16px",
           filter:
-            'invert(41%) sepia(9%) saturate(380%) hue-rotate(202deg) brightness(94%) contrast(91%)', // zinc-600
+            "invert(41%) sepia(9%) saturate(380%) hue-rotate(202deg) brightness(94%) contrast(91%)", // zinc-600
         }}
         width={16}
       />
@@ -123,10 +125,10 @@ function SocialIcon({ src, alt }: SocialIconProps) {
         height={16}
         src={src}
         style={{
-          width: '16px',
-          height: '16px',
+          width: "16px",
+          height: "16px",
           filter:
-            'invert(14%) sepia(8%) saturate(427%) hue-rotate(202deg) brightness(93%) contrast(90%)', // zinc-900
+            "invert(14%) sepia(8%) saturate(427%) hue-rotate(202deg) brightness(93%) contrast(90%)", // zinc-900
         }}
         width={16}
       />
@@ -141,9 +143,11 @@ function DropdownItem({
   onClick,
   children,
 }: DropdownItemProps) {
-  const baseClasses = 'block px-4 py-2 text-sm';
-  const activeClasses = 'bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100';
-  const inactiveClasses = 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-zinc-100';
+  const baseClasses = "block px-4 py-2 text-sm";
+  const activeClasses =
+    "bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100";
+  const inactiveClasses =
+    "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-zinc-100";
 
   const itemClasses = `${baseClasses} ${
     isActive ? activeClasses : inactiveClasses
@@ -163,65 +167,65 @@ type SocialPlatformConfig = {
   src: string;
   alt: string;
   labelPrefix: string;
-  enabled: (config: typeof import('@/config').default) => boolean;
-  getUrl: (config?: typeof import('@/config').default) => string;
+  enabled: (config: typeof import("@/config").default) => boolean;
+  getUrl: (config?: typeof import("@/config").default) => string;
 };
 
 // Define social platforms with their properties outside of component for reuse
 const SOCIAL_PLATFORMS: SocialPlatformConfig[] = [
   {
-    id: 'rss',
-    configProp: 'rssFeed',
-    src: '/assets/social/rss.svg',
-    alt: 'RSS Feed',
-    labelPrefix: 'Subscribe to',
+    id: "rss",
+    configProp: "rssFeed",
+    src: "/assets/social/rss.svg",
+    alt: "RSS Feed",
+    labelPrefix: "Subscribe to",
     enabled: () => false,
-    getUrl: () => '/feed.xml',
+    getUrl: () => "/feed.xml",
   },
   {
-    id: 'github',
-    configProp: 'github',
-    src: '/assets/social/github.svg',
-    alt: 'GitHub',
-    labelPrefix: 'View on',
+    id: "github",
+    configProp: "github",
+    src: "/assets/social/github.svg",
+    alt: "GitHub",
+    labelPrefix: "View on",
     enabled: (config) => config.nav.github?.show,
-    getUrl: (config) => config?.nav.github?.url || '',
+    getUrl: (config) => config?.nav.github?.url || "",
   },
   {
-    id: 'linkedin',
-    configProp: 'linkedin',
-    src: '/assets/social/linkedin.svg',
-    alt: 'LinkedIn',
-    labelPrefix: 'Follow us on',
+    id: "linkedin",
+    configProp: "linkedin",
+    src: "/assets/social/linkedin.svg",
+    alt: "LinkedIn",
+    labelPrefix: "Follow us on",
     enabled: (config) => config.nav.linkedin?.show,
-    getUrl: (config) => config?.nav.linkedin?.url || '',
+    getUrl: (config) => config?.nav.linkedin?.url || "",
   },
   {
-    id: 'twitter',
-    configProp: 'twitter',
-    src: '/assets/social/twitter.svg',
-    alt: 'Twitter',
-    labelPrefix: 'Follow us on X (',
+    id: "twitter",
+    configProp: "twitter",
+    src: "/assets/social/twitter.svg",
+    alt: "Twitter",
+    labelPrefix: "Follow us on X (",
     enabled: (config) => config.nav.twitter?.show,
-    getUrl: (config) => config?.nav.twitter?.url || '',
+    getUrl: (config) => config?.nav.twitter?.url || "",
   },
   {
-    id: 'bluesky',
-    configProp: 'bluesky',
-    src: '/assets/social/bluesky.svg',
-    alt: 'Bluesky',
-    labelPrefix: 'Follow us on',
+    id: "bluesky",
+    configProp: "bluesky",
+    src: "/assets/social/bluesky.svg",
+    alt: "Bluesky",
+    labelPrefix: "Follow us on",
     enabled: (config) => config.nav.bluesky?.show,
-    getUrl: (config) => config?.nav.bluesky?.url || '',
+    getUrl: (config) => config?.nav.bluesky?.url || "",
   },
   {
-    id: 'reddit',
-    configProp: 'reddit',
-    src: '/assets/social/reddit.svg',
-    alt: 'Reddit',
-    labelPrefix: 'Follow us on',
+    id: "reddit",
+    configProp: "reddit",
+    src: "/assets/social/reddit.svg",
+    alt: "Reddit",
+    labelPrefix: "Follow us on",
     enabled: (config) => config.nav.reddit?.show,
-    getUrl: (config) => config?.nav.reddit?.url || '',
+    getUrl: (config) => config?.nav.reddit?.url || "",
   },
 ];
 
@@ -275,9 +279,9 @@ function useDropdownMenu() {
       });
     }
 
-    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
 
@@ -301,7 +305,7 @@ export function Nav() {
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
   const logoSrc =
-    mounted && resolvedTheme === 'dark' && config.nav.logoDark
+    mounted && resolvedTheme === "dark" && config.nav.logoDark
       ? config.nav.logoDark
       : config.nav.logo.src;
 
@@ -314,7 +318,7 @@ export function Nav() {
 
   // Check if a path is active (exact match or starts with for /jobs)
   const isActivePath = (path: string): boolean => {
-    if (path === '/jobs') {
+    if (path === "/jobs") {
       return pathname.startsWith(path);
     }
     return pathname === path;
@@ -333,7 +337,7 @@ export function Nav() {
 
           const label =
             platform.labelPrefix +
-            (platform.id === 'twitter' ? 'Twitter)' : ` ${platform.alt}`);
+            (platform.id === "twitter" ? "Twitter)" : ` ${platform.alt}`);
 
           return (
             <SocialLink
@@ -395,8 +399,8 @@ export function Nav() {
               aria-expanded={isDropdownOpen}
               className={`flex items-center rounded-lg px-2.5 py-1 text-sm ${
                 pathname.startsWith(item.link)
-                  ? 'bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100'
-                  : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-zinc-100'
+                  ? "bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100"
+                  : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-zinc-100"
               } transition-colors`}
               onClick={() => toggleDropdown(item.label)}
             >
@@ -427,7 +431,7 @@ export function Nav() {
       // Regular menu items
       return (
         <NavLink
-          className={isMobile ? 'mb-1 block' : ''}
+          className={isMobile ? "mb-1 block" : ""}
           href={item.link}
           isActive={isActivePath(item.link)}
           key={item.link}
@@ -517,18 +521,18 @@ export function Nav() {
                 className="gap-1 px-2 py-1 text-xs"
                 size="xs"
                 style={
-                  config.nav.postJob.variant === 'primary'
+                  config.nav.postJob.variant === "primary"
                     ? {
                         backgroundColor: resolveColor(config.ui.primaryColor),
                       }
                     : undefined
                 }
-                variant={config.nav.postJob.variant || 'default'}
+                variant={config.nav.postJob.variant || "default"}
               >
                 <Link
                   href={config.nav.postJob.link}
                   {...(config.nav.postJob.external
-                    ? { target: '_blank', rel: 'noopener noreferrer' }
+                    ? { target: "_blank", rel: "noopener noreferrer" }
                     : {})}
                 >
                   {config.nav.postJob.label}
@@ -570,25 +574,22 @@ export function Nav() {
                 className="gap-1.5 whitespace-nowrap text-xs"
                 size="sm"
                 style={
-                  config.nav.postJob.variant === 'primary'
+                  config.nav.postJob.variant === "primary"
                     ? {
                         backgroundColor: resolveColor(config.ui.primaryColor),
                       }
                     : undefined
                 }
-                variant={config.nav.postJob.variant || 'default'}
+                variant={config.nav.postJob.variant || "default"}
               >
                 <Link
                   href={config.nav.postJob.link}
                   {...(config.nav.postJob.external
-                    ? { target: '_blank', rel: 'noopener noreferrer' }
+                    ? { target: "_blank", rel: "noopener noreferrer" }
                     : {})}
                 >
                   {config.nav.postJob.label}
-                  <Briefcase
-                    aria-hidden="true"
-                    className="ml-1 h-3.5 w-3.5"
-                  />
+                  <Briefcase aria-hidden="true" className="ml-1 h-3.5 w-3.5" />
                 </Link>
               </Button>
             )}
@@ -638,10 +639,10 @@ export function Nav() {
                 <div className="px-4 pt-2 lg:hidden">
                   <Button
                     asChild
-                    className={'w-full gap-1.5 text-xs'}
+                    className={"w-full gap-1.5 text-xs"}
                     size="xs"
                     style={
-                      config.nav.postJob.variant === 'primary'
+                      config.nav.postJob.variant === "primary"
                         ? {
                             backgroundColor: resolveColor(
                               config.ui.primaryColor
@@ -649,12 +650,12 @@ export function Nav() {
                           }
                         : undefined
                     }
-                    variant={config.nav.postJob.variant || 'default'}
+                    variant={config.nav.postJob.variant || "default"}
                   >
                     <Link
                       href={config.nav.postJob.link}
                       {...(config.nav.postJob.external
-                        ? { target: '_blank', rel: 'noopener noreferrer' }
+                        ? { target: "_blank", rel: "noopener noreferrer" }
                         : {})}
                       className="flex items-center justify-center"
                       onClick={() => setIsOpen(false)}

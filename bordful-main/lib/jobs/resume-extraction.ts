@@ -1,51 +1,54 @@
-import 'server-only';
+import "server-only";
 
-import { aiChatCompletion } from '@/lib/ai/provider';
-import { AIProviderError } from '@/lib/ai/types';
-import { EMPTY_RESUME_CONTENT, type ResumeContent } from '@/lib/jobs/resume-actions';
+import { aiChatCompletion } from "@/lib/ai/provider";
+import { AIProviderError } from "@/lib/ai/types";
+import {
+  EMPTY_RESUME_CONTENT,
+  type ResumeContent,
+} from "@/lib/jobs/resume-actions";
 
 export const MAX_RESUME_FILE_BYTES = 4 * 1024 * 1024;
 const MAX_SUMMARY_FALLBACK_LENGTH = 2000;
 
 const EXTRACTION_SYSTEM_PROMPT =
-  'You extract structured resume data from raw resume text. Only use ' +
-  'information explicitly present in the text - never invent employers, ' +
-  'dates, schools, or skills. Respond with strict JSON only (no markdown ' +
+  "You extract structured resume data from raw resume text. Only use " +
+  "information explicitly present in the text - never invent employers, " +
+  "dates, schools, or skills. Respond with strict JSON only (no markdown " +
   'fences, no commentary) matching exactly this shape: {"fullName": string, ' +
   '"headline": string, "summary": string, "experience": [{"title": string, ' +
   '"company": string, "startDate": string, "endDate": string, ' +
   '"description": string}], "education": [{"school": string, "degree": ' +
   'string, "year": string}], "skills": string[]}. Use empty string/array ' +
-  'values for anything not present in the text.';
+  "values for anything not present in the text.";
 
 function parseExtractedContent(raw: string): ResumeContent {
   const jsonMatch = raw.match(/\{[\s\S]*\}/);
   if (!jsonMatch) {
-    throw new Error('AI response did not contain JSON.');
+    throw new Error("AI response did not contain JSON.");
   }
   const parsed = JSON.parse(jsonMatch[0]) as Partial<ResumeContent>;
   return {
-    fullName: typeof parsed.fullName === 'string' ? parsed.fullName : '',
-    headline: typeof parsed.headline === 'string' ? parsed.headline : '',
-    summary: typeof parsed.summary === 'string' ? parsed.summary : '',
+    fullName: typeof parsed.fullName === "string" ? parsed.fullName : "",
+    headline: typeof parsed.headline === "string" ? parsed.headline : "",
+    summary: typeof parsed.summary === "string" ? parsed.summary : "",
     experience: Array.isArray(parsed.experience)
       ? parsed.experience.map((entry) => ({
-          title: entry?.title ?? '',
-          company: entry?.company ?? '',
-          startDate: entry?.startDate ?? '',
-          endDate: entry?.endDate ?? '',
-          description: entry?.description ?? '',
+          title: entry?.title ?? "",
+          company: entry?.company ?? "",
+          startDate: entry?.startDate ?? "",
+          endDate: entry?.endDate ?? "",
+          description: entry?.description ?? "",
         }))
       : [],
     education: Array.isArray(parsed.education)
       ? parsed.education.map((entry) => ({
-          school: entry?.school ?? '',
-          degree: entry?.degree ?? '',
-          year: entry?.year ?? '',
+          school: entry?.school ?? "",
+          degree: entry?.degree ?? "",
+          year: entry?.year ?? "",
         }))
       : [],
     skills: Array.isArray(parsed.skills)
-      ? parsed.skills.filter((s): s is string => typeof s === 'string')
+      ? parsed.skills.filter((s): s is string => typeof s === "string")
       : [],
   };
 }
@@ -62,11 +65,11 @@ function parseExtractedContent(raw: string): ResumeContent {
 // reviewable, just without AI-parsed structure (skills/experience/education
 // come back empty in that case).
 export async function extractResumeFromPdf(file: File): Promise<ResumeContent> {
-  if (file.type !== 'application/pdf') {
-    throw new Error('Only PDF resumes are supported right now.');
+  if (file.type !== "application/pdf") {
+    throw new Error("Only PDF resumes are supported right now.");
   }
   if (file.size > MAX_RESUME_FILE_BYTES) {
-    throw new Error('File is too large (max 4MB).');
+    throw new Error("File is too large (max 4MB).");
   }
 
   let rawText: string;
@@ -74,7 +77,7 @@ export async function extractResumeFromPdf(file: File): Promise<ResumeContent> {
     const buffer = Buffer.from(await file.arrayBuffer());
     // v2's API is class-based (no more default-export function call) - see
     // pdf-parse's own "Getting Started with v2" migration note.
-    const { PDFParse } = await import('pdf-parse');
+    const { PDFParse } = await import("pdf-parse");
     const parser = new PDFParse({ data: buffer });
     try {
       const parsed = await parser.getText();
@@ -83,7 +86,7 @@ export async function extractResumeFromPdf(file: File): Promise<ResumeContent> {
       await parser.destroy();
     }
   } catch (error) {
-    console.error('[resume-extraction] PDF parsing failed:', error);
+    console.error("[resume-extraction] PDF parsing failed:", error);
     throw new Error("Couldn't read that PDF. Try a different file.");
   }
 
@@ -94,8 +97,8 @@ export async function extractResumeFromPdf(file: File): Promise<ResumeContent> {
   try {
     const output = await aiChatCompletion(
       [
-        { role: 'system', content: EXTRACTION_SYSTEM_PROMPT },
-        { role: 'user', content: rawText.slice(0, 8000) },
+        { role: "system", content: EXTRACTION_SYSTEM_PROMPT },
+        { role: "user", content: rawText.slice(0, 8000) },
       ],
       { temperature: 0.1, maxTokens: 3000 }
     );
@@ -108,7 +111,10 @@ export async function extractResumeFromPdf(file: File): Promise<ResumeContent> {
     // plain-text fallback instead of blocking the operation entirely.
     if (error instanceof AIProviderError && error.notConfigured) throw error;
 
-    console.error('[resume-extraction] AI extraction failed, falling back to raw text:', error);
+    console.error(
+      "[resume-extraction] AI extraction failed, falling back to raw text:",
+      error
+    );
     return {
       ...EMPTY_RESUME_CONTENT,
       summary: rawText.slice(0, MAX_SUMMARY_FALLBACK_LENGTH),

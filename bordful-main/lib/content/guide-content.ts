@@ -15,8 +15,8 @@ export type GuideHeading = {
 export function slugifyHeading(text: string): string {
   return text
     .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/(^-|-$)/g, '');
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
 }
 
 // Pulls "## Heading" lines out of the guide's markdown for a table of
@@ -25,7 +25,7 @@ export function slugifyHeading(text: string): string {
 export function extractGuideHeadings(content: string): GuideHeading[] {
   const matches = content.match(/^## (.+)$/gm) ?? [];
   return matches.map((line) => {
-    const text = line.replace(/^## /, '').trim();
+    const text = line.replace(/^## /, "").trim();
     return { id: slugifyHeading(text), text };
   });
 }

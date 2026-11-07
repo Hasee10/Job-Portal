@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import { ArrowUpRight, Briefcase, Rss } from 'lucide-react';
-import Image from 'next/image';
-import Link from 'next/link';
-import { type CSSProperties, type ReactNode, useEffect, useState } from 'react';
-import { Button } from '@/components/ui/button';
-import config from '@/config';
-import { resolveColor } from '@/lib/utils/colors';
+import { ArrowUpRight, Briefcase, Rss } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import { type CSSProperties, type ReactNode, useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
+import config from "@/config";
+import { resolveColor } from "@/lib/utils/colors";
 
 // Define interfaces for our column configuration
 type FooterLink = {
@@ -23,7 +23,7 @@ type BaseFooterColumn = {
 };
 
 interface LinksFooterColumn extends BaseFooterColumn {
-  type?: 'links';
+  type?: "links";
   links: FooterLink[];
   autoAddFeatures?: {
     jobAlerts?: boolean;
@@ -34,7 +34,7 @@ interface LinksFooterColumn extends BaseFooterColumn {
 }
 
 interface FeedsFooterColumn extends BaseFooterColumn {
-  type: 'feeds';
+  type: "feeds";
 }
 
 // We'll use this union type for our config type checking
@@ -50,7 +50,7 @@ type FooterColumn = {
 
 export function Footer() {
   // Initialize with empty string to avoid hydration mismatch
-  const [copyrightYears, setCopyrightYears] = useState('');
+  const [copyrightYears, setCopyrightYears] = useState("");
 
   useEffect(() => {
     // Set copyright years only on client-side
@@ -71,9 +71,9 @@ export function Footer() {
   const footerStyles = config.footer.style || {};
   const backgroundColor = resolveColor(footerStyles.backgroundColor);
   const textColor = resolveColor(footerStyles.textColor);
-  const headingColor = resolveColor(footerStyles.headingColor || '#000000');
+  const headingColor = resolveColor(footerStyles.headingColor || "#000000");
   const linkColor = resolveColor(footerStyles.linkColor);
-  const linkHoverColor = resolveColor(footerStyles.linkHoverColor || '#000000');
+  const linkHoverColor = resolveColor(footerStyles.linkHoverColor || "#000000");
   const borderColor = footerStyles.borderColor
     ? resolveColor(footerStyles.borderColor)
     : undefined;
@@ -92,11 +92,11 @@ export function Footer() {
   };
 
   const hoverLinkClassName =
-    'transition-colors text-[var(--link-color)] hover:text-[var(--hover-color)] focus-visible:text-[var(--hover-color)]';
+    "transition-colors text-[var(--link-color)] hover:text-[var(--hover-color)] focus-visible:text-[var(--hover-color)]";
 
   const hoverLinkStyle = {
-    '--link-color': linkColor,
-    '--hover-color': linkHoverColor,
+    "--link-color": linkColor,
+    "--hover-color": linkHoverColor,
   } as CSSProperties;
 
   // Define the brand column content
@@ -331,7 +331,7 @@ export function Footer() {
               href={link}
               style={hoverLinkStyle}
               {...(external
-                ? { target: '_blank', rel: 'noopener noreferrer' }
+                ? { target: "_blank", rel: "noopener noreferrer" }
                 : {})}
             >
               {label}
@@ -348,7 +348,7 @@ export function Footer() {
   // Add brand column if enabled
   if (config.footer.brand.show) {
     footerColumns.push({
-      id: 'brand',
+      id: "brand",
       order: config.footer.brand.order || 1,
       show: true,
       content: brandColumn,
@@ -360,7 +360,7 @@ export function Footer() {
     config.footer.columns.forEach((column: FooterColumnConfig) => {
       if (column.show) {
         // Skip job feeds columns if RSS is disabled
-        if (column.type === 'feeds' && !rssEnabled) {
+        if (column.type === "feeds" && !rssEnabled) {
           return;
         }
 
@@ -378,8 +378,8 @@ export function Footer() {
             config.jobAlerts?.showInFooter
           ) {
             links.push({
-              label: config.jobAlerts.navigationLabel || 'Job Alerts',
-              link: '/job-alerts',
+              label: config.jobAlerts.navigationLabel || "Job Alerts",
+              link: "/job-alerts",
             });
           }
 
@@ -390,8 +390,8 @@ export function Footer() {
             config.pricing?.showInFooter
           ) {
             links.push({
-              label: config.pricing.navigationLabel || 'Pricing',
-              link: '/pricing',
+              label: config.pricing.navigationLabel || "Pricing",
+              link: "/pricing",
             });
           }
 
@@ -402,8 +402,8 @@ export function Footer() {
             config.faq?.showInFooter
           ) {
             links.push({
-              label: config.faq.navigationLabel || 'FAQ',
-              link: '/faq',
+              label: config.faq.navigationLabel || "FAQ",
+              link: "/faq",
             });
           }
 
@@ -414,8 +414,8 @@ export function Footer() {
             config.contact?.showInFooter
           ) {
             links.push({
-              label: config.contact.navigationLabel || 'Contact',
-              link: '/contact',
+              label: config.contact.navigationLabel || "Contact",
+              link: "/contact",
             });
           }
         }
@@ -425,7 +425,7 @@ export function Footer() {
           order: column.order || 99,
           show: true,
           content:
-            column.type === 'feeds'
+            column.type === "feeds"
               ? renderJobFeedsContent(column.title)
               : renderLinksColumn(column.title, links),
         });
@@ -448,11 +448,11 @@ export function Footer() {
               <div className="mb-6 space-y-2 lg:mb-0">
                 <h2 className="font-semibold text-xl" style={headingStyle}>
                   {config.footer.postJob.title ||
-                    'Start your 30-day free trial'}
+                    "Start your 30-day free trial"}
                 </h2>
                 <p className="max-w-[520px] text-sm" style={textStyle}>
                   {config.footer.postJob.description ||
-                    'Join over 4,000+ startups already growing with Caliber.'}
+                    "Join over 4,000+ startups already growing with Caliber."}
                 </p>
               </div>
               <div className="flex flex-col gap-3 sm:flex-row">
@@ -468,12 +468,12 @@ export function Footer() {
                       href={config.footer.postJob.learnMoreButton.link}
                       rel={
                         config.footer.postJob.learnMoreButton.external
-                          ? 'noopener noreferrer'
+                          ? "noopener noreferrer"
                           : undefined
                       }
                       target={
                         config.footer.postJob.learnMoreButton.external
-                          ? '_blank'
+                          ? "_blank"
                           : undefined
                       }
                     >
@@ -492,23 +492,23 @@ export function Footer() {
                   style={{
                     backgroundColor: resolveColor(config.ui.primaryColor),
                   }}
-                  variant={config.ui.primaryColor ? 'primary' : 'default'}
+                  variant={config.ui.primaryColor ? "primary" : "default"}
                 >
                   <Link
                     className="flex items-center justify-center"
                     href={config.footer.postJob.button.link}
                     rel={
                       config.footer.postJob.button.external
-                        ? 'noopener noreferrer'
+                        ? "noopener noreferrer"
                         : undefined
                     }
                     target={
                       config.footer.postJob.button.external
-                        ? '_blank'
+                        ? "_blank"
                         : undefined
                     }
                   >
-                    {config.footer.postJob.button.label || 'Get started'}
+                    {config.footer.postJob.button.label || "Get started"}
                     <Briefcase
                       aria-hidden="true"
                       className="ml-1 h-3.5 w-3.5"
@@ -524,7 +524,7 @@ export function Footer() {
           <div className="flex flex-col gap-8">
             <div className="grid grid-cols-1 gap-4 border-zinc-800 border-b pb-8 sm:grid-cols-1">
               {/* Special handling for brand column */}
-              {sortedColumns.length > 0 && sortedColumns[0].id === 'brand' ? (
+              {sortedColumns.length > 0 && sortedColumns[0].id === "brand" ? (
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-10 min-[960px]:grid-cols-12">
                   {/* Brand column takes up full height on the left */}
                   <div className="self-start md:sticky md:top-8 md:col-span-3 min-[960px]:col-span-3">
@@ -556,7 +556,7 @@ export function Footer() {
               {config.footer.copyright.show && (
                 <div>
                   <p className="text-xs" style={textStyle}>
-                    {copyrightYears && `© ${copyrightYears}`}{' '}
+                    {copyrightYears && `© ${copyrightYears}`}{" "}
                     {config.footer.copyright.text}
                   </p>
                 </div>

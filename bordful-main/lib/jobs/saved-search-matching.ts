@@ -1,7 +1,7 @@
-import type { CareerLevel, Job } from '@/lib/db/airtable';
-import { normalizeAnnualSalary } from '@/lib/db/airtable';
-import type { LanguageCode } from '@/lib/constants/languages';
-import { filterJobsBySearch } from '@/lib/utils/filter-jobs';
+import type { CareerLevel, Job } from "@/lib/db/airtable";
+import { normalizeAnnualSalary } from "@/lib/db/airtable";
+import type { LanguageCode } from "@/lib/constants/languages";
+import { filterJobsBySearch } from "@/lib/utils/filter-jobs";
 
 // Mirrors SALARY_SLIDER_MIN/MAX in components/ui/job-filters.tsx - kept as a
 // separate copy here so this server-only matcher doesn't import a 'use
@@ -53,11 +53,11 @@ export function matchesSavedSearch(
     }
   }
 
-  if (filters.remote && job.workplace_type !== 'Remote') {
+  if (filters.remote && job.workplace_type !== "Remote") {
     return false;
   }
 
-  if (filters.visa && job.visa_sponsorship !== 'Yes') {
+  if (filters.visa && job.visa_sponsorship !== "Yes") {
     return false;
   }
 

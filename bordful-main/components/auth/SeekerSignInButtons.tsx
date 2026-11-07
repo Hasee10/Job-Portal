@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { signIn } from 'next-auth/react';
-import { useSearchParams } from 'next/navigation';
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
+import { signIn } from "next-auth/react";
+import { useSearchParams } from "next/navigation";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
 
 function GoogleIcon() {
   return (
@@ -41,13 +41,13 @@ function LinkedInIcon() {
 
 export function SeekerSignInButtons() {
   const [pendingProvider, setPendingProvider] = useState<
-    'google' | 'linkedin' | null
+    "google" | "linkedin" | null
   >(null);
   const searchParams = useSearchParams();
 
-  const handleSignIn = (provider: 'google' | 'linkedin') => {
+  const handleSignIn = (provider: "google" | "linkedin") => {
     setPendingProvider(provider);
-    const callbackUrl = searchParams.get('callbackUrl') || '/account';
+    const callbackUrl = searchParams.get("callbackUrl") || "/account";
     signIn(provider, { callbackUrl });
   };
 
@@ -57,27 +57,27 @@ export function SeekerSignInButtons() {
         <Button
           className="h-12 w-full gap-3 text-base transition-transform hover:-translate-y-0.5"
           disabled={pendingProvider !== null}
-          onClick={() => handleSignIn('google')}
+          onClick={() => handleSignIn("google")}
           type="button"
           variant="outline"
         >
           <GoogleIcon />
-          {pendingProvider === 'google'
-            ? 'Redirecting...'
-            : 'Continue with Google'}
+          {pendingProvider === "google"
+            ? "Redirecting..."
+            : "Continue with Google"}
         </Button>
 
         <Button
           className="h-12 w-full gap-3 text-base transition-transform hover:-translate-y-0.5"
           disabled={pendingProvider !== null}
-          onClick={() => handleSignIn('linkedin')}
+          onClick={() => handleSignIn("linkedin")}
           type="button"
           variant="outline"
         >
           <LinkedInIcon />
-          {pendingProvider === 'linkedin'
-            ? 'Redirecting...'
-            : 'Continue with LinkedIn'}
+          {pendingProvider === "linkedin"
+            ? "Redirecting..."
+            : "Continue with LinkedIn"}
         </Button>
       </div>
     </div>

@@ -1,4 +1,4 @@
-import { Briefcase, CheckCircle2, Sparkles } from 'lucide-react';
+import { Briefcase, CheckCircle2, Sparkles } from "lucide-react";
 
 // Guest-only hero - deliberately NOT the shared <HeroSection> component
 // used everywhere else on the site (job pages, job-alerts, etc.), so this
@@ -8,7 +8,7 @@ import { Briefcase, CheckCircle2, Sparkles } from 'lucide-react';
 // so the color scheme still reads as one product, just a different layout/
 // visual on this one page.
 const BRAND_GRADIENT =
-  'linear-gradient(135deg, #065C79 0%, #0982AC 50%, #0BA6DA 100%)';
+  "linear-gradient(135deg, #065C79 0%, #0982AC 50%, #0BA6DA 100%)";
 
 export function GuestHero({
   badge,
@@ -114,7 +114,9 @@ export function GuestHero({
                   <p className="font-semibold text-xs text-zinc-900 dark:text-zinc-50">
                     AI match score
                   </p>
-                  <p className="text-[11px] text-zinc-500">Based on your resume</p>
+                  <p className="text-[11px] text-zinc-500">
+                    Based on your resume
+                  </p>
                 </div>
               </div>
             </div>

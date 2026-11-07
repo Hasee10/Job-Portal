@@ -1,16 +1,16 @@
-import { MetadataBreadcrumb } from '@/components/ui/metadata-breadcrumb';
-import config from '@/config';
-import { generateMetadata } from '@/lib/utils/metadata';
+import { MetadataBreadcrumb } from "@/components/ui/metadata-breadcrumb";
+import config from "@/config";
+import { generateMetadata } from "@/lib/utils/metadata";
 
 export const metadata = generateMetadata({
   title: `Privacy & Cookies - ${config.nav.title}`,
   description:
-    'Our commitment to protecting your privacy and personal information.',
-  path: '/privacy',
+    "Our commitment to protecting your privacy and personal information.",
+  path: "/privacy",
 });
 
 // This page will be static
-export const dynamic = 'force-static';
+export const dynamic = "force-static";
 
 export default function PrivacyPage() {
   return (
@@ -20,8 +20,8 @@ export default function PrivacyPage() {
         <div className="mb-6">
           <MetadataBreadcrumb
             items={[
-              { name: 'Home', url: '/' },
-              { name: 'Privacy & Cookies', url: '/privacy' },
+              { name: "Home", url: "/" },
+              { name: "Privacy & Cookies", url: "/privacy" },
             ]}
             metadata={metadata}
             pathname="/privacy"
@@ -31,11 +31,11 @@ export default function PrivacyPage() {
           <div className="space-y-2">
             <h1 className="font-semibold text-2xl">Privacy & Cookies Policy</h1>
             <div className="text-gray-500 dark:text-gray-500 text-sm">
-              Last updated:{' '}
-              {new Date().toLocaleDateString('en-US', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
+              Last updated:{" "}
+              {new Date().toLocaleDateString("en-US", {
+                year: "numeric",
+                month: "long",
+                day: "numeric",
               })}
             </div>
           </div>

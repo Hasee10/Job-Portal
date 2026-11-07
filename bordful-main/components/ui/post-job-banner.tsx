@@ -1,9 +1,9 @@
-import { Briefcase } from 'lucide-react';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import config from '@/config';
-import { resolveColor } from '@/lib/utils/colors';
+import { Briefcase } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import config from "@/config";
+import { resolveColor } from "@/lib/utils/colors";
 
 export function PostJobBanner() {
   // Early return if banner is disabled
@@ -43,8 +43,8 @@ export function PostJobBanner() {
       <a
         className="block"
         href={cta.link}
-        rel={cta.external ? 'noopener noreferrer' : undefined}
-        target={cta.external ? '_blank' : undefined}
+        rel={cta.external ? "noopener noreferrer" : undefined}
+        target={cta.external ? "_blank" : undefined}
       >
         <Button
           className="flex h-8 w-full items-center justify-center gap-1.5 px-3 text-xs sm:h-7 sm:px-2.5"

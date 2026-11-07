@@ -1,8 +1,14 @@
-import { EMAIL_BRAND_COLOR, emailFooter, emailHeader, h, wrapEmailBody } from './shared';
+import {
+  EMAIL_BRAND_COLOR,
+  emailFooter,
+  emailHeader,
+  h,
+  wrapEmailBody,
+} from "./shared";
 
 export type OutreachResponseEmailData = {
   seekerDisplay: string;
-  response: 'accepted' | 'declined';
+  response: "accepted" | "declined";
   jobTitle: string | null;
   dashboardUrl: string;
 };
@@ -13,10 +19,10 @@ export function renderOutreachResponseEmail({
   jobTitle,
   dashboardUrl,
 }: OutreachResponseEmailData): { subject: string; html: string } {
-  const accepted = response === 'accepted';
-  const accentColor = accepted ? '#16a34a' : '#71717a';
-  const badgeBg = accepted ? '#f0fdf4' : '#f4f4f5';
-  const badgeText = accepted ? 'Accepted' : 'Declined';
+  const accepted = response === "accepted";
+  const accentColor = accepted ? "#16a34a" : "#71717a";
+  const badgeBg = accepted ? "#f0fdf4" : "#f4f4f5";
+  const badgeText = accepted ? "Accepted" : "Declined";
 
   const headline = accepted
     ? `${h(seekerDisplay)} accepted your outreach`
@@ -46,7 +52,7 @@ export function renderOutreachResponseEmail({
       </table>
     </div>
 
-    ${emailFooter({ audience: 'recruiter' })}
+    ${emailFooter({ audience: "recruiter" })}
   `);
 
   return {

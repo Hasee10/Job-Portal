@@ -1,11 +1,11 @@
-import { ImageResponse } from 'next/og';
-import config from '@/config';
-import type { MinimalJob } from '@/lib/utils/job-validation';
+import { ImageResponse } from "next/og";
+import config from "@/config";
+import type { MinimalJob } from "@/lib/utils/job-validation";
 import {
   createLinearGradient,
   hexToRGBA,
   type ProcessedOGConfig,
-} from '@/lib/utils/og-config';
+} from "@/lib/utils/og-config";
 
 export interface JobProcessedOGConfig extends ProcessedOGConfig {
   jobTitle: string;
@@ -21,24 +21,25 @@ export function createJobOGConfig(job: MinimalJob): JobProcessedOGConfig {
   const ogJobConfig = config.og?.jobs || {};
 
   return {
-    fontFamily: ogJobConfig.font?.family || config.font.family || 'geist',
+    fontFamily: ogJobConfig.font?.family || config.font.family || "geist",
     siteTitle: `${job.title} at ${job.company}`,
     siteDescription: `Apply for ${job.type} position - ${job.workplace_type}`,
     backgroundColor:
-      ogJobConfig.backgroundColor || config.ui.heroBackgroundColor || '#005450',
+      ogJobConfig.backgroundColor || config.ui.heroBackgroundColor || "#005450",
     backgroundOpacity:
       ogJobConfig.backgroundOpacity !== undefined
         ? ogJobConfig.backgroundOpacity
         : 0.8,
     backgroundImage: ogJobConfig.backgroundImage || null,
-    titleColor: ogJobConfig.titleColor || config.ui.heroTitleColor || '#FFFFFF',
+    titleColor: ogJobConfig.titleColor || config.ui.heroTitleColor || "#FFFFFF",
     descriptionColor:
-      ogJobConfig.detailsColor || config.ui.heroSubtitleColor || '#FFFFFF',
+      ogJobConfig.detailsColor || config.ui.heroSubtitleColor || "#FFFFFF",
     gradientEnabled: (ogJobConfig.gradient?.enabled as boolean) !== false,
     gradientColor:
       ogJobConfig.gradient?.color ||
-      ogJobConfig.backgroundColor || config.ui.heroBackgroundColor ||
-      '#005450',
+      ogJobConfig.backgroundColor ||
+      config.ui.heroBackgroundColor ||
+      "#005450",
     gradientAngle:
       ogJobConfig.gradient?.angle !== undefined
         ? ogJobConfig.gradient.angle
@@ -54,7 +55,7 @@ export function createJobOGConfig(job: MinimalJob): JobProcessedOGConfig {
     jobTitle: job.title,
     companyName: job.company,
     companyColor:
-      ogJobConfig.companyColor || config.ui.heroTitleColor || '#FFFFFF',
+      ogJobConfig.companyColor || config.ui.heroTitleColor || "#FFFFFF",
     workplaceType: job.workplace_type,
   };
 }
@@ -76,7 +77,7 @@ export async function createJobOGImageResponse(
         config.gradientStartOpacity,
         config.gradientEndOpacity
       )
-    : '';
+    : "";
 
   const backgroundColorRGBA = hexToRGBA(
     config.backgroundColor,
@@ -108,10 +109,10 @@ export async function createJobOGImageResponse(
       style={{
         width: `${SHARED_STYLES.DIMENSIONS.WIDTH}px`,
         height: `${SHARED_STYLES.DIMENSIONS.HEIGHT}px`,
-        position: 'relative',
-        overflow: 'hidden',
-        display: 'flex',
-        flexDirection: 'column',
+        position: "relative",
+        overflow: "hidden",
+        display: "flex",
+        flexDirection: "column",
       }}
     >
       {/* Background Image Layer */}
@@ -121,12 +122,12 @@ export async function createJobOGImageResponse(
           height={SHARED_STYLES.DIMENSIONS.HEIGHT}
           src={bgImageDataUri}
           style={{
-            position: 'absolute',
+            position: "absolute",
             top: 0,
             left: 0,
-            width: '100%',
-            height: '100%',
-            objectFit: 'cover',
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
           }}
           width={SHARED_STYLES.DIMENSIONS.WIDTH}
         />
@@ -135,11 +136,11 @@ export async function createJobOGImageResponse(
       {/* Background Color Overlay */}
       <div
         style={{
-          position: 'absolute',
+          position: "absolute",
           top: 0,
           left: 0,
-          width: '100%',
-          height: '100%',
+          width: "100%",
+          height: "100%",
           backgroundColor: backgroundColorRGBA,
         }}
       />
@@ -148,11 +149,11 @@ export async function createJobOGImageResponse(
       {config.gradientEnabled && (
         <div
           style={{
-            position: 'absolute',
+            position: "absolute",
             top: 0,
             left: 0,
-            width: '100%',
-            height: '100%',
+            width: "100%",
+            height: "100%",
             background: gradientCSS,
           }}
         />
@@ -161,16 +162,16 @@ export async function createJobOGImageResponse(
       {/* Content Container */}
       <div
         style={{
-          position: 'relative',
-          width: '100%',
-          height: '100%',
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'space-between',
-          alignItems: 'flex-start',
-          color: 'white',
+          position: "relative",
+          width: "100%",
+          height: "100%",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "space-between",
+          alignItems: "flex-start",
+          color: "white",
           fontFamily: fontFamilyCSS,
-          textAlign: 'left',
+          textAlign: "left",
           padding: `${SHARED_STYLES.DIMENSIONS.PADDING}px`,
           zIndex: SHARED_STYLES.Z_INDEX.CONTENT,
         }}
@@ -182,9 +183,9 @@ export async function createJobOGImageResponse(
             height={100}
             src={logoDataUri}
             style={{
-              height: '100px',
-              width: '100px',
-              objectFit: 'contain',
+              height: "100px",
+              width: "100px",
+              objectFit: "contain",
             }}
             width={100}
           />
@@ -193,9 +194,9 @@ export async function createJobOGImageResponse(
         {/* Text container for job details */}
         <div
           style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'flex-start',
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "flex-start",
           }}
         >
           <h1
@@ -203,9 +204,9 @@ export async function createJobOGImageResponse(
               fontSize: `${SHARED_STYLES.FONTS.TITLE_SIZE}px`,
               fontWeight: SHARED_STYLES.FONTS.TITLE_WEIGHT,
               color: config.titleColor,
-              margin: '0 0 10px 0',
+              margin: "0 0 10px 0",
               lineHeight: SHARED_STYLES.FONTS.TITLE_LINE_HEIGHT,
-              textAlign: 'left',
+              textAlign: "left",
               maxWidth: `${SHARED_STYLES.DIMENSIONS.CONTENT_WIDTH}px`,
             }}
           >
@@ -216,9 +217,9 @@ export async function createJobOGImageResponse(
               fontSize: `${SHARED_STYLES.FONTS.DESCRIPTION_SIZE}px`,
               fontWeight: SHARED_STYLES.FONTS.DESCRIPTION_WEIGHT,
               color: config.companyColor,
-              margin: '0 0 20px 0',
+              margin: "0 0 20px 0",
               lineHeight: SHARED_STYLES.FONTS.DESCRIPTION_LINE_HEIGHT,
-              textAlign: 'left',
+              textAlign: "left",
               maxWidth: `${SHARED_STYLES.DIMENSIONS.CONTENT_WIDTH}px`,
             }}
           >
@@ -232,7 +233,7 @@ export async function createJobOGImageResponse(
               maxWidth: `${SHARED_STYLES.DIMENSIONS.CONTENT_WIDTH}px`,
               margin: 0,
               lineHeight: SHARED_STYLES.FONTS.DESCRIPTION_LINE_HEIGHT,
-              textAlign: 'left',
+              textAlign: "left",
             }}
           >
             {config.siteDescription}
@@ -251,8 +252,8 @@ export async function createJobOGImageResponse(
       // effectively static, so let the CDN serve repeat hits: cache for a
       // day, allow a week of stale-while-revalidate.
       headers: {
-        'Cache-Control':
-          'public, immutable, no-transform, max-age=86400, stale-while-revalidate=604800',
+        "Cache-Control":
+          "public, immutable, no-transform, max-age=86400, stale-while-revalidate=604800",
       },
     }
   );

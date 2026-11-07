@@ -1,6 +1,6 @@
-import 'server-only';
+import "server-only";
 
-import { createClient } from '@supabase/supabase-js';
+import { createClient } from "@supabase/supabase-js";
 
 export type JobSeeker = {
   id: string;
@@ -19,7 +19,7 @@ function getAdminClient() {
   const url = process.env.SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!url || !key) {
-    throw new Error('Database is not configured on this deployment.');
+    throw new Error("Database is not configured on this deployment.");
   }
   return createClient(url, key, { auth: { persistSession: false } });
 }
@@ -40,7 +40,7 @@ export async function upsertJobSeeker(profile: {
   const updatedAt = new Date();
 
   const { data, error } = await supabase
-    .from('job_seekers')
+    .from("job_seekers")
     .upsert(
       {
         email: normalizedEmail,
@@ -50,9 +50,9 @@ export async function upsertJobSeeker(profile: {
         provider_account_id: profile.providerAccountId,
         updated_at: updatedAt.toISOString(),
       },
-      { onConflict: 'email' }
+      { onConflict: "email" }
     )
-    .select('id, email, name, avatar_url, created_at')
+    .select("id, email, name, avatar_url, created_at")
     .single();
 
   if (error) throw error;

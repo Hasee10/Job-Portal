@@ -1,19 +1,19 @@
-import type { Metadata } from 'next';
-import Link from 'next/link';
-import { notFound, redirect } from 'next/navigation';
-import { ArrowLeft, Inbox } from 'lucide-react';
-import { auth } from '@/auth';
-import { ApplicationCard } from '@/components/employer/ApplicationCard';
-import { getOwnerJob } from '@/lib/jobs/employer-job-actions';
-import { listJobApplications } from '@/lib/jobs/application-actions';
-import config from '@/config';
+import type { Metadata } from "next";
+import Link from "next/link";
+import { notFound, redirect } from "next/navigation";
+import { ArrowLeft, Inbox } from "lucide-react";
+import { auth } from "@/auth";
+import { ApplicationCard } from "@/components/employer/ApplicationCard";
+import { getOwnerJob } from "@/lib/jobs/employer-job-actions";
+import { listJobApplications } from "@/lib/jobs/application-actions";
+import config from "@/config";
 
 export const metadata: Metadata = {
   title: `Applications | ${config.title}`,
   robots: { index: false, follow: false },
 };
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 export default async function JobApplicationsPage({
   params,
@@ -21,16 +21,23 @@ export default async function JobApplicationsPage({
   params: Promise<{ id: string }>;
 }) {
   const session = await auth();
-  if (!session?.user) redirect('/sign-in?callbackUrl=/dashboard/jobs');
-  if (session.user.role !== 'employer') redirect('/');
+  if (!session?.user) redirect("/sign-in?callbackUrl=/dashboard/jobs");
+  if (session.user.role !== "employer") redirect("/");
 
   const { id } = await params;
   const job = await getOwnerJob({ employerId: session.user.id }, id);
   if (!job) notFound();
 
-  const applications = await listJobApplications({ employerId: session.user.id }, id);
-  const shortlisted = applications.filter((a) => a.status === 'shortlisted' || a.status === 'hired');
-  const others = applications.filter((a) => a.status !== 'shortlisted' && a.status !== 'hired');
+  const applications = await listJobApplications(
+    { employerId: session.user.id },
+    id
+  );
+  const shortlisted = applications.filter(
+    (a) => a.status === "shortlisted" || a.status === "hired"
+  );
+  const others = applications.filter(
+    (a) => a.status !== "shortlisted" && a.status !== "hired"
+  );
 
   return (
     <main className="min-h-[60vh] bg-background py-12">
@@ -44,9 +51,12 @@ export default async function JobApplicationsPage({
             My jobs
           </Link>
 
-          <h1 className="mt-4 font-bold text-2xl text-zinc-900 dark:text-zinc-50">{job.title}</h1>
+          <h1 className="mt-4 font-bold text-2xl text-zinc-900 dark:text-zinc-50">
+            {job.title}
+          </h1>
           <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-            {applications.length} application{applications.length !== 1 ? 's' : ''}
+            {applications.length} application
+            {applications.length !== 1 ? "s" : ""}
           </p>
 
           {applications.length === 0 ? (
@@ -54,8 +64,12 @@ export default async function JobApplicationsPage({
               <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-800">
                 <Inbox className="h-5 w-5 text-zinc-400" />
               </div>
-              <p className="mt-3 font-medium text-zinc-900 dark:text-zinc-50">No applications yet</p>
-              <p className="mt-1 text-sm text-zinc-500">Applications will appear here as candidates apply.</p>
+              <p className="mt-3 font-medium text-zinc-900 dark:text-zinc-50">
+                No applications yet
+              </p>
+              <p className="mt-1 text-sm text-zinc-500">
+                Applications will appear here as candidates apply.
+              </p>
             </div>
           ) : (
             <div className="mt-8 space-y-8">

@@ -1,23 +1,24 @@
-import type { Metadata } from 'next';
-import Link from 'next/link';
-import { Search as SearchIcon, FileSearch } from 'lucide-react';
-import { HeroSection } from '@/components/ui/hero-section';
-import { TenderCard } from '@/components/procurement/TenderCard';
-import { TenderFiltersSidebar } from '@/components/procurement/TenderFiltersSidebar';
-import { TenderControls } from '@/components/procurement/TenderControls';
+import type { Metadata } from "next";
+import Link from "next/link";
+import { Search as SearchIcon, FileSearch } from "lucide-react";
+import { HeroSection } from "@/components/ui/hero-section";
+import { TenderCard } from "@/components/procurement/TenderCard";
+import { TenderFiltersSidebar } from "@/components/procurement/TenderFiltersSidebar";
+import { TenderControls } from "@/components/procurement/TenderControls";
 import {
   getTenderFacets,
   listActiveTenders,
   type TenderSort,
-} from '@/lib/procurement/scraped-tender-actions';
-import config from '@/config';
+} from "@/lib/procurement/scraped-tender-actions";
+import config from "@/config";
 
 export const metadata: Metadata = {
   title: `Global Tenders | ${config.title}`,
-  description: 'Browse public procurement tenders aggregated daily from TED (EU) and other sources.',
+  description:
+    "Browse public procurement tenders aggregated daily from TED (EU) and other sources.",
 };
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 type TendersSearchParams = {
   category?: string;
@@ -35,17 +36,25 @@ export default async function ProcurementTendersPage({
   searchParams: Promise<TendersSearchParams>;
 }) {
   const sp = await searchParams;
-  const categories = (sp.category ?? '').split(',').filter(Boolean);
-  const sources = (sp.source ?? '').split(',').filter(Boolean);
-  const countries = (sp.country ?? '').split(',').filter(Boolean);
-  const query = sp.q ?? '';
-  const sort: TenderSort = sp.sort === 'deadline' ? 'deadline' : 'newest';
-  const page = Math.max(1, Number.parseInt(sp.page || '1', 10) || 1);
-  const perPageParsed = Number.parseInt(sp.perPage || '20', 10);
+  const categories = (sp.category ?? "").split(",").filter(Boolean);
+  const sources = (sp.source ?? "").split(",").filter(Boolean);
+  const countries = (sp.country ?? "").split(",").filter(Boolean);
+  const query = sp.q ?? "";
+  const sort: TenderSort = sp.sort === "deadline" ? "deadline" : "newest";
+  const page = Math.max(1, Number.parseInt(sp.page || "1", 10) || 1);
+  const perPageParsed = Number.parseInt(sp.perPage || "20", 10);
   const perPage = [10, 20, 50].includes(perPageParsed) ? perPageParsed : 20;
 
   const [{ tenders, total }, facets] = await Promise.all([
-    listActiveTenders({ categories, sources, countries, query, sort, page, perPage }),
+    listActiveTenders({
+      categories,
+      sources,
+      countries,
+      query,
+      sort,
+      page,
+      perPage,
+    }),
     getTenderFacets(),
   ]);
 
@@ -54,18 +63,18 @@ export default async function ProcurementTendersPage({
 
   const buildLink = (updates: Record<string, string | undefined>) => {
     const params = new URLSearchParams();
-    if (sp.category) params.set('category', sp.category);
-    if (sp.source) params.set('source', sp.source);
-    if (sp.country) params.set('country', sp.country);
-    if (sp.q) params.set('q', sp.q);
-    if (sp.sort) params.set('sort', sp.sort);
-    if (sp.perPage) params.set('perPage', sp.perPage);
+    if (sp.category) params.set("category", sp.category);
+    if (sp.source) params.set("source", sp.source);
+    if (sp.country) params.set("country", sp.country);
+    if (sp.q) params.set("q", sp.q);
+    if (sp.sort) params.set("sort", sp.sort);
+    if (sp.perPage) params.set("perPage", sp.perPage);
     Object.entries(updates).forEach(([key, value]) => {
       if (value) params.set(key, value);
       else params.delete(key);
     });
     const qs = params.toString();
-    return qs ? `/procurement/tenders?${qs}` : '/procurement/tenders';
+    return qs ? `/procurement/tenders?${qs}` : "/procurement/tenders";
   };
 
   return (
@@ -75,15 +84,23 @@ export default async function ProcurementTendersPage({
         description={`Aggregated daily from TED (EU Tenders Electronic Daily) and PPRA (Pakistan). ${totalActive.toLocaleString()} tenders currently open.`}
         heroImage={{
           enabled: true,
-          src: '/procurement-hero.png',
-          alt: 'Caliber’s AI matching engine scoring verified vendors against open tenders',
+          src: "/procurement-hero.png",
+          alt: "Caliber’s AI matching engine scoring verified vendors against open tenders",
         }}
         title={`${totalActive.toLocaleString()} open tenders worldwide`}
       >
-        <form action="/procurement/tenders" className="flex max-w-md gap-2" method="GET">
-          {sp.category && <input name="category" type="hidden" value={sp.category} />}
+        <form
+          action="/procurement/tenders"
+          className="flex max-w-md gap-2"
+          method="GET"
+        >
+          {sp.category && (
+            <input name="category" type="hidden" value={sp.category} />
+          )}
           {sp.source && <input name="source" type="hidden" value={sp.source} />}
-          {sp.country && <input name="country" type="hidden" value={sp.country} />}
+          {sp.country && (
+            <input name="country" type="hidden" value={sp.country} />
+          )}
           {sp.sort && <input name="sort" type="hidden" value={sp.sort} />}
           <div className="relative flex-1">
             <SearchIcon
@@ -112,7 +129,8 @@ export default async function ProcurementTendersPage({
           <div className="order-2 flex-[3] md:order-1">
             <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
               <p className="text-muted-foreground text-sm">
-                Showing {tenders.length.toLocaleString()} of {total.toLocaleString()} tenders
+                Showing {tenders.length.toLocaleString()} of{" "}
+                {total.toLocaleString()} tenders
               </p>
               <TenderControls />
             </div>
@@ -124,7 +142,8 @@ export default async function ProcurementTendersPage({
                 </div>
                 <p className="mt-4 font-semibold">No tenders found</p>
                 <p className="mt-1.5 text-muted-foreground text-sm">
-                  Try different filters, or check back after the next daily scrape.
+                  Try different filters, or check back after the next daily
+                  scrape.
                 </p>
               </div>
             ) : (
@@ -138,7 +157,10 @@ export default async function ProcurementTendersPage({
             {totalPages > 1 && (
               <div className="mt-6 flex items-center justify-between text-sm">
                 {page > 1 ? (
-                  <Link className="text-primary hover:underline" href={buildLink({ page: String(page - 1) })}>
+                  <Link
+                    className="text-primary hover:underline"
+                    href={buildLink({ page: String(page - 1) })}
+                  >
                     &larr; Previous
                   </Link>
                 ) : (
@@ -148,7 +170,10 @@ export default async function ProcurementTendersPage({
                   Page {page} of {totalPages}
                 </span>
                 {page < totalPages ? (
-                  <Link className="text-primary hover:underline" href={buildLink({ page: String(page + 1) })}>
+                  <Link
+                    className="text-primary hover:underline"
+                    href={buildLink({ page: String(page + 1) })}
+                  >
                     Next &rarr;
                   </Link>
                 ) : (

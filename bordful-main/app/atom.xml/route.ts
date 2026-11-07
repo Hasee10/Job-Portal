@@ -1,19 +1,19 @@
-import config from '@/config';
-import { DEFAULT_DESCRIPTION_LENGTH } from '@/lib/constants/defaults';
+import config from "@/config";
+import { DEFAULT_DESCRIPTION_LENGTH } from "@/lib/constants/defaults";
 import {
   createFeed,
   type FeedConfig,
   isFeedEnabled,
   processJobsForFeed,
-} from '@/lib/utils/feed-utils';
+} from "@/lib/utils/feed-utils";
 
 export const revalidate = 300; // 5 minutes, matching other dynamic routes
 
 export async function GET() {
   try {
     // Check if Atom feeds are enabled
-    if (!isFeedEnabled(config.rssFeed, 'atom')) {
-      return new Response('Atom feed not enabled', { status: 404 });
+    if (!isFeedEnabled(config.rssFeed, "atom")) {
+      return new Response("Atom feed not enabled", { status: 404 });
     }
 
     const baseUrl = config.url;
@@ -32,10 +32,10 @@ export async function GET() {
     // Return the feed as Atom XML
     return new Response(feed.atom1(), {
       headers: {
-        'Content-Type': 'application/atom+xml; charset=utf-8',
+        "Content-Type": "application/atom+xml; charset=utf-8",
       },
     });
   } catch (_error) {
-    return new Response('Error generating Atom feed', { status: 500 });
+    return new Response("Error generating Atom feed", { status: 500 });
   }
 }

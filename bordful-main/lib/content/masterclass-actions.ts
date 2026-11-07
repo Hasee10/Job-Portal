@@ -1,6 +1,6 @@
-import 'server-only';
+import "server-only";
 
-import { createClient } from '@supabase/supabase-js';
+import { createClient } from "@supabase/supabase-js";
 
 export type Masterclass = {
   id: string;
@@ -18,7 +18,7 @@ function getAdminClient() {
   const url = process.env.SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!url || !key) {
-    throw new Error('Database is not configured on this deployment.');
+    throw new Error("Database is not configured on this deployment.");
   }
   return createClient(url, key, { auth: { persistSession: false } });
 }
@@ -42,10 +42,10 @@ function rowToMasterclass(row: Record<string, unknown>): Masterclass {
 export async function listPublishedMasterclasses(): Promise<Masterclass[]> {
   const supabase = getAdminClient();
   const { data, error } = await supabase
-    .from('masterclasses')
-    .select('*')
-    .eq('is_published', true)
-    .order('published_at', { ascending: false });
+    .from("masterclasses")
+    .select("*")
+    .eq("is_published", true)
+    .order("published_at", { ascending: false });
 
   if (error) throw error;
   return (data ?? []).map(rowToMasterclass);
@@ -56,7 +56,9 @@ export async function listPublishedMasterclasses(): Promise<Masterclass[]> {
 // library, whether live or still an unreviewed draft.
 export async function listAllMasterclassVideoUrls(): Promise<Set<string>> {
   const supabase = getAdminClient();
-  const { data, error } = await supabase.from('masterclasses').select('video_url');
+  const { data, error } = await supabase
+    .from("masterclasses")
+    .select("video_url");
   if (error) throw error;
   return new Set(
     (data ?? [])
@@ -82,7 +84,7 @@ export async function insertDraftMasterclass(
 ): Promise<Masterclass> {
   const supabase = getAdminClient();
   const { data, error } = await supabase
-    .from('masterclasses')
+    .from("masterclasses")
     .insert({
       title: input.title,
       description: input.description,
@@ -93,7 +95,7 @@ export async function insertDraftMasterclass(
       category: input.category,
       is_published: false,
     })
-    .select('*')
+    .select("*")
     .single();
 
   if (error) throw error;

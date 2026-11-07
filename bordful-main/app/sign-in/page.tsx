@@ -1,16 +1,16 @@
-import type { Metadata } from 'next';
-import Link from 'next/link';
-import { Suspense } from 'react';
-import { SignInForm } from '@/components/auth/SignInForm';
-import config from '@/config';
+import type { Metadata } from "next";
+import Link from "next/link";
+import { Suspense } from "react";
+import { SignInForm } from "@/components/auth/SignInForm";
+import config from "@/config";
 
 export const metadata: Metadata = {
   title: `Sign In | ${config.title}`,
-  description: 'Sign in to your employer account.',
+  description: "Sign in to your employer account.",
   robots: { index: false, follow: false },
 };
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 export default function SignInPage() {
   return (
@@ -28,7 +28,7 @@ export default function SignInPage() {
           <SignInForm />
         </Suspense>
         <p className="mt-6 text-center text-sm text-zinc-600 dark:text-zinc-400">
-          Don&apos;t have an account?{' '}
+          Don&apos;t have an account?{" "}
           <Link className="underline hover:no-underline" href="/sign-up">
             Sign up
           </Link>

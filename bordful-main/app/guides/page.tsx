@@ -1,14 +1,14 @@
-import type { Metadata } from 'next';
-import { GuideLibrary } from '@/components/content/GuideLibrary';
-import config from '@/config';
-import { listPublishedGuides } from '@/lib/content/guide-actions';
+import type { Metadata } from "next";
+import { GuideLibrary } from "@/components/content/GuideLibrary";
+import config from "@/config";
+import { listPublishedGuides } from "@/lib/content/guide-actions";
 
 export const metadata: Metadata = {
   title: `Career Guides | ${config.title}`,
-  description: 'Practical guides to help you search, apply, and negotiate.',
+  description: "Practical guides to help you search, apply, and negotiate.",
 };
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 export default async function GuidesPage() {
   const guides = await listPublishedGuides();
@@ -31,8 +31,8 @@ export default async function GuidesPage() {
                 Our guide library is launching soon.
               </p>
               <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-                Check back shortly for practical guides on searching,
-                applying, and negotiating.
+                Check back shortly for practical guides on searching, applying,
+                and negotiating.
               </p>
             </div>
           ) : (

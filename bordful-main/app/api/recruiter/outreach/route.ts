@@ -1,16 +1,16 @@
-import { NextResponse } from 'next/server';
-import { auth } from '@/auth';
+import { NextResponse } from "next/server";
+import { auth } from "@/auth";
 import {
   sendOutreach,
   listRecruiterOutreach,
   getRecruiterDailyOutreachCount,
-} from '@/lib/jobs/candidate-outreach-actions';
-import { getRecruiterAccountById } from '@/lib/auth/recruiter-accounts';
-import { sendEmail } from '@/lib/email/smtp';
-import { renderRecruiterOutreachEmail } from '@/lib/email/templates/recruiter-outreach';
-import { createRateLimiter, getClientIp } from '@/lib/utils/rate-limit';
+} from "@/lib/jobs/candidate-outreach-actions";
+import { getRecruiterAccountById } from "@/lib/auth/recruiter-accounts";
+import { sendEmail } from "@/lib/email/smtp";
+import { renderRecruiterOutreachEmail } from "@/lib/email/templates/recruiter-outreach";
+import { createRateLimiter, getClientIp } from "@/lib/utils/rate-limit";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 const DAILY_OUTREACH_LIMIT = 20;
 
@@ -18,8 +18,8 @@ const isRateLimited = createRateLimiter(30);
 
 export async function GET() {
   const session = await auth();
-  if (!session?.user || session.user.role !== 'recruiter') {
-    return NextResponse.json({ error: 'Not signed in.' }, { status: 401 });
+  if (!session?.user || session.user.role !== "recruiter") {
+    return NextResponse.json({ error: "Not signed in." }, { status: 401 });
   }
 
   const outreach = await listRecruiterOutreach(session.user.id);
@@ -28,14 +28,14 @@ export async function GET() {
 
 export async function POST(request: Request) {
   const session = await auth();
-  if (!session?.user || session.user.role !== 'recruiter') {
-    return NextResponse.json({ error: 'Not signed in.' }, { status: 401 });
+  if (!session?.user || session.user.role !== "recruiter") {
+    return NextResponse.json({ error: "Not signed in." }, { status: 401 });
   }
 
   const clientIp = getClientIp(request);
   if (isRateLimited(clientIp)) {
     return NextResponse.json(
-      { error: 'Too many requests. Please try again later.' },
+      { error: "Too many requests. Please try again later." },
       { status: 429 }
     );
   }
@@ -53,20 +53,32 @@ export async function POST(request: Request) {
   }
 
   const body = await request.json();
-  const seekerId = typeof body.seekerId === 'string' ? body.seekerId : '';
-  const message = typeof body.message === 'string' ? body.message.trim().slice(0, 2000) : '';
-  const jobId = typeof body.jobId === 'string' ? body.jobId : null;
-  const jobTitle = typeof body.jobTitle === 'string' ? body.jobTitle : null;
+  const seekerId = typeof body.seekerId === "string" ? body.seekerId : "";
+  const message =
+    typeof body.message === "string" ? body.message.trim().slice(0, 2000) : "";
+  const jobId = typeof body.jobId === "string" ? body.jobId : null;
+  const jobTitle = typeof body.jobTitle === "string" ? body.jobTitle : null;
 
   if (!seekerId) {
-    return NextResponse.json({ error: 'Candidate ID is required.' }, { status: 400 });
+    return NextResponse.json(
+      { error: "Candidate ID is required." },
+      { status: 400 }
+    );
   }
   if (!message) {
-    return NextResponse.json({ error: 'Message is required.' }, { status: 400 });
+    return NextResponse.json(
+      { error: "Message is required." },
+      { status: 400 }
+    );
   }
 
   try {
-    const outreach = await sendOutreach(session.user.id, seekerId, message, jobId);
+    const outreach = await sendOutreach(
+      session.user.id,
+      seekerId,
+      message,
+      jobId
+    );
 
     // Notify the seeker by email — fire-and-catch so an email failure
     // never blocks the outreach from being recorded.
@@ -78,18 +90,24 @@ export async function POST(request: Request) {
           recruiterAgency: recruiter.agency,
           message,
           jobTitle,
-          inboxUrl: `${process.env.NEXTAUTH_URL ?? ''}/account/inbox`,
+          inboxUrl: `${process.env.NEXTAUTH_URL ?? ""}/account/inbox`,
         });
         await sendEmail({ to: body.seekerEmail as string, subject, html });
       }
     } catch (emailErr) {
-      console.error('[api/recruiter/outreach] seeker notification email failed:', emailErr);
+      console.error(
+        "[api/recruiter/outreach] seeker notification email failed:",
+        emailErr
+      );
     }
 
-    return NextResponse.json({ outreach, remaining: DAILY_OUTREACH_LIMIT - dailyCount - 1 });
+    return NextResponse.json({
+      outreach,
+      remaining: DAILY_OUTREACH_LIMIT - dailyCount - 1,
+    });
   } catch (error) {
-    const msg = error instanceof Error ? error.message : 'Failed to send outreach.';
+    const msg =
+      error instanceof Error ? error.message : "Failed to send outreach.";
     return NextResponse.json({ error: msg }, { status: 400 });
   }
 }
-

@@ -1,22 +1,22 @@
-import { ArrowLeft, Clock } from 'lucide-react';
-import type { Metadata } from 'next';
-import Link from 'next/link';
-import { notFound } from 'next/navigation';
-import { GuideCard } from '@/components/content/GuideCard';
-import { GuideContent } from '@/components/content/GuideContent';
-import { GuideTableOfContents } from '@/components/content/GuideTableOfContents';
-import config from '@/config';
-import { getGuideCategoryStyle } from '@/lib/constants/guide-categories';
+import { ArrowLeft, Clock } from "lucide-react";
+import type { Metadata } from "next";
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { GuideCard } from "@/components/content/GuideCard";
+import { GuideContent } from "@/components/content/GuideContent";
+import { GuideTableOfContents } from "@/components/content/GuideTableOfContents";
+import config from "@/config";
+import { getGuideCategoryStyle } from "@/lib/constants/guide-categories";
 import {
   estimateReadMinutes,
   extractGuideHeadings,
-} from '@/lib/content/guide-content';
+} from "@/lib/content/guide-content";
 import {
   getPublishedGuideBySlug,
   listPublishedGuides,
-} from '@/lib/content/guide-actions';
+} from "@/lib/content/guide-actions";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 const MAX_RELATED_GUIDES = 3;
 

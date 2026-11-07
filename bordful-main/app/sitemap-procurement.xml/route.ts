@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { NextResponse } from "next/server";
 
 // A manual route handler rather than the app/sitemap.ts metadata-file
 // convention - that special convention only recognizes a file literally
@@ -8,7 +8,7 @@ import { NextResponse } from 'next/server';
 // existing search equity. Only the public landing page is indexable; every
 // other /procurement/* route is gated buyer/vendor content.
 export async function GET() {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
   const lastModified = new Date().toISOString();
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
@@ -34,6 +34,6 @@ export async function GET() {
 </urlset>`;
 
   return new NextResponse(xml, {
-    headers: { 'Content-Type': 'application/xml' },
+    headers: { "Content-Type": "application/xml" },
   });
 }

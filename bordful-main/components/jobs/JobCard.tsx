@@ -1,14 +1,14 @@
-import { ArrowUpRight, Sparkles } from 'lucide-react';
-import Link from 'next/link';
-import { useEffect, useState } from 'react';
-import { SaveJobButton } from '@/components/jobs/SaveJobButton';
-import { Button } from '@/components/ui/button';
-import { JobBadge } from '@/components/ui/job-badge';
-import config from '@/config';
-import { formatSalary, type Job } from '@/lib/db/airtable';
-import { resolveColor } from '@/lib/utils/colors';
-import { formatDate } from '@/lib/utils/formatDate';
-import { generateJobSlug } from '@/lib/utils/slugify';
+import { ArrowUpRight, Sparkles } from "lucide-react";
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import { SaveJobButton } from "@/components/jobs/SaveJobButton";
+import { Button } from "@/components/ui/button";
+import { JobBadge } from "@/components/ui/job-badge";
+import config from "@/config";
+import { formatSalary, type Job } from "@/lib/db/airtable";
+import { resolveColor } from "@/lib/utils/colors";
+import { formatDate } from "@/lib/utils/formatDate";
+import { generateJobSlug } from "@/lib/utils/slugify";
 
 export function JobCard({ job }: { job: Job }) {
   const { fullDate, relativeTime } = formatDate(job.posted_date);
@@ -17,21 +17,21 @@ export function JobCard({ job }: { job: Job }) {
 
   // Format location based on workplace type
   const location =
-    job.workplace_type === 'Remote'
+    job.workplace_type === "Remote"
       ? job.remote_region
         ? `Remote (${job.remote_region})`
         : null
-      : job.workplace_type === 'Hybrid'
+      : job.workplace_type === "Hybrid"
         ? [
             job.workplace_city,
             job.workplace_country,
             job.remote_region ? `Hybrid (${job.remote_region})` : null,
           ]
             .filter(Boolean)
-            .join(', ') || null
+            .join(", ") || null
         : [job.workplace_city, job.workplace_country]
             .filter(Boolean)
-            .join(', ') || null;
+            .join(", ") || null;
 
   // Whether the job is "New" (<=48h) / "very new" (<=24h, for the "Be an
   // early applicant" highlight badge) - deliberately computed post-mount
@@ -57,9 +57,9 @@ export function JobCard({ job }: { job: Job }) {
   // applicant" is a stricter/earlier window than the "New" badge (24h vs
   // 48h) so the two don't just duplicate each other on the same card.
   const highlightBadges = [
-    showSalary ? 'Competitive salary' : null,
-    job.workplace_type === 'Remote' ? 'Remote' : null,
-    isVeryNew ? 'Be an early applicant' : null,
+    showSalary ? "Competitive salary" : null,
+    job.workplace_type === "Remote" ? "Remote" : null,
+    isVeryNew ? "Be an early applicant" : null,
   ].filter((label): label is string => Boolean(label));
 
   return (
@@ -67,8 +67,8 @@ export function JobCard({ job }: { job: Job }) {
       <Link
         className={`block rounded-lg border p-4 transition-all sm:p-5 ${
           job.featured
-            ? 'bg-zinc-100 hover:bg-zinc-50 dark:bg-zinc-900 dark:hover:bg-zinc-800'
-            : 'hover:border-gray-400 dark:hover:border-zinc-600'
+            ? "bg-zinc-100 hover:bg-zinc-50 dark:bg-zinc-900 dark:hover:bg-zinc-800"
+            : "hover:border-gray-400 dark:hover:border-zinc-600"
         }`}
         href={`/jobs/${generateJobSlug(job.title, job.company)}`}
       >

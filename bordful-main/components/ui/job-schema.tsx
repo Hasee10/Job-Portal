@@ -1,4 +1,4 @@
-import Script from 'next/script';
+import Script from "next/script";
 import type {
   Country,
   JobPosting,
@@ -7,24 +7,24 @@ import type {
   Place,
   QuantitativeValue,
   WithContext,
-} from 'schema-dts';
-import config from '@/config';
-import type { Job, Salary } from '@/lib/db/airtable';
-import { safeJsonLdStringify } from '@/lib/utils/json-ld';
+} from "schema-dts";
+import config from "@/config";
+import type { Job, Salary } from "@/lib/db/airtable";
+import { safeJsonLdStringify } from "@/lib/utils/json-ld";
 
 // Utility functions for schema formatting
 function formatJobLocationType(job: Job): string | null {
-  return job.workplace_type === 'Remote' ? 'TELECOMMUTE' : null;
+  return job.workplace_type === "Remote" ? "TELECOMMUTE" : null;
 }
 
 function formatEmploymentType(type: string): string {
   const mappings: Record<string, string> = {
-    'Full-time': 'FULL_TIME',
-    'Part-time': 'PART_TIME',
-    Contract: 'CONTRACTOR',
-    Freelance: 'CONTRACTOR',
+    "Full-time": "FULL_TIME",
+    "Part-time": "PART_TIME",
+    Contract: "CONTRACTOR",
+    Freelance: "CONTRACTOR",
   };
-  return mappings[type] || 'OTHER';
+  return mappings[type] || "OTHER";
 }
 
 function formatSalaryForSchema(salary: Salary | null): MonetaryAmount | null {
@@ -34,12 +34,12 @@ function formatSalaryForSchema(salary: Salary | null): MonetaryAmount | null {
 
   // Convert salary unit to schema.org unitText format
   const unitTextMapping: Record<string, string> = {
-    hour: 'HOUR',
-    day: 'DAY',
-    week: 'WEEK',
-    month: 'MONTH',
-    year: 'YEAR',
-    project: 'HOUR', // Default to HOUR for project as schema.org doesn't have a project unit
+    hour: "HOUR",
+    day: "DAY",
+    week: "WEEK",
+    month: "MONTH",
+    year: "YEAR",
+    project: "HOUR", // Default to HOUR for project as schema.org doesn't have a project unit
   };
 
   const unitText = unitTextMapping[salary.unit];
@@ -47,10 +47,10 @@ function formatSalaryForSchema(salary: Salary | null): MonetaryAmount | null {
   // For a range, include minValue and maxValue
   if (salary.min && salary.max) {
     return {
-      '@type': 'MonetaryAmount',
+      "@type": "MonetaryAmount",
       currency: salary.currency,
       value: {
-        '@type': 'QuantitativeValue',
+        "@type": "QuantitativeValue",
         minValue: salary.min,
         maxValue: salary.max,
         unitText,
@@ -63,10 +63,10 @@ function formatSalaryForSchema(salary: Salary | null): MonetaryAmount | null {
   const singleValue = (salary.min || salary.max) as number;
 
   return {
-    '@type': 'MonetaryAmount',
+    "@type": "MonetaryAmount",
     currency: salary.currency,
     value: {
-      '@type': 'QuantitativeValue',
+      "@type": "QuantitativeValue",
       value: singleValue,
       unitText,
     } as QuantitativeValue,
@@ -76,7 +76,7 @@ function formatSalaryForSchema(salary: Salary | null): MonetaryAmount | null {
 function formatLocation(job: Job): Place | null {
   // For remote jobs with no physical location
   if (
-    job.workplace_type === 'Remote' &&
+    job.workplace_type === "Remote" &&
     !job.workplace_city &&
     !job.workplace_country
   ) {
@@ -85,9 +85,9 @@ function formatLocation(job: Job): Place | null {
 
   // For jobs with a physical location component
   return {
-    '@type': 'Place',
+    "@type": "Place",
     address: {
-      '@type': 'PostalAddress',
+      "@type": "PostalAddress",
       ...(job.workplace_city && { addressLocality: job.workplace_city }),
       ...(job.workplace_country && { addressCountry: job.workplace_country }),
     },
@@ -98,66 +98,66 @@ function formatApplicantLocationRequirements(
   job: Job
 ): Country | Country[] | null {
   // Only needed for remote jobs, but always return something for remote jobs
-  if (job.workplace_type !== 'Remote') {
+  if (job.workplace_type !== "Remote") {
     return null;
   }
 
   // If no remote region specified or it's Worldwide, return a worldwide requirement
-  if (!job.remote_region || job.remote_region === 'Worldwide') {
+  if (!job.remote_region || job.remote_region === "Worldwide") {
     return {
-      '@type': 'Country',
-      name: 'WORLDWIDE',
+      "@type": "Country",
+      name: "WORLDWIDE",
     };
   }
 
   // Format based on remote region
   switch (job.remote_region) {
-    case 'US Only':
+    case "US Only":
       return {
-        '@type': 'Country',
-        name: 'USA',
+        "@type": "Country",
+        name: "USA",
       };
-    case 'EU Only':
+    case "EU Only":
       return {
-        '@type': 'Country',
-        name: 'EU',
+        "@type": "Country",
+        name: "EU",
       };
-    case 'UK/EU Only':
+    case "UK/EU Only":
       return [
         {
-          '@type': 'Country',
-          name: 'UK',
+          "@type": "Country",
+          name: "UK",
         },
         {
-          '@type': 'Country',
-          name: 'EU',
+          "@type": "Country",
+          name: "EU",
         },
       ];
-    case 'US/Canada Only':
+    case "US/Canada Only":
       return [
         {
-          '@type': 'Country',
-          name: 'USA',
+          "@type": "Country",
+          name: "USA",
         },
         {
-          '@type': 'Country',
-          name: 'Canada',
+          "@type": "Country",
+          name: "Canada",
         },
       ];
-    case 'Americas Only':
+    case "Americas Only":
       return {
-        '@type': 'Country',
-        name: 'Americas',
+        "@type": "Country",
+        name: "Americas",
       };
-    case 'Europe Only':
+    case "Europe Only":
       return {
-        '@type': 'Country',
-        name: 'Europe',
+        "@type": "Country",
+        name: "Europe",
       };
-    case 'Asia-Pacific Only':
+    case "Asia-Pacific Only":
       return {
-        '@type': 'Country',
-        name: 'Asia-Pacific',
+        "@type": "Country",
+        name: "Asia-Pacific",
       };
     default:
       return null;
@@ -203,13 +203,13 @@ function parseExperienceMonths(
 
 // Configuration map for education credential types and their keywords
 const EDUCATION_CREDENTIAL_MAP: Record<string, string[]> = {
-  BachelorDegree: ['bachelor', 'bs', 'ba', 'b.s.', 'b.a.'],
-  MasterDegree: ['master', 'ms', 'ma', 'm.s.', 'm.a.', 'mba'],
-  DoctoralDegree: ['phd', 'doctorate', 'doctoral'],
-  AssociateDegree: ['associate', 'aa', 'a.a.'],
-  HighSchool: ['high school', 'secondary'],
-  Certificate: ['certificate', 'certification'],
-  ProfessionalDegree: ['professional'],
+  BachelorDegree: ["bachelor", "bs", "ba", "b.s.", "b.a."],
+  MasterDegree: ["master", "ms", "ma", "m.s.", "m.a.", "mba"],
+  DoctoralDegree: ["phd", "doctorate", "doctoral"],
+  AssociateDegree: ["associate", "aa", "a.a."],
+  HighSchool: ["high school", "secondary"],
+  Certificate: ["certificate", "certification"],
+  ProfessionalDegree: ["professional"],
 };
 
 // Helper function to parse education credential into standard schema.org categories
@@ -217,7 +217,7 @@ function parseEducationCredential(
   education: string | null | undefined
 ): string {
   if (!education) {
-    return 'EducationalOccupationalCredential';
+    return "EducationalOccupationalCredential";
   }
 
   const lowerEd = education.toLowerCase();
@@ -232,7 +232,7 @@ function parseEducationCredential(
   }
 
   // Default fallback value
-  return 'EducationalOccupationalCredential';
+  return "EducationalOccupationalCredential";
 }
 
 export function JobSchema({ job, slug }: JobSchemaProps) {
@@ -240,7 +240,7 @@ export function JobSchema({ job, slug }: JobSchemaProps) {
   const baseUrl =
     config.url ||
     process.env.NEXT_PUBLIC_APP_URL ||
-    'https://job-portal-ten-pi.vercel.app';
+    "https://job-portal-ten-pi.vercel.app";
 
   // Use slug to create the job URL
   const jobUrl = `${baseUrl}/jobs/${slug}`;
@@ -271,15 +271,15 @@ export function JobSchema({ job, slug }: JobSchemaProps) {
   // Create schema data object
   // Use a record approach first to collect all properties
   const jobPostingData: Record<string, unknown> = {
-    '@context': 'https://schema.org',
-    '@type': 'JobPosting',
+    "@context": "https://schema.org",
+    "@type": "JobPosting",
     title: job.title,
     description: job.description,
     datePosted: safePostDate.toISOString(),
     validThrough,
     url: jobUrl,
     hiringOrganization: {
-      '@type': 'Organization',
+      "@type": "Organization",
       name: job.company,
     } as Organization,
 
@@ -289,7 +289,7 @@ export function JobSchema({ job, slug }: JobSchemaProps) {
     // Optional properties with conditional rendering to avoid null values
     ...(job.job_identifier && {
       identifier: {
-        '@type': 'PropertyValue',
+        "@type": "PropertyValue",
         name: job.company,
         value: job.job_identifier,
       },
@@ -327,7 +327,7 @@ export function JobSchema({ job, slug }: JobSchemaProps) {
     }),
     ...(hasContent(job.education_requirements) && {
       educationRequirements: {
-        '@type': 'EducationalOccupationalCredential',
+        "@type": "EducationalOccupationalCredential",
         credentialCategory: parseEducationCredential(
           job.education_requirements
         ),
@@ -335,7 +335,7 @@ export function JobSchema({ job, slug }: JobSchemaProps) {
     }),
     ...(hasContent(job.experience_requirements) && {
       experienceRequirements: {
-        '@type': 'OccupationalExperienceRequirements',
+        "@type": "OccupationalExperienceRequirements",
         monthsOfExperience:
           parseExperienceMonths(job.experience_requirements) || 12,
       },
@@ -360,11 +360,11 @@ export function JobSchema({ job, slug }: JobSchemaProps) {
     }),
 
     // Add visa sponsorship information
-    ...(job.visa_sponsorship !== 'Not specified' && {
+    ...(job.visa_sponsorship !== "Not specified" && {
       eligibilityToWorkRequirement:
-        job.visa_sponsorship === 'Yes'
-          ? 'Visa sponsorship is available for this position.'
-          : 'Visa sponsorship is not available for this position.',
+        job.visa_sponsorship === "Yes"
+          ? "Visa sponsorship is available for this position."
+          : "Visa sponsorship is not available for this position.",
     }),
   };
 

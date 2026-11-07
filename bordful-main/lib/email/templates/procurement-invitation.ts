@@ -1,4 +1,10 @@
-import { EMAIL_BRAND_COLOR, emailFooter, emailHeader, h, wrapEmailBody } from './shared';
+import {
+  EMAIL_BRAND_COLOR,
+  emailFooter,
+  emailHeader,
+  h,
+  wrapEmailBody,
+} from "./shared";
 
 export type ProcurementInvitationEmailData = {
   buyerCompanyName: string;
@@ -19,7 +25,7 @@ export function renderProcurementInvitationEmail({
 }: ProcurementInvitationEmailData): { subject: string; html: string } {
   const deadlineLine = responseDeadline
     ? `<p style="margin: 0 0 20px; font-size: 13px; color: #a1a1aa;">Response deadline: ${h(new Date(responseDeadline).toUTCString())}</p>`
-    : '';
+    : "";
 
   const html = wrapEmailBody(`
     ${emailHeader()}
@@ -37,7 +43,7 @@ export function renderProcurementInvitationEmail({
       ${
         requiresPrequalification
           ? `<p style="margin: 0 0 20px; font-size: 13px; line-height: 1.6; color: #71717a;">This request requires prequalification - the buyer will review your profile before you can submit a response.</p>`
-          : ''
+          : ""
       }
       ${deadlineLine}
       <table cellpadding="0" cellspacing="0" role="presentation">
@@ -50,7 +56,8 @@ export function renderProcurementInvitationEmail({
     </div>
 
     ${emailFooter({
-      customBottomLine: "You're receiving this because a buyer invited your Caliber recruiter account to a procurement request.",
+      customBottomLine:
+        "You're receiving this because a buyer invited your Caliber recruiter account to a procurement request.",
     })}
   `);
 

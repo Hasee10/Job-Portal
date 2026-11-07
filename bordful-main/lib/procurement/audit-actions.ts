@@ -1,13 +1,14 @@
-import 'server-only';
+import "server-only";
 
-import { createClient } from '@supabase/supabase-js';
+import { createClient } from "@supabase/supabase-js";
 
-export type ProcurementActorRole = 'employer' | 'recruiter' | 'vendor';
+export type ProcurementActorRole = "employer" | "recruiter" | "vendor";
 
 function getAdminClient() {
   const url = process.env.SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key) throw new Error('Database is not configured on this deployment.');
+  if (!url || !key)
+    throw new Error("Database is not configured on this deployment.");
   return createClient(url, key, { auth: { persistSession: false } });
 }
 
@@ -27,7 +28,7 @@ export async function logAudit(
 ): Promise<void> {
   try {
     const supabase = getAdminClient();
-    const { error } = await supabase.from('procurement_audit_log').insert({
+    const { error } = await supabase.from("procurement_audit_log").insert({
       request_id: requestId,
       actor_id: actorId,
       actor_role: actorRole,
@@ -69,13 +70,15 @@ function rowToAuditEntry(row: Record<string, unknown>): AuditLogEntry {
 // requester actually owns the request before calling this (no ownership
 // check happens here, same division of responsibility as the rest of
 // lib/jobs/*-actions.ts: ownership scoping lives in the caller/route).
-export async function listAuditLog(requestId: string): Promise<AuditLogEntry[]> {
+export async function listAuditLog(
+  requestId: string
+): Promise<AuditLogEntry[]> {
   const supabase = getAdminClient();
   const { data, error } = await supabase
-    .from('procurement_audit_log')
-    .select('*')
-    .eq('request_id', requestId)
-    .order('occurred_at', { ascending: true });
+    .from("procurement_audit_log")
+    .select("*")
+    .eq("request_id", requestId)
+    .order("occurred_at", { ascending: true });
 
   if (error) throw error;
   return (data ?? []).map(rowToAuditEntry);

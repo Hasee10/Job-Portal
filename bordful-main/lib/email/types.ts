@@ -12,6 +12,6 @@ export class EmailProviderError extends Error {
     public notConfigured = false
   ) {
     super(message);
-    this.name = 'EmailProviderError';
+    this.name = "EmailProviderError";
   }
 }

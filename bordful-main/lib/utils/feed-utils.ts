@@ -1,9 +1,9 @@
-import { Feed } from 'feed';
-import config from '@/config';
-import { DEFAULT_DESCRIPTION_LENGTH } from '@/lib/constants/defaults';
-import { formatSalary } from '@/lib/db/airtable';
-import { getJob, getJobs } from '@/lib/db/airtable.server';
-import { generateJobSlug } from '@/lib/utils/slugify';
+import { Feed } from "feed";
+import config from "@/config";
+import { DEFAULT_DESCRIPTION_LENGTH } from "@/lib/constants/defaults";
+import { formatSalary } from "@/lib/db/airtable";
+import { getJob, getJobs } from "@/lib/db/airtable.server";
+import { generateJobSlug } from "@/lib/utils/slugify";
 
 // Feeds are meant to be a "what's new" digest, not a full database dump -
 // with the jobs table now in the thousands, an uncapped feed would embed
@@ -41,7 +41,7 @@ export type JobItem = {
  */
 export function isFeedEnabled(
   feedConfig: FeedConfig | undefined,
-  format: 'rss' | 'json' | 'atom'
+  format: "rss" | "json" | "atom"
 ): boolean {
   return Boolean(feedConfig?.enabled && feedConfig?.formats?.[format]);
 }
@@ -55,12 +55,12 @@ export function createFeed(baseUrl: string, feedConfig: FeedConfig): Feed {
     description: config.description,
     id: baseUrl,
     link: baseUrl,
-    language: 'en',
+    language: "en",
     image: `${baseUrl}/opengraph-image.png`,
     favicon: `${baseUrl}/favicon.ico`,
     copyright: `All rights reserved ${new Date().getFullYear()}`,
     updated: new Date(),
-    generator: 'Caliber Job Board',
+    generator: "Caliber Job Board",
     feedLinks: {
       rss2: `${baseUrl}/feed.xml`,
       json: `${baseUrl}/feed.json`,
@@ -74,18 +74,18 @@ export function createFeed(baseUrl: string, feedConfig: FeedConfig): Feed {
  */
 export function formatJobDate(postedDate?: string): string {
   if (!postedDate) {
-    return 'Date not available';
+    return "Date not available";
   }
 
   const date = new Date(postedDate);
   if (Number.isNaN(date.getTime())) {
-    return 'Invalid date';
+    return "Invalid date";
   }
 
-  return date.toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
+  return date.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
   });
 }
 
@@ -100,8 +100,8 @@ export function createJobDescription(
 ## ${job.title} at ${job.company}
 
 **Type:** ${job.type}
-**Location:** ${job.workplace_type}${job.workplace_city ? ` - ${job.workplace_city}` : ''}${job.workplace_country ? `, ${job.workplace_country}` : ''}
-**Salary:** ${job.salary ? formatSalary(job.salary, true) : 'Not specified'}
+**Location:** ${job.workplace_type}${job.workplace_city ? ` - ${job.workplace_city}` : ""}${job.workplace_country ? `, ${job.workplace_country}` : ""}
+**Salary:** ${job.salary ? formatSalary(job.salary, true) : "Not specified"}
 **Posted:** ${formatJobDate(job.posted_date)}
 
 ${job.description.substring(0, descriptionLength)}...
@@ -165,15 +165,13 @@ export async function processJobsForFeed(
   // cheap at 50 jobs, unlike doing it for the entire table.
   const liteJobs = await getJobs();
   const recentActive = liteJobs
-    .filter((job) => job.status === 'active')
+    .filter((job) => job.status === "active")
     .slice(0, FEED_MAX_ITEMS);
 
-  const fullJobs = await Promise.all(
-    recentActive.map((job) => getJob(job.id))
-  );
+  const fullJobs = await Promise.all(recentActive.map((job) => getJob(job.id)));
 
   for (const job of fullJobs) {
-    if (job && job.status === 'active') {
+    if (job && job.status === "active") {
       addJobToFeed(feed, job, baseUrl, descriptionLength);
     }
   }

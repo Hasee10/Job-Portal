@@ -1,20 +1,20 @@
-'use client';
+"use client";
 
-import { signIn } from 'next-auth/react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { PasswordInput } from '@/components/ui/password-input';
-import config from '@/config';
-import { useToast } from '@/hooks/use-toast';
-import { resolveColor } from '@/lib/utils/colors';
-import { safeInternalRedirect } from '@/lib/utils/safe-redirect';
+import { signIn } from "next-auth/react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { PasswordInput } from "@/components/ui/password-input";
+import config from "@/config";
+import { useToast } from "@/hooks/use-toast";
+import { resolveColor } from "@/lib/utils/colors";
+import { safeInternalRedirect } from "@/lib/utils/safe-redirect";
 
 export function SignInForm() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
@@ -25,7 +25,7 @@ export function SignInForm() {
     setIsSubmitting(true);
 
     try {
-      const result = await signIn('credentials', {
+      const result = await signIn("credentials", {
         email,
         password,
         redirect: false,
@@ -35,23 +35,26 @@ export function SignInForm() {
         // Deliberately generic - never reveal whether the email exists,
         // only that the password/existing-email pair didn't match.
         toast({
-          title: 'Sign in failed',
-          description: 'Invalid email or password.',
-          variant: 'destructive',
-          className: 'bg-destructive border border-red-600 shadow-md',
+          title: "Sign in failed",
+          description: "Invalid email or password.",
+          variant: "destructive",
+          className: "bg-destructive border border-red-600 shadow-md",
         });
         return;
       }
 
-      const callbackUrl = safeInternalRedirect(searchParams.get('callbackUrl'), '/dashboard');
+      const callbackUrl = safeInternalRedirect(
+        searchParams.get("callbackUrl"),
+        "/dashboard"
+      );
       router.push(callbackUrl);
       router.refresh();
     } catch {
       toast({
-        title: 'Sign in failed',
-        description: 'Something went wrong. Please try again.',
-        variant: 'destructive',
-        className: 'bg-destructive border border-red-600 shadow-md',
+        title: "Sign in failed",
+        description: "Something went wrong. Please try again.",
+        variant: "destructive",
+        className: "bg-destructive border border-red-600 shadow-md",
       });
     } finally {
       setIsSubmitting(false);
@@ -107,7 +110,7 @@ export function SignInForm() {
           type="submit"
           variant="primary"
         >
-          {isSubmitting ? 'Signing in...' : 'Sign in'}
+          {isSubmitting ? "Signing in..." : "Sign in"}
         </Button>
       </form>
     </div>

@@ -1,7 +1,7 @@
-import 'server-only';
+import "server-only";
 
-import { createClient } from '@supabase/supabase-js';
-import { computeSkillsOverlapScore } from '@/lib/jobs/match-scoring';
+import { createClient } from "@supabase/supabase-js";
+import { computeSkillsOverlapScore } from "@/lib/jobs/match-scoring";
 
 export type JobCandidate = {
   seekerId: string;
@@ -11,7 +11,7 @@ export type JobCandidate = {
   skills: string[];
   matchScore: number;
   createdAt: string;
-  inviteStatus: 'pending' | 'read' | 'accepted' | 'declined' | null;
+  inviteStatus: "pending" | "read" | "accepted" | "declined" | null;
 };
 
 export type EmployerInvite = {
@@ -20,7 +20,7 @@ export type EmployerInvite = {
   jobId: string;
   seekerId: string;
   message: string;
-  status: 'pending' | 'read' | 'accepted' | 'declined';
+  status: "pending" | "read" | "accepted" | "declined";
   createdAt: string;
   respondedAt: string | null;
 };
@@ -33,7 +33,8 @@ export type InviteWithJob = EmployerInvite & {
 function getAdminClient() {
   const url = process.env.SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key) throw new Error('Database is not configured on this deployment.');
+  if (!url || !key)
+    throw new Error("Database is not configured on this deployment.");
   return createClient(url, key, { auth: { persistSession: false } });
 }
 
@@ -44,7 +45,7 @@ function rowToInvite(row: Record<string, unknown>): EmployerInvite {
     jobId: row.job_id as string,
     seekerId: row.seeker_id as string,
     message: row.message as string,
-    status: row.status as EmployerInvite['status'],
+    status: row.status as EmployerInvite["status"],
     createdAt: row.created_at as string,
     respondedAt: (row.responded_at as string) || null,
   };
@@ -61,19 +62,19 @@ export async function searchCandidatesForJob(
   const supabase = getAdminClient();
 
   const { data: job } = await supabase
-    .from('jobs')
-    .select('required_skills')
-    .eq('id', jobId)
-    .eq('employer_id', employerId)
+    .from("jobs")
+    .select("required_skills")
+    .eq("id", jobId)
+    .eq("employer_id", employerId)
     .maybeSingle();
   if (!job) return [];
   const requiredSkills = (job.required_skills as string[]) || [];
 
   const { data: seekers, error } = await supabase
-    .from('job_seekers')
-    .select('id, name, email, headline, created_at')
-    .eq('open_to_recruiters', true)
-    .order('created_at', { ascending: false });
+    .from("job_seekers")
+    .select("id, name, email, headline, created_at")
+    .eq("open_to_recruiters", true)
+    .order("created_at", { ascending: false });
 
   if (error) throw error;
   if (!seekers || seekers.length === 0) return [];
@@ -81,9 +82,9 @@ export async function searchCandidatesForJob(
   const seekerIds = seekers.map((s) => s.id as string);
 
   const { data: resumes } = await supabase
-    .from('seeker_resumes')
-    .select('seeker_id, content')
-    .in('seeker_id', seekerIds);
+    .from("seeker_resumes")
+    .select("seeker_id, content")
+    .in("seeker_id", seekerIds);
 
   const resumeMap = new Map<string, string[]>();
   for (const r of resumes ?? []) {
@@ -92,11 +93,11 @@ export async function searchCandidatesForJob(
   }
 
   const { data: inviteRows } = await supabase
-    .from('employer_candidate_invites')
-    .select('seeker_id, status')
-    .eq('employer_id', employerId)
-    .eq('job_id', jobId)
-    .in('seeker_id', seekerIds);
+    .from("employer_candidate_invites")
+    .select("seeker_id, status")
+    .eq("employer_id", employerId)
+    .eq("job_id", jobId)
+    .in("seeker_id", seekerIds);
 
   const inviteMap = new Map<string, string>();
   for (const row of inviteRows ?? []) {
@@ -113,7 +114,8 @@ export async function searchCandidatesForJob(
       skills,
       matchScore: computeSkillsOverlapScore(skills, requiredSkills),
       createdAt: s.created_at as string,
-      inviteStatus: (inviteMap.get(s.id as string) ?? null) as JobCandidate['inviteStatus'],
+      inviteStatus: (inviteMap.get(s.id as string) ??
+        null) as JobCandidate["inviteStatus"],
     };
   });
 
@@ -140,32 +142,37 @@ export async function sendEmployerInvite(
   const supabase = getAdminClient();
 
   const { data: seeker } = await supabase
-    .from('job_seekers')
-    .select('open_to_recruiters')
-    .eq('id', seekerId)
+    .from("job_seekers")
+    .select("open_to_recruiters")
+    .eq("id", seekerId)
     .maybeSingle();
 
   if (!seeker || !seeker.open_to_recruiters) {
-    throw new Error('This candidate is not open to outreach.');
+    throw new Error("This candidate is not open to outreach.");
   }
 
   const { data: job } = await supabase
-    .from('jobs')
-    .select('id')
-    .eq('id', jobId)
-    .eq('employer_id', employerId)
+    .from("jobs")
+    .select("id")
+    .eq("id", jobId)
+    .eq("employer_id", employerId)
     .maybeSingle();
-  if (!job) throw new Error('Job not found.');
+  if (!job) throw new Error("Job not found.");
 
   const { data, error } = await supabase
-    .from('employer_candidate_invites')
-    .insert({ employer_id: employerId, job_id: jobId, seeker_id: seekerId, message })
-    .select('*')
+    .from("employer_candidate_invites")
+    .insert({
+      employer_id: employerId,
+      job_id: jobId,
+      seeker_id: seekerId,
+      message,
+    })
+    .select("*")
     .single();
 
   if (error) {
-    if (error.code === '23505') {
-      throw new Error('You already invited this candidate to this job.');
+    if (error.code === "23505") {
+      throw new Error("You already invited this candidate to this job.");
     }
     throw error;
   }
@@ -173,24 +180,28 @@ export async function sendEmployerInvite(
   return rowToInvite(data);
 }
 
-export async function getEmployerDailyInviteCount(employerId: string): Promise<number> {
+export async function getEmployerDailyInviteCount(
+  employerId: string
+): Promise<number> {
   const supabase = getAdminClient();
   const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
   const { count } = await supabase
-    .from('employer_candidate_invites')
-    .select('id', { count: 'exact', head: true })
-    .eq('employer_id', employerId)
-    .gte('created_at', since);
+    .from("employer_candidate_invites")
+    .select("id", { count: "exact", head: true })
+    .eq("employer_id", employerId)
+    .gte("created_at", since);
   return count ?? 0;
 }
 
-export async function listSeekerInvites(seekerId: string): Promise<InviteWithJob[]> {
+export async function listSeekerInvites(
+  seekerId: string
+): Promise<InviteWithJob[]> {
   const supabase = getAdminClient();
   const { data, error } = await supabase
-    .from('employer_candidate_invites')
-    .select('*, jobs(title, company)')
-    .eq('seeker_id', seekerId)
-    .order('created_at', { ascending: false });
+    .from("employer_candidate_invites")
+    .select("*, jobs(title, company)")
+    .eq("seeker_id", seekerId)
+    .order("created_at", { ascending: false });
 
   if (error) throw error;
 
@@ -198,47 +209,52 @@ export async function listSeekerInvites(seekerId: string): Promise<InviteWithJob
     const job = row.jobs as Record<string, unknown> | null;
     return {
       ...rowToInvite(row),
-      jobTitle: (job?.title as string) || 'A job',
+      jobTitle: (job?.title as string) || "A job",
       companyName: (job?.company as string) || null,
     };
   });
 }
 
-export async function markInviteRead(inviteId: string, seekerId: string): Promise<void> {
+export async function markInviteRead(
+  inviteId: string,
+  seekerId: string
+): Promise<void> {
   const supabase = getAdminClient();
   await supabase
-    .from('employer_candidate_invites')
-    .update({ status: 'read' })
-    .eq('id', inviteId)
-    .eq('seeker_id', seekerId)
-    .eq('status', 'pending');
+    .from("employer_candidate_invites")
+    .update({ status: "read" })
+    .eq("id", inviteId)
+    .eq("seeker_id", seekerId)
+    .eq("status", "pending");
 }
 
 export async function respondToInvite(
   inviteId: string,
   seekerId: string,
-  response: 'accepted' | 'declined'
+  response: "accepted" | "declined"
 ): Promise<EmployerInvite> {
   const supabase = getAdminClient();
   const { data, error } = await supabase
-    .from('employer_candidate_invites')
+    .from("employer_candidate_invites")
     .update({ status: response, responded_at: new Date().toISOString() })
-    .eq('id', inviteId)
-    .eq('seeker_id', seekerId)
-    .in('status', ['pending', 'read'])
-    .select('*')
+    .eq("id", inviteId)
+    .eq("seeker_id", seekerId)
+    .in("status", ["pending", "read"])
+    .select("*")
     .single();
 
   if (error) throw error;
   return rowToInvite(data);
 }
 
-export async function getSeekerUnreadInviteCount(seekerId: string): Promise<number> {
+export async function getSeekerUnreadInviteCount(
+  seekerId: string
+): Promise<number> {
   const supabase = getAdminClient();
   const { count } = await supabase
-    .from('employer_candidate_invites')
-    .select('id', { count: 'exact', head: true })
-    .eq('seeker_id', seekerId)
-    .eq('status', 'pending');
+    .from("employer_candidate_invites")
+    .select("id", { count: "exact", head: true })
+    .eq("seeker_id", seekerId)
+    .eq("status", "pending");
   return count ?? 0;
 }

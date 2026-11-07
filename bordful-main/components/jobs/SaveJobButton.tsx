@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
-import { Bookmark } from 'lucide-react';
-import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
-import { useSeekerJobState } from '@/components/jobs/SeekerJobStateContext';
-import { Button } from '@/components/ui/button';
+import { Bookmark } from "lucide-react";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { useSeekerJobState } from "@/components/jobs/SeekerJobStateContext";
+import { Button } from "@/components/ui/button";
 
 export function SaveJobButton({
   jobId,
-  className = '',
+  className = "",
 }: {
   jobId: string;
   className?: string;
@@ -24,7 +24,11 @@ export function SaveJobButton({
   // in, then silently revert with no explanation when the request 401s.
   // Hiding the button entirely for that case is more honest than letting
   // them click something that can never actually work for their account.
-  if (status === 'authenticated' && session?.user?.role && session.user.role !== 'seeker') {
+  if (
+    status === "authenticated" &&
+    session?.user?.role &&
+    session.user.role !== "seeker"
+  ) {
     return null;
   }
 
@@ -32,7 +36,7 @@ export function SaveJobButton({
     e.preventDefault();
     e.stopPropagation();
 
-    if (status !== 'authenticated') {
+    if (status !== "authenticated") {
       router.push(
         `/account/sign-in?callbackUrl=${encodeURIComponent(
           window.location.pathname
@@ -46,7 +50,7 @@ export function SaveJobButton({
 
   return (
     <Button
-      aria-label={isSaved ? 'Unsave job' : 'Save job'}
+      aria-label={isSaved ? "Unsave job" : "Save job"}
       aria-pressed={isSaved}
       className={`h-7 w-7 p-0 ${className}`}
       onClick={handleClick}
@@ -56,7 +60,7 @@ export function SaveJobButton({
     >
       <Bookmark
         aria-hidden="true"
-        className={`h-3.5 w-3.5 ${isSaved ? 'fill-current' : ''}`}
+        className={`h-3.5 w-3.5 ${isSaved ? "fill-current" : ""}`}
       />
     </Button>
   );

@@ -1,12 +1,16 @@
-'use client';
+"use client";
 
-import { X } from 'lucide-react';
-import { useMemo, useState } from 'react';
-import { MasterclassCard } from '@/components/content/MasterclassCard';
-import type { Masterclass } from '@/lib/content/masterclass-actions';
-import { getYouTubeEmbedUrl } from '@/lib/content/masterclass-video';
+import { X } from "lucide-react";
+import { useMemo, useState } from "react";
+import { MasterclassCard } from "@/components/content/MasterclassCard";
+import type { Masterclass } from "@/lib/content/masterclass-actions";
+import { getYouTubeEmbedUrl } from "@/lib/content/masterclass-video";
 
-export function MasterclassGrid({ masterclasses }: { masterclasses: Masterclass[] }) {
+export function MasterclassGrid({
+  masterclasses,
+}: {
+  masterclasses: Masterclass[];
+}) {
   const categories = useMemo(() => {
     const unique = new Set(
       masterclasses
@@ -23,7 +27,9 @@ export function MasterclassGrid({ masterclasses }: { masterclasses: Masterclass[
     ? masterclasses.filter((mc) => mc.category === activeCategory)
     : masterclasses;
 
-  const embedUrl = playing?.videoUrl ? getYouTubeEmbedUrl(playing.videoUrl) : null;
+  const embedUrl = playing?.videoUrl
+    ? getYouTubeEmbedUrl(playing.videoUrl)
+    : null;
 
   return (
     <div>
@@ -32,8 +38,8 @@ export function MasterclassGrid({ masterclasses }: { masterclasses: Masterclass[
           <button
             className={`rounded-full border px-3 py-1.5 font-medium text-sm transition-colors ${
               activeCategory === null
-                ? 'border-zinc-900 bg-zinc-900 text-white dark:border-zinc-100 dark:bg-zinc-100 dark:text-zinc-900'
-                : 'border-zinc-200 text-zinc-600 hover:border-zinc-400 dark:border-zinc-700 dark:text-zinc-400 dark:hover:border-zinc-500'
+                ? "border-zinc-900 bg-zinc-900 text-white dark:border-zinc-100 dark:bg-zinc-100 dark:text-zinc-900"
+                : "border-zinc-200 text-zinc-600 hover:border-zinc-400 dark:border-zinc-700 dark:text-zinc-400 dark:hover:border-zinc-500"
             }`}
             onClick={() => setActiveCategory(null)}
             type="button"
@@ -44,8 +50,8 @@ export function MasterclassGrid({ masterclasses }: { masterclasses: Masterclass[
             <button
               className={`rounded-full border px-3 py-1.5 font-medium text-sm transition-colors ${
                 activeCategory === category
-                  ? 'border-zinc-900 bg-zinc-900 text-white dark:border-zinc-100 dark:bg-zinc-100 dark:text-zinc-900'
-                  : 'border-zinc-200 text-zinc-600 hover:border-zinc-400 dark:border-zinc-700 dark:text-zinc-400 dark:hover:border-zinc-500'
+                  ? "border-zinc-900 bg-zinc-900 text-white dark:border-zinc-100 dark:bg-zinc-100 dark:text-zinc-900"
+                  : "border-zinc-200 text-zinc-600 hover:border-zinc-400 dark:border-zinc-700 dark:text-zinc-400 dark:hover:border-zinc-500"
               }`}
               key={category}
               onClick={() => setActiveCategory(category)}
@@ -110,7 +116,7 @@ export function MasterclassGrid({ masterclasses }: { masterclasses: Masterclass[
                       Watch on the original source
                     </a>
                   ) : (
-                    'No video available for this session.'
+                    "No video available for this session."
                   )}
                 </div>
               )}

@@ -1,13 +1,13 @@
-import { NextResponse } from 'next/server';
-import { discoverNewMasterclasses } from '@/lib/content/masterclass-discovery';
+import { NextResponse } from "next/server";
+import { discoverNewMasterclasses } from "@/lib/content/masterclass-discovery";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
 export async function GET(request: Request) {
   const secret = process.env.CRON_SECRET;
-  if (!secret || request.headers.get('authorization') !== `Bearer ${secret}`) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!secret || request.headers.get("authorization") !== `Bearer ${secret}`) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const result = await discoverNewMasterclasses();
@@ -16,7 +16,7 @@ export async function GET(request: Request) {
     return NextResponse.json(
       {
         error:
-          'YOUTUBE_API_KEY is not set - masterclass discovery is not available on this deployment.',
+          "YOUTUBE_API_KEY is not set - masterclass discovery is not available on this deployment.",
       },
       { status: 503 }
     );

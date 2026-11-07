@@ -1,4 +1,9 @@
-import { EMAIL_BRAND_COLOR, emailFooter, emailHeader, wrapEmailBody } from './shared';
+import {
+  EMAIL_BRAND_COLOR,
+  emailFooter,
+  emailHeader,
+  wrapEmailBody,
+} from "./shared";
 
 export type WelcomeEmailData = {
   companyName: string;
@@ -9,16 +14,21 @@ export function renderWelcomeEmail({
   companyName,
   dashboardUrl,
 }: WelcomeEmailData): { subject: string; html: string } {
-  const step = (n: number, title: string, description: string, isLast: boolean) => `
+  const step = (
+    n: number,
+    title: string,
+    description: string,
+    isLast: boolean
+  ) => `
     <tr>
-      <td width="36" style="vertical-align: top; padding: ${isLast ? '0' : '0 0 20px'} 0;">
+      <td width="36" style="vertical-align: top; padding: ${isLast ? "0" : "0 0 20px"} 0;">
         <table cellpadding="0" cellspacing="0" role="presentation">
           <tr>
             <td width="28" height="28" align="center" valign="middle" style="background: ${EMAIL_BRAND_COLOR}; border-radius: 50%; font-size: 13px; font-weight: 700; color: #ffffff;">${n}</td>
           </tr>
         </table>
       </td>
-      <td style="vertical-align: top; padding: 0 0 ${isLast ? '0' : '20px'} 14px;">
+      <td style="vertical-align: top; padding: 0 0 ${isLast ? "0" : "20px"} 14px;">
         <div style="font-size: 14px; font-weight: 700; color: #18181b;">${title}</div>
         <div style="font-size: 13px; color: #71717a; margin-top: 3px; line-height: 1.5;">${description}</div>
       </td>
@@ -53,9 +63,9 @@ export function renderWelcomeEmail({
         <td style="padding: 28px 40px 36px;">
           <div style="font-size: 12px; font-weight: 700; color: #a1a1aa; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 18px;">Get started in 3 steps</div>
           <table cellpadding="0" cellspacing="0" role="presentation" width="100%">
-            ${step(1, 'Post your first job', "Add a title, description and salary range - it's live in minutes.", false)}
-            ${step(2, 'Set up your company profile', 'Add a logo and description so candidates recognize you.', false)}
-            ${step(3, 'Track applicants from your dashboard', 'See views, applications and manage listings in one place.', true)}
+            ${step(1, "Post your first job", "Add a title, description and salary range - it's live in minutes.", false)}
+            ${step(2, "Set up your company profile", "Add a logo and description so candidates recognize you.", false)}
+            ${step(3, "Track applicants from your dashboard", "See views, applications and manage listings in one place.", true)}
           </table>
         </td>
       </tr>

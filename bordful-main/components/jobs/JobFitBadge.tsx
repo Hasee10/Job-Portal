@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { ChevronDown, ChevronUp, Loader2 } from 'lucide-react';
-import { useSession } from 'next-auth/react';
-import { useEffect, useState } from 'react';
-import { Badge } from '@/components/ui/badge';
-import { cn } from '@/lib/utils';
+import { ChevronDown, ChevronUp, Loader2 } from "lucide-react";
+import { useSession } from "next-auth/react";
+import { useEffect, useState } from "react";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
 type FitResult = {
   available: boolean;
@@ -15,9 +15,11 @@ type FitResult = {
 };
 
 function scoreTone(score: number): string {
-  if (score >= 75) return 'border-green-600/30 bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-400';
-  if (score >= 50) return 'border-amber-600/30 bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-400';
-  return 'border-red-600/30 bg-red-50 text-red-700 dark:bg-red-950 dark:text-red-400';
+  if (score >= 75)
+    return "border-green-600/30 bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-400";
+  if (score >= 50)
+    return "border-amber-600/30 bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-400";
+  return "border-red-600/30 bg-red-50 text-red-700 dark:bg-red-950 dark:text-red-400";
 }
 
 // Auto-runs on job page load for signed-in seekers with a resume on file -
@@ -32,15 +34,15 @@ export function JobFitBadge({ jobId }: { jobId: string }) {
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
-    if (status !== 'authenticated') return;
+    if (status !== "authenticated") return;
     let cancelled = false;
 
     (async () => {
       setIsLoading(true);
       try {
-        const res = await fetch('/api/seeker/resume/fit', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+        const res = await fetch("/api/seeker/resume/fit", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ jobId }),
         });
         if (!res.ok) return;
@@ -59,7 +61,7 @@ export function JobFitBadge({ jobId }: { jobId: string }) {
     };
   }, [status, jobId]);
 
-  if (status !== 'authenticated') return null;
+  if (status !== "authenticated") return null;
   if (isLoading) {
     return (
       <div className="flex items-center gap-1.5 text-gray-500 text-xs dark:text-zinc-400">
@@ -68,7 +70,7 @@ export function JobFitBadge({ jobId }: { jobId: string }) {
       </div>
     );
   }
-  if (!result?.available || typeof result.score !== 'number') return null;
+  if (!result?.available || typeof result.score !== "number") return null;
 
   const { score, reasoning, matchedSkills = [], missingSkills = [] } = result;
   const hasBreakdown = matchedSkills.length > 0 || missingSkills.length > 0;
@@ -83,18 +85,26 @@ export function JobFitBadge({ jobId }: { jobId: string }) {
         type="button"
       >
         <div className="flex items-center gap-2">
-          <Badge className={cn('border', scoreTone(score))} variant="outline">
+          <Badge className={cn("border", scoreTone(score))} variant="outline">
             {score}% match
           </Badge>
           {reasoning && (
-            <span className="text-gray-600 text-xs dark:text-zinc-400">{reasoning}</span>
+            <span className="text-gray-600 text-xs dark:text-zinc-400">
+              {reasoning}
+            </span>
           )}
         </div>
         {hasBreakdown &&
           (isOpen ? (
-            <ChevronUp aria-hidden="true" className="h-4 w-4 shrink-0 text-gray-400" />
+            <ChevronUp
+              aria-hidden="true"
+              className="h-4 w-4 shrink-0 text-gray-400"
+            />
           ) : (
-            <ChevronDown aria-hidden="true" className="h-4 w-4 shrink-0 text-gray-400" />
+            <ChevronDown
+              aria-hidden="true"
+              className="h-4 w-4 shrink-0 text-gray-400"
+            />
           ))}
       </button>
       {isOpen && hasBreakdown && (

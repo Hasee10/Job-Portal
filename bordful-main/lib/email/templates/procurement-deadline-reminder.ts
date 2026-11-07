@@ -1,4 +1,10 @@
-import { EMAIL_BRAND_COLOR, emailFooter, emailHeader, h, wrapEmailBody } from './shared';
+import {
+  EMAIL_BRAND_COLOR,
+  emailFooter,
+  emailHeader,
+  h,
+  wrapEmailBody,
+} from "./shared";
 
 export type ProcurementDeadlineReminderEmailData = {
   requestTitle: string;
@@ -34,7 +40,8 @@ export function renderProcurementDeadlineReminderEmail({
     </div>
 
     ${emailFooter({
-      customBottomLine: "You're receiving this because you have an open invitation to this procurement request.",
+      customBottomLine:
+        "You're receiving this because you have an open invitation to this procurement request.",
     })}
   `);
 

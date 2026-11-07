@@ -1,31 +1,36 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { Send, CheckCircle, XCircle, Clock, UserCheck } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { OutreachModal } from './OutreachModal';
-import type { OptInCandidate } from '@/lib/jobs/candidate-outreach-actions';
+import { useState } from "react";
+import { Send, CheckCircle, XCircle, Clock, UserCheck } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { OutreachModal } from "./OutreachModal";
+import type { OptInCandidate } from "@/lib/jobs/candidate-outreach-actions";
 
-const STATUS_BADGE: Record<string, { label: string; icon: React.ReactNode; className: string }> = {
+const STATUS_BADGE: Record<
+  string,
+  { label: string; icon: React.ReactNode; className: string }
+> = {
   pending: {
-    label: 'Sent',
+    label: "Sent",
     icon: <Clock className="h-3 w-3" />,
-    className: 'bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400',
+    className: "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400",
   },
   read: {
-    label: 'Viewed',
+    label: "Viewed",
     icon: <UserCheck className="h-3 w-3" />,
-    className: 'bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400',
+    className:
+      "bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400",
   },
   accepted: {
-    label: 'Accepted',
+    label: "Accepted",
     icon: <CheckCircle className="h-3 w-3" />,
-    className: 'bg-green-50 text-green-700 dark:bg-green-500/10 dark:text-green-400',
+    className:
+      "bg-green-50 text-green-700 dark:bg-green-500/10 dark:text-green-400",
   },
   declined: {
-    label: 'Declined',
+    label: "Declined",
     icon: <XCircle className="h-3 w-3" />,
-    className: 'bg-red-50 text-red-600 dark:bg-red-500/10 dark:text-red-400',
+    className: "bg-red-50 text-red-600 dark:bg-red-500/10 dark:text-red-400",
   },
 };
 
@@ -43,9 +48,11 @@ export function CandidateCard({
   jobTitle?: string;
 }) {
   const [showModal, setShowModal] = useState(false);
-  const displayName = candidate.name || 'Anonymous';
+  const displayName = candidate.name || "Anonymous";
   const initials = displayName.charAt(0).toUpperCase();
-  const statusInfo = candidate.outreachStatus ? STATUS_BADGE[candidate.outreachStatus] : null;
+  const statusInfo = candidate.outreachStatus
+    ? STATUS_BADGE[candidate.outreachStatus]
+    : null;
 
   return (
     <>
@@ -60,7 +67,9 @@ export function CandidateCard({
                 {displayName}
               </h3>
               {statusInfo && (
-                <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${statusInfo.className}`}>
+                <span
+                  className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${statusInfo.className}`}
+                >
                   {statusInfo.icon}
                   {statusInfo.label}
                 </span>
@@ -74,7 +83,9 @@ export function CandidateCard({
           </div>
           {jobId && (
             <div className="shrink-0 text-right">
-              <p className="font-bold text-sm text-zinc-900 dark:text-zinc-50">{candidate.matchScore}%</p>
+              <p className="font-bold text-sm text-zinc-900 dark:text-zinc-50">
+                {candidate.matchScore}%
+              </p>
               <p className="text-[10px] text-zinc-400">match</p>
             </div>
           )}
@@ -91,13 +102,15 @@ export function CandidateCard({
               </span>
             ))}
             {candidate.skills.length > 8 && (
-              <span className="text-xs text-zinc-400 self-center">+{candidate.skills.length - 8} more</span>
+              <span className="text-xs text-zinc-400 self-center">
+                +{candidate.skills.length - 8} more
+              </span>
             )}
           </div>
         )}
 
         <div className="mt-4 border-t border-zinc-100 pt-3 dark:border-zinc-800">
-          {candidate.outreachStatus === 'accepted' ? (
+          {candidate.outreachStatus === "accepted" ? (
             <p className="text-xs text-green-700 dark:text-green-400 font-medium">
               Contact: {candidate.email}
             </p>
@@ -111,7 +124,7 @@ export function CandidateCard({
               variant="outline"
             >
               <Send className="h-3 w-3" />
-              {jobId ? 'Invite to apply' : 'Send outreach'}
+              {jobId ? "Invite to apply" : "Send outreach"}
             </Button>
           )}
         </div>

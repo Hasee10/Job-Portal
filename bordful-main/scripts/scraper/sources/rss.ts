@@ -1,30 +1,44 @@
 // Generic RSS 2.0 scraper.
 // Each source configures how its feed fields map to ScrapedJob fields.
-import { XMLParser } from 'fast-xml-parser';
-import type { ScrapedJob } from '../types';
+import { XMLParser } from "fast-xml-parser";
+import type { ScrapedJob } from "../types";
 
 export interface RssSourceConfig {
-  name: string;         // matches ScrapedJob.source
+  name: string; // matches ScrapedJob.source
   feedUrl: string;
   defaultCountry?: string;
-  companyField?: string;   // dot-path in parsed item (e.g. 'company', 'dc:creator')
+  companyField?: string; // dot-path in parsed item (e.g. 'company', 'dc:creator')
   cityField?: string;
   countryField?: string;
-  jobIdField?: string;     // dot-path for dedup ID (falls back to URL slug)
+  jobIdField?: string; // dot-path for dedup ID (falls back to URL slug)
   titleTransform?: (raw: string) => { title: string; company: string };
 }
 
-const parser = new XMLParser({ ignoreAttributes: false, attributeNamePrefix: '@_' });
+const parser = new XMLParser({
+  ignoreAttributes: false,
+  attributeNamePrefix: "@_",
+});
 
 // CDATA blocks are treated as literal text — HTML entities inside them are NOT
 // decoded by the XML parser. Decode numeric and named entities manually.
 function decodeEntities(s: string): string {
   const named: Record<string, string> = {
-    amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", nbsp: ' ',
-    ndash: '–', mdash: '—', hellip: '…', laquo: '«', raquo: '»',
+    amp: "&",
+    lt: "<",
+    gt: ">",
+    quot: '"',
+    apos: "'",
+    nbsp: " ",
+    ndash: "–",
+    mdash: "—",
+    hellip: "…",
+    laquo: "«",
+    raquo: "»",
   };
   return s
-    .replace(/&#x([0-9a-fA-F]+);/g, (_, h) => String.fromCharCode(parseInt(h, 16)))
+    .replace(/&#x([0-9a-fA-F]+);/g, (_, h) =>
+      String.fromCharCode(parseInt(h, 16))
+    )
     .replace(/&#([0-9]+);/g, (_, d) => String.fromCharCode(parseInt(d, 10)))
     .replace(/&([a-zA-Z]+);/g, (m, name) => named[name.toLowerCase()] ?? m);
 }
@@ -34,11 +48,11 @@ function decodeEntities(s: string): string {
 function stripHtml(s: string): string {
   return decodeEntities(
     s
-      .replace(/<br\s*\/?>/gi, '\n')   // preserve line breaks
-      .replace(/<\/p>/gi, '\n\n')      // blank line after paragraphs
-      .replace(/<[^>]+>/g, '')         // remove all other tags
-      .replace(/[ \t]+/g, ' ')         // collapse horizontal whitespace
-      .replace(/\n{3,}/g, '\n\n')      // max two consecutive newlines
+      .replace(/<br\s*\/?>/gi, "\n") // preserve line breaks
+      .replace(/<\/p>/gi, "\n\n") // blank line after paragraphs
+      .replace(/<[^>]+>/g, "") // remove all other tags
+      .replace(/[ \t]+/g, " ") // collapse horizontal whitespace
+      .replace(/\n{3,}/g, "\n\n") // max two consecutive newlines
       .trim()
   );
 }
@@ -50,27 +64,32 @@ function parseDate(raw: unknown): Date | undefined {
 }
 
 function getNestedValue(obj: Record<string, unknown>, dotPath: string): string {
-  const val = dotPath.split('.').reduce<unknown>((cur, key) => {
-    if (cur && typeof cur === 'object') return (cur as Record<string, unknown>)[key];
+  const val = dotPath.split(".").reduce<unknown>((cur, key) => {
+    if (cur && typeof cur === "object")
+      return (cur as Record<string, unknown>)[key];
     return undefined;
   }, obj);
-  return typeof val === 'string' ? val : (val != null ? String(val) : '');
+  return typeof val === "string" ? val : val != null ? String(val) : "";
 }
 
 function slugFromUrl(url: string): string {
   try {
     const u = new URL(url);
-    return (u.pathname + u.search).replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 120);
+    return (u.pathname + u.search)
+      .replace(/[^a-zA-Z0-9_-]/g, "_")
+      .slice(0, 120);
   } catch {
     return url.slice(0, 120);
   }
 }
 
-export async function scrapeRss(config: RssSourceConfig): Promise<ScrapedJob[]> {
+export async function scrapeRss(
+  config: RssSourceConfig
+): Promise<ScrapedJob[]> {
   console.log(`[${config.name}] Fetching RSS: ${config.feedUrl}`);
 
   const res = await fetch(config.feedUrl, {
-    headers: { 'User-Agent': 'Caliber-Aggregator/1.0 (+https://caliber.app)' },
+    headers: { "User-Agent": "Caliber-Aggregator/1.0 (+https://caliber.app)" },
     signal: AbortSignal.timeout(15_000),
   });
 
@@ -92,29 +111,32 @@ export async function scrapeRss(config: RssSourceConfig): Promise<ScrapedJob[]> 
   const jobs: ScrapedJob[] = [];
 
   for (const item of rawItems) {
-    const rawTitle = decodeEntities(String(item.title ?? '').trim());
+    const rawTitle = decodeEntities(String(item.title ?? "").trim());
     // <link> in Atom feeds is an object; fall back to <guid>
     const link = String(
-      typeof item.link === 'object'
-        ? (item.link as Record<string, unknown>)['#text'] ?? item.guid
-        : item.link ?? item.guid ?? ''
+      typeof item.link === "object"
+        ? ((item.link as Record<string, unknown>)["#text"] ?? item.guid)
+        : (item.link ?? item.guid ?? "")
     ).trim();
 
     if (!rawTitle || !link) continue;
 
     let title = rawTitle;
-    let company = '';
+    let company = "";
 
     if (config.titleTransform) {
       ({ title, company } = config.titleTransform(rawTitle));
     } else if (config.companyField) {
-      company = getNestedValue(item as Record<string, unknown>, config.companyField).trim();
+      company = getNestedValue(
+        item as Record<string, unknown>,
+        config.companyField
+      ).trim();
     }
 
     // "Job Title at Company Name" convention used by some feeds
-    if (!company && rawTitle.includes(' at ')) {
-      const parts = rawTitle.split(' at ');
-      title = parts.slice(0, -1).join(' at ').trim();
+    if (!company && rawTitle.includes(" at ")) {
+      const parts = rawTitle.split(" at ");
+      title = parts.slice(0, -1).join(" at ").trim();
       company = parts[parts.length - 1].trim();
     }
 
@@ -124,20 +146,31 @@ export async function scrapeRss(config: RssSourceConfig): Promise<ScrapedJob[]> 
       ? getNestedValue(item as Record<string, unknown>, config.cityField).trim()
       : undefined;
     const country = config.countryField
-      ? getNestedValue(item as Record<string, unknown>, config.countryField).trim()
+      ? getNestedValue(
+          item as Record<string, unknown>,
+          config.countryField
+        ).trim()
       : config.defaultCountry;
 
     const jobId = config.jobIdField
-      ? getNestedValue(item as Record<string, unknown>, config.jobIdField).trim() || slugFromUrl(link)
+      ? getNestedValue(
+          item as Record<string, unknown>,
+          config.jobIdField
+        ).trim() || slugFromUrl(link)
       : slugFromUrl(link);
 
-    const pubDate = item.pubDate ?? item.pubdate ?? item.published ?? item.updated;
-    const description = stripHtml(String(item.description ?? item.summary ?? item['content:encoded'] ?? ''));
+    const pubDate =
+      item.pubDate ?? item.pubdate ?? item.published ?? item.updated;
+    const description = stripHtml(
+      String(item.description ?? item.summary ?? item["content:encoded"] ?? "")
+    );
 
     // Detect remote from title keywords
     const lowerTitle = title.toLowerCase();
     const remote_type =
-      lowerTitle.includes('(remote)') || lowerTitle.includes('remote') ? 'remote' : 'onsite';
+      lowerTitle.includes("(remote)") || lowerTitle.includes("remote")
+        ? "remote"
+        : "onsite";
 
     jobs.push({
       title,
@@ -162,23 +195,23 @@ export async function scrapeRss(config: RssSourceConfig): Promise<ScrapedJob[]> 
 export const RSS_SOURCES: RssSourceConfig[] = [
   {
     // Verified working — 500 jobs, custom <company>/<city>/<country> tags
-    name: 'mustakbil',
-    feedUrl: 'https://rss.mustakbil.com/jobs-rss',
-    defaultCountry: 'Pakistan',
-    companyField: 'company',
-    cityField: 'city',
-    countryField: 'country',
-    jobIdField: 'referencenumber',
+    name: "mustakbil",
+    feedUrl: "https://rss.mustakbil.com/jobs-rss",
+    defaultCountry: "Pakistan",
+    companyField: "company",
+    cityField: "city",
+    countryField: "country",
+    jobIdField: "referencenumber",
     // Strip Mustakbil's " Jobs in City, Country" suffix appended to every title
     titleTransform: (raw) => {
-      const cleaned = raw.replace(/\s+Jobs\s+in\s+.+$/i, '').trim();
-      return { title: cleaned || raw.trim(), company: '' };
+      const cleaned = raw.replace(/\s+Jobs\s+in\s+.+$/i, "").trim();
+      return { title: cleaned || raw.trim(), company: "" };
     },
   },
   {
     // Verified working — small feed (~6 jobs) but useful for PK coverage
-    name: 'jobs-com-pk',
-    feedUrl: 'https://www.jobs.com.pk/rss',
-    defaultCountry: 'Pakistan',
+    name: "jobs-com-pk",
+    feedUrl: "https://www.jobs.com.pk/rss",
+    defaultCountry: "Pakistan",
   },
 ];

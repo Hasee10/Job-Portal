@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import config from '@/config';
-import { resolveColor } from '@/lib/utils/colors';
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import config from "@/config";
+import { resolveColor } from "@/lib/utils/colors";
 
 export function ForgotPasswordForm() {
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
 
@@ -18,9 +18,9 @@ export function ForgotPasswordForm() {
     setMessage(null);
 
     try {
-      const response = await fetch('/api/employers/forgot-password', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/employers/forgot-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),
       });
       const result = await response.json();
@@ -31,7 +31,7 @@ export function ForgotPasswordForm() {
           "If an account exists for that email, we've sent a password reset link."
       );
     } catch {
-      setMessage('Something went wrong. Please try again later.');
+      setMessage("Something went wrong. Please try again later.");
     } finally {
       setIsSubmitting(false);
     }
@@ -70,7 +70,7 @@ export function ForgotPasswordForm() {
           type="submit"
           variant="primary"
         >
-          {isSubmitting ? 'Sending...' : 'Send reset link'}
+          {isSubmitting ? "Sending..." : "Send reset link"}
         </Button>
       </form>
     </div>

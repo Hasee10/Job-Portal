@@ -1,25 +1,25 @@
-'use client';
+"use client";
 
-import { ArrowRight, Link as LinkIcon, Search, X } from 'lucide-react';
-import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { useCallback, useEffect, useRef, useState } from 'react';
-import ReactMarkdown from 'react-markdown';
-import remarkBreaks from 'remark-breaks';
-import remarkGfm from 'remark-gfm';
-import type { Answer, FAQPage, Question, WithContext } from 'schema-dts';
+import { ArrowRight, Link as LinkIcon, Search, X } from "lucide-react";
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useCallback, useEffect, useRef, useState } from "react";
+import ReactMarkdown from "react-markdown";
+import remarkBreaks from "remark-breaks";
+import remarkGfm from "remark-gfm";
+import type { Answer, FAQPage, Question, WithContext } from "schema-dts";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from '@/components/ui/accordion';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import config from '@/config';
-import { resolveColor } from '@/lib/utils/colors';
-import { safeJsonLdStringify } from '@/lib/utils/json-ld';
-import { slugify } from '@/lib/utils/slugify';
+} from "@/components/ui/accordion";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import config from "@/config";
+import { resolveColor } from "@/lib/utils/colors";
+import { safeJsonLdStringify } from "@/lib/utils/json-ld";
+import { slugify } from "@/lib/utils/slugify";
 
 // Define the types based on the config
 type FAQItem = {
@@ -54,7 +54,7 @@ const getItemId = (categoryTitle: string, question: string) => {
 export function FAQContent({ categories }: FAQContentProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
   const categoryRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
@@ -101,7 +101,7 @@ export function FAQContent({ categories }: FAQContentProps) {
           scroll: false,
         });
       } else {
-        router.replace('/faq', { scroll: false });
+        router.replace("/faq", { scroll: false });
       }
     },
     [applySearch, router]
@@ -110,7 +110,7 @@ export function FAQContent({ categories }: FAQContentProps) {
   // Sync state from URL params on mount / when search params change.
   // Uses applySearch (no URL write) to avoid a write-then-read render loop.
   useEffect(() => {
-    const query = searchParams.get('q');
+    const query = searchParams.get("q");
     if (query) {
       applySearch(query);
     }
@@ -122,7 +122,7 @@ export function FAQContent({ categories }: FAQContentProps) {
       const timerId = setTimeout(() => {
         const element = document.getElementById(categoryId);
         if (element) {
-          element.scrollIntoView({ behavior: 'smooth' });
+          element.scrollIntoView({ behavior: "smooth" });
 
           // Find and expand the items in this category
           const categoryIndex = categories.findIndex(
@@ -144,10 +144,10 @@ export function FAQContent({ categories }: FAQContentProps) {
 
   // Handle keyboard navigation
   const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Escape') {
-      setSearchTerm('');
+    if (e.key === "Escape") {
+      setSearchTerm("");
       setExpandedItems([]);
-      router.replace('/faq', { scroll: false });
+      router.replace("/faq", { scroll: false });
     }
   };
 
@@ -155,16 +155,16 @@ export function FAQContent({ categories }: FAQContentProps) {
   const generateFAQSchema = () => {
     // Create type-safe schema using schema-dts
     const faqSchema: WithContext<FAQPage> = {
-      '@context': 'https://schema.org',
-      '@type': 'FAQPage',
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
       mainEntity: categories.flatMap((category) =>
         category.items.map(
           (item) =>
             ({
-              '@type': 'Question',
+              "@type": "Question",
               name: item.question,
               acceptedAnswer: {
-                '@type': 'Answer',
+                "@type": "Answer",
                 text: item.answer,
               } as Answer,
             }) as Question
@@ -180,8 +180,8 @@ export function FAQContent({ categories }: FAQContentProps) {
   const _scrollToCategory = (categoryId: string) => {
     const element = document.getElementById(categoryId);
     if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
-      window.history.pushState(null, '', `#${categoryId}`);
+      element.scrollIntoView({ behavior: "smooth" });
+      window.history.pushState(null, "", `#${categoryId}`);
     }
   };
 
@@ -225,9 +225,9 @@ export function FAQContent({ categories }: FAQContentProps) {
               aria-label="Clear search"
               className="-translate-y-1/2 absolute top-1/2 right-3 text-gray-400 dark:text-gray-600 hover:text-gray-600 dark:hover:text-gray-400"
               onClick={() => {
-                setSearchTerm('');
+                setSearchTerm("");
                 setExpandedItems([]);
-                router.replace('/faq', { scroll: false });
+                router.replace("/faq", { scroll: false });
               }}
             >
               <X className="h-4 w-4" />
@@ -245,9 +245,9 @@ export function FAQContent({ categories }: FAQContentProps) {
             </p>
             <Button
               onClick={() => {
-                setSearchTerm('');
+                setSearchTerm("");
                 setExpandedItems([]);
-                router.replace('/faq', { scroll: false });
+                router.replace("/faq", { scroll: false });
               }}
               size="xs"
               variant="outline"

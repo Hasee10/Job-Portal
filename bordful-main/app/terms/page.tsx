@@ -1,16 +1,16 @@
-import { MetadataBreadcrumb } from '@/components/ui/metadata-breadcrumb';
-import config from '@/config';
-import { generateMetadata } from '@/lib/utils/metadata';
+import { MetadataBreadcrumb } from "@/components/ui/metadata-breadcrumb";
+import config from "@/config";
+import { generateMetadata } from "@/lib/utils/metadata";
 
 export const metadata = generateMetadata({
   title: `Terms of Service - ${config.nav.title}`,
   description:
-    'Our terms of service outline the rules and guidelines for using our job board platform.',
-  path: '/terms',
+    "Our terms of service outline the rules and guidelines for using our job board platform.",
+  path: "/terms",
 });
 
 // This page will be static
-export const dynamic = 'force-static';
+export const dynamic = "force-static";
 
 export default function TermsPage() {
   return (
@@ -20,8 +20,8 @@ export default function TermsPage() {
         <div className="mb-6">
           <MetadataBreadcrumb
             items={[
-              { name: 'Home', url: '/' },
-              { name: 'Terms of Service', url: '/terms' },
+              { name: "Home", url: "/" },
+              { name: "Terms of Service", url: "/terms" },
             ]}
             metadata={metadata}
             pathname="/terms"
@@ -31,11 +31,11 @@ export default function TermsPage() {
           <div className="space-y-2">
             <h1 className="font-semibold text-2xl">Terms of Service</h1>
             <div className="text-gray-500 dark:text-gray-500 text-sm">
-              Last updated:{' '}
-              {new Date().toLocaleDateString('en-US', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
+              Last updated:{" "}
+              {new Date().toLocaleDateString("en-US", {
+                year: "numeric",
+                month: "long",
+                day: "numeric",
               })}
             </div>
           </div>

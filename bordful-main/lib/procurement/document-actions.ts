@@ -1,26 +1,27 @@
-import 'server-only';
+import "server-only";
 
-import { createClient } from '@supabase/supabase-js';
-import { getRequestForBuyer } from './request-actions';
-import { isSealedFromBuyer } from './response-actions';
+import { createClient } from "@supabase/supabase-js";
+import { getRequestForBuyer } from "./request-actions";
+import { isSealedFromBuyer } from "./response-actions";
 
-const BUCKET = 'procurement-documents';
+const BUCKET = "procurement-documents";
 export const MAX_PROPOSAL_DOCUMENT_BYTES = 10 * 1024 * 1024; // matches the bucket's file_size_limit
 const ALLOWED_CONTENT_TYPES = new Set([
-  'application/pdf',
-  'application/msword',
-  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  "application/pdf",
+  "application/msword",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
 ]);
 
 function getAdminClient() {
   const url = process.env.SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key) throw new Error('Database is not configured on this deployment.');
+  if (!url || !key)
+    throw new Error("Database is not configured on this deployment.");
   return createClient(url, key, { auth: { persistSession: false } });
 }
 
 function sanitizeFilename(name: string): string {
-  return name.replace(/[^a-zA-Z0-9._-]/g, '_').slice(-100);
+  return name.replace(/[^a-zA-Z0-9._-]/g, "_").slice(-100);
 }
 
 // Proxies the upload through our own server rather than issuing the vendor a
@@ -34,10 +35,10 @@ export async function uploadProposalDocument(
   file: File
 ): Promise<string> {
   if (file.size > MAX_PROPOSAL_DOCUMENT_BYTES) {
-    throw new Error('File is too large. Maximum size is 10MB.');
+    throw new Error("File is too large. Maximum size is 10MB.");
   }
   if (!ALLOWED_CONTENT_TYPES.has(file.type)) {
-    throw new Error('Unsupported file type. Upload a PDF or Word document.');
+    throw new Error("Unsupported file type. Upload a PDF or Word document.");
   }
 
   const supabase = getAdminClient();
@@ -48,7 +49,7 @@ export async function uploadProposalDocument(
     upsert: false,
   });
 
-  if (error) throw new Error(error.message || 'Failed to upload document.');
+  if (error) throw new Error(error.message || "Failed to upload document.");
   return path;
 }
 
@@ -61,34 +62,37 @@ export async function uploadProposalDocument(
 // much "response content" as the pricing/proposal text fields are.
 export async function getSignedDownloadUrl(
   requesterId: string,
-  requesterRole: 'employer' | 'vendor',
+  requesterRole: "employer" | "vendor",
   requestId: string,
   documentPath: string
 ): Promise<string> {
   const supabase = getAdminClient();
 
   const { data: response } = await supabase
-    .from('procurement_responses')
-    .select('vendor_id')
-    .eq('request_id', requestId)
-    .eq('proposal_document_path', documentPath)
+    .from("procurement_responses")
+    .select("vendor_id")
+    .eq("request_id", requestId)
+    .eq("proposal_document_path", documentPath)
     .maybeSingle();
-  if (!response) throw new Error('Document not found for this request.');
+  if (!response) throw new Error("Document not found for this request.");
 
-  if (requesterRole === 'employer') {
+  if (requesterRole === "employer") {
     const request = await getRequestForBuyer(requesterId, requestId);
-    if (!request) throw new Error('Not authorized to access this document.');
+    if (!request) throw new Error("Not authorized to access this document.");
     if (isSealedFromBuyer(request.sealedBids, request.status)) {
-      throw new Error('This request is sealed - documents are hidden until bids are opened.');
+      throw new Error(
+        "This request is sealed - documents are hidden until bids are opened."
+      );
     }
   } else if (response.vendor_id !== requesterId) {
-    throw new Error('Not authorized to access this document.');
+    throw new Error("Not authorized to access this document.");
   }
 
   const { data, error } = await supabase.storage
     .from(BUCKET)
     .createSignedUrl(documentPath, 60 * 5); // 5 minutes
 
-  if (error || !data) throw new Error(error?.message || 'Failed to generate download link.');
+  if (error || !data)
+    throw new Error(error?.message || "Failed to generate download link.");
   return data.signedUrl;
 }

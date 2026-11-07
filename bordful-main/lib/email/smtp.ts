@@ -1,5 +1,5 @@
-import nodemailer from 'nodemailer';
-import { EmailProviderError } from './types';
+import nodemailer from "nodemailer";
+import { EmailProviderError } from "./types";
 
 // Gmail SMTP instead of a transactional provider (Resend/SendGrid/etc.) -
 // those all restrict delivery to a verified custom domain, which costs
@@ -22,7 +22,7 @@ function getTransporter() {
   }
 
   cachedTransporter = nodemailer.createTransport({
-    service: 'gmail',
+    service: "gmail",
     auth: { user, pass },
   });
   return cachedTransporter;
@@ -31,19 +31,19 @@ function getTransporter() {
 function assertConfigured(featureLabel: string): boolean {
   if (getTransporter()) return false;
 
-  if (process.env.NODE_ENV === 'development') {
+  if (process.env.NODE_ENV === "development") {
     return true; // simulate success locally without credentials
   }
 
   console.error(
     `[email/smtp] GMAIL_USER / GMAIL_APP_PASSWORD is not set - ${featureLabel} ` +
-      'is failing. Set both in the deployment environment (a free Gmail ' +
-      'App Password, not your regular password - generate one at ' +
-      'myaccount.google.com/apppasswords).'
+      "is failing. Set both in the deployment environment (a free Gmail " +
+      "App Password, not your regular password - generate one at " +
+      "myaccount.google.com/apppasswords)."
   );
   throw new EmailProviderError(
-    'Gmail SMTP credentials are required in production',
-    'smtp',
+    "Gmail SMTP credentials are required in production",
+    "smtp",
     true
   );
 }
@@ -63,7 +63,11 @@ export async function sendEmail(data: {
       // Unreachable in practice (assertConfigured already threw above when
       // credentials are missing outside development), but keeps this
       // function's control flow provably safe for TypeScript.
-      throw new EmailProviderError('Gmail SMTP is not configured', 'smtp', true);
+      throw new EmailProviderError(
+        "Gmail SMTP is not configured",
+        "smtp",
+        true
+      );
     }
 
     await transporter.sendMail({
@@ -79,7 +83,7 @@ export async function sendEmail(data: {
       throw error;
     }
     const errorMessage =
-      error instanceof Error ? error.message : 'Failed to send email';
-    throw new EmailProviderError(errorMessage, 'smtp');
+      error instanceof Error ? error.message : "Failed to send email";
+    throw new EmailProviderError(errorMessage, "smtp");
   }
 }

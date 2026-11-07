@@ -1,8 +1,8 @@
-import 'server-only';
+import "server-only";
 
-import { createClient } from '@supabase/supabase-js';
+import { createClient } from "@supabase/supabase-js";
 
-export type ApplicationStatus = 'applied' | 'not_interested';
+export type ApplicationStatus = "applied" | "not_interested";
 
 export type SeekerJobState = {
   savedJobIds: string[];
@@ -13,7 +13,7 @@ function getAdminClient() {
   const url = process.env.SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!url || !key) {
-    throw new Error('Database is not configured on this deployment.');
+    throw new Error("Database is not configured on this deployment.");
   }
   return createClient(url, key, { auth: { persistSession: false } });
 }
@@ -27,11 +27,11 @@ export async function getSeekerJobState(
   const supabase = getAdminClient();
 
   const [savedResult, applicationsResult] = await Promise.all([
-    supabase.from('saved_jobs').select('job_id').eq('seeker_id', seekerId),
+    supabase.from("saved_jobs").select("job_id").eq("seeker_id", seekerId),
     supabase
-      .from('job_applications')
-      .select('job_id, status')
-      .eq('seeker_id', seekerId),
+      .from("job_applications")
+      .select("job_id, status")
+      .eq("seeker_id", seekerId),
   ]);
 
   if (savedResult.error) throw savedResult.error;
@@ -51,10 +51,10 @@ export async function getSeekerJobState(
 export async function saveJob(seekerId: string, jobId: string): Promise<void> {
   const supabase = getAdminClient();
   const { error } = await supabase
-    .from('saved_jobs')
+    .from("saved_jobs")
     .upsert(
       { seeker_id: seekerId, job_id: jobId },
-      { onConflict: 'seeker_id,job_id', ignoreDuplicates: true }
+      { onConflict: "seeker_id,job_id", ignoreDuplicates: true }
     );
   if (error) throw error;
 }
@@ -65,10 +65,10 @@ export async function unsaveJob(
 ): Promise<void> {
   const supabase = getAdminClient();
   const { error } = await supabase
-    .from('saved_jobs')
+    .from("saved_jobs")
     .delete()
-    .eq('seeker_id', seekerId)
-    .eq('job_id', jobId);
+    .eq("seeker_id", seekerId)
+    .eq("job_id", jobId);
   if (error) throw error;
 }
 
@@ -78,14 +78,14 @@ export async function setApplicationStatus(
   status: ApplicationStatus
 ): Promise<void> {
   const supabase = getAdminClient();
-  const { error } = await supabase.from('job_applications').upsert(
+  const { error } = await supabase.from("job_applications").upsert(
     {
       seeker_id: seekerId,
       job_id: jobId,
       status,
       updated_at: new Date().toISOString(),
     },
-    { onConflict: 'seeker_id,job_id' }
+    { onConflict: "seeker_id,job_id" }
   );
   if (error) throw error;
 }
@@ -96,10 +96,10 @@ export async function clearApplicationStatus(
 ): Promise<void> {
   const supabase = getAdminClient();
   const { error } = await supabase
-    .from('job_applications')
+    .from("job_applications")
     .delete()
-    .eq('seeker_id', seekerId)
-    .eq('job_id', jobId);
+    .eq("seeker_id", seekerId)
+    .eq("job_id", jobId);
   if (error) throw error;
 }
 
@@ -116,10 +116,10 @@ export async function getSavedJobsWithDetails(
 ): Promise<SavedJobWithDetails[]> {
   const supabase = getAdminClient();
   const { data, error } = await supabase
-    .from('saved_jobs')
-    .select('job_id, created_at, jobs(title, company, apply_url)')
-    .eq('seeker_id', seekerId)
-    .order('created_at', { ascending: false });
+    .from("saved_jobs")
+    .select("job_id, created_at, jobs(title, company, apply_url)")
+    .eq("seeker_id", seekerId)
+    .order("created_at", { ascending: false });
 
   if (error) throw error;
 

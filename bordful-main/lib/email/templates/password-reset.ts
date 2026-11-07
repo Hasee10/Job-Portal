@@ -1,4 +1,9 @@
-import { EMAIL_BRAND_COLOR, emailFooter, emailHeader, wrapEmailBody } from './shared';
+import {
+  EMAIL_BRAND_COLOR,
+  emailFooter,
+  emailHeader,
+  wrapEmailBody,
+} from "./shared";
 
 export type PasswordResetEmailData = {
   resetUrl: string;
@@ -27,7 +32,7 @@ export function renderPasswordResetEmail({
   `);
 
   return {
-    subject: 'Reset your Caliber password',
+    subject: "Reset your Caliber password",
     html,
   };
 }

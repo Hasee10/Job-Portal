@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { createContext, useContext, useState } from 'react';
-import { cn } from '@/lib/utils';
-import { TailoredResumePanel } from './TailoredResumePanel';
+import { createContext, useContext, useState } from "react";
+import { cn } from "@/lib/utils";
+import { TailoredResumePanel } from "./TailoredResumePanel";
 
 export type PanelJobRef = { id: string; title: string; company: string };
 
@@ -17,7 +17,7 @@ const ResumePanelContext = createContext<ResumePanelContextValue | null>(null);
 export function useResumePanel(): ResumePanelContextValue {
   const ctx = useContext(ResumePanelContext);
   if (!ctx) {
-    throw new Error('useResumePanel must be used within a ResumePanelProvider');
+    throw new Error("useResumePanel must be used within a ResumePanelProvider");
   }
   return ctx;
 }
@@ -28,7 +28,11 @@ export function useResumePanel(): ResumePanelContextValue {
 // - otherwise the nav bar stays full-width and gets hidden behind the fixed
 // panel. The margin tracks the panel's collapsed/expanded width so the push
 // stays in sync when the user widens the panel.
-export function ResumePanelProvider({ children }: { children: React.ReactNode }) {
+export function ResumePanelProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const [job, setJob] = useState<PanelJobRef | null>(null);
   const [isExpanded, setIsExpanded] = useState(false);
   const isOpen = job !== null;
@@ -44,8 +48,8 @@ export function ResumePanelProvider({ children }: { children: React.ReactNode })
     >
       <div
         className={cn(
-          'transition-[margin] duration-300 ease-in-out',
-          isOpen && (isExpanded ? 'lg:mr-[760px]' : 'lg:mr-[440px]')
+          "transition-[margin] duration-300 ease-in-out",
+          isOpen && (isExpanded ? "lg:mr-[760px]" : "lg:mr-[440px]")
         )}
       >
         {children}

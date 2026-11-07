@@ -1,14 +1,14 @@
-import type { Metadata } from 'next';
-import { Suspense } from 'react';
-import { RecruiterResetPasswordForm } from '@/components/auth/RecruiterResetPasswordForm';
-import config from '@/config';
+import type { Metadata } from "next";
+import { Suspense } from "react";
+import { RecruiterResetPasswordForm } from "@/components/auth/RecruiterResetPasswordForm";
+import config from "@/config";
 
 export const metadata: Metadata = {
   title: `Set New Password | ${config.title}`,
   robots: { index: false, follow: false },
 };
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 export default function RecruiterResetPasswordPage() {
   return (

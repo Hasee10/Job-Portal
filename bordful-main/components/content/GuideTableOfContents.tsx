@@ -1,6 +1,10 @@
-import type { GuideHeading } from '@/lib/content/guide-content';
+import type { GuideHeading } from "@/lib/content/guide-content";
 
-export function GuideTableOfContents({ headings }: { headings: GuideHeading[] }) {
+export function GuideTableOfContents({
+  headings,
+}: {
+  headings: GuideHeading[];
+}) {
   if (headings.length < 2) return null;
 
   return (

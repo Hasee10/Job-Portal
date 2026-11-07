@@ -1,4 +1,10 @@
-import { EMAIL_BRAND_COLOR, emailFooter, emailHeader, h, wrapEmailBody } from './shared';
+import {
+  EMAIL_BRAND_COLOR,
+  emailFooter,
+  emailHeader,
+  h,
+  wrapEmailBody,
+} from "./shared";
 
 export type RecruiterOutreachEmailData = {
   recruiterName: string;
@@ -18,22 +24,26 @@ export function renderRecruiterOutreachEmail({
   const from = recruiterAgency
     ? `${h(recruiterName)} at ${h(recruiterAgency)}`
     : h(recruiterName);
-  const subjectDisplay = recruiterAgency ? `${recruiterName} at ${recruiterAgency}` : recruiterName;
+  const subjectDisplay = recruiterAgency
+    ? `${recruiterName} at ${recruiterAgency}`
+    : recruiterName;
 
   const html = wrapEmailBody(`
     ${emailHeader()}
 
     <div style="padding: 40px 40px 36px;">
       <div style="display: inline-block; font-size: 12px; font-weight: 700; color: ${EMAIL_BRAND_COLOR}; background: #ecf4f6; padding: 4px 10px; border-radius: 100px; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 18px;">
-        ${jobTitle ? 'Job opportunity' : 'Recruiter message'}
+        ${jobTitle ? "Job opportunity" : "Recruiter message"}
       </div>
       <h1 style="margin: 0 0 14px; font-size: 22px; line-height: 1.3; font-weight: 800; color: #18181b; letter-spacing: -0.01em;">
         ${from} wants to connect with you
       </h1>
       <p style="margin: 0 0 20px; font-size: 15px; line-height: 1.65; color: #52525b;">
-        ${jobTitle
-          ? `They found your profile and think you&rsquo;d be a great fit for <strong>${h(jobTitle)}</strong>.`
-          : 'They found your profile on Caliber and want to reach out directly.'}
+        ${
+          jobTitle
+            ? `They found your profile and think you&rsquo;d be a great fit for <strong>${h(jobTitle)}</strong>.`
+            : "They found your profile on Caliber and want to reach out directly."
+        }
       </p>
       <table cellpadding="0" cellspacing="0" role="presentation" width="100%" style="margin-bottom: 28px;">
         <tr>

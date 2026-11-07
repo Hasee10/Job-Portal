@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { useToast } from '@/hooks/use-toast';
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/hooks/use-toast";
 
 export function RecruiterRequestForm({
   isSeeker,
@@ -13,7 +13,7 @@ export function RecruiterRequestForm({
   recruiterId?: string | null;
 }) {
   const { toast } = useToast();
-  const [message, setMessage] = useState('');
+  const [message, setMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
@@ -22,7 +22,7 @@ export function RecruiterRequestForm({
       <p className="text-sm text-zinc-600 dark:text-zinc-400">
         <a className="underline" href="/account/sign-in">
           Sign in
-        </a>{' '}
+        </a>{" "}
         as a job seeker to request a recruiter match.
       </p>
     );
@@ -31,8 +31,7 @@ export function RecruiterRequestForm({
   if (submitted) {
     return (
       <p className="text-sm text-zinc-600 dark:text-zinc-400">
-        Thanks - we&apos;ve logged your request and a recruiter will follow
-        up.
+        Thanks - we&apos;ve logged your request and a recruiter will follow up.
       </p>
     );
   }
@@ -42,18 +41,18 @@ export function RecruiterRequestForm({
     if (!message.trim()) return;
     setIsSubmitting(true);
     try {
-      const response = await fetch('/api/seeker/recruiter-requests', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/seeker/recruiter-requests", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: message.trim(), recruiterId }),
       });
-      if (!response.ok) throw new Error('Failed to submit request.');
+      if (!response.ok) throw new Error("Failed to submit request.");
       setSubmitted(true);
     } catch {
       toast({
-        title: 'Could not submit request',
-        description: 'Please try again.',
-        variant: 'destructive',
+        title: "Could not submit request",
+        description: "Please try again.",
+        variant: "destructive",
       });
     } finally {
       setIsSubmitting(false);
@@ -68,8 +67,12 @@ export function RecruiterRequestForm({
         rows={3}
         value={message}
       />
-      <Button disabled={isSubmitting || !message.trim()} size="sm" type="submit">
-        {isSubmitting ? 'Sending...' : 'Request a recruiter match'}
+      <Button
+        disabled={isSubmitting || !message.trim()}
+        size="sm"
+        type="submit"
+      >
+        {isSubmitting ? "Sending..." : "Request a recruiter match"}
       </Button>
     </form>
   );

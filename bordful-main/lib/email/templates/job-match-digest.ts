@@ -1,4 +1,10 @@
-import { EMAIL_BRAND_COLOR, emailFooter, emailHeader, h, wrapEmailBody } from './shared';
+import {
+  EMAIL_BRAND_COLOR,
+  emailFooter,
+  emailHeader,
+  h,
+  wrapEmailBody,
+} from "./shared";
 
 export type JobMatchDigestRow = {
   title: string;
@@ -39,13 +45,13 @@ export function renderJobMatchDigestEmail({
         <td style="padding: 0 0 18px;">
           <a href="${h(match.url)}" style="font-size: 15px; font-weight: 700; color: #18181b; text-decoration: none;">${h(match.title)}</a>
           <div style="margin-top: 2px; font-size: 13px; color: #71717a;">
-            ${h(match.company)}${match.city ? ` &middot; ${h(match.city)}` : ''}
+            ${h(match.company)}${match.city ? ` &middot; ${h(match.city)}` : ""}
           </div>
           <div style="margin-top: 3px; font-size: 12px; color: #a1a1aa;">${h(match.detail)}</div>
         </td>
       </tr>`
     )
-    .join('');
+    .join("");
 
   const html = wrapEmailBody(`
     ${emailHeader()}

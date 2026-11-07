@@ -7,7 +7,6 @@
  * when no custom config is present yet.
  */
 
-import type { Config } from './config.example';
+import type { Config } from "./config.example";
 
 export const config = {} satisfies Partial<Config>;
-

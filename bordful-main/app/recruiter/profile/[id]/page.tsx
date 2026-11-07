@@ -1,11 +1,11 @@
-import type { Metadata } from 'next';
-import Link from 'next/link';
-import { notFound } from 'next/navigation';
-import { ArrowLeft, ExternalLink } from 'lucide-react';
-import { getRecruiterAccountById } from '@/lib/auth/recruiter-accounts';
-import config from '@/config';
+import type { Metadata } from "next";
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { ArrowLeft, ExternalLink } from "lucide-react";
+import { getRecruiterAccountById } from "@/lib/auth/recruiter-accounts";
+import config from "@/config";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({
   params,
@@ -17,7 +17,8 @@ export async function generateMetadata({
   if (!recruiter) return { title: `Recruiter | ${config.title}` };
   return {
     title: `${recruiter.name} | ${config.title}`,
-    description: recruiter.bio ?? `${recruiter.name} is a recruiter on ${config.title}.`,
+    description:
+      recruiter.bio ?? `${recruiter.name} is a recruiter on ${config.title}.`,
   };
 }
 
@@ -33,7 +34,7 @@ export default async function RecruiterPublicProfilePage({
   const initials = recruiter.name.charAt(0).toUpperCase();
   const displayTitle = recruiter.agency
     ? `Recruiter at ${recruiter.agency}`
-    : 'Independent Recruiter';
+    : "Independent Recruiter";
 
   return (
     <main className="min-h-[60vh] bg-background py-12">
@@ -57,7 +58,9 @@ export default async function RecruiterPublicProfilePage({
                 <h1 className="font-bold text-xl text-zinc-900 dark:text-zinc-50">
                   {recruiter.name}
                 </h1>
-                <p className="mt-0.5 text-sm text-zinc-500 dark:text-zinc-400">{displayTitle}</p>
+                <p className="mt-0.5 text-sm text-zinc-500 dark:text-zinc-400">
+                  {displayTitle}
+                </p>
                 {recruiter.linkedinUrl && (
                   <a
                     className="mt-1 inline-flex items-center gap-1 text-sm text-primary hover:underline"

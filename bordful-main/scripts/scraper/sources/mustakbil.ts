@@ -1,11 +1,11 @@
 // Mustakbil.com — Pakistani job board
 // Anti-scraping: very light. Static HTML, no JS rendering required.
 // Rate limit: 1 request per 2 seconds is safe.
-import * as cheerio from 'cheerio';
-import type { ScrapedJob } from '../types';
+import * as cheerio from "cheerio";
+import type { ScrapedJob } from "../types";
 
-const BASE = 'https://www.mustakbil.com';
-const SOURCE = 'mustakbil';
+const BASE = "https://www.mustakbil.com";
+const SOURCE = "mustakbil";
 const MAX_PAGES = 5; // ~100 jobs per run; increase once verified
 const DELAY_MS = 2000;
 
@@ -15,7 +15,7 @@ function sleep(ms: number) {
 
 function slugFromPath(url: string): string {
   try {
-    return new URL(url).pathname.replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 120);
+    return new URL(url).pathname.replace(/[^a-zA-Z0-9_-]/g, "_").slice(0, 120);
   } catch {
     return url.slice(0, 120);
   }
@@ -25,9 +25,10 @@ async function fetchPage(url: string): Promise<string | null> {
   try {
     const res = await fetch(url, {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (compatible; Caliber-Aggregator/1.0; +https://caliber.app)',
-        'Accept': 'text/html,application/xhtml+xml',
-        'Accept-Language': 'en-US,en;q=0.9',
+        "User-Agent":
+          "Mozilla/5.0 (compatible; Caliber-Aggregator/1.0; +https://caliber.app)",
+        Accept: "text/html,application/xhtml+xml",
+        "Accept-Language": "en-US,en;q=0.9",
       },
       signal: AbortSignal.timeout(15_000),
     });
@@ -46,9 +47,7 @@ export async function scrapeMustakbil(): Promise<ScrapedJob[]> {
   const jobs: ScrapedJob[] = [];
 
   for (let page = 1; page <= MAX_PAGES; page++) {
-    const url = page === 1
-      ? `${BASE}/jobs/`
-      : `${BASE}/jobs/?page=${page}`;
+    const url = page === 1 ? `${BASE}/jobs/` : `${BASE}/jobs/?page=${page}`;
 
     console.log(`[${SOURCE}] Page ${page}: ${url}`);
     const html = await fetchPage(url);
@@ -59,20 +58,33 @@ export async function scrapeMustakbil(): Promise<ScrapedJob[]> {
 
     // Selectors verified against mustakbil.com HTML as of 2025.
     // If the site redesigns, update these selectors.
-    $('div.job-listing, article.job-item, .job-card, .jobBox').each((_, el) => {
-      const titleEl = $(el).find('h2 a, h3 a, .job-title a, a.title').first();
+    $("div.job-listing, article.job-item, .job-card, .jobBox").each((_, el) => {
+      const titleEl = $(el).find("h2 a, h3 a, .job-title a, a.title").first();
       const title = titleEl.text().trim();
-      const href = titleEl.attr('href') ?? '';
-      const applyUrl = href.startsWith('http') ? href : `${BASE}${href}`;
+      const href = titleEl.attr("href") ?? "";
+      const applyUrl = href.startsWith("http") ? href : `${BASE}${href}`;
 
-      const company = $(el).find('.company-name, .company, .employer, .org-name').first().text().trim();
-      const city = $(el).find('.location, .city, .job-location').first().text().trim();
-      const typeText = $(el).find('.job-type, .employment-type, .badge').first().text().trim().toLowerCase();
+      const company = $(el)
+        .find(".company-name, .company, .employer, .org-name")
+        .first()
+        .text()
+        .trim();
+      const city = $(el)
+        .find(".location, .city, .job-location")
+        .first()
+        .text()
+        .trim();
+      const typeText = $(el)
+        .find(".job-type, .employment-type, .badge")
+        .first()
+        .text()
+        .trim()
+        .toLowerCase();
 
-      let type: ScrapedJob['type'] = 'Full-time';
-      if (typeText.includes('part')) type = 'Part-time';
-      else if (typeText.includes('contract')) type = 'Contract';
-      else if (typeText.includes('freelance')) type = 'Freelance';
+      let type: ScrapedJob["type"] = "Full-time";
+      if (typeText.includes("part")) type = "Part-time";
+      else if (typeText.includes("contract")) type = "Contract";
+      else if (typeText.includes("freelance")) type = "Freelance";
 
       if (!title || !applyUrl) return;
 
@@ -84,8 +96,8 @@ export async function scrapeMustakbil(): Promise<ScrapedJob[]> {
         job_identifier: slugFromPath(applyUrl),
         type,
         workplace_city: city || undefined,
-        workplace_country: 'Pakistan',
-        remote_type: 'onsite',
+        workplace_country: "Pakistan",
+        remote_type: "onsite",
       });
       found++;
     });

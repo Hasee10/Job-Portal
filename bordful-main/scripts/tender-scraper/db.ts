@@ -1,21 +1,24 @@
-import { createClient } from '@supabase/supabase-js';
-import type { ScrapedTender } from './types';
+import { createClient } from "@supabase/supabase-js";
+import type { ScrapedTender } from "./types";
 
 function getSupabase() {
   const url = process.env.SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key) throw new Error('SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY must be set');
+  if (!url || !key)
+    throw new Error("SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY must be set");
   return createClient(url, key, { auth: { persistSession: false } });
 }
 
-export async function upsertTender(tender: ScrapedTender): Promise<'inserted' | 'updated'> {
+export async function upsertTender(
+  tender: ScrapedTender
+): Promise<"inserted" | "updated"> {
   const supabase = getSupabase();
 
   const { data: existing } = await supabase
-    .from('scraped_tenders')
-    .select('id')
-    .eq('source', tender.source)
-    .eq('source_id', tender.sourceId)
+    .from("scraped_tenders")
+    .select("id")
+    .eq("source", tender.source)
+    .eq("source_id", tender.sourceId)
     .maybeSingle();
 
   const row = {
@@ -33,14 +36,17 @@ export async function upsertTender(tender: ScrapedTender): Promise<'inserted' | 
   };
 
   if (existing) {
-    const { error } = await supabase.from('scraped_tenders').update(row).eq('id', existing.id);
+    const { error } = await supabase
+      .from("scraped_tenders")
+      .update(row)
+      .eq("id", existing.id);
     if (error) throw error;
-    return 'updated';
+    return "updated";
   }
 
-  const { error } = await supabase.from('scraped_tenders').insert(row);
+  const { error } = await supabase.from("scraped_tenders").insert(row);
   if (error) throw error;
-  return 'inserted';
+  return "inserted";
 }
 
 // Deactivates tenders past their deadline - mirrors the job scraper's
@@ -50,12 +56,12 @@ export async function upsertTender(tender: ScrapedTender): Promise<'inserted' | 
 export async function deactivateExpiredTenders(): Promise<number> {
   const supabase = getSupabase();
   const { data, error } = await supabase
-    .from('scraped_tenders')
+    .from("scraped_tenders")
     .update({ is_active: false, updated_at: new Date().toISOString() })
-    .eq('is_active', true)
-    .lt('deadline_date', new Date().toISOString())
-    .not('deadline_date', 'is', null)
-    .select('id');
+    .eq("is_active", true)
+    .lt("deadline_date", new Date().toISOString())
+    .not("deadline_date", "is", null)
+    .select("id");
 
   if (error) throw error;
   return data?.length ?? 0;
@@ -71,15 +77,17 @@ const UNDATED_TENDER_MAX_AGE_DAYS = 60;
 // opportunity has almost certainly closed either way.
 export async function deactivateStaleUndatedTenders(): Promise<number> {
   const supabase = getSupabase();
-  const cutoff = new Date(Date.now() - UNDATED_TENDER_MAX_AGE_DAYS * 24 * 60 * 60 * 1000).toISOString();
+  const cutoff = new Date(
+    Date.now() - UNDATED_TENDER_MAX_AGE_DAYS * 24 * 60 * 60 * 1000
+  ).toISOString();
 
   const { data, error } = await supabase
-    .from('scraped_tenders')
+    .from("scraped_tenders")
     .update({ is_active: false, updated_at: new Date().toISOString() })
-    .eq('is_active', true)
-    .is('deadline_date', null)
-    .lt('created_at', cutoff)
-    .select('id');
+    .eq("is_active", true)
+    .is("deadline_date", null)
+    .lt("created_at", cutoff)
+    .select("id");
 
   if (error) throw error;
   return data?.length ?? 0;

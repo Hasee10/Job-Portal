@@ -1,25 +1,29 @@
-'use client';
+"use client";
 
-import { useSearchParams } from 'next/navigation';
-import { useCallback, useEffect, useState } from 'react';
-import { JobListings } from '@/components/jobs/JobListings';
-import { ClientBreadcrumb } from '@/components/ui/client-breadcrumb';
+import { useSearchParams } from "next/navigation";
+import { useCallback, useEffect, useState } from "react";
+import { JobListings } from "@/components/jobs/JobListings";
+import { ClientBreadcrumb } from "@/components/ui/client-breadcrumb";
 import {
   JobFilters,
   SALARY_SLIDER_MAX,
   SALARY_SLIDER_MIN,
-} from '@/components/ui/job-filters';
-import { JobsPerPageSelect } from '@/components/ui/jobs-per-page-select';
-import { PaginationControl } from '@/components/ui/pagination-control';
-import { PostJobBanner } from '@/components/ui/post-job-banner';
-import { SortOrderSelect } from '@/components/ui/sort-order-select';
-import type { JobType } from '@/lib/constants/job-types';
-import type { LanguageCode } from '@/lib/constants/languages';
-import { normalizeAnnualSalary, type CareerLevel, type Job } from '@/lib/db/airtable';
-import { useJobSearch } from '@/lib/hooks/useJobSearch';
-import { usePagination } from '@/lib/hooks/usePagination';
-import { useSortOrder } from '@/lib/hooks/useSortOrder';
-import { filterJobsBySearch } from '@/lib/utils/filter-jobs';
+} from "@/components/ui/job-filters";
+import { JobsPerPageSelect } from "@/components/ui/jobs-per-page-select";
+import { PaginationControl } from "@/components/ui/pagination-control";
+import { PostJobBanner } from "@/components/ui/post-job-banner";
+import { SortOrderSelect } from "@/components/ui/sort-order-select";
+import type { JobType } from "@/lib/constants/job-types";
+import type { LanguageCode } from "@/lib/constants/languages";
+import {
+  normalizeAnnualSalary,
+  type CareerLevel,
+  type Job,
+} from "@/lib/db/airtable";
+import { useJobSearch } from "@/lib/hooks/useJobSearch";
+import { usePagination } from "@/lib/hooks/usePagination";
+import { useSortOrder } from "@/lib/hooks/useSortOrder";
+import { filterJobsBySearch } from "@/lib/utils/filter-jobs";
 
 type JobsLayoutProps = {
   filteredJobs: Job[];
@@ -35,20 +39,20 @@ export function JobsLayout({ filteredJobs }: JobsLayoutProps) {
   const [selectedJobs, setSelectedJobs] = useState<Job[]>(filteredJobs);
 
   // Get URL params or defaults
-  const jobsPerPage = Number(searchParams.get('per_page')) || 10;
+  const jobsPerPage = Number(searchParams.get("per_page")) || 10;
 
   // Handle filter changes
   const handleFilterChange = useCallback(
     (
       filterType:
-        | 'type'
-        | 'role'
-        | 'remote'
-        | 'salary'
-        | 'visa'
-        | 'language'
-        | 'company'
-        | 'clear',
+        | "type"
+        | "role"
+        | "remote"
+        | "salary"
+        | "visa"
+        | "language"
+        | "company"
+        | "clear",
       value:
         | string[]
         | number[]
@@ -58,16 +62,16 @@ export function JobsLayout({ filteredJobs }: JobsLayoutProps) {
         | JobType[]
         | true
     ) => {
-      if (filterType === 'clear') {
+      if (filterType === "clear") {
         setSelectedJobs(filteredJobs);
         return;
       }
 
       // First apply search filter to the original filtered jobs
-      let newFilteredJobs = filterJobsBySearch(filteredJobs, searchTerm || '');
+      let newFilteredJobs = filterJobsBySearch(filteredJobs, searchTerm || "");
 
       // Apply type filter
-      if (filterType === 'type' && Array.isArray(value) && value.length > 0) {
+      if (filterType === "type" && Array.isArray(value) && value.length > 0) {
         // Type assertion to tell TypeScript this is a JobType array
         const jobTypes = value as JobType[];
         newFilteredJobs = newFilteredJobs.filter((job) =>
@@ -76,7 +80,7 @@ export function JobsLayout({ filteredJobs }: JobsLayoutProps) {
       }
 
       // Apply role/career level filter
-      if (filterType === 'role' && Array.isArray(value) && value.length > 0) {
+      if (filterType === "role" && Array.isArray(value) && value.length > 0) {
         // Type assertion to tell TypeScript this is a CareerLevel array
         const careerLevels = value as CareerLevel[];
         newFilteredJobs = newFilteredJobs.filter((job) =>
@@ -85,14 +89,18 @@ export function JobsLayout({ filteredJobs }: JobsLayoutProps) {
       }
 
       // Apply remote filter
-      if (filterType === 'remote' && value === true) {
+      if (filterType === "remote" && value === true) {
         newFilteredJobs = newFilteredJobs.filter(
-          (job) => job.workplace_type === 'Remote'
+          (job) => job.workplace_type === "Remote"
         );
       }
 
       // Apply salary filter
-      if (filterType === 'salary' && Array.isArray(value) && value.length === 2) {
+      if (
+        filterType === "salary" &&
+        Array.isArray(value) &&
+        value.length === 2
+      ) {
         const [salaryMin, salaryMax] = value as number[];
         if (salaryMin > SALARY_SLIDER_MIN || salaryMax < SALARY_SLIDER_MAX) {
           newFilteredJobs = newFilteredJobs.filter((job) => {
@@ -112,15 +120,15 @@ export function JobsLayout({ filteredJobs }: JobsLayoutProps) {
       }
 
       // Apply visa filter
-      if (filterType === 'visa' && value === true) {
+      if (filterType === "visa" && value === true) {
         newFilteredJobs = newFilteredJobs.filter(
-          (job) => job.visa_sponsorship === 'Yes'
+          (job) => job.visa_sponsorship === "Yes"
         );
       }
 
       // Apply language filter
       if (
-        filterType === 'language' &&
+        filterType === "language" &&
         Array.isArray(value) &&
         value.length > 0
       ) {
@@ -135,7 +143,7 @@ export function JobsLayout({ filteredJobs }: JobsLayoutProps) {
 
       // Apply company filter
       if (
-        filterType === 'company' &&
+        filterType === "company" &&
         Array.isArray(value) &&
         value.length > 0
       ) {
@@ -153,18 +161,18 @@ export function JobsLayout({ filteredJobs }: JobsLayoutProps) {
   // Apply search filter whenever the search term changes
   useEffect(() => {
     // Reset filters and apply search
-    const searchFiltered = filterJobsBySearch(filteredJobs, searchTerm || '');
+    const searchFiltered = filterJobsBySearch(filteredJobs, searchTerm || "");
     setSelectedJobs(searchFiltered);
   }, [searchTerm, filteredJobs]);
 
   // Sort jobs
   const sortedJobs = [...selectedJobs].sort((a, b) => {
     switch (sortOrder) {
-      case 'oldest':
+      case "oldest":
         return (
           new Date(a.posted_date).getTime() - new Date(b.posted_date).getTime()
         );
-      case 'salary': {
+      case "salary": {
         const aSalary = normalizeAnnualSalary(a.salary);
         const bSalary = normalizeAnnualSalary(b.salary);
         if (aSalary === -1 && bSalary === -1) return 0;
@@ -197,11 +205,13 @@ export function JobsLayout({ filteredJobs }: JobsLayoutProps) {
               <h1 className="flex flex-wrap items-center gap-2 font-semibold text-xl tracking-tight lg:text-2xl">
                 Latest Jobs
                 {page > 1 && (
-                  <span className="font-normal text-gray-500 dark:text-gray-500">Page {page}</span>
+                  <span className="font-normal text-gray-500 dark:text-gray-500">
+                    Page {page}
+                  </span>
                 )}
               </h1>
               <p className="text-muted-foreground text-sm">
-                Showing {paginatedJobs.length.toLocaleString()} of{' '}
+                Showing {paginatedJobs.length.toLocaleString()} of{" "}
                 {sortedJobs.length.toLocaleString()} positions
               </p>
             </div>

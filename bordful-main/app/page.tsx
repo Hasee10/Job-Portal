@@ -1,24 +1,24 @@
-import type { Metadata } from 'next';
-import { auth } from '@/auth';
-import { HomePage } from '@/components/home/HomePage';
-import { HowItWorksSection } from '@/components/home/HowItWorksSection';
-import { TrustSection } from '@/components/home/TrustSection';
-import config from '@/config';
-import { HOMEPAGE_JOBS_LIMIT } from '@/lib/constants/defaults';
-import { getActiveJobsCount, getJobs } from '@/lib/db/airtable.server';
-import { listPublishedTestimonials } from '@/lib/content/testimonial-actions';
-import { generateMetadata } from '@/lib/utils/metadata';
+import type { Metadata } from "next";
+import { auth } from "@/auth";
+import { HomePage } from "@/components/home/HomePage";
+import { HowItWorksSection } from "@/components/home/HowItWorksSection";
+import { TrustSection } from "@/components/home/TrustSection";
+import config from "@/config";
+import { HOMEPAGE_JOBS_LIMIT } from "@/lib/constants/defaults";
+import { getActiveJobsCount, getJobs } from "@/lib/db/airtable.server";
+import { listPublishedTestimonials } from "@/lib/content/testimonial-actions";
+import { generateMetadata } from "@/lib/utils/metadata";
 
 // Add metadata for SEO
 export const metadata: Metadata = generateMetadata({
   title: config.title,
   description: config.description,
-  path: '/',
+  path: "/",
   openGraph: {
-    type: 'website',
+    type: "website",
     images: [
       {
-        url: '/api/og',
+        url: "/api/og",
         width: 1200,
         height: 630,
         alt: `${config.title} - ${config.description}`,
@@ -32,11 +32,11 @@ export const metadata: Metadata = generateMetadata({
 // baked from one visitor's auth() result would leak/misrepresent session
 // state to every other visitor served that same cache entry. The previous
 // `revalidate = 300` no longer applies now that auth() reads cookies here.
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 export default async function Home() {
   const session = await auth();
-  const isSeeker = session?.user?.role === 'seeker';
+  const isSeeker = session?.user?.role === "seeker";
 
   const [jobs, totalActiveJobs, allJobs, testimonials] = await Promise.all([
     // Guests never render a single job card, so there's no reason to ship

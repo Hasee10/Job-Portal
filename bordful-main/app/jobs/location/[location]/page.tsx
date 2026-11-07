@@ -1,11 +1,11 @@
-import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
-import { JobsLayout } from '@/components/jobs/JobsLayout';
-import { HeroSection } from '@/components/ui/hero-section';
-import { JobSearchInput } from '@/components/ui/job-search-input';
-import config from '@/config';
-import { getCountryFromSlug } from '@/lib/constants/locations';
-import { getJobs } from '@/lib/db/airtable.server';
+import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+import { JobsLayout } from "@/components/jobs/JobsLayout";
+import { HeroSection } from "@/components/ui/hero-section";
+import { JobSearchInput } from "@/components/ui/job-search-input";
+import config from "@/config";
+import { getCountryFromSlug } from "@/lib/constants/locations";
+import { getJobs } from "@/lib/db/airtable.server";
 
 // Revalidate page every 5 minutes
 export const revalidate = 300;
@@ -21,13 +21,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const locationSlug = decodeURIComponent(location).toLowerCase();
 
   // Handle remote case
-  if (locationSlug === 'remote') {
+  if (locationSlug === "remote") {
     return {
       title: `Remote Jobs | ${config.title}`,
       description:
-        'Browse remote positions. Find the perfect remote role that matches your preferences.',
+        "Browse remote positions. Find the perfect remote role that matches your preferences.",
       alternates: {
-        canonical: '/jobs/location/remote',
+        canonical: "/jobs/location/remote",
       },
     };
   }
@@ -52,8 +52,8 @@ export default async function JobLocationPage({ params }: Props) {
   const locationSlug = decodeURIComponent(location).toLowerCase();
 
   // Handle remote jobs
-  if (locationSlug === 'remote') {
-    const filteredJobs = jobs.filter((job) => job.workplace_type === 'Remote');
+  if (locationSlug === "remote") {
+    const filteredJobs = jobs.filter((job) => job.workplace_type === "Remote");
     if (filteredJobs.length === 0) {
       return notFound();
     }
@@ -63,7 +63,7 @@ export default async function JobLocationPage({ params }: Props) {
         <HeroSection
           badge="Remote"
           description={`Browse ${filteredJobs.length.toLocaleString()} remote ${
-            filteredJobs.length === 1 ? 'position' : 'positions'
+            filteredJobs.length === 1 ? "position" : "positions"
           }. Work from anywhere with these flexible opportunities.`}
           heroImage={config.jobsPages?.dynamicPages?.location?.heroImage}
           title="Remote Jobs"
@@ -97,7 +97,7 @@ export default async function JobLocationPage({ params }: Props) {
       <HeroSection
         badge={countryName}
         description={`Browse ${filteredJobs.length.toLocaleString()} ${
-          filteredJobs.length === 1 ? 'position' : 'positions'
+          filteredJobs.length === 1 ? "position" : "positions"
         } in ${countryName}. Find the perfect role that matches your location preferences.`}
         heroImage={config.jobsPages?.dynamicPages?.location?.heroImage}
         title={`${countryName} Jobs`}

@@ -1,19 +1,19 @@
-import config from '@/config';
-import { DEFAULT_DESCRIPTION_LENGTH } from '@/lib/constants/defaults';
+import config from "@/config";
+import { DEFAULT_DESCRIPTION_LENGTH } from "@/lib/constants/defaults";
 import {
   createFeed,
   type FeedConfig,
   isFeedEnabled,
   processJobsForFeed,
-} from '@/lib/utils/feed-utils';
+} from "@/lib/utils/feed-utils";
 
 export const revalidate = 300; // 5 minutes, matching other dynamic routes
 
 export async function GET() {
   try {
     // Check if JSON feeds are enabled
-    if (!isFeedEnabled(config.rssFeed, 'json')) {
-      return new Response('JSON feed not enabled', { status: 404 });
+    if (!isFeedEnabled(config.rssFeed, "json")) {
+      return new Response("JSON feed not enabled", { status: 404 });
     }
 
     const baseUrl = config.url;
@@ -32,10 +32,10 @@ export async function GET() {
     // Return the feed as JSON
     return new Response(feed.json1(), {
       headers: {
-        'Content-Type': 'application/feed+json; charset=utf-8',
+        "Content-Type": "application/feed+json; charset=utf-8",
       },
     });
   } catch (_error) {
-    return new Response('Error generating JSON feed', { status: 500 });
+    return new Response("Error generating JSON feed", { status: 500 });
   }
 }

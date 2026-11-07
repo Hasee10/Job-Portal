@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { useSession } from 'next-auth/react';
+import { useSession } from "next-auth/react";
 import {
   createContext,
   type ReactNode,
@@ -8,9 +8,9 @@ import {
   useContext,
   useEffect,
   useState,
-} from 'react';
+} from "react";
 
-type ApplicationStatus = 'applied' | 'not_interested';
+type ApplicationStatus = "applied" | "not_interested";
 
 type SeekerJobState = {
   savedJobIds: Set<string>;
@@ -25,7 +25,7 @@ const SeekerJobStateReactContext = createContext<SeekerJobState | null>(null);
 
 export function SeekerJobStateProvider({ children }: { children: ReactNode }) {
   const { data: session, status } = useSession();
-  const isSeeker = session?.user?.role === 'seeker';
+  const isSeeker = session?.user?.role === "seeker";
 
   const [savedJobIds, setSavedJobIds] = useState<Set<string>>(new Set());
   const [applications, setApplications] = useState<
@@ -33,16 +33,21 @@ export function SeekerJobStateProvider({ children }: { children: ReactNode }) {
   >({});
 
   useEffect(() => {
-    if (status !== 'authenticated' || !isSeeker) return;
+    if (status !== "authenticated" || !isSeeker) return;
 
     let cancelled = false;
-    fetch('/api/seeker/job-states')
+    fetch("/api/seeker/job-states")
       .then((res) => res.json())
-      .then((data: { savedJobIds: string[]; applications: Record<string, ApplicationStatus> }) => {
-        if (cancelled) return;
-        setSavedJobIds(new Set(data.savedJobIds));
-        setApplications(data.applications);
-      })
+      .then(
+        (data: {
+          savedJobIds: string[];
+          applications: Record<string, ApplicationStatus>;
+        }) => {
+          if (cancelled) return;
+          setSavedJobIds(new Set(data.savedJobIds));
+          setApplications(data.applications);
+        }
+      )
       .catch(() => {
         // Non-fatal: cards just fall back to showing unsaved/no-status.
       });
@@ -70,14 +75,14 @@ export function SeekerJobStateProvider({ children }: { children: ReactNode }) {
       try {
         const res = isSaved
           ? await fetch(`/api/seeker/saved-jobs?jobId=${jobId}`, {
-              method: 'DELETE',
+              method: "DELETE",
             })
-          : await fetch('/api/seeker/saved-jobs', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
+          : await fetch("/api/seeker/saved-jobs", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ jobId }),
             });
-        if (!res.ok) throw new Error('save failed');
+        if (!res.ok) throw new Error("save failed");
       } catch {
         setSavedJobIds((prev) => {
           const next = new Set(prev);
@@ -99,12 +104,12 @@ export function SeekerJobStateProvider({ children }: { children: ReactNode }) {
       setApplications((prev) => ({ ...prev, [jobId]: statusValue }));
 
       try {
-        const res = await fetch('/api/seeker/applications', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+        const res = await fetch("/api/seeker/applications", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ jobId, status: statusValue }),
         });
-        if (!res.ok) throw new Error('update failed');
+        if (!res.ok) throw new Error("update failed");
       } catch {
         setApplications((prev) => {
           const next = { ...prev };
@@ -131,9 +136,9 @@ export function SeekerJobStateProvider({ children }: { children: ReactNode }) {
 
       try {
         const res = await fetch(`/api/seeker/applications?jobId=${jobId}`, {
-          method: 'DELETE',
+          method: "DELETE",
         });
-        if (!res.ok) throw new Error('clear failed');
+        if (!res.ok) throw new Error("clear failed");
       } catch {
         if (previous) {
           setApplications((prev) => ({ ...prev, [jobId]: previous }));
@@ -163,7 +168,7 @@ export function useSeekerJobState() {
   const ctx = useContext(SeekerJobStateReactContext);
   if (!ctx) {
     throw new Error(
-      'useSeekerJobState must be used within a SeekerJobStateProvider'
+      "useSeekerJobState must be used within a SeekerJobStateProvider"
     );
   }
   return ctx;

@@ -1,21 +1,21 @@
-import type { Metadata } from 'next';
-import type { BreadcrumbList, ListItem, WithContext } from 'schema-dts';
-import config from '@/config';
-import { safeJsonLdStringify } from '@/lib/utils/json-ld';
+import type { Metadata } from "next";
+import type { BreadcrumbList, ListItem, WithContext } from "schema-dts";
+import config from "@/config";
+import { safeJsonLdStringify } from "@/lib/utils/json-ld";
 
 type OpenGraphType =
-  | 'website'
-  | 'article'
-  | 'book'
-  | 'profile'
-  | 'music.song'
-  | 'music.album'
-  | 'music.playlist'
-  | 'music.radio_station'
-  | 'video.movie'
-  | 'video.episode'
-  | 'video.tv_show'
-  | 'video.other';
+  | "website"
+  | "article"
+  | "book"
+  | "profile"
+  | "music.song"
+  | "music.album"
+  | "music.playlist"
+  | "music.radio_station"
+  | "video.movie"
+  | "video.episode"
+  | "video.tv_show"
+  | "video.other";
 
 type MetadataParams = {
   title: string;
@@ -51,14 +51,14 @@ export function generateMetadata({
   openGraph,
 }: MetadataParams): Metadata {
   // Ensure path starts with a slash
-  const normalizedPath = path.startsWith('/') ? path : `/${path}`;
+  const normalizedPath = path.startsWith("/") ? path : `/${path}`;
 
   // Create full URLs for hreflang tags
   const pageUrl = `${config.url}${normalizedPath}`;
 
   // Build the Twitter metadata object
   const twitterMetadata: Record<string, string> = {
-    card: 'summary_large_image',
+    card: "summary_large_image",
     title,
     description,
   };
@@ -66,7 +66,7 @@ export function generateMetadata({
   // Only add site handle if Twitter is enabled and URL is provided
   if (config.nav.twitter.show && config.nav.twitter.url) {
     const twitterUrl = config.nav.twitter.url;
-    const twitterHandle = twitterUrl.split('/').pop();
+    const twitterHandle = twitterUrl.split("/").pop();
     if (twitterHandle) {
       twitterMetadata.site = `@${twitterHandle}`;
     }
@@ -79,13 +79,13 @@ export function generateMetadata({
       canonical: normalizedPath,
       languages: {
         en: pageUrl,
-        'x-default': pageUrl,
+        "x-default": pageUrl,
       },
     },
     openGraph: {
       title: openGraph?.title || title,
       description: openGraph?.description || description,
-      type: openGraph?.type || 'website',
+      type: openGraph?.type || "website",
       url: pageUrl,
       ...(openGraph?.images && { images: openGraph.images }),
     },
@@ -100,7 +100,7 @@ export function generateMetadata({
  */
 export function generateBreadcrumbSchema(items: BreadcrumbItem[]): string {
   type SchemaListItem = {
-    '@type': string;
+    "@type": string;
     position: number;
     name: string;
     item?: string;
@@ -108,12 +108,12 @@ export function generateBreadcrumbSchema(items: BreadcrumbItem[]): string {
 
   // Create type-safe schema using schema-dts
   const breadcrumbSchema: WithContext<BreadcrumbList> = {
-    '@context': 'https://schema.org',
-    '@type': 'BreadcrumbList',
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
     itemListElement: items.map((item, index) => {
       const isLastItem = index === items.length - 1;
       const listItem: SchemaListItem = {
-        '@type': 'ListItem',
+        "@type": "ListItem",
         position: index + 1,
         name: item.name,
       };

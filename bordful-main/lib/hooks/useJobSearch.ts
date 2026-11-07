@@ -1,11 +1,11 @@
-import { parseAsString, useQueryState } from 'nuqs';
-import { useCallback, useEffect, useRef, useState } from 'react';
-import config from '@/config';
+import { parseAsString, useQueryState } from "nuqs";
+import { useCallback, useEffect, useRef, useState } from "react";
+import config from "@/config";
 
 export function useJobSearch() {
   const [searchTerm, setSearchTermState] = useQueryState(
-    'q',
-    parseAsString.withDefault('')
+    "q",
+    parseAsString.withDefault("")
   );
   const [isSearching, setIsSearching] = useState(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);

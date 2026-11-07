@@ -12,6 +12,6 @@ export function safeInternalRedirect(
   fallback: string
 ): string {
   if (!target) return fallback;
-  if (!target.startsWith('/') || target.startsWith('//')) return fallback;
+  if (!target.startsWith("/") || target.startsWith("//")) return fallback;
   return target;
 }

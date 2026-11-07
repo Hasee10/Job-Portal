@@ -1,22 +1,22 @@
-import type { Metadata } from 'next';
-import Link from 'next/link';
-import { notFound, redirect } from 'next/navigation';
-import { ArrowLeft } from 'lucide-react';
-import { auth } from '@/auth';
-import { CandidateSearch } from '@/components/recruiter/CandidateSearch';
-import { getOwnerJob } from '@/lib/jobs/employer-job-actions';
+import type { Metadata } from "next";
+import Link from "next/link";
+import { notFound, redirect } from "next/navigation";
+import { ArrowLeft } from "lucide-react";
+import { auth } from "@/auth";
+import { CandidateSearch } from "@/components/recruiter/CandidateSearch";
+import { getOwnerJob } from "@/lib/jobs/employer-job-actions";
 import {
   getRecruiterDailyOutreachCount,
   listOptInCandidates,
-} from '@/lib/jobs/candidate-outreach-actions';
-import config from '@/config';
+} from "@/lib/jobs/candidate-outreach-actions";
+import config from "@/config";
 
 export const metadata: Metadata = {
   title: `Search Candidates | ${config.title}`,
   robots: { index: false, follow: false },
 };
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 export default async function RecruiterJobCandidatesPage({
   params,
@@ -24,8 +24,9 @@ export default async function RecruiterJobCandidatesPage({
   params: Promise<{ id: string }>;
 }) {
   const session = await auth();
-  if (!session?.user) redirect('/recruiter/sign-in?callbackUrl=/recruiter/jobs');
-  if (session.user.role !== 'recruiter') redirect('/');
+  if (!session?.user)
+    redirect("/recruiter/sign-in?callbackUrl=/recruiter/jobs");
+  if (session.user.role !== "recruiter") redirect("/");
 
   const { id } = await params;
   const job = await getOwnerJob({ recruiterId: session.user.id }, id);
@@ -53,7 +54,8 @@ export default async function RecruiterJobCandidatesPage({
             Search candidates for {job.title}
           </h1>
           <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-            Candidates who&rsquo;ve opted in to outreach, ranked by match to this job&rsquo;s required skills.
+            Candidates who&rsquo;ve opted in to outreach, ranked by match to
+            this job&rsquo;s required skills.
           </p>
 
           <div className="mt-8">

@@ -1,23 +1,24 @@
-import type { Metadata } from 'next';
-import Link from 'next/link';
-import { redirect } from 'next/navigation';
-import { Briefcase, Plus, Users } from 'lucide-react';
-import { auth } from '@/auth';
-import { JobStatusToggle } from '@/components/employer/JobStatusToggle';
-import { listOwnerJobs } from '@/lib/jobs/employer-job-actions';
-import config from '@/config';
+import type { Metadata } from "next";
+import Link from "next/link";
+import { redirect } from "next/navigation";
+import { Briefcase, Plus, Users } from "lucide-react";
+import { auth } from "@/auth";
+import { JobStatusToggle } from "@/components/employer/JobStatusToggle";
+import { listOwnerJobs } from "@/lib/jobs/employer-job-actions";
+import config from "@/config";
 
 export const metadata: Metadata = {
   title: `My Jobs | ${config.title}`,
   robots: { index: false, follow: false },
 };
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 export default async function RecruiterJobsPage() {
   const session = await auth();
-  if (!session?.user) redirect('/recruiter/sign-in?callbackUrl=/recruiter/jobs');
-  if (session.user.role !== 'recruiter') redirect('/');
+  if (!session?.user)
+    redirect("/recruiter/sign-in?callbackUrl=/recruiter/jobs");
+  if (session.user.role !== "recruiter") redirect("/");
 
   const jobs = await listOwnerJobs({ recruiterId: session.user.id });
 
@@ -27,7 +28,9 @@ export default async function RecruiterJobsPage() {
         <div className="mx-auto max-w-4xl">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <h1 className="font-bold text-2xl text-zinc-900 dark:text-zinc-50">My jobs</h1>
+              <h1 className="font-bold text-2xl text-zinc-900 dark:text-zinc-50">
+                My jobs
+              </h1>
               <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
                 Jobs you&rsquo;ve posted on behalf of clients.
               </p>
@@ -46,8 +49,13 @@ export default async function RecruiterJobsPage() {
               <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-800">
                 <Briefcase className="h-5 w-5 text-zinc-400" />
               </div>
-              <p className="mt-3 font-medium text-zinc-900 dark:text-zinc-50">No jobs posted yet</p>
-              <p className="mt-1 text-sm text-zinc-500">Post a job on behalf of a client to start receiving applications.</p>
+              <p className="mt-3 font-medium text-zinc-900 dark:text-zinc-50">
+                No jobs posted yet
+              </p>
+              <p className="mt-1 text-sm text-zinc-500">
+                Post a job on behalf of a client to start receiving
+                applications.
+              </p>
             </div>
           ) : (
             <div className="mt-8 space-y-4">
@@ -67,22 +75,22 @@ export default async function RecruiterJobsPage() {
                         </Link>
                         <span
                           className={`rounded-full px-2 py-0.5 text-xs font-medium ${
-                            job.status === 'active'
-                              ? 'bg-green-50 text-green-700 dark:bg-green-500/10 dark:text-green-400'
-                              : 'bg-zinc-100 text-zinc-500 dark:bg-zinc-800'
+                            job.status === "active"
+                              ? "bg-green-50 text-green-700 dark:bg-green-500/10 dark:text-green-400"
+                              : "bg-zinc-100 text-zinc-500 dark:bg-zinc-800"
                           }`}
                         >
-                          {job.status === 'active' ? 'Active' : 'Closed'}
+                          {job.status === "active" ? "Active" : "Closed"}
                         </span>
                       </div>
                       <p className="mt-0.5 text-sm text-zinc-500 dark:text-zinc-400">
                         {job.company} · {job.type}
-                        {job.workplace_city ? ` · ${job.workplace_city}` : ''}
+                        {job.workplace_city ? ` · ${job.workplace_city}` : ""}
                       </p>
                     </div>
                     <JobStatusToggle
                       apiBasePath="/api/recruiter/jobs"
-                      isActive={job.status === 'active'}
+                      isActive={job.status === "active"}
                       jobId={job.id}
                     />
                   </div>
@@ -94,7 +102,8 @@ export default async function RecruiterJobsPage() {
                         href={`/recruiter/jobs/${job.id}/applications`}
                       >
                         <Users className="h-3.5 w-3.5" />
-                        {job.applicationCount} application{job.applicationCount !== 1 ? 's' : ''}
+                        {job.applicationCount} application
+                        {job.applicationCount !== 1 ? "s" : ""}
                       </Link>
                     )}
                     <Link

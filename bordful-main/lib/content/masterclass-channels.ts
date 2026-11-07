@@ -16,57 +16,57 @@ export type MasterclassChannel = {
 
 export const MASTERCLASS_CHANNEL_ALLOWLIST: MasterclassChannel[] = [
   {
-    channelId: 'UCXUyg1vYSupswhi0zNeD-5w',
-    name: 'Linda Raynier',
-    defaultCategory: 'Interviewing',
+    channelId: "UCXUyg1vYSupswhi0zNeD-5w",
+    name: "Linda Raynier",
+    defaultCategory: "Interviewing",
   },
   {
-    channelId: 'UCP1UlYJH_QL4m5HVyikcxfQ',
-    name: 'Andrew LaCivita',
-    defaultCategory: 'Negotiation & Offers',
+    channelId: "UCP1UlYJH_QL4m5HVyikcxfQ",
+    name: "Andrew LaCivita",
+    defaultCategory: "Negotiation & Offers",
   },
   {
-    channelId: 'UCAC8Y3gJMuhGsjNWyufUNAQ',
-    name: 'Career Contessa',
-    defaultCategory: 'Job Search',
+    channelId: "UCAC8Y3gJMuhGsjNWyufUNAQ",
+    name: "Career Contessa",
+    defaultCategory: "Job Search",
   },
   {
-    channelId: 'UCWo4IA01TXzBeGJJKWHOG9g',
-    name: 'Harvard Business Review',
-    defaultCategory: 'Career Development',
+    channelId: "UCWo4IA01TXzBeGJJKWHOG9g",
+    name: "Harvard Business Review",
+    defaultCategory: "Career Development",
   },
   {
-    channelId: 'UCk4bbQAZD26f_XdGyb4wwhg',
-    name: 'The Muse',
-    defaultCategory: 'Job Search',
+    channelId: "UCk4bbQAZD26f_XdGyb4wwhg",
+    name: "The Muse",
+    defaultCategory: "Job Search",
   },
   {
-    channelId: 'UCiQNvBItd1s9Bei2Zkmar4A',
-    name: 'The Interview Guys',
-    defaultCategory: 'Interviewing',
+    channelId: "UCiQNvBItd1s9Bei2Zkmar4A",
+    name: "The Interview Guys",
+    defaultCategory: "Interviewing",
   },
   {
-    channelId: 'UCeNm7lbfRg9wiBDSLQ-M8RA',
-    name: 'Self Made Millennial',
-    defaultCategory: 'Job Search',
+    channelId: "UCeNm7lbfRg9wiBDSLQ-M8RA",
+    name: "Self Made Millennial",
+    defaultCategory: "Job Search",
   },
   {
-    channelId: 'UCiLeUu6mTGaopeEV1pFDVLA',
-    name: 'Josh Doody (Fearless Salary Negotiation)',
-    defaultCategory: 'Negotiation & Offers',
+    channelId: "UCiLeUu6mTGaopeEV1pFDVLA",
+    name: "Josh Doody (Fearless Salary Negotiation)",
+    defaultCategory: "Negotiation & Offers",
   },
   {
-    channelId: 'UCmem-D5aeCsSRyXTZkH_gKQ',
-    name: 'Jennifer Brick',
-    defaultCategory: 'Career Development',
+    channelId: "UCmem-D5aeCsSRyXTZkH_gKQ",
+    name: "Jennifer Brick",
+    defaultCategory: "Career Development",
   },
   // Jeff Su's channel is broader productivity/AI-tooling content, not
   // purely career advice - relies more heavily on the relevance keyword
   // filter below to skip his non-career videos than the other channels do.
   {
-    channelId: 'UCwAnu01qlnVg1Ai2AbtTMaA',
-    name: 'Jeff Su',
-    defaultCategory: 'Career Development',
+    channelId: "UCwAnu01qlnVg1Ai2AbtTMaA",
+    name: "Jeff Su",
+    defaultCategory: "Career Development",
   },
 ];
 
@@ -82,32 +82,32 @@ export const MASTERCLASS_CHANNEL_ALLOWLIST: MasterclassChannel[] = [
 // (e.g. a coach posting about topics outside job search/interviewing)
 // without needing a second AI call just to judge relevance.
 export const MASTERCLASS_RELEVANCE_KEYWORDS = [
-  'interview',
-  'resume',
-  'cv ',
-  'salary',
-  'negotiat',
-  'job search',
-  'job offer',
-  'career',
-  'hiring',
-  'recruiter',
-  'linkedin',
+  "interview",
+  "resume",
+  "cv ",
+  "salary",
+  "negotiat",
+  "job search",
+  "job offer",
+  "career",
+  "hiring",
+  "recruiter",
+  "linkedin",
 ];
 
 // Keyword -> category, checked in order against the video title first
 // (falls back to the channel's defaultCategory if nothing matches).
 export const MASTERCLASS_CATEGORY_KEYWORDS: [string, string][] = [
-  ['negotiat', 'Negotiation & Offers'],
-  ['salary', 'Negotiation & Offers'],
-  ['offer', 'Negotiation & Offers'],
-  ['interview', 'Interviewing'],
-  ['resume', 'Resumes & Applications'],
-  ['cv', 'Resumes & Applications'],
-  ['cover letter', 'Resumes & Applications'],
-  ['network', 'Job Search'],
-  ['linkedin', 'Job Search'],
-  ['job search', 'Job Search'],
-  ['career', 'Career Development'],
-  ['promotion', 'Career Development'],
+  ["negotiat", "Negotiation & Offers"],
+  ["salary", "Negotiation & Offers"],
+  ["offer", "Negotiation & Offers"],
+  ["interview", "Interviewing"],
+  ["resume", "Resumes & Applications"],
+  ["cv", "Resumes & Applications"],
+  ["cover letter", "Resumes & Applications"],
+  ["network", "Job Search"],
+  ["linkedin", "Job Search"],
+  ["job search", "Job Search"],
+  ["career", "Career Development"],
+  ["promotion", "Career Development"],
 ];

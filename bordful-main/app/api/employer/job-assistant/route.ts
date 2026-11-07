@@ -1,10 +1,10 @@
-import { NextResponse } from 'next/server';
-import { auth } from '@/auth';
-import { aiChatCompletion } from '@/lib/ai/provider';
-import { AIProviderError } from '@/lib/ai/types';
-import { createRateLimiter } from '@/lib/utils/rate-limit';
+import { NextResponse } from "next/server";
+import { auth } from "@/auth";
+import { aiChatCompletion } from "@/lib/ai/provider";
+import { AIProviderError } from "@/lib/ai/types";
+import { createRateLimiter } from "@/lib/utils/rate-limit";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 export const maxDuration = 30;
 
 // In-memory, per-employer - deters accidental runaway usage (e.g. a stuck
@@ -14,7 +14,7 @@ const isRateLimited = createRateLimiter(30);
 const MAX_MESSAGES = 12;
 const MAX_MESSAGE_LENGTH = 4000;
 
-type ChatMessage = { role: 'user' | 'assistant'; content: string };
+type ChatMessage = { role: "user" | "assistant"; content: string };
 
 type JobDraft = {
   title?: string;
@@ -28,18 +28,20 @@ type JobDraft = {
 };
 
 function draftSummary(draft: JobDraft | undefined): string {
-  if (!draft) return 'No draft fields filled in yet.';
+  if (!draft) return "No draft fields filled in yet.";
   const lines = [
     draft.title && `Title: ${draft.title}`,
     draft.type && `Type: ${draft.type}`,
     draft.workplaceType && `Workplace: ${draft.workplaceType}`,
     (draft.workplaceCity || draft.workplaceCountry) &&
-      `Location: ${[draft.workplaceCity, draft.workplaceCountry].filter(Boolean).join(', ')}`,
+      `Location: ${[draft.workplaceCity, draft.workplaceCountry].filter(Boolean).join(", ")}`,
     draft.skills && `Skills shown on listing: ${draft.skills}`,
-    draft.requiredSkills?.length && `Required skills (auto-shortlist): ${draft.requiredSkills.join(', ')}`,
-    draft.description && `Current description:\n${draft.description.slice(0, 3000)}`,
+    draft.requiredSkills?.length &&
+      `Required skills (auto-shortlist): ${draft.requiredSkills.join(", ")}`,
+    draft.description &&
+      `Current description:\n${draft.description.slice(0, 3000)}`,
   ].filter(Boolean);
-  return lines.length ? lines.join('\n') : 'No draft fields filled in yet.';
+  return lines.length ? lines.join("\n") : "No draft fields filled in yet.";
 }
 
 // Static grounding so FAQ answers reflect how this specific board's posting
@@ -66,27 +68,39 @@ Rules:
 
 export async function POST(request: Request) {
   const session = await auth();
-  if (!session?.user || session.user.role !== 'employer') {
-    return NextResponse.json({ error: 'Not signed in.' }, { status: 401 });
+  if (!session?.user || session.user.role !== "employer") {
+    return NextResponse.json({ error: "Not signed in." }, { status: 401 });
   }
 
   if (isRateLimited(session.user.id)) {
     return NextResponse.json(
-      { error: 'Too many requests. Please wait a moment and try again.' },
+      { error: "Too many requests. Please wait a moment and try again." },
       { status: 429 }
     );
   }
 
   const body = await request.json();
-  const messages = Array.isArray(body.messages) ? (body.messages as ChatMessage[]) : [];
+  const messages = Array.isArray(body.messages)
+    ? (body.messages as ChatMessage[])
+    : [];
   if (messages.length === 0) {
-    return NextResponse.json({ error: 'A message is required.' }, { status: 400 });
+    return NextResponse.json(
+      { error: "A message is required." },
+      { status: 400 }
+    );
   }
 
   const trimmedMessages = messages
     .slice(-MAX_MESSAGES)
-    .filter((m) => (m.role === 'user' || m.role === 'assistant') && typeof m.content === 'string')
-    .map((m) => ({ role: m.role, content: m.content.slice(0, MAX_MESSAGE_LENGTH) }));
+    .filter(
+      (m) =>
+        (m.role === "user" || m.role === "assistant") &&
+        typeof m.content === "string"
+    )
+    .map((m) => ({
+      role: m.role,
+      content: m.content.slice(0, MAX_MESSAGE_LENGTH),
+    }));
 
   const draft = body.draft as JobDraft | undefined;
 
@@ -94,7 +108,7 @@ export async function POST(request: Request) {
     const output = await aiChatCompletion(
       [
         {
-          role: 'system',
+          role: "system",
           content: `${SYSTEM_PROMPT}\n\nCurrent draft:\n${draftSummary(draft)}`,
         },
         ...trimmedMessages,
@@ -106,13 +120,13 @@ export async function POST(request: Request) {
   } catch (error) {
     if (error instanceof AIProviderError && error.notConfigured) {
       return NextResponse.json(
-        { error: 'The AI assistant is not available yet on this deployment.' },
+        { error: "The AI assistant is not available yet on this deployment." },
         { status: 503 }
       );
     }
-    console.error('[api/employer/job-assistant] AI request failed:', error);
+    console.error("[api/employer/job-assistant] AI request failed:", error);
     return NextResponse.json(
-      { error: 'Failed to reach the assistant. Please try again.' },
+      { error: "Failed to reach the assistant. Please try again." },
       { status: 502 }
     );
   }

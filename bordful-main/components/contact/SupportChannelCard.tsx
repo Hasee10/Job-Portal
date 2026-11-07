@@ -7,12 +7,12 @@ import {
   MessageSquare,
   Phone,
   Rss,
-} from 'lucide-react';
-import Image from 'next/image';
-import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import config from '@/config';
-import { resolveColor } from '@/lib/utils/colors';
+} from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import config from "@/config";
+import { resolveColor } from "@/lib/utils/colors";
 
 type SupportChannelCardProps = {
   title: string;
@@ -35,9 +35,9 @@ const iconMap: Record<string, LucideIcon> = {
 // upstream) - rendered from the same static SVG assets footer.tsx already
 // uses for these platforms instead.
 const BRAND_ICON_SRC: Record<string, string> = {
-  Twitter: '/assets/social/twitter.svg',
-  Github: '/assets/social/github.svg',
-  Linkedin: '/assets/social/linkedin.svg',
+  Twitter: "/assets/social/twitter.svg",
+  Github: "/assets/social/github.svg",
+  Linkedin: "/assets/social/linkedin.svg",
 };
 
 export function SupportChannelCard({
@@ -55,7 +55,7 @@ export function SupportChannelCard({
   const IconComponent = iconMap[icon] || HelpCircle;
 
   const isExternalLink =
-    buttonLink.startsWith('http') || buttonLink.startsWith('mailto');
+    buttonLink.startsWith("http") || buttonLink.startsWith("mailto");
 
   return (
     <div className="flex h-full flex-col rounded-lg border p-5 transition-all hover:border-gray-400">
@@ -75,10 +75,14 @@ export function SupportChannelCard({
             <IconComponent className="h-5 w-5 text-zinc-700 dark:text-zinc-300" />
           )}
         </div>
-        <h3 className="font-medium text-base text-zinc-900 dark:text-zinc-100">{title}</h3>
+        <h3 className="font-medium text-base text-zinc-900 dark:text-zinc-100">
+          {title}
+        </h3>
       </div>
       <div className="flex-grow pb-6">
-        <p className="text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed">{description}</p>
+        <p className="text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed">
+          {description}
+        </p>
       </div>
       <div className="mt-auto pt-0">
         <Button
@@ -90,8 +94,8 @@ export function SupportChannelCard({
         >
           <Link
             href={buttonLink}
-            rel={isExternalLink ? 'noopener noreferrer' : undefined}
-            target={isExternalLink ? '_blank' : undefined}
+            rel={isExternalLink ? "noopener noreferrer" : undefined}
+            target={isExternalLink ? "_blank" : undefined}
           >
             {buttonText}
             {isExternalLink && (

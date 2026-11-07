@@ -1,19 +1,19 @@
-import config from '@/config';
+import config from "@/config";
 import {
   isOGEnabled,
   type OGConfig,
   parseOGConfig,
-} from '@/lib/utils/og-config';
+} from "@/lib/utils/og-config";
 import {
   createOGImageResponse,
   type LogoConfig,
   prepareBackgroundImage,
   prepareOGAssets,
   processLogo,
-} from '@/lib/utils/og-helpers';
+} from "@/lib/utils/og-helpers";
 
 // Specify that this route should run on Vercel's edge runtime
-export const runtime = 'edge';
+export const runtime = "edge";
 
 /**
  * Generate a dynamic Open Graph image based on the site configuration
@@ -26,7 +26,7 @@ export async function GET() {
 
   // Check if OG image generation is enabled
   if (!isOGEnabled(ogConfig)) {
-    return new Response('OG image generation is disabled in config', {
+    return new Response("OG image generation is disabled in config", {
       status: 404,
     });
   }
@@ -57,6 +57,6 @@ export async function GET() {
       processedLogo
     );
   } catch (_error: unknown) {
-    return new Response('Error generating OG image', { status: 500 });
+    return new Response("Error generating OG image", { status: 500 });
   }
 }

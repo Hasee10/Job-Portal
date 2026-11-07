@@ -1,12 +1,12 @@
-import { NextResponse } from 'next/server';
-import config from '@/config';
-import { createPasswordResetToken } from '@/lib/auth/employers';
-import { sendEmail } from '@/lib/email/smtp';
-import { renderPasswordResetEmail } from '@/lib/email/templates/password-reset';
-import { EmailProviderError } from '@/lib/email/types';
-import { createRateLimiter, getClientIp } from '@/lib/utils/rate-limit';
+import { NextResponse } from "next/server";
+import config from "@/config";
+import { createPasswordResetToken } from "@/lib/auth/employers";
+import { sendEmail } from "@/lib/email/smtp";
+import { renderPasswordResetEmail } from "@/lib/email/templates/password-reset";
+import { EmailProviderError } from "@/lib/email/types";
+import { createRateLimiter, getClientIp } from "@/lib/utils/rate-limit";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 const isRateLimited = createRateLimiter(5);
 
@@ -24,13 +24,13 @@ export async function POST(request: Request) {
     const clientIp = getClientIp(request);
     if (isRateLimited(clientIp)) {
       return NextResponse.json(
-        { error: 'Too many requests. Please try again later.' },
+        { error: "Too many requests. Please try again later." },
         { status: 429 }
       );
     }
 
     const body = await request.json();
-    const email = typeof body.email === 'string' ? body.email : '';
+    const email = typeof body.email === "string" ? body.email : "";
     if (!email) {
       return NextResponse.json(GENERIC_RESPONSE);
     }
@@ -44,19 +44,19 @@ export async function POST(request: Request) {
       } catch (error) {
         // Don't let a provider hiccup (or a not-yet-configured deployment)
         // leak into the response - the generic message goes out either way.
-        console.error('[api/employers/forgot-password]', error);
+        console.error("[api/employers/forgot-password]", error);
       }
     }
 
     return NextResponse.json(GENERIC_RESPONSE);
   } catch (error) {
     if (error instanceof EmailProviderError) {
-      console.error('[api/employers/forgot-password]', error);
+      console.error("[api/employers/forgot-password]", error);
       return NextResponse.json(GENERIC_RESPONSE);
     }
-    console.error('[api/employers/forgot-password]', error);
+    console.error("[api/employers/forgot-password]", error);
     return NextResponse.json(
-      { error: 'Something went wrong. Please try again later.' },
+      { error: "Something went wrong. Please try again later." },
       { status: 500 }
     );
   }

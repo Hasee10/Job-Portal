@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
-import { parseAsInteger, useQueryState } from 'nuqs';
-import { DEFAULT_PER_PAGE } from '@/lib/constants/defaults';
+import { parseAsInteger, useQueryState } from "nuqs";
+import { DEFAULT_PER_PAGE } from "@/lib/constants/defaults";
 
 export function useJobsPerPage() {
   const [jobsPerPage, setJobsPerPage] = useQueryState(
-    'per_page',
+    "per_page",
     parseAsInteger.withDefault(DEFAULT_PER_PAGE)
   );
 

@@ -1,8 +1,8 @@
-import { Search } from 'lucide-react';
-import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import config from '@/config';
-import { resolveColor } from '@/lib/utils/colors';
+import { Search } from "lucide-react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import config from "@/config";
+import { resolveColor } from "@/lib/utils/colors";
 
 export default function JobNotFound() {
   return (

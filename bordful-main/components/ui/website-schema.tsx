@@ -1,13 +1,13 @@
-import Script from 'next/script';
+import Script from "next/script";
 import type {
   EntryPoint,
   Organization,
   SearchAction,
   WebSite,
   WithContext,
-} from 'schema-dts';
-import config from '@/config';
-import { safeJsonLdStringify } from '@/lib/utils/json-ld';
+} from "schema-dts";
+import config from "@/config";
+import { safeJsonLdStringify } from "@/lib/utils/json-ld";
 
 export function WebsiteSchema() {
   // We won't have an explicit disable option, so always render unless
@@ -17,7 +17,7 @@ export function WebsiteSchema() {
   const baseUrl =
     config.url ||
     process.env.NEXT_PUBLIC_APP_URL ||
-    'https://job-portal-ten-pi.vercel.app';
+    "https://job-portal-ten-pi.vercel.app";
   const siteName = config.nav.title;
   const siteDescription = config.description;
 
@@ -49,13 +49,13 @@ export function WebsiteSchema() {
 
   // Create publisher entity based on site info
   const publisher: Organization = {
-    '@type': 'Organization',
+    "@type": "Organization",
     name: siteName,
   };
 
   // Add logo if available
   if (config.nav.logo?.enabled && config.nav.logo?.src) {
-    const logoUrl = config.nav.logo.src.startsWith('http')
+    const logoUrl = config.nav.logo.src.startsWith("http")
       ? config.nav.logo.src
       : `${baseUrl}${config.nav.logo.src}`;
 
@@ -64,8 +64,8 @@ export function WebsiteSchema() {
 
   // Build the schema data object
   const schemaData: WithContext<WebSite> = {
-    '@context': 'https://schema.org',
-    '@type': 'WebSite',
+    "@context": "https://schema.org",
+    "@type": "WebSite",
     name: siteName,
     url: baseUrl,
 
@@ -96,36 +96,36 @@ export function WebsiteSchema() {
 
     // Always include general site search
     const generalSearchAction: SearchAction = {
-      '@type': 'SearchAction',
+      "@type": "SearchAction",
       target: {
-        '@type': 'EntryPoint',
+        "@type": "EntryPoint",
         urlTemplate: generalSearchUrlTemplate,
       } as EntryPoint,
-      description: 'Search across the entire site',
+      description: "Search across the entire site",
     };
 
     // Add non-standard query-input property required by Google
     const generalSearchWithQueryInput = {
       ...generalSearchAction,
-      'query-input': 'required name=search_term_string',
+      "query-input": "required name=search_term_string",
     };
 
     searchActions.push(generalSearchWithQueryInput);
 
     // Job-specific search - always include as this is a job board
     const jobSearchAction: SearchAction = {
-      '@type': 'SearchAction',
+      "@type": "SearchAction",
       target: {
-        '@type': 'EntryPoint',
+        "@type": "EntryPoint",
         urlTemplate: jobSearchUrlTemplate,
       } as EntryPoint,
-      description: 'Search for jobs by title, skills, or keywords',
+      description: "Search for jobs by title, skills, or keywords",
     };
 
     // Add non-standard query-input property required by Google
     const jobSearchWithQueryInput = {
       ...jobSearchAction,
-      'query-input': 'required name=search_term_string',
+      "query-input": "required name=search_term_string",
     };
 
     searchActions.push(jobSearchWithQueryInput);

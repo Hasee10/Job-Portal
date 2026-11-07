@@ -1,7 +1,7 @@
-import { type Country, countries } from './countries';
-import type { RemoteRegion, WorkplaceType } from './workplace';
+import { type Country, countries } from "./countries";
+import type { RemoteRegion, WorkplaceType } from "./workplace";
 
-export type LocationType = 'remote' | Country;
+export type LocationType = "remote" | Country;
 
 export type LocationCounts = {
   countries: Partial<Record<Country, number>>;
@@ -10,24 +10,62 @@ export type LocationCounts = {
 };
 
 const US_STATES: Record<string, string> = {
-  AL: 'Alabama', AK: 'Alaska', AZ: 'Arizona', AR: 'Arkansas',
-  CA: 'California', CO: 'Colorado', CT: 'Connecticut', DE: 'Delaware',
-  FL: 'Florida', GA: 'Georgia', HI: 'Hawaii', ID: 'Idaho',
-  IL: 'Illinois', IN: 'Indiana', IA: 'Iowa', KS: 'Kansas',
-  KY: 'Kentucky', LA: 'Louisiana', ME: 'Maine', MD: 'Maryland',
-  MA: 'Massachusetts', MI: 'Michigan', MN: 'Minnesota', MS: 'Mississippi',
-  MO: 'Missouri', MT: 'Montana', NE: 'Nebraska', NV: 'Nevada',
-  NH: 'New Hampshire', NJ: 'New Jersey', NM: 'New Mexico', NY: 'New York',
-  NC: 'North Carolina', ND: 'North Dakota', OH: 'Ohio', OK: 'Oklahoma',
-  OR: 'Oregon', PA: 'Pennsylvania', RI: 'Rhode Island', SC: 'South Carolina',
-  SD: 'South Dakota', TN: 'Tennessee', TX: 'Texas', UT: 'Utah',
-  VT: 'Vermont', VA: 'Virginia', WA: 'Washington', WV: 'West Virginia',
-  WI: 'Wisconsin', WY: 'Wyoming', DC: 'Washington D.C.',
+  AL: "Alabama",
+  AK: "Alaska",
+  AZ: "Arizona",
+  AR: "Arkansas",
+  CA: "California",
+  CO: "Colorado",
+  CT: "Connecticut",
+  DE: "Delaware",
+  FL: "Florida",
+  GA: "Georgia",
+  HI: "Hawaii",
+  ID: "Idaho",
+  IL: "Illinois",
+  IN: "Indiana",
+  IA: "Iowa",
+  KS: "Kansas",
+  KY: "Kentucky",
+  LA: "Louisiana",
+  ME: "Maine",
+  MD: "Maryland",
+  MA: "Massachusetts",
+  MI: "Michigan",
+  MN: "Minnesota",
+  MS: "Mississippi",
+  MO: "Missouri",
+  MT: "Montana",
+  NE: "Nebraska",
+  NV: "Nevada",
+  NH: "New Hampshire",
+  NJ: "New Jersey",
+  NM: "New Mexico",
+  NY: "New York",
+  NC: "North Carolina",
+  ND: "North Dakota",
+  OH: "Ohio",
+  OK: "Oklahoma",
+  OR: "Oregon",
+  PA: "Pennsylvania",
+  RI: "Rhode Island",
+  SC: "South Carolina",
+  SD: "South Dakota",
+  TN: "Tennessee",
+  TX: "Texas",
+  UT: "Utah",
+  VT: "Vermont",
+  VA: "Virginia",
+  WA: "Washington",
+  WV: "West Virginia",
+  WI: "Wisconsin",
+  WY: "Wyoming",
+  DC: "Washington D.C.",
 };
 
 export function formatLocationTitle(location: string): string {
-  if (location.toLowerCase() === 'remote') {
-    return 'Remote';
+  if (location.toLowerCase() === "remote") {
+    return "Remote";
   }
 
   // Expand US state abbreviations (e.g. "CA" → "California")
@@ -47,9 +85,9 @@ export function formatLocationTitle(location: string): string {
   // Fall back to title case for cities / freeform strings
   return location
     .toLowerCase()
-    .split(' ')
+    .split(" ")
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ');
+    .join(" ");
 }
 
 /**
@@ -59,14 +97,14 @@ export function formatLocationTitle(location: string): string {
  */
 export function createLocationSlug(location: string): string {
   if (!location) {
-    return '';
+    return "";
   }
 
   return location
     .toLowerCase()
-    .replace(/[^\w\s-]/g, '') // Remove special characters
-    .replace(/\s+/g, '-') // Replace spaces with hyphens
-    .replace(/-+/g, '-'); // Replace multiple hyphens with single hyphen
+    .replace(/[^\w\s-]/g, "") // Remove special characters
+    .replace(/\s+/g, "-") // Replace spaces with hyphens
+    .replace(/-+/g, "-"); // Replace multiple hyphens with single hyphen
 }
 
 /**
@@ -80,7 +118,7 @@ export function getCountryFromSlug(slug: string): Country | null {
   }
 
   // Handle remote case
-  if (slug.toLowerCase() === 'remote') {
+  if (slug.toLowerCase() === "remote") {
     return null;
   }
 
@@ -107,8 +145,8 @@ export function formatLocation({
   workplace_country: string | null;
 }): string {
   // Handle remote work
-  if (workplace_type === 'Remote') {
-    return `Remote (${remote_region || 'Worldwide'})`;
+  if (workplace_type === "Remote") {
+    return `Remote (${remote_region || "Worldwide"})`;
   }
 
   // Build location string
@@ -118,12 +156,12 @@ export function formatLocation({
   ].filter(Boolean);
 
   const locationString =
-    locationParts.length > 0 ? locationParts.join(', ') : 'Not specified';
+    locationParts.length > 0 ? locationParts.join(", ") : "Not specified";
 
   // Add hybrid indicator if applicable
-  if (workplace_type === 'Hybrid') {
+  if (workplace_type === "Hybrid") {
     return `${locationString} - Hybrid${
-      remote_region ? ` (${remote_region})` : ''
+      remote_region ? ` (${remote_region})` : ""
     }`;
   }
 

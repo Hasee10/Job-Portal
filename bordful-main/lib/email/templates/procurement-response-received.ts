@@ -1,4 +1,10 @@
-import { EMAIL_BRAND_COLOR, emailFooter, emailHeader, h, wrapEmailBody } from './shared';
+import {
+  EMAIL_BRAND_COLOR,
+  emailFooter,
+  emailHeader,
+  h,
+  wrapEmailBody,
+} from "./shared";
 
 export type ProcurementResponseReceivedEmailData = {
   requestTitle: string;
@@ -25,7 +31,7 @@ export function renderProcurementResponseReceivedEmail({
         ${
           sealedBids
             ? "This request uses sealed bidding, so the response content stays hidden - including from you - until you close the request and open bids after the deadline."
-            : 'You can review the full response now.'
+            : "You can review the full response now."
         }
       </p>
       <table cellpadding="0" cellspacing="0" role="presentation">
@@ -37,7 +43,7 @@ export function renderProcurementResponseReceivedEmail({
       </table>
     </div>
 
-    ${emailFooter({ audience: 'employer' })}
+    ${emailFooter({ audience: "employer" })}
   `);
 
   return {

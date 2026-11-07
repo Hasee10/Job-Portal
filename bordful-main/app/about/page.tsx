@@ -1,46 +1,46 @@
-import { ArrowRight, BookOpen, Mail, Target, Users } from 'lucide-react';
-import type { Metadata } from 'next';
-import Link from 'next/link';
-import { AboutSchema } from '@/components/ui/about-schema';
-import { Button } from '@/components/ui/button';
-import { HeroSection } from '@/components/ui/hero-section';
-import { MetadataBreadcrumb } from '@/components/ui/metadata-breadcrumb';
-import config from '@/config';
-import { resolveColor } from '@/lib/utils/colors';
+import { ArrowRight, BookOpen, Mail, Target, Users } from "lucide-react";
+import type { Metadata } from "next";
+import Link from "next/link";
+import { AboutSchema } from "@/components/ui/about-schema";
+import { Button } from "@/components/ui/button";
+import { HeroSection } from "@/components/ui/hero-section";
+import { MetadataBreadcrumb } from "@/components/ui/metadata-breadcrumb";
+import config from "@/config";
+import { resolveColor } from "@/lib/utils/colors";
 
 // Add metadata for SEO
 export const metadata: Metadata = {
-  title: `${config.about?.title || 'About Us'} | ${config.title}`,
+  title: `${config.about?.title || "About Us"} | ${config.title}`,
   description:
     config.about?.description ||
-    'Learn more about our company, mission, and values.',
-  keywords: 'about us, company, mission, values, team, story',
+    "Learn more about our company, mission, and values.",
+  keywords: "about us, company, mission, values, team, story",
   openGraph: {
-    title: `${config.about?.title || 'About Us'} | ${config.title}`,
+    title: `${config.about?.title || "About Us"} | ${config.title}`,
     description:
       config.about?.description ||
-      'Learn more about our company, mission, and values.',
-    type: 'website',
+      "Learn more about our company, mission, and values.",
+    type: "website",
     url: `${config.url}/about`,
   },
   twitter: {
-    card: 'summary_large_image',
-    title: `${config.about?.title || 'About Us'} | ${config.title}`,
+    card: "summary_large_image",
+    title: `${config.about?.title || "About Us"} | ${config.title}`,
     description:
       config.about?.description ||
-      'Learn more about our company, mission, and values.',
+      "Learn more about our company, mission, and values.",
   },
   alternates: {
-    canonical: '/about',
+    canonical: "/about",
     languages: {
       en: `${config.url}/about`,
-      'x-default': `${config.url}/about`,
+      "x-default": `${config.url}/about`,
     },
   },
 };
 
 // This page will be static
-export const dynamic = 'force-static';
+export const dynamic = "force-static";
 
 export default function AboutPage() {
   // If about page is not enabled, redirect to home page
@@ -80,7 +80,7 @@ export default function AboutPage() {
       />
 
       <HeroSection
-        badge={config.about.badge || 'About Us'}
+        badge={config.about.badge || "About Us"}
         description={config.about.description}
         heroImage={config.about.heroImage}
         title={config.about.title}
@@ -101,7 +101,7 @@ export default function AboutPage() {
               </div>
               <div>
                 <h2 className="mb-2 font-semibold text-xl text-zinc-900 dark:text-zinc-100">
-                  {config.about.sections?.mission?.title || 'Mission'}
+                  {config.about.sections?.mission?.title || "Mission"}
                 </h2>
                 <p className="text-zinc-600 leading-relaxed dark:text-zinc-400">
                   {config.about.sections?.mission?.content ||
@@ -117,7 +117,7 @@ export default function AboutPage() {
               </div>
               <div>
                 <h2 className="mb-2 font-semibold text-xl text-zinc-900 dark:text-zinc-100">
-                  {config.about.sections?.story?.title || 'Story'}
+                  {config.about.sections?.story?.title || "Story"}
                 </h2>
                 <p className="text-zinc-600 leading-relaxed dark:text-zinc-400">
                   {config.about.sections?.story?.content ||
@@ -133,11 +133,11 @@ export default function AboutPage() {
               </div>
               <div>
                 <h2 className="mb-2 font-semibold text-xl text-zinc-900 dark:text-zinc-100">
-                  {config.about.sections?.team?.title || 'Team'}
+                  {config.about.sections?.team?.title || "Team"}
                 </h2>
                 <p className="text-zinc-600 leading-relaxed dark:text-zinc-400">
                   {config.about.sections?.team?.content ||
-                    'Our diverse team brings together expertise from recruitment, technology, and design to create an innovative job board solution that puts user experience first.'}
+                    "Our diverse team brings together expertise from recruitment, technology, and design to create an innovative job board solution that puts user experience first."}
                 </p>
               </div>
             </div>
@@ -150,11 +150,11 @@ export default function AboutPage() {
                 </div>
                 <div>
                   <h2 className="mb-2 font-semibold text-xl text-zinc-900 dark:text-zinc-100">
-                    {config.about.contact.title || 'Get in Touch'}
+                    {config.about.contact.title || "Get in Touch"}
                   </h2>
                   <p className="mb-5 text-zinc-600 leading-relaxed dark:text-zinc-400">
                     {config.about.contact.description ||
-                      'Have questions or want to learn more about our services? We&apos;d love to hear from you.'}
+                      "Have questions or want to learn more about our services? We&apos;d love to hear from you."}
                   </p>
                   <Link href={config.about.contact.url}>
                     <Button

@@ -1,4 +1,4 @@
-import type { VendorAccount } from '@/lib/procurement/vendor-actions';
+import type { VendorAccount } from "@/lib/procurement/vendor-actions";
 
 export function VendorCard({ vendor }: { vendor: VendorAccount }) {
   return (
@@ -15,7 +15,9 @@ export function VendorCard({ vendor }: { vendor: VendorAccount }) {
             {vendor.companyName || vendor.email}
           </h2>
           {vendor.location && (
-            <p className="text-sm text-zinc-600 dark:text-zinc-400">{vendor.location}</p>
+            <p className="text-sm text-zinc-600 dark:text-zinc-400">
+              {vendor.location}
+            </p>
           )}
         </div>
       </div>

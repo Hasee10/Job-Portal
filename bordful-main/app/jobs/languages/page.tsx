@@ -1,22 +1,22 @@
-import { Languages } from 'lucide-react';
-import type { Metadata } from 'next';
-import Link from 'next/link';
-import { HeroSection } from '@/components/ui/hero-section';
-import { MetadataBreadcrumb } from '@/components/ui/metadata-breadcrumb';
-import config from '@/config';
+import { Languages } from "lucide-react";
+import type { Metadata } from "next";
+import Link from "next/link";
+import { HeroSection } from "@/components/ui/hero-section";
+import { MetadataBreadcrumb } from "@/components/ui/metadata-breadcrumb";
+import config from "@/config";
 import {
   getDisplayNameFromCode,
   type LanguageCode,
-} from '@/lib/constants/languages';
-import { getJobs } from '@/lib/db/airtable.server';
-import { generateMetadata } from '@/lib/utils/metadata';
+} from "@/lib/constants/languages";
+import { getJobs } from "@/lib/db/airtable.server";
+import { generateMetadata } from "@/lib/utils/metadata";
 
 // Generate metadata for SEO
 export const metadata: Metadata = generateMetadata({
   title: `Browse Jobs by Language | ${config.title}`,
   description:
-    'Explore tech jobs by required languages. Find positions that match your language skills and preferences.',
-  path: '/jobs/languages',
+    "Explore tech jobs by required languages. Find positions that match your language skills and preferences.",
+  path: "/jobs/languages",
 });
 
 // Revalidate page every 5 minutes
@@ -37,7 +37,7 @@ function LanguageCard({ href, title, count }: LanguageCardProps) {
       <div className="space-y-1.5 sm:space-y-2">
         <h2 className="font-medium text-sm sm:text-base">{title}</h2>
         <p className="text-gray-500 dark:text-gray-500 text-xs sm:text-sm">
-          {count.toLocaleString()} {count === 1 ? 'position' : 'positions'}{' '}
+          {count.toLocaleString()} {count === 1 ? "position" : "positions"}{" "}
           available
         </p>
       </div>
@@ -91,9 +91,9 @@ export default async function LanguagesPage() {
           <div className="mb-6">
             <MetadataBreadcrumb
               items={[
-                { name: 'Home', url: '/' },
-                { name: 'Jobs', url: '/jobs' },
-                { name: 'Languages', url: '/jobs/languages' },
+                { name: "Home", url: "/" },
+                { name: "Jobs", url: "/jobs" },
+                { name: "Languages", url: "/jobs/languages" },
               ]}
               metadata={metadata}
               pathname="/jobs/languages"
