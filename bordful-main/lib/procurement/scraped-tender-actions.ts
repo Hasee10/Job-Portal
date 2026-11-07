@@ -69,6 +69,15 @@ const POSTGREST_PAGE_SIZE = 1000;
 // PostgREST's array-contains filter can't express directly. Matches the
 // same fetch-then-filter pattern already used for candidate search in
 // lib/jobs/candidate-outreach-actions.ts.
+//
+// The ordering here is load-bearing, not cosmetic: with 63k+ active rows
+// and only a 3000-row window, an unordered .range() returns whatever
+// arbitrary slice Postgres' scan happens to produce - confirmed live, an
+// unordered 1000-row fetch today returns 100% TED and 0% of PPRA's active
+// rows, even though PPRA has some. Ordering newest-first means the window
+// is a deterministic "most recent 3000", so a lower-volume source's
+// tenders actually surface instead of only ever losing a popularity
+// contest against TED's volume.
 async function fetchActiveWindow(): Promise<ScrapedTenderRow[]> {
   const supabase = getAdminClient();
   const rows: Record<string, unknown>[] = [];
@@ -78,6 +87,7 @@ async function fetchActiveWindow(): Promise<ScrapedTenderRow[]> {
       .from("scraped_tenders")
       .select("*")
       .eq("is_active", true)
+      .order("publication_date", { ascending: false, nullsFirst: false })
       .range(offset, Math.min(offset + POSTGREST_PAGE_SIZE, FETCH_WINDOW) - 1);
 
     if (error) {
