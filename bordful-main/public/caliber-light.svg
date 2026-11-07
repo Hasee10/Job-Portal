@@ -3,16 +3,16 @@
     d="M89.1,28.9 A44,44 0 1,0 89.1,91.1"
     fill="none"
     stroke="#0982AC"
-    stroke-width="24"
     stroke-linecap="round"
+    stroke-width="24"
     transform="translate(-7,-5)"
   />
   <g
     fill="none"
     stroke="#ffffff"
-    stroke-width="24"
     stroke-linecap="round"
     stroke-linejoin="round"
+    stroke-width="24"
   >
     <!-- C (capital) -->
     <path d="M89.1,28.9 A44,44 0 1,0 89.1,91.1" />
@@ -37,6 +37,6 @@
   <g fill="#0982AC" stroke="none">
     <path d="M207,19 Q216,16 223,27 Q216,38 207,35 Q203,27 207,19 Z" />
     <path d="M239,19 Q230,16 223,27 Q230,38 239,35 Q243,27 239,19 Z" />
-    <rect x="218" y="19" width="10" height="16" rx="3" />
+    <rect height="16" rx="3" width="10" x="218" y="19" />
   </g>
 </svg>

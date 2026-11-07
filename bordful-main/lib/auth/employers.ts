@@ -1,8 +1,8 @@
 import "server-only";
 
-import { randomBytes, createHash } from "node:crypto";
-import bcrypt from "bcryptjs";
+import { createHash, randomBytes } from "node:crypto";
 import { createClient } from "@supabase/supabase-js";
+import bcrypt from "bcryptjs";
 import { deriveLogoUrl } from "@/lib/utils/website-logo";
 
 const BCRYPT_COST_FACTOR = 12;
@@ -26,15 +26,15 @@ const PROFILE_COLUMNS =
 
 function rowToEmployer(row: Record<string, unknown>): Employer {
   return {
-    id: row.id as string,
-    email: row.email as string,
     companyName: (row.company_name as string) || null,
-    website: (row.website as string) || null,
-    logoUrl: (row.logo_url as string) || null,
-    industry: (row.industry as string) || null,
     companySize: (row.company_size as string) || null,
-    location: (row.location as string) || null,
     description: (row.description as string) || null,
+    email: row.email as string,
+    id: row.id as string,
+    industry: (row.industry as string) || null,
+    location: (row.location as string) || null,
+    logoUrl: (row.logo_url as string) || null,
+    website: (row.website as string) || null,
   };
 }
 
@@ -58,7 +58,7 @@ const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 function getAdminClient() {
   const url = process.env.SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key) {
+  if (!(url && key)) {
     throw new EmployerAuthError(
       "Database is not configured on this deployment.",
       "db_unavailable"
@@ -97,9 +97,9 @@ export async function createEmployer(
   const { data, error } = await supabase
     .from("employers")
     .insert({
+      company_name: companyName?.trim() || null,
       email: normalizedEmail,
       password_hash: passwordHash,
-      company_name: companyName?.trim() || null,
     })
     .select(PROFILE_COLUMNS)
     .single();
@@ -137,7 +137,9 @@ export async function verifyEmployerCredentials(
   }
 
   const valid = await bcrypt.compare(password, data.password_hash as string);
-  if (!valid) return null;
+  if (!valid) {
+    return null;
+  }
 
   return rowToEmployer(data);
 }
@@ -150,7 +152,9 @@ export async function getEmployerById(id: string): Promise<Employer | null> {
     .eq("id", id)
     .maybeSingle();
 
-  if (error) throw error;
+  if (error) {
+    throw error;
+  }
   return data ? rowToEmployer(data) : null;
 }
 
@@ -170,18 +174,24 @@ export async function updateEmployerProfile(
   const patch: Record<string, unknown> = {
     updated_at: new Date().toISOString(),
   };
-  if (input.companyName !== undefined)
+  if (input.companyName !== undefined) {
     patch.company_name = input.companyName.trim();
-  if (input.website !== undefined)
+  }
+  if (input.website !== undefined) {
     patch.website = input.website?.trim() || null;
-  if (input.industry !== undefined)
+  }
+  if (input.industry !== undefined) {
     patch.industry = input.industry?.trim() || null;
-  if (input.companySize !== undefined)
+  }
+  if (input.companySize !== undefined) {
     patch.company_size = input.companySize?.trim() || null;
-  if (input.location !== undefined)
+  }
+  if (input.location !== undefined) {
     patch.location = input.location?.trim() || null;
-  if (input.description !== undefined)
+  }
+  if (input.description !== undefined) {
     patch.description = input.description?.trim().slice(0, 1000) || null;
+  }
   // Auto-derive the logo from the website unless the caller explicitly overrides it.
   if (input.logoUrl !== undefined) {
     patch.logo_url = input.logoUrl?.trim() || null;
@@ -196,7 +206,9 @@ export async function updateEmployerProfile(
     .select(PROFILE_COLUMNS)
     .single();
 
-  if (error) throw error;
+  if (error) {
+    throw error;
+  }
   return rowToEmployer(data);
 }
 
@@ -213,8 +225,8 @@ export async function createPasswordResetToken(
   const { data } = await supabase
     .from("employers")
     .update({
-      reset_token_hash: tokenHash,
       reset_token_expires_at: expiresAt,
+      reset_token_hash: tokenHash,
       updated_at: new Date().toISOString(),
     })
     .eq("email", normalizedEmail)
@@ -243,8 +255,8 @@ export async function resetPasswordWithToken(
     .from("employers")
     .update({
       password_hash: passwordHash,
-      reset_token_hash: null,
       reset_token_expires_at: null,
+      reset_token_hash: null,
       updated_at: now,
     })
     .eq("reset_token_hash", tokenHash)

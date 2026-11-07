@@ -1,24 +1,27 @@
+import { Briefcase, Plus, Users } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Briefcase, Plus, Users } from "lucide-react";
 import { auth } from "@/auth";
 import { JobStatusToggle } from "@/components/employer/JobStatusToggle";
-import { listOwnerJobs } from "@/lib/jobs/employer-job-actions";
 import config from "@/config";
+import { listOwnerJobs } from "@/lib/jobs/employer-job-actions";
 
 export const metadata: Metadata = {
+  robots: { follow: false, index: false },
   title: `My Jobs | ${config.title}`,
-  robots: { index: false, follow: false },
 };
 
 export const dynamic = "force-dynamic";
 
 export default async function RecruiterJobsPage() {
   const session = await auth();
-  if (!session?.user)
+  if (!session?.user) {
     redirect("/recruiter/sign-in?callbackUrl=/recruiter/jobs");
-  if (session.user.role !== "recruiter") redirect("/");
+  }
+  if (session.user.role !== "recruiter") {
+    redirect("/");
+  }
 
   const jobs = await listOwnerJobs({ recruiterId: session.user.id });
 
@@ -36,7 +39,7 @@ export default async function RecruiterJobsPage() {
               </p>
             </div>
             <Link
-              className="inline-flex items-center gap-1.5 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90"
+              className="inline-flex items-center gap-1.5 rounded-md bg-primary px-4 py-2 font-medium text-primary-foreground text-sm hover:opacity-90"
               href="/recruiter/jobs/new"
             >
               <Plus className="h-4 w-4" />
@@ -45,7 +48,7 @@ export default async function RecruiterJobsPage() {
           </div>
 
           {jobs.length === 0 ? (
-            <div className="mt-10 rounded-xl border border-dashed border-zinc-200 p-10 text-center dark:border-zinc-800">
+            <div className="mt-10 rounded-xl border border-zinc-200 border-dashed p-10 text-center dark:border-zinc-800">
               <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-800">
                 <Briefcase className="h-5 w-5 text-zinc-400" />
               </div>
@@ -64,9 +67,9 @@ export default async function RecruiterJobsPage() {
                   className="rounded-xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900/60"
                   key={job.id}
                 >
-                  <div className="flex items-start justify-between gap-4 flex-wrap">
+                  <div className="flex flex-wrap items-start justify-between gap-4">
                     <div className="min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
+                      <div className="flex flex-wrap items-center gap-2">
                         <Link
                           className="font-semibold text-zinc-900 hover:underline dark:text-zinc-50"
                           href={`/recruiter/jobs/${job.id}/edit`}
@@ -74,7 +77,7 @@ export default async function RecruiterJobsPage() {
                           {job.title}
                         </Link>
                         <span
-                          className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                          className={`rounded-full px-2 py-0.5 font-medium text-xs ${
                             job.status === "active"
                               ? "bg-green-50 text-green-700 dark:bg-green-500/10 dark:text-green-400"
                               : "bg-zinc-100 text-zinc-500 dark:bg-zinc-800"
@@ -95,15 +98,15 @@ export default async function RecruiterJobsPage() {
                     />
                   </div>
 
-                  <div className="mt-4 flex items-center gap-4 border-t border-zinc-100 pt-3 dark:border-zinc-800">
+                  <div className="mt-4 flex items-center gap-4 border-zinc-100 border-t pt-3 dark:border-zinc-800">
                     {job.acceptsApplications && (
                       <Link
-                        className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
+                        className="inline-flex items-center gap-1.5 font-medium text-primary text-sm hover:underline"
                         href={`/recruiter/jobs/${job.id}/applications`}
                       >
                         <Users className="h-3.5 w-3.5" />
                         {job.applicationCount} application
-                        {job.applicationCount !== 1 ? "s" : ""}
+                        {job.applicationCount === 1 ? "" : "s"}
                       </Link>
                     )}
                     <Link

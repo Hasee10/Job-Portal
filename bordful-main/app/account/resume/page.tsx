@@ -10,8 +10,8 @@ import {
 } from "@/lib/jobs/resume-actions";
 
 export const metadata: Metadata = {
+  robots: { follow: false, index: false },
   title: `Resume builder | ${config.title}`,
-  robots: { index: false, follow: false },
 };
 
 export const dynamic = "force-dynamic";
@@ -49,9 +49,9 @@ export default async function ResumePage({
               targetJob={
                 targetJob
                   ? {
+                      company: targetJob.company,
                       id: targetJob.id,
                       title: targetJob.title,
-                      company: targetJob.company,
                     }
                   : null
               }

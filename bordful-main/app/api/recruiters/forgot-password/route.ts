@@ -10,9 +10,9 @@ export const dynamic = "force-dynamic";
 const isRateLimited = createRateLimiter(5);
 
 const GENERIC_RESPONSE = {
-  success: true,
   message:
     "If an account exists for that email, we've sent a password reset link.",
+  success: true,
 };
 
 export async function POST(request: Request) {
@@ -27,14 +27,16 @@ export async function POST(request: Request) {
 
     const body = await request.json();
     const email = typeof body.email === "string" ? body.email : "";
-    if (!email) return NextResponse.json(GENERIC_RESPONSE);
+    if (!email) {
+      return NextResponse.json(GENERIC_RESPONSE);
+    }
 
     const token = await createRecruiterPasswordResetToken(email);
     if (token) {
       const resetUrl = `${config.url}/recruiter/reset-password?token=${token}`;
       try {
         const { subject, html } = renderPasswordResetEmail({ resetUrl });
-        await sendEmail({ to: email, subject, html });
+        await sendEmail({ html, subject, to: email });
       } catch (error) {
         console.error("[api/recruiters/forgot-password]", error);
       }

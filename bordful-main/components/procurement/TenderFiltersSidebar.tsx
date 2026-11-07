@@ -7,8 +7,8 @@ import { Label } from "@/components/ui/label";
 import type { TenderFacets } from "@/lib/procurement/scraped-tender-actions";
 
 const SOURCE_LABELS: Record<string, string> = {
-  ted: "TED (EU)",
   ppra: "PPRA (Pakistan)",
+  ted: "TED (EU)",
 };
 
 const COUNTRY_PREVIEW_COUNT = 8;
@@ -73,8 +73,11 @@ export function TenderFiltersSidebar({ facets }: { facets: TenderFacets }) {
 
   const updateParam = (key: string, values: Set<string>) => {
     const params = new URLSearchParams(searchParams.toString());
-    if (values.size > 0) params.set(key, Array.from(values).join(","));
-    else params.delete(key);
+    if (values.size > 0) {
+      params.set(key, Array.from(values).join(","));
+    } else {
+      params.delete(key);
+    }
     params.delete("page");
     router.push(`/procurement/tenders?${params.toString()}`);
   };
@@ -85,8 +88,11 @@ export function TenderFiltersSidebar({ facets }: { facets: TenderFacets }) {
     value: string
   ) => {
     const next = new Set(set);
-    if (next.has(value)) next.delete(value);
-    else next.add(value);
+    if (next.has(value)) {
+      next.delete(value);
+    } else {
+      next.add(value);
+    }
     updateParam(key, next);
   };
 

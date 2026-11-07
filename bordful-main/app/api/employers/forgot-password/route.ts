@@ -14,9 +14,9 @@ const isRateLimited = createRateLimiter(5);
 // registered - the request always "succeeds" from the client's point of
 // view so this endpoint can't be used to enumerate registered emails.
 const GENERIC_RESPONSE = {
-  success: true,
   message:
     "If an account exists for that email, we've sent a password reset link.",
+  success: true,
 };
 
 export async function POST(request: Request) {
@@ -40,7 +40,7 @@ export async function POST(request: Request) {
       const resetUrl = `${config.url}/reset-password?token=${token}`;
       try {
         const { subject, html } = renderPasswordResetEmail({ resetUrl });
-        await sendEmail({ to: email, subject, html });
+        await sendEmail({ html, subject, to: email });
       } catch (error) {
         // Don't let a provider hiccup (or a not-yet-configured deployment)
         // leak into the response - the generic message goes out either way.

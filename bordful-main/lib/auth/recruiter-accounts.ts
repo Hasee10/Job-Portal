@@ -1,8 +1,8 @@
 import "server-only";
 
-import { randomBytes, createHash } from "node:crypto";
-import bcrypt from "bcryptjs";
+import { createHash, randomBytes } from "node:crypto";
 import { createClient } from "@supabase/supabase-js";
+import bcrypt from "bcryptjs";
 import { deriveLogoUrl } from "@/lib/utils/website-logo";
 
 const BCRYPT_COST_FACTOR = 12;
@@ -45,7 +45,7 @@ const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 function getAdminClient() {
   const url = process.env.SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key) {
+  if (!(url && key)) {
     throw new RecruiterAuthError(
       "Database is not configured on this deployment.",
       "db_unavailable"
@@ -60,19 +60,19 @@ function hashToken(token: string): string {
 
 function rowToRecruiterAccount(row: Record<string, unknown>): RecruiterAccount {
   return {
-    id: row.id as string,
-    email: row.email as string,
-    name: row.name as string,
     agency: (row.agency as string) || null,
-    specialties: (row.specialties as string[]) || [],
-    linkedinUrl: (row.linkedin_url as string) || null,
     bio: (row.bio as string) || null,
-    isVerified: Boolean(row.is_verified),
-    website: (row.website as string) || null,
-    logoUrl: (row.logo_url as string) || null,
-    industry: (row.industry as string) || null,
     companySize: (row.company_size as string) || null,
+    email: row.email as string,
+    id: row.id as string,
+    industry: (row.industry as string) || null,
+    isVerified: Boolean(row.is_verified),
+    linkedinUrl: (row.linkedin_url as string) || null,
     location: (row.location as string) || null,
+    logoUrl: (row.logo_url as string) || null,
+    name: row.name as string,
+    specialties: (row.specialties as string[]) || [],
+    website: (row.website as string) || null,
   };
 }
 
@@ -106,10 +106,10 @@ export async function createRecruiterAccount(
   const { data, error } = await supabase
     .from("recruiter_accounts")
     .insert({
-      email: normalizedEmail,
-      password_hash: passwordHash,
-      name: name.trim(),
       agency: agency?.trim() || null,
+      email: normalizedEmail,
+      name: name.trim(),
+      password_hash: passwordHash,
     })
     .select("*")
     .single();
@@ -146,7 +146,9 @@ export async function verifyRecruiterCredentials(
   }
 
   const valid = await bcrypt.compare(password, data.password_hash as string);
-  if (!valid) return null;
+  if (!valid) {
+    return null;
+  }
 
   return rowToRecruiterAccount(data);
 }
@@ -161,7 +163,9 @@ export async function getRecruiterAccountById(
     .eq("id", id)
     .maybeSingle();
 
-  if (error) throw error;
+  if (error) {
+    throw error;
+  }
   return data ? rowToRecruiterAccount(data) : null;
 }
 
@@ -184,20 +188,33 @@ export async function updateRecruiterProfile(
   const patch: Record<string, unknown> = {
     updated_at: new Date().toISOString(),
   };
-  if (input.name !== undefined) patch.name = input.name.trim();
-  if (input.agency !== undefined) patch.agency = input.agency?.trim() || null;
-  if (input.specialties !== undefined) patch.specialties = input.specialties;
-  if (input.linkedinUrl !== undefined)
+  if (input.name !== undefined) {
+    patch.name = input.name.trim();
+  }
+  if (input.agency !== undefined) {
+    patch.agency = input.agency?.trim() || null;
+  }
+  if (input.specialties !== undefined) {
+    patch.specialties = input.specialties;
+  }
+  if (input.linkedinUrl !== undefined) {
     patch.linkedin_url = input.linkedinUrl?.trim() || null;
-  if (input.bio !== undefined) patch.bio = input.bio?.trim() || null;
-  if (input.website !== undefined)
+  }
+  if (input.bio !== undefined) {
+    patch.bio = input.bio?.trim() || null;
+  }
+  if (input.website !== undefined) {
     patch.website = input.website?.trim() || null;
-  if (input.industry !== undefined)
+  }
+  if (input.industry !== undefined) {
     patch.industry = input.industry?.trim() || null;
-  if (input.companySize !== undefined)
+  }
+  if (input.companySize !== undefined) {
     patch.company_size = input.companySize?.trim() || null;
-  if (input.location !== undefined)
+  }
+  if (input.location !== undefined) {
     patch.location = input.location?.trim() || null;
+  }
   // Auto-derive the logo from the website unless the caller explicitly overrides it.
   if (input.logoUrl !== undefined) {
     patch.logo_url = input.logoUrl?.trim() || null;
@@ -212,7 +229,9 @@ export async function updateRecruiterProfile(
     .select("*")
     .single();
 
-  if (error) throw error;
+  if (error) {
+    throw error;
+  }
   return rowToRecruiterAccount(data);
 }
 
@@ -229,8 +248,8 @@ export async function createRecruiterPasswordResetToken(
   const { data } = await supabase
     .from("recruiter_accounts")
     .update({
-      reset_token_hash: tokenHash,
       reset_token_expires_at: expiresAt,
+      reset_token_hash: tokenHash,
       updated_at: new Date().toISOString(),
     })
     .eq("email", normalizedEmail)
@@ -259,8 +278,8 @@ export async function resetRecruiterPasswordWithToken(
     .from("recruiter_accounts")
     .update({
       password_hash: passwordHash,
-      reset_token_hash: null,
       reset_token_expires_at: null,
+      reset_token_hash: null,
       updated_at: now,
     })
     .eq("reset_token_hash", tokenHash)

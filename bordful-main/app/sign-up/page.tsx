@@ -4,9 +4,9 @@ import { SignUpForm } from "@/components/auth/SignUpForm";
 import config from "@/config";
 
 export const metadata: Metadata = {
-  title: `Sign Up | ${config.title}`,
   description: "Create an employer account to post and feature jobs.",
-  robots: { index: false, follow: false },
+  robots: { follow: false, index: false },
+  title: `Sign Up | ${config.title}`,
 };
 
 export const dynamic = "force-dynamic";

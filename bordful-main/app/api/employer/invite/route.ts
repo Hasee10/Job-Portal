@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
+import { getEmployerById } from "@/lib/auth/employers";
+import { sendEmail } from "@/lib/email/smtp";
+import { renderEmployerInviteEmail } from "@/lib/email/templates/employer-invite";
 import {
   getEmployerDailyInviteCount,
   sendEmployerInvite,
 } from "@/lib/jobs/employer-candidate-actions";
-import { getEmployerById } from "@/lib/auth/employers";
-import { sendEmail } from "@/lib/email/smtp";
-import { renderEmployerInviteEmail } from "@/lib/email/templates/employer-invite";
 import { createRateLimiter, getClientIp } from "@/lib/utils/rate-limit";
 
 export const dynamic = "force-dynamic";
@@ -45,7 +45,7 @@ export async function POST(request: Request) {
   const message =
     typeof body.message === "string" ? body.message.trim().slice(0, 2000) : "";
 
-  if (!jobId || !seekerId) {
+  if (!(jobId && seekerId)) {
     return NextResponse.json(
       { error: "Job and candidate are required." },
       { status: 400 }
@@ -72,12 +72,12 @@ export async function POST(request: Request) {
         const companyDisplay = employer.companyName || employer.email;
         const { subject, html } = renderEmployerInviteEmail({
           companyName: companyDisplay,
+          inboxUrl: `${process.env.NEXTAUTH_URL ?? ""}/account/inbox`,
           jobTitle:
             typeof body.jobTitle === "string" ? body.jobTitle : "a role",
           message,
-          inboxUrl: `${process.env.NEXTAUTH_URL ?? ""}/account/inbox`,
         });
-        await sendEmail({ to: body.seekerEmail as string, subject, html });
+        await sendEmail({ html, subject, to: body.seekerEmail as string });
       }
     } catch (emailErr) {
       console.error(

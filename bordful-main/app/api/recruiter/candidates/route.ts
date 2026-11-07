@@ -22,9 +22,9 @@ export async function GET(request: Request) {
   const jobId = searchParams.get("jobId") || undefined;
 
   const candidates = await listOptInCandidates(session.user.id, {
-    skills,
-    searchTerm,
     jobId,
+    searchTerm,
+    skills,
   });
   return NextResponse.json({ candidates });
 }

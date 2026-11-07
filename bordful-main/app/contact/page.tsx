@@ -11,7 +11,13 @@ import { resolveColor } from "@/lib/utils/colors";
 
 // Add metadata for SEO
 export const metadata: Metadata = {
-  title: `${config.contact?.title || "Contact"} | ${config.title}`,
+  alternates: {
+    canonical: "/contact",
+    languages: {
+      en: `${config.url}/contact`,
+      "x-default": `${config.url}/contact`,
+    },
+  },
   description:
     config.contact?.description ||
     "Have questions or feedback? We'd love to hear from you.",
@@ -19,26 +25,20 @@ export const metadata: Metadata = {
     config.contact?.keywords ||
     "contact us, support, help, questions, feedback, get in touch",
   openGraph: {
-    title: `${config.contact?.title || "Contact"} | ${config.title}`,
     description:
       config.contact?.description ||
       "Have questions or feedback? We'd love to hear from you.",
+    title: `${config.contact?.title || "Contact"} | ${config.title}`,
     type: "website",
     url: `${config.url}/contact`,
   },
+  title: `${config.contact?.title || "Contact"} | ${config.title}`,
   twitter: {
     card: "summary_large_image",
-    title: `${config.contact?.title || "Contact"} | ${config.title}`,
     description:
       config.contact?.description ||
       "Have questions or feedback? We'd love to hear from you.",
-  },
-  alternates: {
-    canonical: "/contact",
-    languages: {
-      en: `${config.url}/contact`,
-      "x-default": `${config.url}/contact`,
-    },
+    title: `${config.contact?.title || "Contact"} | ${config.title}`,
   },
 };
 

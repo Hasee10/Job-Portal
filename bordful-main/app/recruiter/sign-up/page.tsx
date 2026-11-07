@@ -5,10 +5,10 @@ import { RecruiterSignUpForm } from "@/components/auth/RecruiterSignUpForm";
 import config from "@/config";
 
 export const metadata: Metadata = {
-  title: `Recruiter Sign Up | ${config.title}`,
   description:
     "Create a recruiter account to discover and connect with job seekers.",
-  robots: { index: false, follow: false },
+  robots: { follow: false, index: false },
+  title: `Recruiter Sign Up | ${config.title}`,
 };
 
 export const dynamic = "force-dynamic";

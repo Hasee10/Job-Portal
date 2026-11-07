@@ -4,10 +4,10 @@ import { Building2, MapPin, Search, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Input } from "@/components/ui/input";
-import { cn } from "@/lib/utils";
 import config from "@/config";
 import type { Job } from "@/lib/db/airtable";
 import { useJobSearch } from "@/lib/hooks/useJobSearch";
+import { cn } from "@/lib/utils";
 
 type Suggestion =
   | { kind: "job"; label: string; sub: string; value: string }
@@ -15,7 +15,9 @@ type Suggestion =
   | { kind: "location"; label: string; value: string };
 
 function buildSuggestions(jobs: Job[], term: string): Suggestion[] {
-  if (!term || term.length < 1) return [];
+  if (!term || term.length < 1) {
+    return [];
+  }
   const lower = term.toLowerCase();
 
   const titles = new Map<string, string>(); // title → company
@@ -23,16 +25,20 @@ function buildSuggestions(jobs: Job[], term: string): Suggestion[] {
   const locations = new Set<string>();
 
   for (const job of jobs) {
-    if (job.title?.toLowerCase().includes(lower)) {
-      if (!titles.has(job.title)) titles.set(job.title, job.company);
+    if (job.title?.toLowerCase().includes(lower) && !titles.has(job.title)) {
+      titles.set(job.title, job.company);
     }
     if (job.company?.toLowerCase().includes(lower)) {
       companies.add(job.company);
     }
     const city = job.workplace_city;
     const country = job.workplace_country;
-    if (city?.toLowerCase().includes(lower)) locations.add(city);
-    if (country?.toLowerCase().includes(lower)) locations.add(country);
+    if (city?.toLowerCase().includes(lower)) {
+      locations.add(city);
+    }
+    if (country?.toLowerCase().includes(lower)) {
+      locations.add(country);
+    }
   }
 
   const results: Suggestion[] = [];
@@ -93,7 +99,7 @@ export function JobSearchInput({
   const updateDropdownRect = () => {
     if (inputRef.current) {
       const r = inputRef.current.getBoundingClientRect();
-      setDropdownRect({ top: r.bottom + 6, left: r.left, width: r.width });
+      setDropdownRect({ left: r.left, top: r.bottom + 6, width: r.width });
     }
   };
 
@@ -104,7 +110,7 @@ export function JobSearchInput({
       if (containerRef.current && !containerRef.current.contains(target)) {
         // Also check portal dropdown
         const portal = document.getElementById("search-dropdown-portal");
-        if (!portal || !portal.contains(target)) {
+        if (!(portal && portal.contains(target))) {
           setOpen(false);
           setActiveIndex(-1);
         }
@@ -116,7 +122,9 @@ export function JobSearchInput({
 
   // Recompute position on scroll / resize while open
   useEffect(() => {
-    if (!open) return;
+    if (!open) {
+      return;
+    }
     updateDropdownRect();
     window.addEventListener("scroll", updateDropdownRect, true);
     window.addEventListener("resize", updateDropdownRect);
@@ -149,7 +157,9 @@ export function JobSearchInput({
       clearSearch();
       return;
     }
-    if (!open || suggestions.length === 0) return;
+    if (!open || suggestions.length === 0) {
+      return;
+    }
     if (e.key === "ArrowDown") {
       e.preventDefault();
       setActiveIndex((i) => Math.min(i + 1, suggestions.length - 1));
@@ -185,15 +195,15 @@ export function JobSearchInput({
     icon: React.ReactNode;
     label: string;
   }[] = [
-    { kind: "job", icon: <Search className="h-3.5 w-3.5" />, label: "Jobs" },
+    { icon: <Search className="h-3.5 w-3.5" />, kind: "job", label: "Jobs" },
     {
-      kind: "company",
       icon: <Building2 className="h-3.5 w-3.5" />,
+      kind: "company",
       label: "Companies",
     },
     {
-      kind: "location",
       icon: <MapPin className="h-3.5 w-3.5" />,
+      kind: "location",
       label: "Locations",
     },
   ];
@@ -202,22 +212,24 @@ export function JobSearchInput({
     hasSuggestions && mounted && dropdownRect
       ? createPortal(
           <div
+            className="overflow-hidden rounded-lg border bg-popover text-popover-foreground shadow-lg"
             id="search-dropdown-portal"
             style={{
+              left: dropdownRect.left,
               position: "fixed",
               top: dropdownRect.top,
-              left: dropdownRect.left,
               width: dropdownRect.width,
               zIndex: 9999,
             }}
-            className="overflow-hidden rounded-lg border bg-popover text-popover-foreground shadow-lg"
           >
             {kindGroups.map(({ kind, icon, label }) => {
               const items = suggestions.filter((s) => s.kind === kind);
-              if (items.length === 0) return null;
+              if (items.length === 0) {
+                return null;
+              }
               return (
                 <div key={kind}>
-                  <div className="flex items-center gap-1.5 px-3 pt-2.5 pb-1 text-xs font-semibold text-muted-foreground">
+                  <div className="flex items-center gap-1.5 px-3 pt-2.5 pb-1 font-semibold text-muted-foreground text-xs">
                     {icon}
                     {label}
                   </div>
@@ -226,25 +238,25 @@ export function JobSearchInput({
                     const isActive = globalIndex === activeIndex;
                     return (
                       <button
-                        key={`${kind}-${s.value}`}
+                        aria-selected={isActive}
                         className={cn(
                           "flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition-colors",
                           isActive
                             ? "bg-accent text-accent-foreground"
                             : "hover:bg-accent hover:text-accent-foreground"
                         )}
+                        key={`${kind}-${s.value}`}
                         onMouseDown={(e) => {
                           e.preventDefault();
                           selectSuggestion(s);
                         }}
                         onMouseEnter={() => setActiveIndex(globalIndex)}
                         role="option"
-                        aria-selected={isActive}
                         type="button"
                       >
                         <span className="truncate font-medium">{s.label}</span>
                         {s.kind === "job" && (
-                          <span className="ml-auto shrink-0 text-xs text-muted-foreground">
+                          <span className="ml-auto shrink-0 text-muted-foreground text-xs">
                             {s.sub}
                           </span>
                         )}
@@ -256,7 +268,7 @@ export function JobSearchInput({
             })}
             <div className="border-t px-3 py-2">
               <button
-                className="w-full text-left text-xs text-muted-foreground hover:text-foreground transition-colors"
+                className="w-full text-left text-muted-foreground text-xs transition-colors hover:text-foreground"
                 onMouseDown={(e) => {
                   e.preventDefault();
                   handleSearch(inputValue);
@@ -282,12 +294,11 @@ export function JobSearchInput({
   return (
     <div className="flex w-full gap-2" ref={containerRef}>
       <div className="relative flex-1">
-        <Search className="-translate-y-1/2 absolute top-1/2 left-3 h-4 w-4 text-muted-foreground z-10" />
+        <Search className="absolute top-1/2 left-3 z-10 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
-          ref={inputRef}
-          aria-label={finalAriaLabel}
           aria-autocomplete="list"
           aria-expanded={hasSuggestions}
+          aria-label={finalAriaLabel}
           className={cn(
             className,
             // When a custom (typically light) background is forced, ensure
@@ -303,6 +314,7 @@ export function JobSearchInput({
           }}
           onKeyDown={onKeyDown}
           placeholder={finalPlaceholder}
+          ref={inputRef}
           role="combobox"
           style={{ backgroundColor: heroSearchBgColor || undefined }}
           type="text"
@@ -311,7 +323,7 @@ export function JobSearchInput({
         {inputValue && (
           <button
             aria-label="Clear search"
-            className="-translate-y-1/2 absolute top-1/2 right-3 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-400 z-10"
+            className="absolute top-1/2 right-3 z-10 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-400"
             onMouseDown={(e) => {
               e.preventDefault();
               onClear();
@@ -322,15 +334,15 @@ export function JobSearchInput({
           </button>
         )}
         {isSearching && !hasSuggestions && (
-          <div className="-translate-y-1/2 absolute top-1/2 right-10 z-10">
+          <div className="absolute top-1/2 right-10 z-10 -translate-y-1/2">
             <div className="pulse-dot h-2 w-2 rounded-full bg-blue-500 opacity-75" />
           </div>
         )}
       </div>
       <button
-        type="button"
+        className="shrink-0 rounded-md bg-primary px-5 font-semibold text-primary-foreground text-sm transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         onClick={onSearchClick}
-        className="shrink-0 rounded-md bg-primary px-5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        type="button"
       >
         Search
       </button>

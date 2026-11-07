@@ -17,26 +17,29 @@ export type ProcurementEvaluation = {
 function getAdminClient() {
   const url = process.env.SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key)
+  if (!(url && key)) {
     throw new Error("Database is not configured on this deployment.");
+  }
   return createClient(url, key, { auth: { persistSession: false } });
 }
 
 function toError(error: unknown, fallback: string): Error {
-  if (error instanceof Error) return error;
+  if (error instanceof Error) {
+    return error;
+  }
   const message = (error as { message?: string } | null)?.message;
   return new Error(message || fallback);
 }
 
 function rowToEvaluation(row: Record<string, unknown>): ProcurementEvaluation {
   return {
+    createdAt: row.created_at as string,
+    evaluatorId: row.evaluator_id as string,
     id: row.id as string,
+    notes: (row.notes as string) || null,
     requestId: row.request_id as string,
     responseId: row.response_id as string,
-    evaluatorId: row.evaluator_id as string,
     score: (row.score as number) ?? null,
-    notes: (row.notes as string) || null,
-    createdAt: row.created_at as string,
   };
 }
 
@@ -48,7 +51,9 @@ export async function startEvaluation(
   requestId: string
 ): Promise<void> {
   const request = await getRequestForBuyer(buyerId, requestId);
-  if (!request) throw new Error("Request not found.");
+  if (!request) {
+    throw new Error("Request not found.");
+  }
   if (!["closed_for_responses", "bids_opened"].includes(request.status)) {
     throw new Error("This request is not ready for evaluation yet.");
   }
@@ -60,7 +65,9 @@ export async function startEvaluation(
     .eq("id", requestId)
     .eq("buyer_id", buyerId);
 
-  if (error) throw toError(error, "Failed to start evaluation.");
+  if (error) {
+    throw toError(error, "Failed to start evaluation.");
+  }
   await logAudit(requestId, buyerId, "employer", "evaluating");
 }
 
@@ -72,7 +79,9 @@ export async function scoreResponse(
   notes: string | null
 ): Promise<ProcurementEvaluation> {
   const request = await getRequestForBuyer(buyerId, requestId);
-  if (!request) throw new Error("Request not found.");
+  if (!request) {
+    throw new Error("Request not found.");
+  }
   if (request.status !== "evaluating") {
     throw new Error("This request is not currently in evaluation.");
   }
@@ -85,21 +94,25 @@ export async function scoreResponse(
     .eq("id", responseId)
     .eq("request_id", requestId)
     .maybeSingle();
-  if (!response) throw new Error("Response not found for this request.");
+  if (!response) {
+    throw new Error("Response not found for this request.");
+  }
 
   const { data, error } = await supabase
     .from("procurement_evaluations")
     .insert({
+      evaluator_id: buyerId,
+      notes,
       request_id: requestId,
       response_id: responseId,
-      evaluator_id: buyerId,
       score,
-      notes,
     })
     .select("*")
     .single();
 
-  if (error) throw toError(error, "Failed to record evaluation.");
+  if (error) {
+    throw toError(error, "Failed to record evaluation.");
+  }
 
   const evaluation = rowToEvaluation(data);
   await logAudit(requestId, buyerId, "employer", "evaluated", {
@@ -114,7 +127,9 @@ export async function listEvaluations(
   requestId: string
 ): Promise<ProcurementEvaluation[]> {
   const request = await getRequestForBuyer(buyerId, requestId);
-  if (!request) throw new Error("Request not found.");
+  if (!request) {
+    throw new Error("Request not found.");
+  }
 
   const supabase = getAdminClient();
   const { data, error } = await supabase
@@ -123,7 +138,9 @@ export async function listEvaluations(
     .eq("request_id", requestId)
     .order("created_at", { ascending: false });
 
-  if (error) throw toError(error, "Failed to load evaluations.");
+  if (error) {
+    throw toError(error, "Failed to load evaluations.");
+  }
   return (data ?? []).map(rowToEvaluation);
 }
 
@@ -133,7 +150,9 @@ export async function awardRequest(
   responseId: string
 ): Promise<void> {
   const request = await getRequestForBuyer(buyerId, requestId);
-  if (!request) throw new Error("Request not found.");
+  if (!request) {
+    throw new Error("Request not found.");
+  }
   if (request.status !== "evaluating") {
     throw new Error(
       "This request must be in evaluation before it can be awarded."
@@ -148,18 +167,23 @@ export async function awardRequest(
     .eq("id", responseId)
     .eq("request_id", requestId)
     .maybeSingle();
-  if (!response) throw new Error("Response not found for this request.");
-  if (response.is_withdrawn)
+  if (!response) {
+    throw new Error("Response not found for this request.");
+  }
+  if (response.is_withdrawn) {
     throw new Error("Cannot award a withdrawn response.");
+  }
 
   const { error } = await supabase
     .from("procurement_requests")
-    .update({ status: "awarded", awarded_at: new Date().toISOString() })
+    .update({ awarded_at: new Date().toISOString(), status: "awarded" })
     .eq("id", requestId)
     .eq("buyer_id", buyerId)
     .eq("status", "evaluating");
 
-  if (error) throw toError(error, "Failed to award request.");
+  if (error) {
+    throw toError(error, "Failed to award request.");
+  }
   await logAudit(requestId, buyerId, "employer", "awarded", {
     responseId,
     vendorId: response.vendor_id,

@@ -19,7 +19,7 @@ export async function POST(request: Request) {
   const body = await request.json();
   const jobId = typeof body.jobId === "string" ? body.jobId : "";
   const status = body.status as ApplicationStatus;
-  if (!jobId || !VALID_STATUSES.includes(status)) {
+  if (!(jobId && VALID_STATUSES.includes(status))) {
     return NextResponse.json(
       { error: "jobId and a valid status are required." },
       { status: 400 }

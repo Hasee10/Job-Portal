@@ -47,7 +47,7 @@ export function renderProcurementResponseReceivedEmail({
   `);
 
   return {
-    subject: `New response: ${requestTitle}`,
     html,
+    subject: `New response: ${requestTitle}`,
   };
 }

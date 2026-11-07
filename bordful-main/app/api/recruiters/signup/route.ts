@@ -40,15 +40,15 @@ export async function POST(request: Request) {
     // never fail signup itself - the account is already created.
     try {
       const { subject, html } = renderRecruiterWelcomeEmail({
-        name: recruiter.name,
         dashboardUrl: `${config.url}/recruiter/dashboard`,
+        name: recruiter.name,
       });
-      await sendEmail({ to: recruiter.email, subject, html });
+      await sendEmail({ html, subject, to: recruiter.email });
     } catch (error) {
       console.error("[api/recruiters/signup] welcome email failed", error);
     }
 
-    return NextResponse.json({ success: true, email: recruiter.email });
+    return NextResponse.json({ email: recruiter.email, success: true });
   } catch (error) {
     if (error instanceof RecruiterAuthError) {
       const status = error.code === "db_unavailable" ? 503 : 400;

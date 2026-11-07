@@ -13,10 +13,10 @@ import { generateMetadata } from "@/lib/utils/metadata";
 
 // Generate metadata for SEO
 export const metadata: Metadata = generateMetadata({
-  title: `Browse Jobs by Language | ${config.title}`,
   description:
     "Explore tech jobs by required languages. Find positions that match your language skills and preferences.",
   path: "/jobs/languages",
+  title: `Browse Jobs by Language | ${config.title}`,
 });
 
 // Revalidate page every 5 minutes
@@ -36,7 +36,7 @@ function LanguageCard({ href, title, count }: LanguageCardProps) {
     >
       <div className="space-y-1.5 sm:space-y-2">
         <h2 className="font-medium text-sm sm:text-base">{title}</h2>
-        <p className="text-gray-500 dark:text-gray-500 text-xs sm:text-sm">
+        <p className="text-gray-500 text-xs sm:text-sm dark:text-gray-500">
           {count.toLocaleString()} {count === 1 ? "position" : "positions"}{" "}
           available
         </p>
@@ -72,8 +72,8 @@ export default async function LanguagesPage() {
     })
     .map(([code, count]) => ({
       code: code as LanguageCode,
-      title: getDisplayNameFromCode(code as LanguageCode),
       count,
+      title: getDisplayNameFromCode(code as LanguageCode),
     }));
 
   return (

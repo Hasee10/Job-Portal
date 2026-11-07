@@ -63,8 +63,8 @@ export function HeroSection({
     heroStyle = {
       backgroundImage: `url(${heroBackgroundImage.src})`,
       backgroundPosition: heroBackgroundImage.position || "center",
-      backgroundSize: heroBackgroundImage.size || "cover",
       backgroundRepeat: "no-repeat",
+      backgroundSize: heroBackgroundImage.size || "cover",
       position: "relative", // Required for overlay positioning
     };
 
@@ -77,9 +77,9 @@ export function HeroSection({
       overlayStyle = {
         backgroundColor: heroBackgroundImage.overlay.color,
         opacity:
-          heroBackgroundImage.overlay.opacity !== undefined
-            ? heroBackgroundImage.overlay.opacity
-            : 0.7,
+          heroBackgroundImage.overlay.opacity === undefined
+            ? 0.7
+            : heroBackgroundImage.overlay.opacity,
       };
     }
   }
@@ -128,8 +128,8 @@ export function HeroSection({
                   className="mb-1"
                   style={{
                     backgroundColor: heroBadgeBgColor || undefined,
-                    color: heroBadgeTextColor || undefined,
                     borderColor: heroBadgeBorderColor || undefined,
+                    color: heroBadgeTextColor || undefined,
                   }}
                   variant={heroBadgeVariant}
                 >

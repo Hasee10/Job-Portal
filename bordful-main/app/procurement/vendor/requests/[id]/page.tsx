@@ -1,20 +1,20 @@
 import type { Metadata } from "next";
-import { redirect, notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { auth } from "@/auth";
-import { resolveVendorId } from "@/lib/procurement/vendor-actions";
-import { getRequestById } from "@/lib/procurement/request-actions";
+import { DeclineInvitationButton } from "@/components/procurement/DeclineInvitationButton";
+import { RespondForm } from "@/components/procurement/RespondForm";
+import config from "@/config";
 import {
   getVendorInvitation,
   markInvitationViewed,
 } from "@/lib/procurement/invitation-actions";
+import { getRequestById } from "@/lib/procurement/request-actions";
 import { getMyResponse } from "@/lib/procurement/response-actions";
-import { RespondForm } from "@/components/procurement/RespondForm";
-import { DeclineInvitationButton } from "@/components/procurement/DeclineInvitationButton";
-import config from "@/config";
+import { resolveVendorId } from "@/lib/procurement/vendor-actions";
 
 export const metadata: Metadata = {
+  robots: { follow: false, index: false },
   title: `Procurement Invitation | ${config.title}`,
-  robots: { index: false, follow: false },
 };
 
 export const dynamic = "force-dynamic";
@@ -27,19 +27,31 @@ export default async function ProcurementVendorRequestPage({
   params: Promise<{ id: string }>;
 }) {
   const session = await auth();
-  if (!session?.user) redirect("/sign-in?callbackUrl=/procurement/vendor");
-  if (session.user.role !== "recruiter") redirect("/");
+  if (!session?.user) {
+    redirect("/sign-in?callbackUrl=/procurement/vendor");
+  }
+  if (session.user.role !== "recruiter") {
+    redirect("/");
+  }
 
   const vendorId = await resolveVendorId(session);
-  if (!vendorId) redirect("/");
+  if (!vendorId) {
+    redirect("/");
+  }
 
   const { id } = await params;
   const request = await getRequestById(id);
-  if (!request) notFound();
+  if (!request) {
+    notFound();
+  }
 
   const invitation = await getVendorInvitation(vendorId, id);
-  if (request.visibility === "invite_only" && !invitation) notFound();
-  if (invitation) await markInvitationViewed(vendorId, id);
+  if (request.visibility === "invite_only" && !invitation) {
+    notFound();
+  }
+  if (invitation) {
+    await markInvitationViewed(vendorId, id);
+  }
 
   const myResponse = await getMyResponse(vendorId, id);
   const canRespond =
@@ -50,11 +62,11 @@ export default async function ProcurementVendorRequestPage({
       <div className="container mx-auto px-4">
         <div className="mx-auto max-w-2xl space-y-6">
           <div>
-            <div className="flex items-center gap-2 flex-wrap">
+            <div className="flex flex-wrap items-center gap-2">
               <h1 className="font-bold text-xl text-zinc-900 dark:text-zinc-50">
                 {request.title}
               </h1>
-              <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-xs font-medium uppercase text-zinc-500 dark:bg-zinc-800">
+              <span className="rounded-full bg-zinc-100 px-2 py-0.5 font-medium text-xs text-zinc-500 uppercase dark:bg-zinc-800">
                 {request.type}
               </span>
             </div>

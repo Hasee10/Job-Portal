@@ -10,32 +10,32 @@ import { resolveColor } from "@/lib/utils/colors";
 
 // Add metadata for SEO
 export const metadata: Metadata = {
-  title: `${config.about?.title || "About Us"} | ${config.title}`,
-  description:
-    config.about?.description ||
-    "Learn more about our company, mission, and values.",
-  keywords: "about us, company, mission, values, team, story",
-  openGraph: {
-    title: `${config.about?.title || "About Us"} | ${config.title}`,
-    description:
-      config.about?.description ||
-      "Learn more about our company, mission, and values.",
-    type: "website",
-    url: `${config.url}/about`,
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: `${config.about?.title || "About Us"} | ${config.title}`,
-    description:
-      config.about?.description ||
-      "Learn more about our company, mission, and values.",
-  },
   alternates: {
     canonical: "/about",
     languages: {
       en: `${config.url}/about`,
       "x-default": `${config.url}/about`,
     },
+  },
+  description:
+    config.about?.description ||
+    "Learn more about our company, mission, and values.",
+  keywords: "about us, company, mission, values, team, story",
+  openGraph: {
+    description:
+      config.about?.description ||
+      "Learn more about our company, mission, and values.",
+    title: `${config.about?.title || "About Us"} | ${config.title}`,
+    type: "website",
+    url: `${config.url}/about`,
+  },
+  title: `${config.about?.title || "About Us"} | ${config.title}`,
+  twitter: {
+    card: "summary_large_image",
+    description:
+      config.about?.description ||
+      "Learn more about our company, mission, and values.",
+    title: `${config.about?.title || "About Us"} | ${config.title}`,
   },
 };
 

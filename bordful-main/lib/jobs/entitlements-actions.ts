@@ -8,7 +8,7 @@ const RESUME_TAILOR_WINDOW_MS = 30 * 24 * 60 * 60 * 1000;
 function getAdminClient() {
   const url = process.env.SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key) {
+  if (!(url && key)) {
     throw new Error("Database is not configured on this deployment.");
   }
   return createClient(url, key, { auth: { persistSession: false } });
@@ -21,7 +21,9 @@ export async function getSeekerTier(seekerId: string): Promise<SeekerTier> {
     .select("tier")
     .eq("id", seekerId)
     .maybeSingle();
-  if (error) throw error;
+  if (error) {
+    throw error;
+  }
   return (data?.tier as SeekerTier) || "free";
 }
 
@@ -37,8 +39,12 @@ export async function checkAndIncrementResumeTailorUsage(
     .select("tier, resume_tailor_count, resume_tailor_reset_at")
     .eq("id", seekerId)
     .maybeSingle();
-  if (error) throw error;
-  if (!data) return { allowed: false, limit: 0, remaining: 0 };
+  if (error) {
+    throw error;
+  }
+  if (!data) {
+    return { allowed: false, limit: 0, remaining: 0 };
+  }
 
   const tier = (data.tier as SeekerTier) || "free";
   const limit = getResumeTailorLimit(tier);
@@ -64,7 +70,9 @@ export async function checkAndIncrementResumeTailorUsage(
         : (data.resume_tailor_reset_at as string),
     })
     .eq("id", seekerId);
-  if (updateError) throw updateError;
+  if (updateError) {
+    throw updateError;
+  }
 
   return { allowed: true, limit, remaining: limit - (currentCount + 1) };
 }

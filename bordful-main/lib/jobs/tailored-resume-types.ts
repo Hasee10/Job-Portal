@@ -30,7 +30,9 @@ export type TailoredResumeContent = {
 export function isTailoredResumeContent(
   value: unknown
 ): value is TailoredResumeContent {
-  if (!value || typeof value !== "object") return false;
+  if (!value || typeof value !== "object") {
+    return false;
+  }
   const v = value as Record<string, unknown>;
   return (
     typeof v.fullName === "string" &&

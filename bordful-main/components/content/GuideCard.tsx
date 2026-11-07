@@ -1,8 +1,8 @@
 import { ArrowRight, Clock } from "lucide-react";
 import Link from "next/link";
-import { estimateReadMinutes } from "@/lib/content/guide-content";
 import { getGuideCategoryStyle } from "@/lib/constants/guide-categories";
 import type { CareerGuide } from "@/lib/content/guide-actions";
+import { estimateReadMinutes } from "@/lib/content/guide-content";
 
 export function GuideCard({ guide }: { guide: CareerGuide }) {
   const readMinutes = estimateReadMinutes(guide.content);

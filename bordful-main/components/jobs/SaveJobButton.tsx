@@ -1,8 +1,8 @@
 "use client";
 
 import { Bookmark } from "lucide-react";
-import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { useSeekerJobState } from "@/components/jobs/SeekerJobStateContext";
 import { Button } from "@/components/ui/button";
 

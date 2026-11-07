@@ -8,7 +8,13 @@ import config from "@/config";
 
 // Add metadata for SEO
 export const metadata: Metadata = {
-  title: `${config.faq?.title || "FAQ"} | ${config.title}`,
+  alternates: {
+    canonical: "/faq",
+    languages: {
+      en: `${config.url}/faq`,
+      "x-default": `${config.url}/faq`,
+    },
+  },
   description:
     config.faq?.description ||
     "Find answers to common questions about our job board and services.",
@@ -16,26 +22,20 @@ export const metadata: Metadata = {
     config.faq?.keywords ||
     "job board FAQ, frequently asked questions, job search help, employer questions",
   openGraph: {
-    title: `${config.faq?.title || "FAQ"} | ${config.title}`,
     description:
       config.faq?.description ||
       "Find answers to common questions about our job board and services.",
+    title: `${config.faq?.title || "FAQ"} | ${config.title}`,
     type: "website",
     url: `${config.url}/faq`,
   },
+  title: `${config.faq?.title || "FAQ"} | ${config.title}`,
   twitter: {
     card: "summary_large_image",
-    title: `${config.faq?.title || "FAQ"} | ${config.title}`,
     description:
       config.faq?.description ||
       "Find answers to common questions about our job board and services.",
-  },
-  alternates: {
-    canonical: "/faq",
-    languages: {
-      en: `${config.url}/faq`,
-      "x-default": `${config.url}/faq`,
-    },
+    title: `${config.faq?.title || "FAQ"} | ${config.title}`,
   },
 };
 

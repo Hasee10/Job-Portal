@@ -37,18 +37,28 @@ function normalizeCountry(raw: string): string {
     lower.includes("uae") ||
     lower.includes("dubai") ||
     lower.includes("emirates")
-  )
+  ) {
     return "United Arab Emirates";
+  }
   if (
     lower.includes("saudi") ||
     lower.includes("riyadh") ||
     lower.includes("jeddah")
-  )
+  ) {
     return "Saudi Arabia";
-  if (lower.includes("qatar") || lower.includes("doha")) return "Qatar";
-  if (lower.includes("kuwait")) return "Kuwait";
-  if (lower.includes("bahrain")) return "Bahrain";
-  if (lower.includes("oman") || lower.includes("muscat")) return "Oman";
+  }
+  if (lower.includes("qatar") || lower.includes("doha")) {
+    return "Qatar";
+  }
+  if (lower.includes("kuwait")) {
+    return "Kuwait";
+  }
+  if (lower.includes("bahrain")) {
+    return "Bahrain";
+  }
+  if (lower.includes("oman") || lower.includes("muscat")) {
+    return "Oman";
+  }
   return raw.trim();
 }
 
@@ -56,11 +66,11 @@ async function fetchPage(url: string): Promise<string | null> {
   try {
     const res = await fetch(url, {
       headers: {
-        "User-Agent":
-          "Mozilla/5.0 (compatible; Caliber-Aggregator/1.0; +https://caliber.app)",
         Accept: "text/html,application/xhtml+xml",
         "Accept-Language": "en-US,en;q=0.9",
         Referer: BASE,
+        "User-Agent":
+          "Mozilla/5.0 (compatible; Caliber-Aggregator/1.0; +https://caliber.app)",
       },
       signal: AbortSignal.timeout(15_000),
     });
@@ -85,7 +95,9 @@ export async function scrapeNaukriGulf(): Promise<ScrapedJob[]> {
 
     console.log(`[${SOURCE}] Page ${page}: ${url}`);
     const html = await fetchPage(url);
-    if (!html) break;
+    if (!html) {
+      break;
+    }
 
     const $ = cheerio.load(html);
     let found = 0;
@@ -97,8 +109,12 @@ export async function scrapeNaukriGulf(): Promise<ScrapedJob[]> {
         .first();
       const title = titleEl.text().trim();
       let href = titleEl.attr("href") ?? "";
-      if (!href) return;
-      if (!href.startsWith("http")) href = `${BASE}${href}`;
+      if (!href) {
+        return;
+      }
+      if (!href.startsWith("http")) {
+        href = `${BASE}${href}`;
+      }
 
       const company = $(el)
         .find(".company-name, .companyName, .ni-job-tuple-company")
@@ -119,33 +135,43 @@ export async function scrapeNaukriGulf(): Promise<ScrapedJob[]> {
       const expText = $(el).find(".exp, .experience").first().text().trim();
 
       let type: ScrapedJob["type"] = "Full-time";
-      if (typeText.includes("part")) type = "Part-time";
-      else if (typeText.includes("contract")) type = "Contract";
-      else if (typeText.includes("freelance")) type = "Freelance";
+      if (typeText.includes("part")) {
+        type = "Part-time";
+      } else if (typeText.includes("contract")) {
+        type = "Contract";
+      } else if (typeText.includes("freelance")) {
+        type = "Freelance";
+      }
 
       const country = locationRaw
         ? normalizeCountry(locationRaw)
         : "United Arab Emirates";
 
-      if (!title || !href) return;
+      if (!(title && href)) {
+        return;
+      }
 
       jobs.push({
-        title,
-        company: company || SOURCE,
         apply_url: href,
-        source: SOURCE,
+        company: company || SOURCE,
         job_identifier: slugFromPath(href),
+        remote_type: "onsite",
+        source: SOURCE,
+        title,
         type,
         workplace_country: country,
-        remote_type: "onsite",
       });
       found++;
     });
 
     console.log(`[${SOURCE}] Page ${page}: found ${found} jobs`);
-    if (found === 0) break;
+    if (found === 0) {
+      break;
+    }
 
-    if (page < MAX_PAGES) await sleep(DELAY_MS);
+    if (page < MAX_PAGES) {
+      await sleep(DELAY_MS);
+    }
   }
 
   console.log(`[${SOURCE}] Total: ${jobs.length} jobs`);

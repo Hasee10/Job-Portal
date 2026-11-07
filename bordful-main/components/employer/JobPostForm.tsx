@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { JobAssistantWidget } from "@/components/employer/JobAssistantWidget";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { JobAssistantWidget } from "@/components/employer/JobAssistantWidget";
 import { useToast } from "@/hooks/use-toast";
 import type { CareerLevel, Job } from "@/lib/db/airtable";
 import type { PostedJob } from "@/lib/jobs/employer-job-actions";
@@ -118,14 +118,16 @@ export function JobPostForm({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title.trim() || !description.trim()) return;
-    if (!acceptsApplications && !externalApplyUrl.trim()) {
+    if (!(title.trim() && description.trim())) {
+      return;
+    }
+    if (!(acceptsApplications || externalApplyUrl.trim())) {
       toast({
-        title: "Apply URL required",
+        className: "bg-destructive border border-red-600 shadow-md",
         description:
           "Provide an external apply link, or enable in-app applications.",
+        title: "Apply URL required",
         variant: "destructive",
-        className: "bg-destructive border border-red-600 shadow-md",
       });
       return;
     }
@@ -138,50 +140,52 @@ export function JobPostForm({
       .slice(0, 30);
 
     const payload = {
-      title: title.trim(),
-      type,
-      description: description.trim(),
-      benefits: null,
+      acceptsApplications,
       applicationRequirements: applicationRequirements.trim() || null,
-      workplaceType,
-      workplaceCity: workplaceCity.trim() || null,
-      workplaceCountry: workplaceCountry.trim() || null,
+      autoShortlistThreshold,
+      benefits: null,
       careerLevel,
-      salaryMin: salaryMin ? Number(salaryMin) : null,
-      salaryMax: salaryMax ? Number(salaryMax) : null,
-      salaryCurrency,
-      salaryUnit,
-      skills: skills.trim() || null,
-      requiredSkills,
+      description: description.trim(),
+      externalApplyUrl: acceptsApplications ? null : externalApplyUrl.trim(),
       minExperienceYears: minExperienceYears
         ? Number(minExperienceYears)
         : null,
-      autoShortlistThreshold,
-      acceptsApplications,
-      externalApplyUrl: acceptsApplications ? null : externalApplyUrl.trim(),
+      requiredSkills,
+      salaryCurrency,
+      salaryMax: salaryMax ? Number(salaryMax) : null,
+      salaryMin: salaryMin ? Number(salaryMin) : null,
+      salaryUnit,
+      skills: skills.trim() || null,
+      title: title.trim(),
+      type,
+      workplaceCity: workplaceCity.trim() || null,
+      workplaceCountry: workplaceCountry.trim() || null,
+      workplaceType,
     };
 
     try {
       const res = await fetch(
         isEditing ? `${apiBasePath}/${job!.id}` : apiBasePath,
         {
-          method: isEditing ? "PATCH" : "POST",
-          headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
+          headers: { "Content-Type": "application/json" },
+          method: isEditing ? "PATCH" : "POST",
         }
       );
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed to save job.");
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to save job.");
+      }
 
       toast({ title: isEditing ? "Job updated" : "Job posted" });
       router.push(jobsListPath);
       router.refresh();
     } catch (err) {
       toast({
-        title: "Failed to save",
-        description: err instanceof Error ? err.message : "Please try again.",
-        variant: "destructive",
         className: "bg-destructive border border-red-600 shadow-md",
+        description: err instanceof Error ? err.message : "Please try again.",
+        title: "Failed to save",
+        variant: "destructive",
       });
     } finally {
       setIsSubmitting(false);
@@ -193,7 +197,7 @@ export function JobPostForm({
       <form className="space-y-6" onSubmit={handleSubmit}>
         <div className="space-y-1.5">
           <label
-            className="text-sm font-medium text-zinc-700 dark:text-zinc-300"
+            className="font-medium text-sm text-zinc-700 dark:text-zinc-300"
             htmlFor="job-title"
           >
             Job title <span className="text-red-500">*</span>
@@ -209,7 +213,7 @@ export function JobPostForm({
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-1.5">
             <label
-              className="text-sm font-medium text-zinc-700 dark:text-zinc-300"
+              className="font-medium text-sm text-zinc-700 dark:text-zinc-300"
               htmlFor="job-type"
             >
               Job type
@@ -229,7 +233,7 @@ export function JobPostForm({
           </div>
           <div className="space-y-1.5">
             <label
-              className="text-sm font-medium text-zinc-700 dark:text-zinc-300"
+              className="font-medium text-sm text-zinc-700 dark:text-zinc-300"
               htmlFor="job-workplace"
             >
               Workplace
@@ -256,7 +260,7 @@ export function JobPostForm({
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-1.5">
             <label
-              className="text-sm font-medium text-zinc-700 dark:text-zinc-300"
+              className="font-medium text-sm text-zinc-700 dark:text-zinc-300"
               htmlFor="job-city"
             >
               City
@@ -269,7 +273,7 @@ export function JobPostForm({
           </div>
           <div className="space-y-1.5">
             <label
-              className="text-sm font-medium text-zinc-700 dark:text-zinc-300"
+              className="font-medium text-sm text-zinc-700 dark:text-zinc-300"
               htmlFor="job-country"
             >
               Country
@@ -284,7 +288,7 @@ export function JobPostForm({
 
         <div className="space-y-1.5">
           <label
-            className="text-sm font-medium text-zinc-700 dark:text-zinc-300"
+            className="font-medium text-sm text-zinc-700 dark:text-zinc-300"
             htmlFor="job-description"
           >
             Description <span className="text-red-500">*</span>
@@ -300,13 +304,13 @@ export function JobPostForm({
         </div>
 
         <div className="space-y-1.5">
-          <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+          <label className="font-medium text-sm text-zinc-700 dark:text-zinc-300">
             Career level
           </label>
           <div className="flex flex-wrap gap-1.5">
             {CAREER_LEVELS.map((level) => (
               <button
-                className={`rounded-full border px-2.5 py-1 text-xs font-medium transition-colors ${
+                className={`rounded-full border px-2.5 py-1 font-medium text-xs transition-colors ${
                   careerLevel.includes(level)
                     ? "border-primary bg-primary text-primary-foreground"
                     : "border-zinc-200 text-zinc-600 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-800"
@@ -324,7 +328,7 @@ export function JobPostForm({
         <div className="grid grid-cols-4 gap-3">
           <div className="space-y-1.5">
             <label
-              className="text-sm font-medium text-zinc-700 dark:text-zinc-300"
+              className="font-medium text-sm text-zinc-700 dark:text-zinc-300"
               htmlFor="salary-min"
             >
               Salary min
@@ -338,7 +342,7 @@ export function JobPostForm({
           </div>
           <div className="space-y-1.5">
             <label
-              className="text-sm font-medium text-zinc-700 dark:text-zinc-300"
+              className="font-medium text-sm text-zinc-700 dark:text-zinc-300"
               htmlFor="salary-max"
             >
               Salary max
@@ -352,7 +356,7 @@ export function JobPostForm({
           </div>
           <div className="space-y-1.5">
             <label
-              className="text-sm font-medium text-zinc-700 dark:text-zinc-300"
+              className="font-medium text-sm text-zinc-700 dark:text-zinc-300"
               htmlFor="salary-currency"
             >
               Currency
@@ -372,7 +376,7 @@ export function JobPostForm({
           </div>
           <div className="space-y-1.5">
             <label
-              className="text-sm font-medium text-zinc-700 dark:text-zinc-300"
+              className="font-medium text-sm text-zinc-700 dark:text-zinc-300"
               htmlFor="salary-unit"
             >
               Per
@@ -405,7 +409,7 @@ export function JobPostForm({
           <div className="mt-3 space-y-3">
             <div className="space-y-1.5">
               <label
-                className="text-sm font-medium text-zinc-700 dark:text-zinc-300"
+                className="font-medium text-sm text-zinc-700 dark:text-zinc-300"
                 htmlFor="job-skills"
               >
                 Skills (shown on listing, comma-separated)
@@ -419,7 +423,7 @@ export function JobPostForm({
             </div>
             <div className="space-y-1.5">
               <label
-                className="text-sm font-medium text-zinc-700 dark:text-zinc-300"
+                className="font-medium text-sm text-zinc-700 dark:text-zinc-300"
                 htmlFor="required-skills"
               >
                 Required skills for auto-shortlisting (comma-separated)
@@ -434,7 +438,7 @@ export function JobPostForm({
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <label
-                  className="text-sm font-medium text-zinc-700 dark:text-zinc-300"
+                  className="font-medium text-sm text-zinc-700 dark:text-zinc-300"
                   htmlFor="min-experience"
                 >
                   Min. years experience
@@ -449,7 +453,7 @@ export function JobPostForm({
               </div>
               <div className="space-y-1.5">
                 <label
-                  className="text-sm font-medium text-zinc-700 dark:text-zinc-300"
+                  className="font-medium text-sm text-zinc-700 dark:text-zinc-300"
                   htmlFor="auto-shortlist-threshold"
                 >
                   Auto-shortlist at match % ≥
@@ -490,7 +494,7 @@ export function JobPostForm({
           {!acceptsApplications && (
             <div className="mt-3 space-y-1.5">
               <label
-                className="text-sm font-medium text-zinc-700 dark:text-zinc-300"
+                className="font-medium text-sm text-zinc-700 dark:text-zinc-300"
                 htmlFor="external-apply-url"
               >
                 External apply URL <span className="text-red-500">*</span>
@@ -505,7 +509,7 @@ export function JobPostForm({
           )}
           <div className="mt-3 space-y-1.5">
             <label
-              className="text-sm font-medium text-zinc-700 dark:text-zinc-300"
+              className="font-medium text-sm text-zinc-700 dark:text-zinc-300"
               htmlFor="application-requirements"
             >
               Application requirements (shown to candidates)
@@ -539,17 +543,17 @@ export function JobPostForm({
 
       <JobAssistantWidget
         draft={{
-          title,
           description,
-          type,
-          workplaceType,
-          workplaceCity,
-          workplaceCountry,
-          skills,
           requiredSkills: requiredSkillsRaw
             .split(",")
             .map((s) => s.trim())
             .filter(Boolean),
+          skills,
+          title,
+          type,
+          workplaceCity,
+          workplaceCountry,
+          workplaceType,
         }}
         onApplyDescription={setDescription}
       />

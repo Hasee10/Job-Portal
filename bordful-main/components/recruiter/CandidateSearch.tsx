@@ -1,10 +1,10 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
 import { Search, X } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
-import { CandidateCard } from "./CandidateCard";
 import type { OptInCandidate } from "@/lib/jobs/candidate-outreach-actions";
+import { CandidateCard } from "./CandidateCard";
 
 export function CandidateSearch({
   initial,
@@ -34,10 +34,16 @@ export function CandidateSearch({
       setIsLoading(true);
       try {
         const params = new URLSearchParams();
-        if (q) params.set("q", q);
-        if (jobId) params.set("jobId", jobId);
+        if (q) {
+          params.set("q", q);
+        }
+        if (jobId) {
+          params.set("jobId", jobId);
+        }
         const res = await fetch(`/api/recruiter/candidates?${params}`);
-        if (!res.ok) return;
+        if (!res.ok) {
+          return;
+        }
         const data = await res.json();
         setCandidates(data.candidates);
       } finally {
@@ -48,8 +54,11 @@ export function CandidateSearch({
   );
 
   useEffect(() => {
-    if (debouncedQuery !== "") fetchCandidates(debouncedQuery);
-    else setCandidates(initial);
+    if (debouncedQuery === "") {
+      setCandidates(initial);
+    } else {
+      fetchCandidates(debouncedQuery);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedQuery]);
 
@@ -65,9 +74,9 @@ export function CandidateSearch({
   return (
     <div className="space-y-5">
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
+        <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-zinc-400" />
         <Input
-          className="pl-9 pr-9"
+          className="pr-9 pl-9"
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search by name, headline, or skill…"
           type="text"
@@ -75,7 +84,7 @@ export function CandidateSearch({
         />
         {query && (
           <button
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600"
+            className="absolute top-1/2 right-3 -translate-y-1/2 text-zinc-400 hover:text-zinc-600"
             onClick={() => setQuery("")}
             type="button"
           >
@@ -85,9 +94,9 @@ export function CandidateSearch({
       </div>
 
       {isLoading ? (
-        <p className="text-sm text-zinc-500 text-center py-8">Searching…</p>
+        <p className="py-8 text-center text-sm text-zinc-500">Searching…</p>
       ) : candidates.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-zinc-200 p-10 text-center dark:border-zinc-800">
+        <div className="rounded-xl border border-zinc-200 border-dashed p-10 text-center dark:border-zinc-800">
           <p className="font-medium text-zinc-900 dark:text-zinc-50">
             No candidates found
           </p>
@@ -100,7 +109,7 @@ export function CandidateSearch({
       ) : (
         <>
           <p className="text-sm text-zinc-500">
-            {candidates.length} candidate{candidates.length !== 1 ? "s" : ""}{" "}
+            {candidates.length} candidate{candidates.length === 1 ? "" : "s"}{" "}
             available
           </p>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">

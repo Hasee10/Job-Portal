@@ -19,10 +19,10 @@ function formatJobLocationType(job: Job): string | null {
 
 function formatEmploymentType(type: string): string {
   const mappings: Record<string, string> = {
-    "Full-time": "FULL_TIME",
-    "Part-time": "PART_TIME",
     Contract: "CONTRACTOR",
     Freelance: "CONTRACTOR",
+    "Full-time": "FULL_TIME",
+    "Part-time": "PART_TIME",
   };
   return mappings[type] || "OTHER";
 }
@@ -34,12 +34,12 @@ function formatSalaryForSchema(salary: Salary | null): MonetaryAmount | null {
 
   // Convert salary unit to schema.org unitText format
   const unitTextMapping: Record<string, string> = {
-    hour: "HOUR",
     day: "DAY",
-    week: "WEEK",
+    hour: "HOUR",
     month: "MONTH",
-    year: "YEAR",
     project: "HOUR", // Default to HOUR for project as schema.org doesn't have a project unit
+    week: "WEEK",
+    year: "YEAR",
   };
 
   const unitText = unitTextMapping[salary.unit];
@@ -51,8 +51,8 @@ function formatSalaryForSchema(salary: Salary | null): MonetaryAmount | null {
       currency: salary.currency,
       value: {
         "@type": "QuantitativeValue",
-        minValue: salary.min,
         maxValue: salary.max,
+        minValue: salary.min,
         unitText,
       } as QuantitativeValue,
     };
@@ -67,8 +67,8 @@ function formatSalaryForSchema(salary: Salary | null): MonetaryAmount | null {
     currency: salary.currency,
     value: {
       "@type": "QuantitativeValue",
-      value: singleValue,
       unitText,
+      value: singleValue,
     } as QuantitativeValue,
   };
 }
@@ -203,12 +203,12 @@ function parseExperienceMonths(
 
 // Configuration map for education credential types and their keywords
 const EDUCATION_CREDENTIAL_MAP: Record<string, string[]> = {
-  BachelorDegree: ["bachelor", "bs", "ba", "b.s.", "b.a."],
-  MasterDegree: ["master", "ms", "ma", "m.s.", "m.a.", "mba"],
-  DoctoralDegree: ["phd", "doctorate", "doctoral"],
   AssociateDegree: ["associate", "aa", "a.a."],
-  HighSchool: ["high school", "secondary"],
+  BachelorDegree: ["bachelor", "bs", "ba", "b.s.", "b.a."],
   Certificate: ["certificate", "certification"],
+  DoctoralDegree: ["phd", "doctorate", "doctoral"],
+  HighSchool: ["high school", "secondary"],
+  MasterDegree: ["master", "ms", "ma", "m.s.", "m.a.", "mba"],
   ProfessionalDegree: ["professional"],
 };
 
@@ -273,18 +273,18 @@ export function JobSchema({ job, slug }: JobSchemaProps) {
   const jobPostingData: Record<string, unknown> = {
     "@context": "https://schema.org",
     "@type": "JobPosting",
-    title: job.title,
-    description: job.description,
     datePosted: safePostDate.toISOString(),
-    validThrough,
-    url: jobUrl,
+    description: job.description,
+
+    // Employment type
+    employmentType: formatEmploymentType(job.type),
     hiringOrganization: {
       "@type": "Organization",
       name: job.company,
     } as Organization,
-
-    // Employment type
-    employmentType: formatEmploymentType(job.type),
+    title: job.title,
+    url: jobUrl,
+    validThrough,
 
     // Optional properties with conditional rendering to avoid null values
     ...(job.job_identifier && {

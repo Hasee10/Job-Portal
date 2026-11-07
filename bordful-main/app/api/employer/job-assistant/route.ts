@@ -28,7 +28,9 @@ type JobDraft = {
 };
 
 function draftSummary(draft: JobDraft | undefined): string {
-  if (!draft) return "No draft fields filled in yet.";
+  if (!draft) {
+    return "No draft fields filled in yet.";
+  }
   const lines = [
     draft.title && `Title: ${draft.title}`,
     draft.type && `Type: ${draft.type}`,
@@ -98,8 +100,8 @@ export async function POST(request: Request) {
         typeof m.content === "string"
     )
     .map((m) => ({
-      role: m.role,
       content: m.content.slice(0, MAX_MESSAGE_LENGTH),
+      role: m.role,
     }));
 
   const draft = body.draft as JobDraft | undefined;
@@ -108,12 +110,12 @@ export async function POST(request: Request) {
     const output = await aiChatCompletion(
       [
         {
-          role: "system",
           content: `${SYSTEM_PROMPT}\n\nCurrent draft:\n${draftSummary(draft)}`,
+          role: "system",
         },
         ...trimmedMessages,
       ],
-      { temperature: 0.5, maxTokens: 1200 }
+      { maxTokens: 1200, temperature: 0.5 }
     );
 
     return NextResponse.json({ reply: output });

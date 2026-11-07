@@ -1,19 +1,19 @@
+import { ArrowLeft } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
 import { auth } from "@/auth";
 import { CandidateSearch } from "@/components/recruiter/CandidateSearch";
-import { getOwnerJob } from "@/lib/jobs/employer-job-actions";
+import config from "@/config";
 import {
   getRecruiterDailyOutreachCount,
   listOptInCandidates,
 } from "@/lib/jobs/candidate-outreach-actions";
-import config from "@/config";
+import { getOwnerJob } from "@/lib/jobs/employer-job-actions";
 
 export const metadata: Metadata = {
+  robots: { follow: false, index: false },
   title: `Search Candidates | ${config.title}`,
-  robots: { index: false, follow: false },
 };
 
 export const dynamic = "force-dynamic";
@@ -24,13 +24,18 @@ export default async function RecruiterJobCandidatesPage({
   params: Promise<{ id: string }>;
 }) {
   const session = await auth();
-  if (!session?.user)
+  if (!session?.user) {
     redirect("/recruiter/sign-in?callbackUrl=/recruiter/jobs");
-  if (session.user.role !== "recruiter") redirect("/");
+  }
+  if (session.user.role !== "recruiter") {
+    redirect("/");
+  }
 
   const { id } = await params;
   const job = await getOwnerJob({ recruiterId: session.user.id }, id);
-  if (!job) notFound();
+  if (!job) {
+    notFound();
+  }
 
   const [candidates, dailyCount] = await Promise.all([
     listOptInCandidates(session.user.id, { jobId: id }),

@@ -36,8 +36,8 @@ export function RecruiterResetPasswordForm() {
     e.preventDefault();
     if (password.length < 8) {
       toast({
-        title: "Password too short",
         description: "At least 8 characters required.",
+        title: "Password too short",
         variant: "destructive",
       });
       return;
@@ -50,23 +50,25 @@ export function RecruiterResetPasswordForm() {
     setIsSubmitting(true);
     try {
       const res = await fetch("/api/recruiters/reset-password", {
-        method: "POST",
+        body: JSON.stringify({ password, token }),
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token, password }),
+        method: "POST",
       });
       const result = await res.json();
-      if (!res.ok) throw new Error(result.error || "Reset failed.");
+      if (!res.ok) {
+        throw new Error(result.error || "Reset failed.");
+      }
 
       toast({
-        title: "Password updated",
         description: "You can now sign in with your new password.",
+        title: "Password updated",
       });
       router.push("/recruiter/sign-in");
     } catch (error) {
       toast({
-        title: "Reset failed",
         description:
           error instanceof Error ? error.message : "Please request a new link.",
+        title: "Reset failed",
         variant: "destructive",
       });
     } finally {

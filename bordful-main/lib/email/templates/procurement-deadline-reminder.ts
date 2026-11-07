@@ -46,7 +46,7 @@ export function renderProcurementDeadlineReminderEmail({
   `);
 
   return {
-    subject: `Deadline approaching: ${requestTitle}`,
     html,
+    subject: `Deadline approaching: ${requestTitle}`,
   };
 }

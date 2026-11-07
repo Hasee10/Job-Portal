@@ -7,10 +7,10 @@ import {
   Menu,
   X,
 } from "lucide-react";
-import { useTheme } from "next-themes";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useTheme } from "next-themes";
 import {
   type ReactNode,
   useCallback,
@@ -88,7 +88,7 @@ function SocialLink({ href, label, children }: SocialLinkProps) {
   return (
     <Link
       aria-label={label}
-      className="text-zinc-600 dark:text-zinc-400 transition-colors hover:text-zinc-900 dark:hover:text-zinc-100"
+      className="text-zinc-600 transition-colors hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
       href={href}
       rel="noopener noreferrer"
       target="_blank"
@@ -109,10 +109,10 @@ function SocialIcon({ src, alt }: SocialIconProps) {
         height={16}
         src={src}
         style={{
-          width: "16px",
-          height: "16px",
           filter:
             "invert(41%) sepia(9%) saturate(380%) hue-rotate(202deg) brightness(94%) contrast(91%)", // zinc-600
+          height: "16px",
+          width: "16px",
         }}
         width={16}
       />
@@ -125,10 +125,10 @@ function SocialIcon({ src, alt }: SocialIconProps) {
         height={16}
         src={src}
         style={{
-          width: "16px",
-          height: "16px",
           filter:
             "invert(14%) sepia(8%) saturate(427%) hue-rotate(202deg) brightness(93%) contrast(90%)", // zinc-900
+          height: "16px",
+          width: "16px",
         }}
         width={16}
       />
@@ -174,58 +174,58 @@ type SocialPlatformConfig = {
 // Define social platforms with their properties outside of component for reuse
 const SOCIAL_PLATFORMS: SocialPlatformConfig[] = [
   {
-    id: "rss",
-    configProp: "rssFeed",
-    src: "/assets/social/rss.svg",
     alt: "RSS Feed",
-    labelPrefix: "Subscribe to",
+    configProp: "rssFeed",
     enabled: () => false,
     getUrl: () => "/feed.xml",
+    id: "rss",
+    labelPrefix: "Subscribe to",
+    src: "/assets/social/rss.svg",
   },
   {
-    id: "github",
-    configProp: "github",
-    src: "/assets/social/github.svg",
     alt: "GitHub",
-    labelPrefix: "View on",
+    configProp: "github",
     enabled: (config) => config.nav.github?.show,
     getUrl: (config) => config?.nav.github?.url || "",
+    id: "github",
+    labelPrefix: "View on",
+    src: "/assets/social/github.svg",
   },
   {
-    id: "linkedin",
-    configProp: "linkedin",
-    src: "/assets/social/linkedin.svg",
     alt: "LinkedIn",
-    labelPrefix: "Follow us on",
+    configProp: "linkedin",
     enabled: (config) => config.nav.linkedin?.show,
     getUrl: (config) => config?.nav.linkedin?.url || "",
+    id: "linkedin",
+    labelPrefix: "Follow us on",
+    src: "/assets/social/linkedin.svg",
   },
   {
-    id: "twitter",
-    configProp: "twitter",
-    src: "/assets/social/twitter.svg",
     alt: "Twitter",
-    labelPrefix: "Follow us on X (",
+    configProp: "twitter",
     enabled: (config) => config.nav.twitter?.show,
     getUrl: (config) => config?.nav.twitter?.url || "",
+    id: "twitter",
+    labelPrefix: "Follow us on X (",
+    src: "/assets/social/twitter.svg",
   },
   {
-    id: "bluesky",
-    configProp: "bluesky",
-    src: "/assets/social/bluesky.svg",
     alt: "Bluesky",
-    labelPrefix: "Follow us on",
+    configProp: "bluesky",
     enabled: (config) => config.nav.bluesky?.show,
     getUrl: (config) => config?.nav.bluesky?.url || "",
+    id: "bluesky",
+    labelPrefix: "Follow us on",
+    src: "/assets/social/bluesky.svg",
   },
   {
-    id: "reddit",
-    configProp: "reddit",
-    src: "/assets/social/reddit.svg",
     alt: "Reddit",
-    labelPrefix: "Follow us on",
+    configProp: "reddit",
     enabled: (config) => config.nav.reddit?.show,
     getUrl: (config) => config?.nav.reddit?.url || "",
+    id: "reddit",
+    labelPrefix: "Follow us on",
+    src: "/assets/social/reddit.svg",
   },
 ];
 
@@ -399,8 +399,8 @@ export function Nav() {
               aria-expanded={isDropdownOpen}
               className={`flex items-center rounded-lg px-2.5 py-1 text-sm ${
                 pathname.startsWith(item.link)
-                  ? "bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100"
-                  : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-zinc-100"
+                  ? "bg-zinc-100 text-zinc-900 dark:bg-zinc-800 dark:text-zinc-100"
+                  : "text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
               } transition-colors`}
               onClick={() => toggleDropdown(item.label)}
             >
@@ -487,7 +487,7 @@ export function Nav() {
           {/* Brand */}
           <Link
             aria-label="Home"
-            className="flex items-center space-x-1.5 text-zinc-900 dark:text-zinc-100 transition-colors hover:text-zinc-800 dark:hover:text-zinc-200"
+            className="flex items-center space-x-1.5 text-zinc-900 transition-colors hover:text-zinc-800 dark:text-zinc-100 dark:hover:text-zinc-200"
             href="/"
           >
             {config.nav.logo.enabled ? (
@@ -499,8 +499,8 @@ export function Nav() {
                 priority
                 src={logoSrc}
                 style={{
-                  width: `${config.nav.logo.width}px`,
                   height: `${config.nav.logo.height}px`,
+                  width: `${config.nav.logo.width}px`,
                 }}
                 width={config.nav.logo.width}
               />
@@ -532,7 +532,7 @@ export function Nav() {
                 <Link
                   href={config.nav.postJob.link}
                   {...(config.nav.postJob.external
-                    ? { target: "_blank", rel: "noopener noreferrer" }
+                    ? { rel: "noopener noreferrer", target: "_blank" }
                     : {})}
                 >
                   {config.nav.postJob.label}
@@ -547,7 +547,7 @@ export function Nav() {
             <button
               aria-expanded={isOpen}
               aria-label="Toggle menu"
-              className="p-2 text-zinc-600 dark:text-zinc-400 transition-colors hover:text-zinc-900 dark:hover:text-zinc-100"
+              className="p-2 text-zinc-600 transition-colors hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
               onClick={() => setIsOpen(!isOpen)}
             >
               {isOpen ? (
@@ -585,7 +585,7 @@ export function Nav() {
                 <Link
                   href={config.nav.postJob.link}
                   {...(config.nav.postJob.external
-                    ? { target: "_blank", rel: "noopener noreferrer" }
+                    ? { rel: "noopener noreferrer", target: "_blank" }
                     : {})}
                 >
                   {config.nav.postJob.label}
@@ -655,7 +655,7 @@ export function Nav() {
                     <Link
                       href={config.nav.postJob.link}
                       {...(config.nav.postJob.external
-                        ? { target: "_blank", rel: "noopener noreferrer" }
+                        ? { rel: "noopener noreferrer", target: "_blank" }
                         : {})}
                       className="flex items-center justify-center"
                       onClick={() => setIsOpen(false)}

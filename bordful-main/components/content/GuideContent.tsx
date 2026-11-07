@@ -7,8 +7,12 @@ import { slugifyHeading } from "@/lib/content/guide-content";
 // assigned here must match what the server-side TOC extraction generates,
 // or the "jump to section" links silently do nothing.
 function flattenToText(node: ReactNode): string {
-  if (typeof node === "string" || typeof node === "number") return String(node);
-  if (Array.isArray(node)) return node.map(flattenToText).join("");
+  if (typeof node === "string" || typeof node === "number") {
+    return String(node);
+  }
+  if (Array.isArray(node)) {
+    return node.map(flattenToText).join("");
+  }
   if (
     node &&
     typeof node === "object" &&
@@ -26,6 +30,18 @@ export function GuideContent({ content }: { content: string }) {
   return (
     <ReactMarkdown
       components={{
+        a: ({ href, ...props }) =>
+          href ? (
+            <a
+              className="text-cyan-700 underline decoration-cyan-700/30 underline-offset-2 hover:decoration-cyan-700 dark:text-cyan-400 dark:decoration-cyan-400/30 dark:hover:decoration-cyan-400"
+              href={href}
+              rel="noopener noreferrer"
+              target="_blank"
+              {...props}
+            />
+          ) : (
+            <span {...props} />
+          ),
         h2: ({ children, ...props }) => (
           <h2
             className="mt-8 mb-3 scroll-mt-24 font-semibold text-xl text-zinc-900 first:mt-0 dark:text-zinc-50"
@@ -38,6 +54,12 @@ export function GuideContent({ content }: { content: string }) {
         h3: ({ ...props }) => (
           <h3
             className="mt-6 mb-2 font-semibold text-lg text-zinc-900 dark:text-zinc-50"
+            {...props}
+          />
+        ),
+        ol: ({ ...props }) => (
+          <ol
+            className="my-3 ml-5 list-decimal space-y-1.5 text-[15px] text-zinc-700 dark:text-zinc-300"
             {...props}
           />
         ),
@@ -59,24 +81,6 @@ export function GuideContent({ content }: { content: string }) {
             {...props}
           />
         ),
-        ol: ({ ...props }) => (
-          <ol
-            className="my-3 ml-5 list-decimal space-y-1.5 text-[15px] text-zinc-700 dark:text-zinc-300"
-            {...props}
-          />
-        ),
-        a: ({ href, ...props }) =>
-          href ? (
-            <a
-              className="text-cyan-700 underline decoration-cyan-700/30 underline-offset-2 hover:decoration-cyan-700 dark:text-cyan-400 dark:decoration-cyan-400/30 dark:hover:decoration-cyan-400"
-              href={href}
-              rel="noopener noreferrer"
-              target="_blank"
-              {...props}
-            />
-          ) : (
-            <span {...props} />
-          ),
       }}
       remarkPlugins={[remarkGfm]}
     >

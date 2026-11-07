@@ -231,20 +231,20 @@ export function normalizeMarkdown(raw: string): string {
           if (listStack.length === 0) {
             // Start a new list
             listStack.push({
+              hasBoldHeader: false,
               indent: indentation,
               marker,
-              type: listType,
-              hasBoldHeader: false,
               markerStyle,
+              type: listType,
             });
           } else if (indentation > listStack.at(-1)!.indent) {
             // This is a nested list
             listStack.push({
+              hasBoldHeader: false,
               indent: indentation,
               marker,
-              type: listType,
-              hasBoldHeader: false,
               markerStyle,
+              type: listType,
             });
           } else {
             // Pop items from stack until we find the appropriate level
@@ -255,11 +255,11 @@ export function normalizeMarkdown(raw: string): string {
               listStack.pop();
             }
             listStack.push({
+              hasBoldHeader: false,
               indent: indentation,
               marker,
-              type: listType,
-              hasBoldHeader: false,
               markerStyle,
+              type: listType,
             });
           }
 
@@ -299,20 +299,20 @@ export function normalizeMarkdown(raw: string): string {
           if (listStack.length === 0) {
             // Start a new list
             listStack.push({
+              hasBoldHeader,
               indent: indentation,
               marker,
-              type: listType,
-              hasBoldHeader,
               markerStyle,
+              type: listType,
             });
           } else if (indentation > listStack.at(-1)!.indent) {
             // This is a nested list
             listStack.push({
+              hasBoldHeader,
               indent: indentation,
               marker,
-              type: listType,
-              hasBoldHeader,
               markerStyle,
+              type: listType,
             });
           } else {
             // Pop items from stack until we find the appropriate level
@@ -323,11 +323,11 @@ export function normalizeMarkdown(raw: string): string {
               listStack.pop();
             }
             listStack.push({
+              hasBoldHeader,
               indent: indentation,
               marker,
-              type: listType,
-              hasBoldHeader,
               markerStyle,
+              type: listType,
             });
           }
 
@@ -370,20 +370,20 @@ export function normalizeMarkdown(raw: string): string {
           if (listStack.length === 0) {
             // Start a new list
             listStack.push({
+              hasBoldHeader,
               indent: indentation,
               marker,
-              type: listType,
-              hasBoldHeader,
               markerStyle,
+              type: listType,
             });
           } else if (indentation > listStack.at(-1)!.indent) {
             // This is a nested list
             listStack.push({
+              hasBoldHeader,
               indent: indentation,
               marker,
-              type: listType,
-              hasBoldHeader,
               markerStyle,
+              type: listType,
             });
           } else {
             // Pop items from stack until we find the appropriate level
@@ -394,11 +394,11 @@ export function normalizeMarkdown(raw: string): string {
               listStack.pop();
             }
             listStack.push({
+              hasBoldHeader,
               indent: indentation,
               marker,
-              type: listType,
-              hasBoldHeader,
               markerStyle,
+              type: listType,
             });
           }
 
@@ -422,20 +422,20 @@ export function normalizeMarkdown(raw: string): string {
       if (listStack.length === 0) {
         // Start a new list
         listStack.push({
+          hasBoldHeader,
           indent: indentation,
           marker,
-          type: listType,
-          hasBoldHeader,
           markerStyle,
+          type: listType,
         });
       } else if (indentation > listStack.at(-1)!.indent) {
         // This is a nested list
         listStack.push({
+          hasBoldHeader,
           indent: indentation,
           marker,
-          type: listType,
-          hasBoldHeader,
           markerStyle,
+          type: listType,
         });
       } else {
         // Pop items from stack until we find the appropriate level
@@ -446,11 +446,11 @@ export function normalizeMarkdown(raw: string): string {
           listStack.pop();
         }
         listStack.push({
+          hasBoldHeader,
           indent: indentation,
           marker,
-          type: listType,
-          hasBoldHeader,
           markerStyle,
+          type: listType,
         });
       }
 
@@ -715,22 +715,22 @@ export function normalizeMarkdown(raw: string): string {
   // Apply additional formatting with regex for specific patterns
 
   // Ensure standalone bold headers are properly formatted with spacing
-  processed = processed.replace(/^(\*\*[^*\n:]+(?::|)\*\*)\s*$/gm, (match) => {
-    return `${match}\n`;
-  });
+  processed = processed.replace(
+    /^(\*\*[^*\n:]+(?::|)\*\*)\s*$/gm,
+    (match) => `${match}\n`
+  );
 
   // Fix bolded headers with proper spacing
   processed = processed.replace(
     /^(\s*)[-*+]\s+\*\*([^*\n]+):\*\*\s*$/gm,
-    (_match, indent, title) => {
-      return `${indent}- **${title}:**`;
-    }
+    (_match, indent, title) => `${indent}- **${title}:**`
   );
 
   // Fix bold headers with colons to preserve spaces after the colon
-  processed = processed.replace(/\*\*([^*\n:]+):\s*\*\*/g, (_match, title) => {
-    return `**${title}:** `;
-  });
+  processed = processed.replace(
+    /\*\*([^*\n:]+):\s*\*\*/g,
+    (_match, title) => `**${title}:** `
+  );
 
   // Ensure proper nesting for nested lists following bold headers
   processed = processed.replace(
@@ -794,9 +794,10 @@ export function normalizeMarkdown(raw: string): string {
   );
 
   // Handle bold text formatting (preserve original spacing)
-  processed = processed.replace(/\*\*\s*([^*\n]+?)\s*\*\*/g, (_, content) => {
-    return `**${content}**`;
-  });
+  processed = processed.replace(
+    /\*\*\s*([^*\n]+?)\s*\*\*/g,
+    (_, content) => `**${content}**`
+  );
 
   // Fix missing spaces between bold text and opening parentheses
   processed = processed.replace(/\*\*([^*\n]+?)\*\*\(/g, "**$1** (");
@@ -811,9 +812,7 @@ export function normalizeMarkdown(raw: string): string {
   // This prevents improper breaking of lines with bold formatting
   processed = processed.replace(
     /^(\s*)[-*+]\s+([^*\n]*)\*\*([^*\n]+)\*\*$/gm,
-    (_match, indent, prefix, boldText) => {
-      return `${indent}- ${prefix}**${boldText}**`;
-    }
+    (_match, indent, prefix, boldText) => `${indent}- ${prefix}**${boldText}**`
   );
 
   // Fix incorrectly split bold text in list items
@@ -835,9 +834,10 @@ export function normalizeMarkdown(raw: string): string {
   );
 
   // Ensure proper separation around bold headers that are section markers
-  processed = processed.replace(/^(\*\*[^*\n:]+(?::|)\*\*)$/gm, (match) => {
-    return `\n${match}\n`;
-  });
+  processed = processed.replace(
+    /^(\*\*[^*\n:]+(?::|)\*\*)$/gm,
+    (match) => `\n${match}\n`
+  );
 
   // Remove excessive blank lines (more than 2 consecutive)
   processed = processed.replace(/\n{3,}/g, "\n\n");
@@ -851,14 +851,14 @@ export function normalizeMarkdown(raw: string): string {
     .use(remarkGfm)
     .use(remarkStringify, {
       bullet: "*", // Use asterisks for bullet points
-      listItemIndent: "one", // Use one space for list item indentation
       emphasis: "_", // Use underscores for emphasis
-      strong: "*", // Use asterisks for strong emphasis
       fence: "`", // Use backticks for fenced code blocks
       fences: true, // Always use fenced code blocks
+      listItemIndent: "one", // Use one space for list item indentation
       resourceLink: false, // Use autolinks when possible
       rule: "-", // Use hyphens for thematic breaks
       ruleSpaces: false, // No spaces between markers in thematic breaks
+      strong: "*", // Use asterisks for strong emphasis
     })
     .processSync(processed);
 

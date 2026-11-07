@@ -10,72 +10,72 @@ export type RouteConfig = {
 // Route configuration
 export const routes: RouteConfig[] = [
   {
-    path: "/",
     name: "Home",
+    path: "/",
   },
   {
-    path: "/jobs",
     name: "Jobs",
+    path: "/jobs",
   },
   {
-    path: "/jobs/[slug]",
     name: "Job Details",
+    path: "/jobs/[slug]",
   },
   {
-    path: "/jobs/type/[type]",
     name: "Job Type",
+    path: "/jobs/type/[type]",
   },
   {
-    path: "/jobs/level/[level]",
     name: "Career Level",
+    path: "/jobs/level/[level]",
   },
   {
-    path: "/jobs/language/[language]",
     name: "Language",
+    path: "/jobs/language/[language]",
   },
   {
-    path: "/jobs/location/[location]",
     name: "Location",
+    path: "/jobs/location/[location]",
   },
   {
-    path: "/jobs/types",
     name: "Job Types",
+    path: "/jobs/types",
   },
   {
-    path: "/jobs/levels",
     name: "Career Levels",
+    path: "/jobs/levels",
   },
   {
-    path: "/jobs/languages",
     name: "Languages",
+    path: "/jobs/languages",
   },
   {
-    path: "/jobs/locations",
     name: "Job Locations",
+    path: "/jobs/locations",
   },
   {
-    path: "/pricing",
     name: "Pricing",
+    path: "/pricing",
   },
   {
-    path: "/about",
     name: "About",
+    path: "/about",
   },
   {
-    path: "/contact",
     name: "Contact",
+    path: "/contact",
   },
   {
-    path: "/faq",
     name: "FAQ",
+    path: "/faq",
   },
   {
-    path: "/job-alerts",
     name: "Job Alerts",
+    path: "/job-alerts",
   },
   {
-    path: "/changelog",
     name: "Changelog",
+    path: "/changelog",
   },
 ];
 

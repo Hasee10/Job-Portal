@@ -5,8 +5,12 @@ import type { Masterclass } from "@/lib/content/masterclass-actions";
 import { getYouTubeThumbnailUrl } from "@/lib/content/masterclass-video";
 
 function formatDuration(minutes: number | null): string | null {
-  if (!minutes) return null;
-  if (minutes < 60) return `${minutes} min`;
+  if (!minutes) {
+    return null;
+  }
+  if (minutes < 60) {
+    return `${minutes} min`;
+  }
   const hours = Math.floor(minutes / 60);
   const rest = minutes % 60;
   return rest === 0 ? `${hours} hr` : `${hours} hr ${rest} min`;

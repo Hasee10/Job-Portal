@@ -17,7 +17,9 @@ export async function fetchWithRetry(
     try {
       res = await fetch(url, init);
     } catch (e) {
-      if (attempt === maxRetries) throw e;
+      if (attempt === maxRetries) {
+        throw e;
+      }
       console.warn(
         `[${opts.label}] network error (attempt ${attempt + 1}/${maxRetries + 1}):`,
         (e as Error).message
@@ -27,8 +29,12 @@ export async function fetchWithRetry(
       continue;
     }
 
-    if (res.status !== 429 && res.status < 500) return res;
-    if (attempt === maxRetries) return res;
+    if (res.status !== 429 && res.status < 500) {
+      return res;
+    }
+    if (attempt === maxRetries) {
+      return res;
+    }
 
     console.warn(
       `[${opts.label}] HTTP ${res.status} (attempt ${attempt + 1}/${maxRetries + 1}), retrying…`

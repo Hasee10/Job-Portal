@@ -1,14 +1,14 @@
+import { Building2 } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Building2 } from "lucide-react";
-import { listVerifiedVendors } from "@/lib/procurement/vendor-actions";
 import { VendorCard } from "@/components/procurement/VendorCard";
 import config from "@/config";
+import { listVerifiedVendors } from "@/lib/procurement/vendor-actions";
 
 export const metadata: Metadata = {
-  title: `Registered Suppliers | ${config.title}`,
   description:
     "Browse verified suppliers and service providers registered on Caliber.",
+  title: `Registered Suppliers | ${config.title}`,
 };
 
 export const dynamic = "force-dynamic";

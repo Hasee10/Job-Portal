@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 
@@ -22,11 +22,13 @@ export function JobStatusToggle({
     setIsSubmitting(true);
     try {
       const res = await fetch(`${apiBasePath}/${jobId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: isActive ? "close" : "reopen" }),
+        headers: { "Content-Type": "application/json" },
+        method: "PATCH",
       });
-      if (!res.ok) throw new Error();
+      if (!res.ok) {
+        throw new Error();
+      }
       toast({ title: isActive ? "Job closed" : "Job reopened" });
       router.refresh();
     } catch {

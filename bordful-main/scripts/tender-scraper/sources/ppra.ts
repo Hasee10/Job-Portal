@@ -19,8 +19,8 @@
 // cpv_codes column and the feed page's category filter work uniformly
 // across sources that don't share a real classification standard).
 import * as cheerio from "cheerio";
-import type { ScrapedTender } from "../types";
 import { fetchWithRetry } from "../http";
+import type { ScrapedTender } from "../types";
 
 const BASE = "https://epms.ppra.gov.pk";
 const LIST_PATH = "/public/tenders/active-tenders";
@@ -47,7 +47,9 @@ function toYyyyMmDd(date: Date): string {
 // (UTC+5), the authority's own timezone, since that's what a Pakistani
 // buyer reading the site would assume.
 function parseDeadline(dateText: string, timeText: string): string | undefined {
-  if (!dateText) return undefined;
+  if (!dateText) {
+    return undefined;
+  }
   const combined = timeText
     ? `${dateText} ${timeText} GMT+0500`
     : `${dateText} GMT+0500`;
@@ -60,7 +62,9 @@ function parseDeadline(dateText: string, timeText: string): string | undefined {
 // publication_date: no "Published" line on its card, and "Newest first"
 // sort couldn't order PPRA tenders against each other or against TED.
 function parsePublicationDate(dateText: string): string | undefined {
-  if (!dateText) return undefined;
+  if (!dateText) {
+    return undefined;
+  }
   const parsed = new Date(`${dateText} GMT+0500`);
   return Number.isNaN(parsed.getTime())
     ? undefined
@@ -73,10 +77,10 @@ async function fetchPage(url: string): Promise<string | null> {
       url,
       {
         headers: {
-          "User-Agent":
-            "Mozilla/5.0 (compatible; Caliber-Aggregator/1.0; +https://caliber.app)",
           Accept: "text/html,application/xhtml+xml",
           "Accept-Language": "en-US,en;q=0.9",
+          "User-Agent":
+            "Mozilla/5.0 (compatible; Caliber-Aggregator/1.0; +https://caliber.app)",
         },
         signal: AbortSignal.timeout(20_000),
       },
@@ -99,7 +103,9 @@ function parseListPage(html: string, cpvPrefix: string): ScrapedTender[] {
 
   $("table.table-hover tbody tr").each((_, row) => {
     const cells = $(row).find("td");
-    if (cells.length < 7) return;
+    if (cells.length < 7) {
+      return;
+    }
 
     const tenderNo = $(cells[1]).find("strong").first().text().trim();
     const detailsCell = $(cells[2]);
@@ -115,17 +121,19 @@ function parseListPage(html: string, cpvPrefix: string): ScrapedTender[] {
       .first()
       .attr("href");
 
-    if (!tenderNo || !title || !detailHref) return;
+    if (!(tenderNo && title && detailHref)) {
+      return;
+    }
 
     tenders.push({
-      source: "ppra",
-      sourceId: tenderNo,
-      title,
       buyerName: org || undefined,
       country: "PAK",
       cpvCodes: [cpvPrefix],
-      publicationDate: parsePublicationDate(advertisedDate),
       deadlineDate: parseDeadline(closingDate, closingTime),
+      publicationDate: parsePublicationDate(advertisedDate),
+      source: "ppra",
+      sourceId: tenderNo,
+      title,
       url: `${BASE}${detailHref}`,
     });
   });
@@ -147,12 +155,16 @@ export async function scrapePpra(lookbackDays = 2): Promise<ScrapedTender[]> {
     for (let page = 1; page <= MAX_PAGES; page++) {
       const url = `${BASE}${LIST_PATH}?procurement_category=${category}&advertise_date_from=${since}&page=${page}`;
       const html = await fetchPage(url);
-      if (!html) break;
+      if (!html) {
+        break;
+      }
 
       const pageTenders = parseListPage(html, cpvPrefix);
       tenders.push(...pageTenders);
 
-      if (pageTenders.length < PAGE_SIZE) break; // last page
+      if (pageTenders.length < PAGE_SIZE) {
+        break; // last page
+      }
       await sleep(DELAY_MS);
     }
   }

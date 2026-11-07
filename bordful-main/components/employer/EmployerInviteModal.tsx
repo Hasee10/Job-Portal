@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
 import { AlertCircle } from "lucide-react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
@@ -31,27 +31,29 @@ export function EmployerInviteModal({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!message.trim() || atLimit) return;
+    if (!message.trim() || atLimit) {
+      return;
+    }
     setIsSubmitting(true);
 
     try {
       const res = await fetch("/api/employer/invite", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           jobId,
           jobTitle,
-          seekerId: candidate.seekerId,
-          seekerEmail: candidate.email,
           message: message.trim(),
+          seekerEmail: candidate.email,
+          seekerId: candidate.seekerId,
         }),
+        headers: { "Content-Type": "application/json" },
+        method: "POST",
       });
       const result = await res.json();
       if (!res.ok) {
         if (result.limitReached) {
           toast({
-            title: "Daily limit reached",
             description: result.error,
+            title: "Daily limit reached",
             variant: "destructive",
           });
           onClose();
@@ -61,8 +63,8 @@ export function EmployerInviteModal({
       }
 
       toast({
-        title: "Invite sent",
         description: `${displayName} will be notified by email.`,
+        title: "Invite sent",
       });
       onSent(
         candidate.seekerId,
@@ -73,9 +75,9 @@ export function EmployerInviteModal({
       onClose();
     } catch (error) {
       toast({
-        title: "Failed to send",
         description:
           error instanceof Error ? error.message : "Please try again.",
+        title: "Failed to send",
         variant: "destructive",
       });
     } finally {
@@ -101,12 +103,12 @@ export function EmployerInviteModal({
 
         {atLimit ? (
           <div className="mt-4 flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 p-4 dark:border-amber-500/20 dark:bg-amber-500/10">
-            <AlertCircle className="h-5 w-5 shrink-0 text-amber-600 dark:text-amber-400 mt-0.5" />
+            <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-amber-600 dark:text-amber-400" />
             <div>
-              <p className="font-medium text-sm text-amber-900 dark:text-amber-200">
+              <p className="font-medium text-amber-900 text-sm dark:text-amber-200">
                 Daily limit reached
               </p>
-              <p className="mt-0.5 text-xs text-amber-700 dark:text-amber-300">
+              <p className="mt-0.5 text-amber-700 text-xs dark:text-amber-300">
                 You&rsquo;ve sent 20 invites today. Your limit resets in 24
                 hours.
               </p>
@@ -116,7 +118,7 @@ export function EmployerInviteModal({
           <form className="mt-4 space-y-4" onSubmit={handleSubmit}>
             <div className="space-y-1.5">
               <label
-                className="text-sm font-medium text-zinc-700 dark:text-zinc-300"
+                className="font-medium text-sm text-zinc-700 dark:text-zinc-300"
                 htmlFor="invite-msg"
               >
                 Your message
@@ -131,7 +133,7 @@ export function EmployerInviteModal({
               <div className="flex items-center justify-between">
                 <p className="text-xs text-zinc-400">{message.length}/2000</p>
                 <p className="text-xs text-zinc-400">
-                  {dailyRemaining} invite{dailyRemaining !== 1 ? "s" : ""}{" "}
+                  {dailyRemaining} invite{dailyRemaining === 1 ? "" : "s"}{" "}
                   remaining today
                 </p>
               </div>

@@ -1,7 +1,7 @@
 "use client";
 
-import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { signIn } from "next-auth/react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -33,7 +33,7 @@ export function SignUpForm() {
       password?: string;
       confirmPassword?: string;
     } = {};
-    if (!email || !EMAIL_REGEX.test(email)) {
+    if (!(email && EMAIL_REGEX.test(email))) {
       newErrors.email = "Enter a valid email address.";
     }
     if (password.length < 8) {
@@ -55,9 +55,9 @@ export function SignUpForm() {
     setIsSubmitting(true);
     try {
       const response = await fetch("/api/employers/signup", {
-        method: "POST",
+        body: JSON.stringify({ companyName, email, password }),
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password, companyName }),
+        method: "POST",
       });
       const result = await response.json();
 
@@ -75,26 +75,26 @@ export function SignUpForm() {
 
       if (signInResult?.error) {
         toast({
-          title: "Account created",
           description: "Please sign in with your new account.",
+          title: "Account created",
         });
         router.push("/sign-in");
         return;
       }
 
       toast({
-        title: "Welcome to Caliber",
         description: "Your employer account is ready.",
+        title: "Welcome to Caliber",
       });
       router.push("/dashboard");
       router.refresh();
     } catch (error) {
       toast({
-        title: "Sign up failed",
+        className: "bg-destructive border border-red-600 shadow-md",
         description:
           error instanceof Error ? error.message : "Something went wrong.",
+        title: "Sign up failed",
         variant: "destructive",
-        className: "bg-destructive border border-red-600 shadow-md",
       });
     } finally {
       setIsSubmitting(false);

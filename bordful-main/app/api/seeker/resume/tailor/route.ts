@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
-import { getJob } from "@/lib/db/airtable.server";
 import { aiChatCompletion } from "@/lib/ai/provider";
 import { AIProviderError } from "@/lib/ai/types";
+import { getJob } from "@/lib/db/airtable.server";
 import { checkAndIncrementResumeTailorUsage } from "@/lib/jobs/entitlements-actions";
 import type { ResumeContent } from "@/lib/jobs/resume-actions";
 import {
@@ -33,10 +33,18 @@ function resumeToPlainText(
   email?: string | null
 ): string {
   const lines: string[] = [];
-  if (content.fullName) lines.push(content.fullName);
-  if (email) lines.push(`Email: ${email}`);
-  if (content.headline) lines.push(content.headline);
-  if (content.summary) lines.push(`Summary: ${content.summary}`);
+  if (content.fullName) {
+    lines.push(content.fullName);
+  }
+  if (email) {
+    lines.push(`Email: ${email}`);
+  }
+  if (content.headline) {
+    lines.push(content.headline);
+  }
+  if (content.summary) {
+    lines.push(`Summary: ${content.summary}`);
+  }
   if (content.experience.length) {
     lines.push("Experience:");
     for (const job of content.experience) {
@@ -142,10 +150,10 @@ export async function POST(request: Request) {
     try {
       const output = await aiChatCompletion(
         [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: userPrompt },
+          { content: systemPrompt, role: "system" },
+          { content: userPrompt, role: "user" },
         ],
-        { temperature: 0.4, maxTokens: 1200 }
+        { maxTokens: 1200, temperature: 0.4 }
       );
       return NextResponse.json({ kind: "text", output: stripMarkdown(output) });
     } catch (error) {
@@ -193,24 +201,24 @@ export async function POST(request: Request) {
       throw new Error("AI response did not match the expected resume shape");
     }
     return {
-      fullName: parsed.fullName,
       contact: parsed.contact ?? "",
-      headline: parsed.headline,
-      summary: parsed.summary,
+      education: parsed.education.map((entry) => ({
+        degree: entry?.degree ?? "",
+        school: entry?.school ?? "",
+        year: entry?.year ?? "",
+      })),
       experience: parsed.experience.map((entry) => ({
-        title: entry?.title ?? "",
-        company: entry?.company ?? "",
-        dates: entry?.dates ?? "",
         bullets: Array.isArray(entry?.bullets)
           ? entry.bullets.filter((b) => typeof b === "string")
           : [],
+        company: entry?.company ?? "",
+        dates: entry?.dates ?? "",
+        title: entry?.title ?? "",
       })),
-      education: parsed.education.map((entry) => ({
-        school: entry?.school ?? "",
-        degree: entry?.degree ?? "",
-        year: entry?.year ?? "",
-      })),
+      fullName: parsed.fullName,
+      headline: parsed.headline,
       skills: parsed.skills.filter((s) => typeof s === "string"),
+      summary: parsed.summary,
     };
   }
 
@@ -218,8 +226,8 @@ export async function POST(request: Request) {
     role: "system" | "user" | "assistant";
     content: string;
   }[] = [
-    { role: "system", content: systemPrompt },
-    { role: "user", content: userPrompt },
+    { content: systemPrompt, role: "system" },
+    { content: userPrompt, role: "user" },
   ];
 
   try {
@@ -231,18 +239,18 @@ export async function POST(request: Request) {
     // over a formatting slip.
     for (let attempt = 0; attempt < 2 && !tailored; attempt++) {
       lastRawOutput = await aiChatCompletion(conversation, {
-        temperature: 0.4,
         maxTokens: 1800,
+        temperature: 0.4,
       });
       try {
         tailored = normalizeTailoredResume(extractJson(lastRawOutput));
       } catch {
-        conversation.push({ role: "assistant", content: lastRawOutput });
+        conversation.push({ content: lastRawOutput, role: "assistant" });
         conversation.push({
-          role: "user",
           content:
             "That was not a single valid JSON object matching the required shape. " +
             "Respond again with ONLY the corrected JSON object, nothing else.",
+          role: "user",
         });
       }
     }

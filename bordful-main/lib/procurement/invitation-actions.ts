@@ -37,13 +37,16 @@ export type InvitationWithRequest = ProcurementInvitation & {
 function getAdminClient() {
   const url = process.env.SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key)
+  if (!(url && key)) {
     throw new Error("Database is not configured on this deployment.");
+  }
   return createClient(url, key, { auth: { persistSession: false } });
 }
 
 function toError(error: unknown, fallback: string): Error {
-  if (error instanceof Error) return error;
+  if (error instanceof Error) {
+    return error;
+  }
   const message = (error as { message?: string } | null)?.message;
   return new Error(message || fallback);
 }
@@ -51,11 +54,11 @@ function toError(error: unknown, fallback: string): Error {
 function rowToInvitation(row: Record<string, unknown>): ProcurementInvitation {
   return {
     id: row.id as string,
-    requestId: row.request_id as string,
-    vendorId: row.vendor_id as string,
-    status: row.status as InvitationStatus,
     invitedAt: row.invited_at as string,
+    requestId: row.request_id as string,
     respondedAt: (row.responded_at as string) || null,
+    status: row.status as InvitationStatus,
+    vendorId: row.vendor_id as string,
   };
 }
 
@@ -72,7 +75,9 @@ export async function inviteVendors(
   vendorIds: string[]
 ): Promise<ProcurementInvitation[]> {
   const request = await getRequestForBuyer(buyerId, requestId);
-  if (!request) throw new Error("Request not found.");
+  if (!request) {
+    throw new Error("Request not found.");
+  }
   if (request.visibility !== "invite_only") {
     throw new Error(
       "This request is open - vendors do not need to be individually invited."
@@ -89,8 +94,8 @@ export async function inviteVendors(
     .insert(
       vendorIds.map((vendorId) => ({
         request_id: requestId,
-        vendor_id: vendorId,
         status: startingStatus,
+        vendor_id: vendorId,
       }))
     )
     .select("*");
@@ -116,7 +121,9 @@ export async function listInvitationsForRequest(
   requestId: string
 ): Promise<InvitationWithVendor[]> {
   const request = await getRequestForBuyer(buyerId, requestId);
-  if (!request) throw new Error("Request not found.");
+  if (!request) {
+    throw new Error("Request not found.");
+  }
 
   const supabase = getAdminClient();
   const { data, error } = await supabase
@@ -125,7 +132,9 @@ export async function listInvitationsForRequest(
     .eq("request_id", requestId)
     .order("invited_at", { ascending: false });
 
-  if (error) throw toError(error, "Failed to load invitations.");
+  if (error) {
+    throw toError(error, "Failed to load invitations.");
+  }
 
   return (data ?? []).map((row) => {
     const vendor = row.vendor_accounts as Record<string, unknown> | null;
@@ -148,15 +157,17 @@ export async function listVendorInvitations(
     .eq("vendor_id", vendorId)
     .order("invited_at", { ascending: false });
 
-  if (error) throw toError(error, "Failed to load invitations.");
+  if (error) {
+    throw toError(error, "Failed to load invitations.");
+  }
 
   return (data ?? []).map((row) => {
     const request = row.procurement_requests as Record<string, unknown> | null;
     return {
       ...rowToInvitation(row),
+      requestStatus: (request?.status as string) ?? "",
       requestTitle: (request?.title as string) ?? "",
       requestType: (request?.type as string) ?? "",
-      requestStatus: (request?.status as string) ?? "",
       responseDeadline: (request?.response_deadline as string) || null,
     };
   });
@@ -195,7 +206,9 @@ export async function markInvitationViewed(
     .select("id")
     .maybeSingle();
 
-  if (data) await logAudit(requestId, vendorId, "vendor", "viewed");
+  if (data) {
+    await logAudit(requestId, vendorId, "vendor", "viewed");
+  }
 }
 
 export async function setPrequalificationDecision(
@@ -205,7 +218,9 @@ export async function setPrequalificationDecision(
   decision: "approved" | "rejected"
 ): Promise<ProcurementInvitation> {
   const request = await getRequestForBuyer(buyerId, requestId);
-  if (!request) throw new Error("Request not found.");
+  if (!request) {
+    throw new Error("Request not found.");
+  }
 
   const supabase = getAdminClient();
   const nextStatus: InvitationStatus =
@@ -222,13 +237,14 @@ export async function setPrequalificationDecision(
     .select("*")
     .single();
 
-  if (error)
+  if (error) {
     throw toError(error, "Failed to record prequalification decision.");
+  }
 
   const invitation = rowToInvitation(data);
   await logAudit(requestId, buyerId, "employer", "prequalified", {
-    vendorId,
     decision,
+    vendorId,
   });
   return invitation;
 }
@@ -240,11 +256,13 @@ export async function declineInvitation(
   const supabase = getAdminClient();
   const { error } = await supabase
     .from("procurement_invitations")
-    .update({ status: "declined", responded_at: new Date().toISOString() })
+    .update({ responded_at: new Date().toISOString(), status: "declined" })
     .eq("vendor_id", vendorId)
     .eq("request_id", requestId)
     .not("status", "in", "(responded,declined)");
 
-  if (error) throw toError(error, "Failed to decline invitation.");
+  if (error) {
+    throw toError(error, "Failed to decline invitation.");
+  }
   await logAudit(requestId, vendorId, "vendor", "declined");
 }

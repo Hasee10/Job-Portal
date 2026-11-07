@@ -6,14 +6,14 @@ export default function robots(): MetadataRoute.Robots {
   const baseUrl = config.url;
 
   return {
+    host: baseUrl,
     rules: {
-      userAgent: "*",
       // Allow root path and /api/og/* paths for Open Graph images
       allow: ["/", "/api/og/*"],
       // Disallow any potential admin or private routes
       disallow: ["/api/subscribe/*", "/api/encharge-logs/*"],
+      userAgent: "*",
     },
     sitemap: [`${baseUrl}/sitemap.xml`, `${baseUrl}/sitemap-procurement.xml`],
-    host: baseUrl,
   };
 }

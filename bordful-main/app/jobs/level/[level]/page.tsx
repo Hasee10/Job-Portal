@@ -38,17 +38,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   if (!careerLevel || careerLevel === "NotSpecified") {
     return {
-      title: `Career Level Not Found | ${config.title}`,
       description: "The career level you're looking for doesn't exist.",
+      title: `Career Level Not Found | ${config.title}`,
     };
   }
 
   const displayName = CAREER_LEVEL_DISPLAY_NAMES[careerLevel];
 
   return createMetadata({
-    title: `${displayName} Jobs | ${config.title}`,
     description: `Browse jobs requiring ${displayName} experience. Find the perfect role that matches your career level.`,
     path: `/jobs/level/${levelSlug}`,
+    title: `${displayName} Jobs | ${config.title}`,
   });
 }
 

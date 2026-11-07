@@ -19,9 +19,9 @@ export function ForgotPasswordForm() {
 
     try {
       const response = await fetch("/api/employers/forgot-password", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),
+        headers: { "Content-Type": "application/json" },
+        method: "POST",
       });
       const result = await response.json();
       // Always show the same generic message, success or not - the API

@@ -1,14 +1,14 @@
 "use client";
 
 import { formatDistanceToNow, isToday } from "date-fns";
+import { ArrowRight, Briefcase, Search } from "lucide-react";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
-import { ArrowRight, Briefcase, Search } from "lucide-react";
+import { GuestHero } from "@/components/home/GuestHero";
 import { JobCard } from "@/components/jobs/JobCard";
 import { SaveSearchButton } from "@/components/jobs/SaveSearchButton";
 import { useSeekerJobState } from "@/components/jobs/SeekerJobStateContext";
-import { GuestHero } from "@/components/home/GuestHero";
 import { HeroSection } from "@/components/ui/hero-section";
 import {
   JobFilters,
@@ -60,10 +60,10 @@ type FilterValue =
 type JobViewTab = "all" | "bookmarked" | "applied" | "not_interested";
 
 const JOB_VIEW_TABS: { value: JobViewTab; label: string }[] = [
-  { value: "all", label: "Recent" },
-  { value: "bookmarked", label: "Bookmarked" },
-  { value: "applied", label: "Applied" },
-  { value: "not_interested", label: "Not Interested" },
+  { label: "Recent", value: "all" },
+  { label: "Bookmarked", value: "bookmarked" },
+  { label: "Applied", value: "applied" },
+  { label: "Not Interested", value: "not_interested" },
 ];
 
 function HomePageContent({
@@ -98,27 +98,27 @@ function HomePageContent({
 
   // Parse initial filters from URL
   const initialFilters = {
-    types: searchParams.get("types")?.split(",").filter(Boolean) || [],
-    roles: (searchParams.get("roles")?.split(",").filter(Boolean) ||
-      []) as CareerLevel[],
-    remote: searchParams.get("remote") === "true",
-    salaryMin: Number(searchParams.get("salary_min")) || SALARY_SLIDER_MIN,
-    salaryMax: Number(searchParams.get("salary_max")) || SALARY_SLIDER_MAX,
-    visa: searchParams.get("visa") === "true",
+    companies: searchParams.get("companies")?.split(",").filter(Boolean) || [],
     languages: (searchParams.get("languages")?.split(",").filter(Boolean) ||
       []) as LanguageCode[],
-    companies: searchParams.get("companies")?.split(",").filter(Boolean) || [],
+    remote: searchParams.get("remote") === "true",
+    roles: (searchParams.get("roles")?.split(",").filter(Boolean) ||
+      []) as CareerLevel[],
+    salaryMax: Number(searchParams.get("salary_max")) || SALARY_SLIDER_MAX,
+    salaryMin: Number(searchParams.get("salary_min")) || SALARY_SLIDER_MIN,
+    types: searchParams.get("types")?.split(",").filter(Boolean) || [],
+    visa: searchParams.get("visa") === "true",
   };
 
   const [filters, setFilters] = useState<Filters>({
-    types: initialFilters?.types || [],
-    roles: initialFilters?.roles || [],
-    remote: initialFilters?.remote,
-    salaryMin: initialFilters?.salaryMin ?? SALARY_SLIDER_MIN,
-    salaryMax: initialFilters?.salaryMax ?? SALARY_SLIDER_MAX,
-    visa: initialFilters?.visa,
-    languages: initialFilters?.languages || ([] as LanguageCode[]),
     companies: initialFilters?.companies || [],
+    languages: initialFilters?.languages || ([] as LanguageCode[]),
+    remote: initialFilters?.remote,
+    roles: initialFilters?.roles || [],
+    salaryMax: initialFilters?.salaryMax ?? SALARY_SLIDER_MAX,
+    salaryMin: initialFilters?.salaryMin ?? SALARY_SLIDER_MIN,
+    types: initialFilters?.types || [],
+    visa: initialFilters?.visa,
   });
   const [pendingUrlUpdate, setPendingUrlUpdate] = useState<Record<
     string,
@@ -155,25 +155,25 @@ function HomePageContent({
   const updateFilterParams = useCallback(
     (newFilters: Filters) => {
       const updates: Record<string, string | null> = {
-        types: newFilters.types.length ? newFilters.types.join(",") : null,
-        roles: newFilters.roles.length ? newFilters.roles.join(",") : null,
+        companies: newFilters.companies.length
+          ? newFilters.companies.join(",")
+          : null,
+        languages: newFilters.languages.length
+          ? newFilters.languages.join(",")
+          : null,
+        page: "1", // Reset to first page when filters change
         remote: newFilters.remote ? "true" : null,
-        salary_min:
-          newFilters.salaryMin > SALARY_SLIDER_MIN
-            ? String(newFilters.salaryMin)
-            : null,
+        roles: newFilters.roles.length ? newFilters.roles.join(",") : null,
         salary_max:
           newFilters.salaryMax < SALARY_SLIDER_MAX
             ? String(newFilters.salaryMax)
             : null,
+        salary_min:
+          newFilters.salaryMin > SALARY_SLIDER_MIN
+            ? String(newFilters.salaryMin)
+            : null,
+        types: newFilters.types.length ? newFilters.types.join(",") : null,
         visa: newFilters.visa ? "true" : null,
-        languages: newFilters.languages.length
-          ? newFilters.languages.join(",")
-          : null,
-        companies: newFilters.companies.length
-          ? newFilters.companies.join(",")
-          : null,
-        page: "1", // Reset to first page when filters change
       };
 
       updateParams(updates);
@@ -185,14 +185,14 @@ function HomePageContent({
     (filterType: FilterType, value: FilterValue) => {
       if (filterType === "clear") {
         const clearedFilters = {
-          types: [],
-          roles: [] as CareerLevel[],
-          remote: false,
-          salaryMin: SALARY_SLIDER_MIN,
-          salaryMax: SALARY_SLIDER_MAX,
-          visa: false,
-          languages: [],
           companies: [],
+          languages: [],
+          remote: false,
+          roles: [] as CareerLevel[],
+          salaryMax: SALARY_SLIDER_MAX,
+          salaryMin: SALARY_SLIDER_MIN,
+          types: [],
+          visa: false,
         };
         setFilters(clearedFilters);
         updateFilterParams(clearedFilters);
@@ -377,9 +377,15 @@ function HomePageContent({
           const aSalary = normalizeAnnualSalary(a.salary);
           const bSalary = normalizeAnnualSalary(b.salary);
           // -1 means no salary data — push those jobs to the end
-          if (aSalary === -1 && bSalary === -1) return 0;
-          if (aSalary === -1) return 1;
-          if (bSalary === -1) return -1;
+          if (aSalary === -1 && bSalary === -1) {
+            return 0;
+          }
+          if (aSalary === -1) {
+            return 1;
+          }
+          if (bSalary === -1) {
+            return -1;
+          }
           return bSalary - aSalary;
         }
         default:
@@ -432,10 +438,11 @@ function HomePageContent({
   }, [initialJobs]);
 
   // Calculate jobs added today
-  const jobsAddedToday = useMemo(() => {
-    return initialJobs.filter((job) => isToday(new Date(job.posted_date)))
-      .length;
-  }, [initialJobs]);
+  const jobsAddedToday = useMemo(
+    () =>
+      initialJobs.filter((job) => isToday(new Date(job.posted_date))).length,
+    [initialJobs]
+  );
 
   // Activity stats
   const jobsThisWeek = useMemo(() => {
@@ -445,9 +452,10 @@ function HomePageContent({
       .length;
   }, [initialJobs]);
 
-  const companiesHiringCount = useMemo(() => {
-    return new Set(initialJobs.map((job) => job.company)).size;
-  }, [initialJobs]);
+  const companiesHiringCount = useMemo(
+    () => new Set(initialJobs.map((job) => job.company)).size,
+    [initialJobs]
+  );
 
   // Guests don't get the job feed at all - no search, no stats tied to job
   // data, no listings, no filters. Just the hero copy and a sign-in/sign-up
@@ -626,8 +634,8 @@ function HomePageContent({
         {/* Browse all jobs CTA */}
         <div className="mt-3">
           <a
+            className="inline-flex items-center gap-1.5 font-medium text-sm underline underline-offset-4 opacity-75 transition-opacity hover:opacity-100"
             href="#jobs-section"
-            className="inline-flex items-center gap-1.5 text-sm font-medium underline underline-offset-4 opacity-75 hover:opacity-100 transition-opacity"
             style={{ color: config.ui?.heroStatsColor || "inherit" }}
           >
             Browse all {totalActiveJobs.toLocaleString()} open positions ↓
@@ -732,7 +740,7 @@ function HomePageContent({
 
       {/* Activity Bar */}
       <div className="border-b bg-muted/40" id="jobs-section">
-        <div className="container mx-auto flex flex-wrap items-center gap-x-6 gap-y-1 px-4 py-2.5 text-xs text-muted-foreground">
+        <div className="container mx-auto flex flex-wrap items-center gap-x-6 gap-y-1 px-4 py-2.5 text-muted-foreground text-xs">
           <span>
             <span className="font-semibold text-foreground">
               {jobsAddedToday.toLocaleString()}
@@ -783,7 +791,7 @@ function HomePageContent({
                   {JOB_VIEW_TABS.map((tab) => (
                     <button
                       aria-selected={activeView === tab.value}
-                      className={`whitespace-nowrap border-b-2 px-3 py-2 text-sm font-medium transition-colors ${
+                      className={`whitespace-nowrap border-b-2 px-3 py-2 font-medium text-sm transition-colors ${
                         activeView === tab.value
                           ? "border-zinc-900 text-zinc-900 dark:border-zinc-100 dark:text-zinc-100"
                           : "border-transparent text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
@@ -798,7 +806,7 @@ function HomePageContent({
                   ))}
                 </div>
               ) : (
-                <div className="whitespace-nowrap border-b-2 border-zinc-900 px-3 py-2 text-sm font-medium text-zinc-900 dark:border-zinc-100 dark:text-zinc-100">
+                <div className="whitespace-nowrap border-zinc-900 border-b-2 px-3 py-2 font-medium text-sm text-zinc-900 dark:border-zinc-100 dark:text-zinc-100">
                   Recent
                 </div>
               )}
@@ -818,14 +826,14 @@ function HomePageContent({
               <div className="mb-4 flex flex-wrap gap-2">
                 {[
                   {
-                    label: "Remote",
                     active: filters.remote,
+                    label: "Remote",
                     onClick: () =>
                       handleFilterChange("remote", !filters.remote),
                   },
                   {
-                    label: "Full-time",
                     active: filters.types.includes("FullTime"),
+                    label: "Full-time",
                     onClick: () =>
                       handleFilterChange(
                         "type",
@@ -835,8 +843,8 @@ function HomePageContent({
                       ),
                   },
                   {
-                    label: "Contract",
                     active: filters.types.includes("Contract"),
+                    label: "Contract",
                     onClick: () =>
                       handleFilterChange(
                         "type",
@@ -846,8 +854,8 @@ function HomePageContent({
                       ),
                   },
                   {
-                    label: "Part-time",
                     active: filters.types.includes("PartTime"),
+                    label: "Part-time",
                     onClick: () =>
                       handleFilterChange(
                         "type",
@@ -857,8 +865,8 @@ function HomePageContent({
                       ),
                   },
                   {
-                    label: "$100K+",
                     active: filters.salaryMin >= 100_000,
+                    label: "$100K+",
                     onClick: () =>
                       handleFilterChange(
                         "salary",
@@ -868,20 +876,20 @@ function HomePageContent({
                       ),
                   },
                   {
-                    label: "Visa Sponsor",
                     active: filters.visa,
+                    label: "Visa Sponsor",
                     onClick: () => handleFilterChange("visa", !filters.visa),
                   },
                 ].map(({ label, active, onClick }) => (
                   <button
-                    key={label}
-                    onClick={onClick}
-                    type="button"
-                    className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
+                    className={`rounded-full border px-3 py-1 font-medium text-xs transition-colors ${
                       active
                         ? "border-zinc-900 bg-zinc-900 text-white dark:border-zinc-100 dark:bg-zinc-100 dark:text-zinc-900"
                         : "border-zinc-200 bg-background text-zinc-600 hover:border-zinc-400 hover:text-zinc-900 dark:border-zinc-700 dark:text-zinc-400 dark:hover:border-zinc-500 dark:hover:text-zinc-100"
                     }`}
+                    key={label}
+                    onClick={onClick}
+                    type="button"
                   >
                     {label}
                   </button>
@@ -957,13 +965,13 @@ function HomePageContent({
               {/* Job Alerts Card */}
               <div className="rounded-lg border bg-muted p-5">
                 <h3 className="font-semibold text-sm">Get job alerts</h3>
-                <p className="mt-1 text-xs text-muted-foreground leading-relaxed">
+                <p className="mt-1 text-muted-foreground text-xs leading-relaxed">
                   Be the first to know when new roles matching your interests
                   are posted.
                 </p>
                 <a
+                  className="mt-3 flex w-full items-center justify-center rounded-md border border-zinc-300 bg-background px-3 py-2 font-semibold text-foreground text-xs transition-colors hover:bg-accent hover:text-accent-foreground dark:border-zinc-600"
                   href="/job-alerts"
-                  className="mt-3 flex w-full items-center justify-center rounded-md border border-zinc-300 bg-background px-3 py-2 text-xs font-semibold text-foreground transition-colors hover:bg-accent hover:text-accent-foreground dark:border-zinc-600"
                 >
                   Set up alerts →
                 </a>

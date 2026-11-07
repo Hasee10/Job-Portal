@@ -2,23 +2,29 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { CompanyProfileForm } from "@/components/employer/CompanyProfileForm";
-import { getEmployerById } from "@/lib/auth/employers";
 import config from "@/config";
+import { getEmployerById } from "@/lib/auth/employers";
 
 export const metadata: Metadata = {
+  robots: { follow: false, index: false },
   title: `Company Profile | ${config.title}`,
-  robots: { index: false, follow: false },
 };
 
 export const dynamic = "force-dynamic";
 
 export default async function EmployerProfileEditPage() {
   const session = await auth();
-  if (!session?.user) redirect("/sign-in?callbackUrl=/dashboard/profile");
-  if (session.user.role !== "employer") redirect("/");
+  if (!session?.user) {
+    redirect("/sign-in?callbackUrl=/dashboard/profile");
+  }
+  if (session.user.role !== "employer") {
+    redirect("/");
+  }
 
   const employer = await getEmployerById(session.user.id);
-  if (!employer) redirect("/sign-in");
+  if (!employer) {
+    redirect("/sign-in");
+  }
 
   return (
     <main className="min-h-[60vh] bg-background py-12">

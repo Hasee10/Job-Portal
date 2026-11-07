@@ -38,20 +38,24 @@ export function RecruiterRequestForm({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!message.trim()) return;
+    if (!message.trim()) {
+      return;
+    }
     setIsSubmitting(true);
     try {
       const response = await fetch("/api/seeker/recruiter-requests", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: message.trim(), recruiterId }),
+        headers: { "Content-Type": "application/json" },
+        method: "POST",
       });
-      if (!response.ok) throw new Error("Failed to submit request.");
+      if (!response.ok) {
+        throw new Error("Failed to submit request.");
+      }
       setSubmitted(true);
     } catch {
       toast({
-        title: "Could not submit request",
         description: "Please try again.",
+        title: "Could not submit request",
         variant: "destructive",
       });
     } finally {

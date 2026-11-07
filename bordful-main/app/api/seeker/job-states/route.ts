@@ -10,7 +10,7 @@ export const dynamic = "force-dynamic";
 export async function GET() {
   const session = await auth();
   if (!session?.user || session.user.role !== "seeker") {
-    return NextResponse.json({ savedJobIds: [], applications: {} });
+    return NextResponse.json({ applications: {}, savedJobIds: [] });
   }
 
   const state = await getSeekerJobState(session.user.id);

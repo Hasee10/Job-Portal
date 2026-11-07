@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 
@@ -22,14 +22,15 @@ export function DeclineInvitationButton({ requestId }: { requestId: string }) {
               method: "POST",
             }
           );
-          if (!res.ok)
+          if (!res.ok) {
             throw new Error((await res.json()).error || "Failed to decline.");
+          }
           router.refresh();
         } catch (error) {
           toast({
-            title: "Could not decline",
             description:
               error instanceof Error ? error.message : "Something went wrong.",
+            title: "Could not decline",
             variant: "destructive",
           });
         } finally {

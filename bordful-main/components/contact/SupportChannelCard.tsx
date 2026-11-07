@@ -24,10 +24,10 @@ type SupportChannelCardProps = {
 
 // Map of icon names to components
 const iconMap: Record<string, LucideIcon> = {
-  Mail,
   HelpCircle,
-  Phone,
+  Mail,
   MessageSquare,
+  Phone,
   Rss,
 };
 
@@ -35,9 +35,9 @@ const iconMap: Record<string, LucideIcon> = {
 // upstream) - rendered from the same static SVG assets footer.tsx already
 // uses for these platforms instead.
 const BRAND_ICON_SRC: Record<string, string> = {
-  Twitter: "/assets/social/twitter.svg",
   Github: "/assets/social/github.svg",
   Linkedin: "/assets/social/linkedin.svg",
+  Twitter: "/assets/social/twitter.svg",
 };
 
 export function SupportChannelCard({
@@ -80,7 +80,7 @@ export function SupportChannelCard({
         </h3>
       </div>
       <div className="flex-grow pb-6">
-        <p className="text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed">
+        <p className="text-sm text-zinc-600 leading-relaxed dark:text-zinc-400">
           {description}
         </p>
       </div>

@@ -30,29 +30,29 @@ type CustomScript = {
 const siteConfig = config;
 
 export const metadata: Metadata = {
-  metadataBase: new URL(siteConfig.url),
-  title: `${siteConfig.title} | ${siteConfig.nav.title}`,
-  description: siteConfig.description,
-  robots: {
-    index: true,
-    follow: true,
-    nocache: false,
-    googleBot: {
-      index: true,
-      follow: true,
-      noimageindex: false,
-      "max-video-preview": -1,
-      "max-image-preview": "large",
-      "max-snippet": -1,
-    },
-  },
   alternates: {
     types: {
-      "application/rss+xml": `${siteConfig.url}/feed.xml`,
       "application/atom+xml": `${siteConfig.url}/atom.xml`,
       "application/feed+json": `${siteConfig.url}/feed.json`,
+      "application/rss+xml": `${siteConfig.url}/feed.xml`,
     },
   },
+  description: siteConfig.description,
+  metadataBase: new URL(siteConfig.url),
+  robots: {
+    follow: true,
+    googleBot: {
+      follow: true,
+      index: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+      noimageindex: false,
+    },
+    index: true,
+    nocache: false,
+  },
+  title: `${siteConfig.title} | ${siteConfig.nav.title}`,
 };
 
 export default async function RootLayout({

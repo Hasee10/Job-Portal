@@ -21,8 +21,9 @@ export type VendorAccount = {
 function getAdminClient() {
   const url = process.env.SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key)
+  if (!(url && key)) {
     throw new Error("Database is not configured on this deployment.");
+  }
   return createClient(url, key, { auth: { persistSession: false } });
 }
 
@@ -30,25 +31,27 @@ function getAdminClient() {
 // the identical comment in lib/jobs/application-actions.ts for why this
 // wrapping matters.
 function toError(error: unknown, fallback: string): Error {
-  if (error instanceof Error) return error;
+  if (error instanceof Error) {
+    return error;
+  }
   const message = (error as { message?: string } | null)?.message;
   return new Error(message || fallback);
 }
 
 function rowToVendor(row: Record<string, unknown>): VendorAccount {
   return {
-    id: row.id as string,
-    recruiterId: (row.recruiter_id as string) || null,
-    email: row.email as string,
-    companyName: (row.company_name as string) || null,
     categories: (row.categories as string[]) || [],
-    website: (row.website as string) || null,
-    industry: (row.industry as string) || null,
+    companyName: (row.company_name as string) || null,
     companySize: (row.company_size as string) || null,
-    location: (row.location as string) || null,
-    isVerified: Boolean(row.is_verified),
     createdAt: row.created_at as string,
+    email: row.email as string,
+    id: row.id as string,
+    industry: (row.industry as string) || null,
+    isVerified: Boolean(row.is_verified),
+    location: (row.location as string) || null,
+    recruiterId: (row.recruiter_id as string) || null,
     updatedAt: row.updated_at as string,
+    website: (row.website as string) || null,
   };
 }
 
@@ -71,15 +74,17 @@ export async function getOrCreateVendorForRecruiter(
     .eq("recruiter_id", recruiterId)
     .maybeSingle();
 
-  if (existing) return rowToVendor(existing);
+  if (existing) {
+    return rowToVendor(existing);
+  }
 
   const { data, error } = await supabase
     .from("vendor_accounts")
     .insert({
-      recruiter_id: recruiterId,
-      email: recruiterEmail,
-      company_name: recruiterName,
       categories: ["staffing"],
+      company_name: recruiterName,
+      email: recruiterEmail,
+      recruiter_id: recruiterId,
     })
     .select("*")
     .single();
@@ -92,7 +97,9 @@ export async function getOrCreateVendorForRecruiter(
         .select("*")
         .eq("recruiter_id", recruiterId)
         .single();
-      if (raced) return rowToVendor(raced);
+      if (raced) {
+        return rowToVendor(raced);
+      }
     }
     throw toError(error, "Failed to set up vendor profile.");
   }
@@ -116,7 +123,9 @@ export async function getOrCreateVendorForRecruiterEmail(
     .eq("email", email.trim().toLowerCase())
     .maybeSingle();
 
-  if (!recruiter) return null;
+  if (!recruiter) {
+    return null;
+  }
   return getOrCreateVendorForRecruiter(
     recruiter.id as string,
     recruiter.email as string,
@@ -151,8 +160,12 @@ export async function listVerifiedVendors(): Promise<VendorAccount[]> {
     .from("vendor_accounts")
     .select("*")
     .order("created_at", { ascending: false });
-  if (error) throw toError(error, "Failed to load vendors.");
-  if (!vendors || vendors.length === 0) return [];
+  if (error) {
+    throw toError(error, "Failed to load vendors.");
+  }
+  if (!vendors || vendors.length === 0) {
+    return [];
+  }
 
   const recruiterIds = vendors
     .map((v) => v.recruiter_id as string | null)
@@ -164,7 +177,9 @@ export async function listVerifiedVendors(): Promise<VendorAccount[]> {
       .select("id, is_verified")
       .in("id", recruiterIds)
       .eq("is_verified", true);
-    for (const r of recruiters ?? []) verifiedRecruiterIds.add(r.id as string);
+    for (const r of recruiters ?? []) {
+      verifiedRecruiterIds.add(r.id as string);
+    }
   }
 
   return vendors
@@ -183,7 +198,9 @@ export async function listVerifiedVendors(): Promise<VendorAccount[]> {
 export async function resolveVendorId(
   session: Session | null
 ): Promise<string | null> {
-  if (!session?.user) return null;
+  if (!session?.user) {
+    return null;
+  }
 
   if (session.user.role === "recruiter") {
     const vendor = await getOrCreateVendorForRecruiter(

@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -31,7 +31,9 @@ export function RespondForm({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!proposalText.trim()) return;
+    if (!proposalText.trim()) {
+      return;
+    }
     if (requiresPricing && !price.trim()) {
       toast({
         title: "Pricing is required for this request type.",
@@ -56,42 +58,45 @@ export function RespondForm({
         const uploadRes = await fetch(
           `/api/procurement/vendor/requests/${request.id}/documents`,
           {
-            method: "POST",
             body: formData,
+            method: "POST",
           }
         );
         const uploadData = await uploadRes.json();
-        if (!uploadRes.ok)
+        if (!uploadRes.ok) {
           throw new Error(uploadData.error || "Failed to upload document.");
+        }
         proposalDocumentPath = uploadData.path;
       }
 
       const res = await fetch(
         `/api/procurement/vendor/requests/${request.id}/respond`,
         {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            proposalText: proposalText.trim(),
             pricing: requiresPricing
               ? { amount: price.trim(), currency }
               : null,
             proposalDocumentPath,
+            proposalText: proposalText.trim(),
           }),
+          headers: { "Content-Type": "application/json" },
+          method: "POST",
         }
       );
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed to submit response.");
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to submit response.");
+      }
 
       toast({ title: "Response submitted" });
       router.refresh();
     } catch (error) {
       toast({
-        title: "Could not submit response",
+        className: "bg-destructive border border-red-600 shadow-md",
         description:
           error instanceof Error ? error.message : "Something went wrong.",
+        title: "Could not submit response",
         variant: "destructive",
-        className: "bg-destructive border border-red-600 shadow-md",
       });
     } finally {
       setIsSubmitting(false);
@@ -122,18 +127,19 @@ export function RespondForm({
                   method: "POST",
                 }
               );
-              if (!res.ok)
+              if (!res.ok) {
                 throw new Error(
                   (await res.json()).error || "Failed to withdraw."
                 );
+              }
               router.refresh();
             } catch (error) {
               toast({
-                title: "Could not withdraw",
                 description:
                   error instanceof Error
                     ? error.message
                     : "Something went wrong.",
+                title: "Could not withdraw",
                 variant: "destructive",
               });
             } finally {

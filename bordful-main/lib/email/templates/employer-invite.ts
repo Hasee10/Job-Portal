@@ -55,7 +55,7 @@ export function renderEmployerInviteEmail({
   `);
 
   return {
-    subject: `${companyName} invited you to apply for ${jobTitle}`,
     html,
+    subject: `${companyName} invited you to apply for ${jobTitle}`,
   };
 }

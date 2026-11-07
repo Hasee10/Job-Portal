@@ -28,28 +28,28 @@ function parseExtractedContent(raw: string): ResumeContent {
   }
   const parsed = JSON.parse(jsonMatch[0]) as Partial<ResumeContent>;
   return {
-    fullName: typeof parsed.fullName === "string" ? parsed.fullName : "",
-    headline: typeof parsed.headline === "string" ? parsed.headline : "",
-    summary: typeof parsed.summary === "string" ? parsed.summary : "",
-    experience: Array.isArray(parsed.experience)
-      ? parsed.experience.map((entry) => ({
-          title: entry?.title ?? "",
-          company: entry?.company ?? "",
-          startDate: entry?.startDate ?? "",
-          endDate: entry?.endDate ?? "",
-          description: entry?.description ?? "",
-        }))
-      : [],
     education: Array.isArray(parsed.education)
       ? parsed.education.map((entry) => ({
-          school: entry?.school ?? "",
           degree: entry?.degree ?? "",
+          school: entry?.school ?? "",
           year: entry?.year ?? "",
         }))
       : [],
+    experience: Array.isArray(parsed.experience)
+      ? parsed.experience.map((entry) => ({
+          company: entry?.company ?? "",
+          description: entry?.description ?? "",
+          endDate: entry?.endDate ?? "",
+          startDate: entry?.startDate ?? "",
+          title: entry?.title ?? "",
+        }))
+      : [],
+    fullName: typeof parsed.fullName === "string" ? parsed.fullName : "",
+    headline: typeof parsed.headline === "string" ? parsed.headline : "",
     skills: Array.isArray(parsed.skills)
       ? parsed.skills.filter((s): s is string => typeof s === "string")
       : [],
+    summary: typeof parsed.summary === "string" ? parsed.summary : "",
   };
 }
 
@@ -97,10 +97,10 @@ export async function extractResumeFromPdf(file: File): Promise<ResumeContent> {
   try {
     const output = await aiChatCompletion(
       [
-        { role: "system", content: EXTRACTION_SYSTEM_PROMPT },
-        { role: "user", content: rawText.slice(0, 8000) },
+        { content: EXTRACTION_SYSTEM_PROMPT, role: "system" },
+        { content: rawText.slice(0, 8000), role: "user" },
       ],
-      { temperature: 0.1, maxTokens: 3000 }
+      { maxTokens: 3000, temperature: 0.1 }
     );
     return parseExtractedContent(output);
   } catch (error) {
@@ -109,7 +109,9 @@ export async function extractResumeFromPdf(file: File): Promise<ResumeContent> {
     // propagate. Everything else (flaky provider response, truncated
     // completion, malformed JSON, unusual resume layout) degrades to a
     // plain-text fallback instead of blocking the operation entirely.
-    if (error instanceof AIProviderError && error.notConfigured) throw error;
+    if (error instanceof AIProviderError && error.notConfigured) {
+      throw error;
+    }
 
     console.error(
       "[resume-extraction] AI extraction failed, falling back to raw text:",

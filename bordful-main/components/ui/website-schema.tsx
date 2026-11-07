@@ -97,11 +97,11 @@ export function WebsiteSchema() {
     // Always include general site search
     const generalSearchAction: SearchAction = {
       "@type": "SearchAction",
+      description: "Search across the entire site",
       target: {
         "@type": "EntryPoint",
         urlTemplate: generalSearchUrlTemplate,
       } as EntryPoint,
-      description: "Search across the entire site",
     };
 
     // Add non-standard query-input property required by Google
@@ -115,11 +115,11 @@ export function WebsiteSchema() {
     // Job-specific search - always include as this is a job board
     const jobSearchAction: SearchAction = {
       "@type": "SearchAction",
+      description: "Search for jobs by title, skills, or keywords",
       target: {
         "@type": "EntryPoint",
         urlTemplate: jobSearchUrlTemplate,
       } as EntryPoint,
-      description: "Search for jobs by title, skills, or keywords",
     };
 
     // Add non-standard query-input property required by Google

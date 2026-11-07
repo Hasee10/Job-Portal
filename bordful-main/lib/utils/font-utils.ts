@@ -91,27 +91,27 @@ export function prepareImageResponseFonts(
   // Load font data if needed
   if (fontInfo.nameToLoad && fontData) {
     fonts.push({
-      name: fontInfo.familyName,
       data: fontData,
-      weight: 800, // For title
+      name: fontInfo.familyName,
       style: "normal",
+      weight: 800, // For title
     });
     fonts.push({
-      name: fontInfo.familyName,
       data: fontData,
-      weight: 400, // For description
+      name: fontInfo.familyName,
       style: "normal",
+      weight: 400, // For description
     });
   } else {
     // Use system fonts as fallback
     fonts.push({
-      name: "system-ui",
       data: new ArrayBuffer(0), // Empty buffer for system fonts
+      name: "system-ui",
       weight: 800,
     });
     fonts.push({
-      name: "system-ui",
       data: new ArrayBuffer(0),
+      name: "system-ui",
       weight: 400,
     });
   }

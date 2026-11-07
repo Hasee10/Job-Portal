@@ -13,23 +13,27 @@ let cachedTransporter: ReturnType<typeof nodemailer.createTransport> | null =
   null;
 
 function getTransporter() {
-  if (cachedTransporter) return cachedTransporter;
+  if (cachedTransporter) {
+    return cachedTransporter;
+  }
 
   const user = process.env.GMAIL_USER;
   const pass = process.env.GMAIL_APP_PASSWORD;
-  if (!user || !pass) {
+  if (!(user && pass)) {
     return null;
   }
 
   cachedTransporter = nodemailer.createTransport({
+    auth: { pass, user },
     service: "gmail",
-    auth: { user, pass },
   });
   return cachedTransporter;
 }
 
 function assertConfigured(featureLabel: string): boolean {
-  if (getTransporter()) return false;
+  if (getTransporter()) {
+    return false;
+  }
 
   if (process.env.NODE_ENV === "development") {
     return true; // simulate success locally without credentials
@@ -72,9 +76,9 @@ export async function sendEmail(data: {
 
     await transporter.sendMail({
       from: `Caliber <${process.env.GMAIL_USER}>`,
-      to: data.to,
-      subject: data.subject,
       html: data.html,
+      subject: data.subject,
+      to: data.to,
     });
 
     return { success: true };

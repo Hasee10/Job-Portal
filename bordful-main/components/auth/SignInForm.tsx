@@ -1,7 +1,7 @@
 "use client";
 
-import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { signIn } from "next-auth/react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -35,10 +35,10 @@ export function SignInForm() {
         // Deliberately generic - never reveal whether the email exists,
         // only that the password/existing-email pair didn't match.
         toast({
-          title: "Sign in failed",
-          description: "Invalid email or password.",
-          variant: "destructive",
           className: "bg-destructive border border-red-600 shadow-md",
+          description: "Invalid email or password.",
+          title: "Sign in failed",
+          variant: "destructive",
         });
         return;
       }
@@ -51,10 +51,10 @@ export function SignInForm() {
       router.refresh();
     } catch {
       toast({
-        title: "Sign in failed",
-        description: "Something went wrong. Please try again.",
-        variant: "destructive",
         className: "bg-destructive border border-red-600 shadow-md",
+        description: "Something went wrong. Please try again.",
+        title: "Sign in failed",
+        variant: "destructive",
       });
     } finally {
       setIsSubmitting(false);
@@ -86,7 +86,7 @@ export function SignInForm() {
                 Password
               </Label>
               <a
-                className="text-xs text-zinc-600 dark:text-zinc-400 underline hover:no-underline"
+                className="text-xs text-zinc-600 underline hover:no-underline dark:text-zinc-400"
                 href="/forgot-password"
               >
                 Forgot password?

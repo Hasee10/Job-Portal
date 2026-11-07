@@ -2,14 +2,14 @@ import type { ScrapedTenderRow } from "@/lib/procurement/scraped-tender-actions"
 import { TENDER_CATEGORIES } from "@/lib/procurement/tender-categories";
 
 const SOURCE_LABELS: Record<string, string> = {
-  ted: "TED",
   ppra: "PPRA",
+  ted: "TED",
 };
 
 const CATEGORY_BADGE_CLASS: Record<string, string> = {
+  "45": "bg-zinc-100 border-zinc-200 border text-zinc-700 dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-300",
   "72": "bg-blue-50 border-blue-100 border text-blue-700 dark:bg-blue-950 dark:border-blue-900 dark:text-blue-400",
   "79": "bg-amber-50 border-amber-100 border text-amber-700 dark:bg-amber-950 dark:border-amber-900 dark:text-amber-400",
-  "45": "bg-zinc-100 border-zinc-200 border text-zinc-700 dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-300",
 };
 
 function categoryLabel(
@@ -18,8 +18,10 @@ function categoryLabel(
   const match = TENDER_CATEGORIES.find((c) =>
     cpvCodes.some((code) => code.startsWith(c.cpvPrefix))
   );
-  if (!match) return null;
-  return { prefix: match.cpvPrefix, label: match.label.split(" (")[0] };
+  if (!match) {
+    return null;
+  }
+  return { label: match.label.split(" (")[0], prefix: match.cpvPrefix };
 }
 
 function daysUntil(deadline: string): number {
@@ -44,9 +46,13 @@ function safeHref(url: string): string | undefined {
 }
 
 function DeadlineChip({ deadlineDate }: { deadlineDate: string | null }) {
-  if (!deadlineDate) return null;
+  if (!deadlineDate) {
+    return null;
+  }
   const days = daysUntil(deadlineDate);
-  if (days < 0) return null;
+  if (days < 0) {
+    return null;
+  }
 
   const label =
     days === 0
@@ -74,8 +80,8 @@ export function TenderCard({ tender }: { tender: ScrapedTenderRow }) {
 
   return (
     <a
-      className="block rounded-lg border p-4 transition-all hover:border-gray-400 sm:p-5 dark:hover:border-zinc-600 aria-disabled:pointer-events-none aria-disabled:opacity-60"
       aria-disabled={!href}
+      className="block rounded-lg border p-4 transition-all hover:border-gray-400 aria-disabled:pointer-events-none aria-disabled:opacity-60 sm:p-5 dark:hover:border-zinc-600"
       href={href ?? "#"}
       rel="noopener noreferrer"
       target={href ? "_blank" : undefined}
@@ -92,7 +98,7 @@ export function TenderCard({ tender }: { tender: ScrapedTenderRow }) {
       <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
         {category && (
           <span
-            className={`rounded-full px-2 py-0.5 text-xs ${CATEGORY_BADGE_CLASS[category.prefix] ?? "bg-card border text-foreground"}`}
+            className={`rounded-full px-2 py-0.5 text-xs ${CATEGORY_BADGE_CLASS[category.prefix] ?? "border bg-card text-foreground"}`}
           >
             {category.label}
           </span>

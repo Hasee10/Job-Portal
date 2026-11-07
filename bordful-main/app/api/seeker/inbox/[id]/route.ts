@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
-import {
-  respondToOutreach,
-  markOutreachRead,
-} from "@/lib/jobs/candidate-outreach-actions";
 import { getRecruiterAccountById } from "@/lib/auth/recruiter-accounts";
 import { getJob } from "@/lib/db/airtable.server";
 import { sendEmail } from "@/lib/email/smtp";
 import { renderOutreachResponseEmail } from "@/lib/email/templates/outreach-response";
+import {
+  markOutreachRead,
+  respondToOutreach,
+} from "@/lib/jobs/candidate-outreach-actions";
 
 export const dynamic = "force-dynamic";
 
@@ -41,12 +41,12 @@ export async function PATCH(
           session.user.name || session.user.email || "A candidate";
         const job = outreach.jobId ? await getJob(outreach.jobId) : null;
         const { subject, html } = renderOutreachResponseEmail({
-          seekerDisplay,
-          response,
-          jobTitle: job?.title ?? null,
           dashboardUrl: `${process.env.NEXTAUTH_URL ?? ""}/recruiter/pipeline`,
+          jobTitle: job?.title ?? null,
+          response,
+          seekerDisplay,
         });
-        await sendEmail({ to: recruiter.email, subject, html });
+        await sendEmail({ html, subject, to: recruiter.email });
       }
     } catch (err) {
       console.error(

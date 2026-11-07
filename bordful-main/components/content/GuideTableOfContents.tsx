@@ -5,7 +5,9 @@ export function GuideTableOfContents({
 }: {
   headings: GuideHeading[];
 }) {
-  if (headings.length < 2) return null;
+  if (headings.length < 2) {
+    return null;
+  }
 
   return (
     <nav

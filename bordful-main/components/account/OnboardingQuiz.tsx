@@ -65,14 +65,13 @@ export function OnboardingQuiz({
 
   const steps = [
     {
-      title: "What's the state of your resume?",
       content: (
         <div className="space-y-2">
           {(
             [
-              { value: "ready", label: "It's ready to go" },
-              { value: "needs-work", label: "I have one, but it needs work" },
-              { value: "none", label: "I don't have one yet" },
+              { label: "It's ready to go", value: "ready" },
+              { label: "I have one, but it needs work", value: "needs-work" },
+              { label: "I don't have one yet", value: "none" },
             ] as const
           ).map((option) => (
             <button
@@ -90,9 +89,9 @@ export function OnboardingQuiz({
           ))}
         </div>
       ),
+      title: "What's the state of your resume?",
     },
     {
-      title: "What role are you looking for?",
       content: (
         <div className="space-y-4">
           <Input
@@ -104,7 +103,7 @@ export function OnboardingQuiz({
           <div className="flex flex-wrap gap-2">
             {QUIZ_CAREER_LEVELS.map((level) => (
               <button
-                className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
+                className={`rounded-full border px-3 py-1 font-medium text-xs transition-colors ${
                   roles.includes(level)
                     ? "border-zinc-900 bg-zinc-900 text-white dark:border-zinc-100 dark:bg-zinc-100 dark:text-zinc-900"
                     : "border-zinc-200 text-zinc-600 hover:border-zinc-400 dark:border-zinc-700 dark:text-zinc-400"
@@ -119,14 +118,14 @@ export function OnboardingQuiz({
           </div>
         </div>
       ),
+      title: "What role are you looking for?",
     },
     {
-      title: "What type of work?",
       content: (
         <div className="flex flex-wrap gap-2">
           {QUIZ_JOB_TYPES.map((type) => (
             <button
-              className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
+              className={`rounded-full border px-3 py-1 font-medium text-xs transition-colors ${
                 types.includes(type)
                   ? "border-zinc-900 bg-zinc-900 text-white dark:border-zinc-100 dark:bg-zinc-100 dark:text-zinc-900"
                   : "border-zinc-200 text-zinc-600 hover:border-zinc-400 dark:border-zinc-700 dark:text-zinc-400"
@@ -140,18 +139,18 @@ export function OnboardingQuiz({
           ))}
         </div>
       ),
+      title: "What type of work?",
     },
     {
-      title: "Do you want to work remotely?",
       content: (
         <div className="flex items-center justify-between rounded-md border px-4 py-3">
           <span className="text-sm">Remote only</span>
           <Switch checked={remote} onCheckedChange={setRemote} />
         </div>
       ),
+      title: "Do you want to work remotely?",
     },
     {
-      title: "What's your salary range?",
       content: (
         <div className="space-y-2">
           <span className="text-sm">
@@ -169,9 +168,9 @@ export function OnboardingQuiz({
           />
         </div>
       ),
+      title: "What's your salary range?",
     },
     {
-      title: "Interested in working with a recruiter?",
       content: (
         <div className="space-y-2">
           <p className="text-sm text-zinc-600 dark:text-zinc-400">
@@ -204,9 +203,9 @@ export function OnboardingQuiz({
           </div>
         </div>
       ),
+      title: "Interested in working with a recruiter?",
     },
     {
-      title: "Free vs. Premium",
       content: (
         <div className="space-y-3">
           <div className="grid grid-cols-2 gap-3 text-sm">
@@ -232,6 +231,7 @@ export function OnboardingQuiz({
           </p>
         </div>
       ),
+      title: "Free vs. Premium",
     },
   ];
 
@@ -241,27 +241,29 @@ export function OnboardingQuiz({
     setIsSubmitting(true);
     try {
       const response = await fetch("/api/seeker/profile", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          searchTerm: searchTerm || null,
           filters: {
-            types,
-            roles,
-            remote,
-            salaryMin: salaryRange[0],
-            salaryMax: salaryRange[1],
-            visa: false,
-            languages: [],
             companies: [],
+            languages: [],
+            remote,
+            roles,
+            salaryMax: salaryRange[1],
+            salaryMin: salaryRange[0],
+            types,
+            visa: false,
           },
+          searchTerm: searchTerm || null,
         }),
+        headers: { "Content-Type": "application/json" },
+        method: "POST",
       });
-      if (!response.ok) throw new Error("Failed to save your preferences.");
+      if (!response.ok) {
+        throw new Error("Failed to save your preferences.");
+      }
 
       toast({
-        title: "Preferences saved",
         description: "We'll use these to personalize your job feed.",
+        title: "Preferences saved",
       });
       if (resumeStatus === "none" || resumeStatus === "needs-work") {
         router.push("/account/resume");
@@ -273,9 +275,9 @@ export function OnboardingQuiz({
       router.refresh();
     } catch (error) {
       toast({
-        title: "Something went wrong",
         description:
           error instanceof Error ? error.message : "Please try again.",
+        title: "Something went wrong",
         variant: "destructive",
       });
     } finally {
@@ -290,21 +292,23 @@ export function OnboardingQuiz({
     setIsSubmitting(true);
     try {
       const response = await fetch("/api/seeker/profile", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          searchTerm: initialSearchTerm || null,
           filters: initialFilters,
+          searchTerm: initialSearchTerm || null,
         }),
+        headers: { "Content-Type": "application/json" },
+        method: "POST",
       });
-      if (!response.ok) throw new Error("Failed to skip.");
+      if (!response.ok) {
+        throw new Error("Failed to skip.");
+      }
       router.push("/account");
       router.refresh();
     } catch (error) {
       toast({
-        title: "Something went wrong",
         description:
           error instanceof Error ? error.message : "Please try again.",
+        title: "Something went wrong",
         variant: "destructive",
       });
       setIsSubmitting(false);

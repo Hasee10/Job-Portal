@@ -9,8 +9,12 @@ import type { SavedSearch } from "@/lib/jobs/saved-search-actions";
 
 function summarizeSavedSearch(search: SavedSearch): string {
   const parts: string[] = [];
-  if (search.searchTerm) parts.push(`"${search.searchTerm}"`);
-  if (search.filters.types.length) parts.push(search.filters.types.join(", "));
+  if (search.searchTerm) {
+    parts.push(`"${search.searchTerm}"`);
+  }
+  if (search.filters.types.length) {
+    parts.push(search.filters.types.join(", "));
+  }
   if (search.filters.roles.length) {
     parts.push(
       search.filters.roles
@@ -18,8 +22,12 @@ function summarizeSavedSearch(search: SavedSearch): string {
         .join(", ")
     );
   }
-  if (search.filters.remote) parts.push("Remote");
-  if (search.filters.visa) parts.push("Visa sponsorship");
+  if (search.filters.remote) {
+    parts.push("Remote");
+  }
+  if (search.filters.visa) {
+    parts.push("Visa sponsorship");
+  }
   if (search.filters.salaryMin > 0 || search.filters.salaryMax < 300_000) {
     parts.push(
       `$${(search.filters.salaryMin / 1000).toFixed(0)}K-${
@@ -47,12 +55,14 @@ export function SavedSearchesList({
       const response = await fetch(`/api/seeker/saved-searches/${id}`, {
         method: "DELETE",
       });
-      if (!response.ok) throw new Error("Failed to remove saved search.");
+      if (!response.ok) {
+        throw new Error("Failed to remove saved search.");
+      }
       setSavedSearches((prev) => prev.filter((s) => s.id !== id));
     } catch {
       toast({
-        title: "Could not remove saved search",
         description: "Please try again.",
+        title: "Could not remove saved search",
         variant: "destructive",
       });
     } finally {

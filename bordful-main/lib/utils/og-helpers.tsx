@@ -18,17 +18,17 @@ import {
 } from "@/lib/utils/og-config";
 
 export interface LogoConfig {
+  height?: number | string;
   show?: boolean;
   src?: string;
   width?: number | string;
-  height?: number | string;
 }
 
 export interface ProcessedLogoConfig {
   dataUri: string;
+  enabled: boolean;
   height: number;
   width: number;
-  enabled: boolean;
 }
 
 /**
@@ -53,7 +53,7 @@ export async function processLogo(
     dataUri = await fetchImageAsDataURI(src, config.url);
   }
 
-  return { dataUri, height, width, enabled };
+  return { dataUri, enabled, height, width };
 }
 
 /**
@@ -94,7 +94,9 @@ export async function prepareOGAssets(parsedConfig: ProcessedOGConfig) {
 export async function prepareBackgroundImage(
   backgroundImage?: string | null
 ): Promise<string> {
-  if (!backgroundImage) return "";
+  if (!backgroundImage) {
+    return "";
+  }
 
   return await fetchImageAsDataURI(backgroundImage, config.url);
 }
@@ -125,18 +127,18 @@ export async function createOGImageResponse(
 
   const SHARED_STYLES = {
     DIMENSIONS: {
-      WIDTH: 1200,
+      CONTENT_WIDTH: 1080,
       HEIGHT: 630,
       PADDING: 60,
-      CONTENT_WIDTH: 1080,
+      WIDTH: 1200,
     },
     FONTS: {
-      TITLE_SIZE: 60,
+      DESCRIPTION_LINE_HEIGHT: 1.5,
       DESCRIPTION_SIZE: 30,
-      TITLE_WEIGHT: 800,
       DESCRIPTION_WEIGHT: 400,
       TITLE_LINE_HEIGHT: 1.2,
-      DESCRIPTION_LINE_HEIGHT: 1.5,
+      TITLE_SIZE: 60,
+      TITLE_WEIGHT: 800,
     },
     Z_INDEX: {
       CONTENT: 10,
@@ -146,12 +148,12 @@ export async function createOGImageResponse(
   return new ImageResponse(
     <div
       style={{
-        width: `${SHARED_STYLES.DIMENSIONS.WIDTH}px`,
-        height: `${SHARED_STYLES.DIMENSIONS.HEIGHT}px`,
-        position: "relative",
-        overflow: "hidden",
         display: "flex",
         flexDirection: "column",
+        height: `${SHARED_STYLES.DIMENSIONS.HEIGHT}px`,
+        overflow: "hidden",
+        position: "relative",
+        width: `${SHARED_STYLES.DIMENSIONS.WIDTH}px`,
       }}
     >
       {/* Background Image Layer */}
@@ -161,12 +163,12 @@ export async function createOGImageResponse(
           height={SHARED_STYLES.DIMENSIONS.HEIGHT}
           src={bgImageDataUri}
           style={{
+            height: "100%",
+            left: 0,
+            objectFit: "cover",
             position: "absolute",
             top: 0,
-            left: 0,
             width: "100%",
-            height: "100%",
-            objectFit: "cover",
           }}
           width={SHARED_STYLES.DIMENSIONS.WIDTH}
         />
@@ -175,12 +177,12 @@ export async function createOGImageResponse(
       {/* Background Color Overlay */}
       <div
         style={{
+          backgroundColor: backgroundColorRGBA,
+          height: "100%",
+          left: 0,
           position: "absolute",
           top: 0,
-          left: 0,
           width: "100%",
-          height: "100%",
-          backgroundColor: backgroundColorRGBA,
         }}
       />
 
@@ -188,12 +190,12 @@ export async function createOGImageResponse(
       {parsedConfig.gradientEnabled && (
         <div
           style={{
+            background: gradientCSS,
+            height: "100%",
+            left: 0,
             position: "absolute",
             top: 0,
-            left: 0,
             width: "100%",
-            height: "100%",
-            background: gradientCSS,
           }}
         />
       )}
@@ -201,17 +203,17 @@ export async function createOGImageResponse(
       {/* Content Container */}
       <div
         style={{
-          position: "relative",
-          width: "100%",
-          height: "100%",
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "space-between",
           alignItems: "flex-start",
           color: "white",
+          display: "flex",
+          flexDirection: "column",
           fontFamily: fontFamilyCSS,
-          textAlign: "left",
+          height: "100%",
+          justifyContent: "space-between",
           padding: `${SHARED_STYLES.DIMENSIONS.PADDING}px`,
+          position: "relative",
+          textAlign: "left",
+          width: "100%",
           zIndex: SHARED_STYLES.Z_INDEX.CONTENT,
         }}
       >
@@ -223,8 +225,8 @@ export async function createOGImageResponse(
             src={logoConfig.dataUri}
             style={{
               height: `${logoConfig.height}px`,
-              width: `${logoConfig.width}px`,
               objectFit: "contain",
+              width: `${logoConfig.width}px`,
             }}
             width={logoConfig.width}
           />
@@ -233,32 +235,32 @@ export async function createOGImageResponse(
         {/* Text container for title and description */}
         <div
           style={{
+            alignItems: "flex-start",
             display: "flex",
             flexDirection: "column",
-            alignItems: "flex-start",
           }}
         >
           <h1
             style={{
+              color: parsedConfig.titleColor,
               fontSize: `${SHARED_STYLES.FONTS.TITLE_SIZE}px`,
               fontWeight: SHARED_STYLES.FONTS.TITLE_WEIGHT,
-              color: parsedConfig.titleColor,
-              margin: "0 0 20px 0",
               lineHeight: SHARED_STYLES.FONTS.TITLE_LINE_HEIGHT,
-              textAlign: "left",
+              margin: "0 0 20px 0",
               maxWidth: `${SHARED_STYLES.DIMENSIONS.CONTENT_WIDTH}px`,
+              textAlign: "left",
             }}
           >
             {parsedConfig.siteTitle}
           </h1>
           <p
             style={{
+              color: parsedConfig.descriptionColor,
               fontSize: `${SHARED_STYLES.FONTS.DESCRIPTION_SIZE}px`,
               fontWeight: SHARED_STYLES.FONTS.DESCRIPTION_WEIGHT,
-              color: parsedConfig.descriptionColor,
-              maxWidth: `${SHARED_STYLES.DIMENSIONS.CONTENT_WIDTH}px`,
-              margin: 0,
               lineHeight: SHARED_STYLES.FONTS.DESCRIPTION_LINE_HEIGHT,
+              margin: 0,
+              maxWidth: `${SHARED_STYLES.DIMENSIONS.CONTENT_WIDTH}px`,
               textAlign: "left",
             }}
           >
@@ -268,8 +270,6 @@ export async function createOGImageResponse(
       </div>
     </div>,
     {
-      width: SHARED_STYLES.DIMENSIONS.WIDTH,
-      height: SHARED_STYLES.DIMENSIONS.HEIGHT,
       fonts: imageResponseFonts.length > 0 ? imageResponseFonts : undefined,
       // Site-wide OG image is effectively static - let the CDN serve repeat
       // hits instead of re-rendering per request (same rationale as the
@@ -278,6 +278,8 @@ export async function createOGImageResponse(
         "Cache-Control":
           "public, immutable, no-transform, max-age=86400, stale-while-revalidate=604800",
       },
+      height: SHARED_STYLES.DIMENSIONS.HEIGHT,
+      width: SHARED_STYLES.DIMENSIONS.WIDTH,
     }
   );
 }

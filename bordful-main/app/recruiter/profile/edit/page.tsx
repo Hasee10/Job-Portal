@@ -2,24 +2,29 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { RecruiterProfileForm } from "@/components/recruiter/RecruiterProfileForm";
-import { getRecruiterAccountById } from "@/lib/auth/recruiter-accounts";
 import config from "@/config";
+import { getRecruiterAccountById } from "@/lib/auth/recruiter-accounts";
 
 export const metadata: Metadata = {
+  robots: { follow: false, index: false },
   title: `Edit Profile | ${config.title}`,
-  robots: { index: false, follow: false },
 };
 
 export const dynamic = "force-dynamic";
 
 export default async function RecruiterProfileEditPage() {
   const session = await auth();
-  if (!session?.user)
+  if (!session?.user) {
     redirect("/recruiter/sign-in?callbackUrl=/recruiter/profile/edit");
-  if (session.user.role !== "recruiter") redirect("/");
+  }
+  if (session.user.role !== "recruiter") {
+    redirect("/");
+  }
 
   const recruiter = await getRecruiterAccountById(session.user.id);
-  if (!recruiter) redirect("/recruiter/sign-in");
+  if (!recruiter) {
+    redirect("/recruiter/sign-in");
+  }
 
   return (
     <main className="min-h-[60vh] bg-background py-12">

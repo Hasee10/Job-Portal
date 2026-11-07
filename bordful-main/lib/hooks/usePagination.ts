@@ -20,8 +20,8 @@ export function usePagination() {
 
   return {
     page: validPage,
-    setPage,
     perPage,
+    setPage,
     setPerPage,
   };
 }

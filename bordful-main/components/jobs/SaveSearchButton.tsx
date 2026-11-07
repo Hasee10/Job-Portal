@@ -6,8 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import type { SavedSearchFilters } from "@/lib/jobs/saved-search-matching";
 import { useOnClickOutside } from "@/lib/hooks/useOnClickOutside";
+import type { SavedSearchFilters } from "@/lib/jobs/saved-search-matching";
 
 type SaveSearchButtonProps = {
   filters: SavedSearchFilters;
@@ -35,19 +35,21 @@ export function SaveSearchButton({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim()) return;
+    if (!name.trim()) {
+      return;
+    }
 
     setIsSubmitting(true);
     try {
       const response = await fetch("/api/seeker/saved-searches", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          name: name.trim(),
-          searchTerm: searchTerm || null,
           filters,
           frequency,
+          name: name.trim(),
+          searchTerm: searchTerm || null,
         }),
+        headers: { "Content-Type": "application/json" },
+        method: "POST",
       });
       const result = await response.json();
 
@@ -56,16 +58,16 @@ export function SaveSearchButton({
       }
 
       toast({
-        title: "Search saved",
         description: "We'll email you when new matching jobs are posted.",
+        title: "Search saved",
       });
       setName("");
       setOpen(false);
     } catch (error) {
       toast({
-        title: "Could not save search",
         description:
           error instanceof Error ? error.message : "Please try again.",
+        title: "Could not save search",
         variant: "destructive",
       });
     } finally {

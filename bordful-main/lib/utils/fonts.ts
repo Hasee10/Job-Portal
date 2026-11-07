@@ -9,21 +9,21 @@ export const geistMono = GeistMono;
 // Load Google fonts - these are loaded at build time regardless of configuration
 // We don't import config here to avoid circular dependencies
 export const inter = Inter({
-  subsets: ["latin"],
   display: "swap",
+  preload: true,
+  subsets: ["latin"],
   variable: "--font-inter",
   weight: ["400", "500", "600", "700"],
-  preload: true,
 });
 
 // Load IBM Plex Serif font with improved config
 export const ibmPlexSerif = IBM_Plex_Serif({
-  subsets: ["latin"],
   display: "swap",
+  fallback: ["Georgia", "Times New Roman", "serif"],
+  preload: true,
+  subsets: ["latin"],
   variable: "--font-ibm-plex-serif",
   weight: ["400", "500", "600", "700"],
-  preload: true,
-  fallback: ["Georgia", "Times New Roman", "serif"],
 });
 
 // Helper function to get the appropriate font class based on config
@@ -57,12 +57,12 @@ export function getBodyClass(fontFamily = "geist") {
 
 // Export all configured fonts together
 export const fonts = {
-  inter,
-  ibmPlexSerif,
-  geistSans,
   geistMono,
-  getFontClass,
+  geistSans,
   getBodyClass,
+  getFontClass,
+  ibmPlexSerif,
+  inter,
 };
 
 export default fonts;

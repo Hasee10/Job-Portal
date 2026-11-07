@@ -1,6 +1,5 @@
 import { Feed } from "feed";
 import config from "@/config";
-import { DEFAULT_DESCRIPTION_LENGTH } from "@/lib/constants/defaults";
 import { formatSalary } from "@/lib/db/airtable";
 import { getJob, getJobs } from "@/lib/db/airtable.server";
 import { generateJobSlug } from "@/lib/utils/slugify";
@@ -51,21 +50,21 @@ export function isFeedEnabled(
  */
 export function createFeed(baseUrl: string, feedConfig: FeedConfig): Feed {
   return new Feed({
-    title: feedConfig?.title || `${config.title} | Job Feed`,
-    description: config.description,
-    id: baseUrl,
-    link: baseUrl,
-    language: "en",
-    image: `${baseUrl}/opengraph-image.png`,
-    favicon: `${baseUrl}/favicon.ico`,
     copyright: `All rights reserved ${new Date().getFullYear()}`,
-    updated: new Date(),
-    generator: "Caliber Job Board",
+    description: config.description,
+    favicon: `${baseUrl}/favicon.ico`,
     feedLinks: {
-      rss2: `${baseUrl}/feed.xml`,
-      json: `${baseUrl}/feed.json`,
       atom: `${baseUrl}/atom.xml`,
+      json: `${baseUrl}/feed.json`,
+      rss2: `${baseUrl}/feed.xml`,
     },
+    generator: "Caliber Job Board",
+    id: baseUrl,
+    image: `${baseUrl}/opengraph-image.png`,
+    language: "en",
+    link: baseUrl,
+    title: feedConfig?.title || `${config.title} | Job Feed`,
+    updated: new Date(),
   });
 }
 
@@ -83,9 +82,9 @@ export function formatJobDate(postedDate?: string): string {
   }
 
   return date.toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "long",
     day: "numeric",
+    month: "long",
+    year: "numeric",
   });
 }
 
@@ -125,28 +124,28 @@ export function addJobToFeed(
   const jobDescription = createJobDescription(job, descriptionLength);
 
   feed.addItem({
-    title: `${job.title} at ${job.company}`,
-    id: jobUrl,
-    link: jobUrl,
-    description: jobDescription,
-    content: jobDescription,
     author: [
       {
-        name: job.company,
         link: job.apply_url,
+        name: job.company,
       },
     ],
-    date:
-      job.posted_date && !Number.isNaN(new Date(job.posted_date).getTime())
-        ? new Date(job.posted_date)
-        : new Date(),
-    image: undefined, // Could be added later if job.featured exists
     category: [
       { name: job.type },
       ...(Array.isArray(job.workplace_type)
         ? []
         : [{ name: job.workplace_type }]),
     ],
+    content: jobDescription,
+    date:
+      job.posted_date && !Number.isNaN(new Date(job.posted_date).getTime())
+        ? new Date(job.posted_date)
+        : new Date(),
+    description: jobDescription,
+    id: jobUrl,
+    image: undefined, // Could be added later if job.featured exists
+    link: jobUrl,
+    title: `${job.title} at ${job.company}`,
   });
 }
 

@@ -22,5 +22,5 @@ export async function GET(request: Request) {
     );
   }
 
-  return NextResponse.json({ ok: true, draftsCreated: result.created });
+  return NextResponse.json({ draftsCreated: result.created, ok: true });
 }

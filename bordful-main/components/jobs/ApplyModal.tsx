@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
-import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
 import { CheckCircle, FileText, Upload } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
@@ -48,20 +48,21 @@ export function ApplyModal({
       }
 
       const res = await fetch(`/api/jobs/${jobId}/apply`, {
-        method: "POST",
         body: formData,
+        method: "POST",
       });
       const data = await res.json();
-      if (!res.ok)
+      if (!res.ok) {
         throw new Error(data.error || "Failed to submit application.");
+      }
 
       setSubmitted(true);
     } catch (err) {
       toast({
-        title: "Failed to apply",
-        description: err instanceof Error ? err.message : "Please try again.",
-        variant: "destructive",
         className: "bg-destructive border border-red-600 shadow-md",
+        description: err instanceof Error ? err.message : "Please try again.",
+        title: "Failed to apply",
+        variant: "destructive",
       });
     } finally {
       setIsSubmitting(false);
@@ -139,7 +140,7 @@ export function ApplyModal({
         onClick={(e) => e.stopPropagation()}
       >
         {submitted ? (
-          <div className="text-center py-4">
+          <div className="py-4 text-center">
             <CheckCircle className="mx-auto h-10 w-10 text-green-500" />
             <p className="mt-3 font-semibold text-zinc-900 dark:text-zinc-50">
               Application sent
@@ -159,7 +160,7 @@ export function ApplyModal({
 
             <form className="mt-4 space-y-4" onSubmit={handleSubmit}>
               <div className="space-y-1.5">
-                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                <label className="font-medium text-sm text-zinc-700 dark:text-zinc-300">
                   Resume
                 </label>
                 <div className="flex gap-2">
@@ -191,7 +192,7 @@ export function ApplyModal({
                 {resumeSource === "upload" && (
                   <input
                     accept="application/pdf"
-                    className="mt-2 block w-full text-sm text-zinc-500 file:mr-3 file:rounded-md file:border-0 file:bg-zinc-100 file:px-3 file:py-1.5 file:text-sm file:font-medium dark:file:bg-zinc-800 dark:file:text-zinc-200"
+                    className="mt-2 block w-full text-sm text-zinc-500 file:mr-3 file:rounded-md file:border-0 file:bg-zinc-100 file:px-3 file:py-1.5 file:font-medium file:text-sm dark:file:bg-zinc-800 dark:file:text-zinc-200"
                     onChange={(e) => setFile(e.target.files?.[0] ?? null)}
                     type="file"
                   />
@@ -206,7 +207,7 @@ export function ApplyModal({
 
               <div className="space-y-1.5">
                 <label
-                  className="text-sm font-medium text-zinc-700 dark:text-zinc-300"
+                  className="font-medium text-sm text-zinc-700 dark:text-zinc-300"
                   htmlFor="apply-cover-letter"
                 >
                   Cover letter (optional)

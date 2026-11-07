@@ -1,7 +1,6 @@
 import "server-only";
 
 import { cache } from "react";
-import { getSupabaseClient } from "@/lib/db/supabase-client";
 import {
   CURRENCY_CODES,
   type CurrencyCode,
@@ -13,8 +12,9 @@ import {
   type LanguageCode,
 } from "@/lib/constants/languages";
 import type { RemoteRegion, WorkplaceType } from "@/lib/constants/workplace";
-import { normalizeMarkdown } from "@/lib/utils/markdown";
 import type { CareerLevel, Job, SalaryUnit } from "@/lib/db/airtable";
+import { getSupabaseClient } from "@/lib/db/supabase-client";
+import { normalizeMarkdown } from "@/lib/utils/markdown";
 
 // ---------------------------------------------------------------------------
 // Supabase data source (PostgREST via @supabase/supabase-js)
@@ -261,55 +261,55 @@ function rowToJob(
 ): Job {
   const lite = options?.lite ?? false;
   return {
-    id: row.id as string,
-    title: row.title as string,
-    company: row.company as string,
-    type: row.type as Job["type"],
-    salary:
-      row.salary_min || row.salary_max
-        ? {
-            min: row.salary_min ? Number(row.salary_min) : null,
-            max: row.salary_max ? Number(row.salary_max) : null,
-            currency: normalizeCurrency(row.salary_currency),
-            unit: (row.salary_unit as SalaryUnit) || "year",
-          }
-        : null,
-    description: lite ? "" : normalizeMarkdown(row.description as string),
-    benefits: lite ? null : normalizeBenefits(row.benefits),
+    accepts_applications: Boolean(row.accepts_applications),
     application_requirements: lite
       ? null
       : normalizeApplicationRequirements(row.application_requirements),
     apply_url: sanitizeApplyUrl(row.apply_url),
-    // Supabase stores this as posted_at (timestamptz); the Job type calls it
-    // posted_date. PostgREST returns it as an ISO string.
-    posted_date: row.posted_at as string,
-    valid_through: (row.valid_through as string) || null,
+    benefits: lite ? null : normalizeBenefits(row.benefits),
+    career_level: normalizeCareerLevel(row.career_level),
+    company: row.company as string,
+    description: lite ? "" : normalizeMarkdown(row.description as string),
+    education_requirements: (row.education_requirements as string) || null,
+    employer_id: (row.employer_id as string) || null,
+    experience_requirements: (row.experience_requirements as string) || null,
+    featured: !!row.featured,
+    id: row.id as string,
+    industry: (row.industry as string) || null,
     job_identifier: (row.job_identifier as string) || null,
     // Supabase column is `source`; the Job type field is job_source_name.
     job_source_name: (row.source as string) || null,
+    languages: normalizeLanguages(row.languages),
+    occupational_category: (row.occupational_category as string) || null,
+    // Supabase stores this as posted_at (timestamptz); the Job type calls it
+    // posted_date. PostgREST returns it as an ISO string.
+    posted_date: row.posted_at as string,
+    qualifications: (row.qualifications as string) || null,
+    remote_region: normalizeRemoteRegion(row.remote_region),
+    responsibilities: (row.responsibilities as string) || null,
+    salary:
+      row.salary_min || row.salary_max
+        ? {
+            currency: normalizeCurrency(row.salary_currency),
+            max: row.salary_max ? Number(row.salary_max) : null,
+            min: row.salary_min ? Number(row.salary_min) : null,
+            unit: (row.salary_unit as SalaryUnit) || "year",
+          }
+        : null,
+    skills: (row.skills as string) || null,
     // Supabase tracks liveness as is_active (boolean); the Job type uses a
     // 'active' | 'inactive' string.
     status: row.is_active ? "active" : "inactive",
-    career_level: normalizeCareerLevel(row.career_level),
+    timezone_requirements: (row.timezone_requirements as string) || null,
+    title: row.title as string,
+    type: row.type as Job["type"],
+    valid_through: (row.valid_through as string) || null,
     visa_sponsorship: normalizeVisaSponsorship(row.visa_sponsorship),
-    featured: !!row.featured,
+    workplace_city: (row.workplace_city as string) || null,
+    workplace_country: (row.workplace_country as string) || null,
     workplace_type: normalizeWorkplaceType(
       mapRemoteTypeToWorkplace(row.remote_type)
     ),
-    remote_region: normalizeRemoteRegion(row.remote_region),
-    timezone_requirements: (row.timezone_requirements as string) || null,
-    workplace_city: (row.workplace_city as string) || null,
-    workplace_country: (row.workplace_country as string) || null,
-    languages: normalizeLanguages(row.languages),
-    skills: (row.skills as string) || null,
-    qualifications: (row.qualifications as string) || null,
-    education_requirements: (row.education_requirements as string) || null,
-    experience_requirements: (row.experience_requirements as string) || null,
-    industry: (row.industry as string) || null,
-    occupational_category: (row.occupational_category as string) || null,
-    responsibilities: (row.responsibilities as string) || null,
-    employer_id: (row.employer_id as string) || null,
-    accepts_applications: Boolean(row.accepts_applications),
   };
 }
 
@@ -333,7 +333,9 @@ function dedupeJobs(jobs: Job[]): Job[] {
   const result: Job[] = [];
   for (const job of jobs) {
     const key = `${job.title.trim().toLowerCase()}|${job.company.trim().toLowerCase()}`;
-    if (seen.has(key)) continue;
+    if (seen.has(key)) {
+      continue;
+    }
     seen.add(key);
     result.push(job);
   }
@@ -343,7 +345,9 @@ function dedupeJobs(jobs: Job[]): Job[] {
 export const getJobs = cache(
   async (options?: { limit?: number }): Promise<Job[]> => {
     const supabase = getSupabaseClient();
-    if (!supabase) return [];
+    if (!supabase) {
+      return [];
+    }
 
     try {
       let query = supabase
@@ -352,10 +356,14 @@ export const getJobs = cache(
         .eq("is_active", true)
         .order("posted_at", { ascending: false, nullsFirst: false });
 
-      if (options?.limit) query = query.limit(options.limit);
+      if (options?.limit) {
+        query = query.limit(options.limit);
+      }
 
       const { data, error } = await query;
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
       const jobs = (data ?? []).map((row) =>
         rowToJob(row as unknown as Record<string, unknown>, { lite: true })
       );
@@ -368,14 +376,18 @@ export const getJobs = cache(
 
 export const getActiveJobsCount = cache(async (): Promise<number> => {
   const supabase = getSupabaseClient();
-  if (!supabase) return 0;
+  if (!supabase) {
+    return 0;
+  }
 
   try {
     const { count, error } = await supabase
       .from("jobs")
       .select("*", { count: "exact", head: true })
       .eq("is_active", true);
-    if (error) throw error;
+    if (error) {
+      throw error;
+    }
     return count ?? 0;
   } catch {
     return 0;
@@ -384,7 +396,9 @@ export const getActiveJobsCount = cache(async (): Promise<number> => {
 
 export const getJob = cache(async (id: string): Promise<Job | null> => {
   const supabase = getSupabaseClient();
-  if (!supabase) return null;
+  if (!supabase) {
+    return null;
+  }
 
   try {
     const { data, error } = await supabase
@@ -393,8 +407,12 @@ export const getJob = cache(async (id: string): Promise<Job | null> => {
       .eq("id", id)
       .eq("is_active", true)
       .maybeSingle();
-    if (error) throw error;
-    if (!data) return null;
+    if (error) {
+      throw error;
+    }
+    if (!data) {
+      return null;
+    }
     return rowToJob(data as unknown as Record<string, unknown>);
   } catch {
     return null;
@@ -403,7 +421,9 @@ export const getJob = cache(async (id: string): Promise<Job | null> => {
 
 export async function testConnection(): Promise<boolean> {
   const supabase = getSupabaseClient();
-  if (!supabase) return false;
+  if (!supabase) {
+    return false;
+  }
   try {
     const { error } = await supabase
       .from("jobs")

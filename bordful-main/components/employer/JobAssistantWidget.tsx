@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
 import { Bot, Loader2, Send, X } from "lucide-react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -44,11 +44,13 @@ export function JobAssistantWidget({
 
   const send = async (text: string) => {
     const trimmed = text.trim();
-    if (!trimmed || isLoading) return;
+    if (!trimmed || isLoading) {
+      return;
+    }
 
     const nextMessages: ChatMessage[] = [
       ...messages,
-      { role: "user", content: trimmed },
+      { content: trimmed, role: "user" },
     ];
     setMessages(nextMessages);
     setInput("");
@@ -57,16 +59,17 @@ export function JobAssistantWidget({
 
     try {
       const res = await fetch("/api/employer/job-assistant", {
-        method: "POST",
+        body: JSON.stringify({ draft, messages: nextMessages }),
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: nextMessages, draft }),
+        method: "POST",
       });
       const data = await res.json();
-      if (!res.ok)
+      if (!res.ok) {
         throw new Error(data.error || "Failed to reach the assistant.");
+      }
       setMessages([
         ...nextMessages,
-        { role: "assistant", content: data.reply },
+        { content: data.reply, role: "assistant" },
       ]);
     } catch (err) {
       setError(
@@ -84,10 +87,10 @@ export function JobAssistantWidget({
   const looksLikeDescription = (content: string) => content.length > 220;
 
   return (
-    <div className="fixed bottom-6 right-6 z-50">
+    <div className="fixed right-6 bottom-6 z-50">
       {isOpen && (
-        <div className="mb-3 flex h-[28rem] w-80 flex-col rounded-xl border border-zinc-200 bg-background shadow-xl dark:border-zinc-800 sm:w-96">
-          <div className="flex items-center justify-between border-b border-zinc-200 px-4 py-3 dark:border-zinc-800">
+        <div className="mb-3 flex h-[28rem] w-80 flex-col rounded-xl border border-zinc-200 bg-background shadow-xl sm:w-96 dark:border-zinc-800">
+          <div className="flex items-center justify-between border-zinc-200 border-b px-4 py-3 dark:border-zinc-800">
             <div className="flex items-center gap-2">
               <Bot className="h-4 w-4 text-primary" />
               <span className="font-semibold text-sm text-zinc-900 dark:text-zinc-50">
@@ -169,11 +172,11 @@ export function JobAssistantWidget({
               </div>
             )}
 
-            {error && <p className="text-xs text-red-500">{error}</p>}
+            {error && <p className="text-red-500 text-xs">{error}</p>}
           </div>
 
           <form
-            className="flex items-center gap-2 border-t border-zinc-200 p-3 dark:border-zinc-800"
+            className="flex items-center gap-2 border-zinc-200 border-t p-3 dark:border-zinc-800"
             onSubmit={(e) => {
               e.preventDefault();
               send(input);

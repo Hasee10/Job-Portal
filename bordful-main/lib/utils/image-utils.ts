@@ -37,11 +37,11 @@ export function processLogoConfig(logoConfig: any, baseUrl: string) {
   }
 
   return {
+    height: logoConfig.height || 100,
+    position: logoConfig.position || { left: 50, top: 50 },
     src: logoConfig.src.startsWith("http")
       ? logoConfig.src
       : `${baseUrl}${logoConfig.src}`,
     width: logoConfig.width || 100,
-    height: logoConfig.height || 100,
-    position: logoConfig.position || { top: 50, left: 50 },
   };
 }

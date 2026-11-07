@@ -8,13 +8,13 @@ import { GuideTableOfContents } from "@/components/content/GuideTableOfContents"
 import config from "@/config";
 import { getGuideCategoryStyle } from "@/lib/constants/guide-categories";
 import {
-  estimateReadMinutes,
-  extractGuideHeadings,
-} from "@/lib/content/guide-content";
-import {
   getPublishedGuideBySlug,
   listPublishedGuides,
 } from "@/lib/content/guide-actions";
+import {
+  estimateReadMinutes,
+  extractGuideHeadings,
+} from "@/lib/content/guide-content";
 
 export const dynamic = "force-dynamic";
 
@@ -31,8 +31,8 @@ export async function generateMetadata({
     return { title: `Career Guides | ${config.title}` };
   }
   return {
-    title: `${guide.title} | ${config.title}`,
     description: guide.summary ?? undefined,
+    title: `${guide.title} | ${config.title}`,
   };
 }
 

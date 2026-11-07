@@ -27,7 +27,7 @@ export function useSortOrder() {
   };
 
   return {
-    sortOrder: validSortOrder as SortOrder,
     setSortOrder,
+    sortOrder: validSortOrder as SortOrder,
   };
 }

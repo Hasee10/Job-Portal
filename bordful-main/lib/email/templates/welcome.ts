@@ -75,7 +75,7 @@ export function renderWelcomeEmail({
   `);
 
   return {
-    subject: "Welcome to Caliber - let's get your first job posted",
     html,
+    subject: "Welcome to Caliber - let's get your first job posted",
   };
 }

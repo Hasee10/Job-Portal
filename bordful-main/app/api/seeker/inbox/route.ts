@@ -1,14 +1,16 @@
+import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { listSeekerInbox } from "@/lib/jobs/candidate-outreach-actions";
-import { createClient } from "@supabase/supabase-js";
 
 export const dynamic = "force-dynamic";
 
 function getAdminClient() {
   const url = process.env.SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key) throw new Error("Database is not configured.");
+  if (!(url && key)) {
+    throw new Error("Database is not configured.");
+  }
   return createClient(url, key, { auth: { persistSession: false } });
 }
 

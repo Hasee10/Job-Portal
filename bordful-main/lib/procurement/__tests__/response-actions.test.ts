@@ -38,8 +38,9 @@ describe("canVendorSubmitResponse (prequalification gate)", () => {
       "prequalification_pending"
     );
     expect(result.allowed).toBe(false);
-    if (!result.allowed)
+    if (!result.allowed) {
       expect(result.reason).toMatch(/pending buyer approval/i);
+    }
   });
 
   it("blocks a vendor whose prequalification was rejected", () => {
@@ -48,7 +49,9 @@ describe("canVendorSubmitResponse (prequalification gate)", () => {
       "prequalification_rejected"
     );
     expect(result.allowed).toBe(false);
-    if (!result.allowed) expect(result.reason).toMatch(/not approved/i);
+    if (!result.allowed) {
+      expect(result.reason).toMatch(/not approved/i);
+    }
   });
 
   it("blocks a vendor who already responded (cannot resubmit through this gate)", () => {

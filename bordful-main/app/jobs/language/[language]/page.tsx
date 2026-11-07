@@ -30,17 +30,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   // Check if valid language code
   if (!LANGUAGE_CODES.includes(languageCode as LanguageCode)) {
     return {
-      title: `Language Not Found | ${config.title}`,
       description: "The language you're looking for doesn't exist.",
+      title: `Language Not Found | ${config.title}`,
     };
   }
 
   const displayName = getDisplayNameFromCode(languageCode as LanguageCode);
 
   return createMetadata({
-    title: `${displayName} Jobs | ${config.title}`,
     description: `Browse jobs requiring ${displayName} language skills. Find the perfect role that matches your language abilities.`,
     path: `/jobs/language/${languageCode}`,
+    title: `${displayName} Jobs | ${config.title}`,
   });
 }
 

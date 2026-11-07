@@ -146,12 +146,12 @@ export function formatSalary(
 
   // Use full words with slash
   const unitDisplay = {
-    hour: "/hour",
     day: "/day",
-    week: "/week",
+    hour: "/hour",
     month: "/month",
-    year: "/year",
     project: "/project",
+    week: "/week",
+    year: "/year",
   }[salary.unit];
 
   // Add currency code in parentheses if requested
@@ -168,9 +168,9 @@ export function formatUSDApproximation(salary: Salary | null): string | null {
 
   // Create a USD equivalent salary object
   const usdSalary: Salary = {
-    min: salary.min ? salary.min * CURRENCY_RATES[salary.currency] : null,
-    max: salary.max ? salary.max * CURRENCY_RATES[salary.currency] : null,
     currency: "USD",
+    max: salary.max ? salary.max * CURRENCY_RATES[salary.currency] : null,
+    min: salary.min ? salary.min * CURRENCY_RATES[salary.currency] : null,
     unit: salary.unit,
   };
 
@@ -190,12 +190,12 @@ export function normalizeAnnualSalary(salary: Salary | null): number {
 
   // Annualization multipliers
   const annualMultiplier: Record<SalaryUnit, number> = {
-    hour: 2080, // 40 hours/week * 52 weeks
     day: 260, // 52 weeks * 5 days
-    week: 52,
+    hour: 2080, // 40 hours/week * 52 weeks
     month: 12,
-    year: 1,
     project: 1, // Projects treated as one-time annual equivalent
+    week: 52,
+    year: 1,
   };
 
   // Use the maximum value for comparison, or minimum if no maximum

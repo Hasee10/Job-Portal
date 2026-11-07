@@ -4,8 +4,8 @@ import { ForgotPasswordForm } from "@/components/auth/ForgotPasswordForm";
 import config from "@/config";
 
 export const metadata: Metadata = {
+  robots: { follow: false, index: false },
   title: `Forgot Password | ${config.title}`,
-  robots: { index: false, follow: false },
 };
 
 export const dynamic = "force-dynamic";

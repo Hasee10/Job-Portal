@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
-import {
-  sendOutreach,
-  listRecruiterOutreach,
-  getRecruiterDailyOutreachCount,
-} from "@/lib/jobs/candidate-outreach-actions";
 import { getRecruiterAccountById } from "@/lib/auth/recruiter-accounts";
 import { sendEmail } from "@/lib/email/smtp";
 import { renderRecruiterOutreachEmail } from "@/lib/email/templates/recruiter-outreach";
+import {
+  getRecruiterDailyOutreachCount,
+  listRecruiterOutreach,
+  sendOutreach,
+} from "@/lib/jobs/candidate-outreach-actions";
 import { createRateLimiter, getClientIp } from "@/lib/utils/rate-limit";
 
 export const dynamic = "force-dynamic";
@@ -86,13 +86,13 @@ export async function POST(request: Request) {
       const recruiter = await getRecruiterAccountById(session.user.id);
       if (recruiter && body.seekerEmail) {
         const { subject, html } = renderRecruiterOutreachEmail({
-          recruiterName: recruiter.name,
-          recruiterAgency: recruiter.agency,
-          message,
-          jobTitle,
           inboxUrl: `${process.env.NEXTAUTH_URL ?? ""}/account/inbox`,
+          jobTitle,
+          message,
+          recruiterAgency: recruiter.agency,
+          recruiterName: recruiter.name,
         });
-        await sendEmail({ to: body.seekerEmail as string, subject, html });
+        await sendEmail({ html, subject, to: body.seekerEmail as string });
       }
     } catch (emailErr) {
       console.error(

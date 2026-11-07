@@ -72,7 +72,7 @@ export function SimilarJobs({ currentJob, allJobs }: SimilarJobsProps) {
               key={job.id}
             >
               <div className="text-xs leading-tight">{job.title}</div>
-              <div className="mt-0.5 flex flex-wrap items-center gap-1.5 text-[11px] text-gray-500 dark:text-gray-500 leading-tight">
+              <div className="mt-0.5 flex flex-wrap items-center gap-1.5 text-[11px] text-gray-500 leading-tight dark:text-gray-500">
                 <span>{job.company}</span>
                 <span>•</span>
                 <span>{job.type}</span>

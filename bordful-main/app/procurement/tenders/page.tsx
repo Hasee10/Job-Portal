@@ -1,21 +1,21 @@
+import { FileSearch, Search as SearchIcon } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Search as SearchIcon, FileSearch } from "lucide-react";
-import { HeroSection } from "@/components/ui/hero-section";
 import { TenderCard } from "@/components/procurement/TenderCard";
-import { TenderFiltersSidebar } from "@/components/procurement/TenderFiltersSidebar";
 import { TenderControls } from "@/components/procurement/TenderControls";
+import { TenderFiltersSidebar } from "@/components/procurement/TenderFiltersSidebar";
+import { HeroSection } from "@/components/ui/hero-section";
+import config from "@/config";
 import {
   getTenderFacets,
   listActiveTenders,
   type TenderSort,
 } from "@/lib/procurement/scraped-tender-actions";
-import config from "@/config";
 
 export const metadata: Metadata = {
-  title: `Global Tenders | ${config.title}`,
   description:
     "Browse public procurement tenders aggregated daily from TED (EU) and other sources.",
+  title: `Global Tenders | ${config.title}`,
 };
 
 export const dynamic = "force-dynamic";
@@ -48,12 +48,12 @@ export default async function ProcurementTendersPage({
   const [{ tenders, total }, facets] = await Promise.all([
     listActiveTenders({
       categories,
-      sources,
       countries,
-      query,
-      sort,
       page,
       perPage,
+      query,
+      sort,
+      sources,
     }),
     getTenderFacets(),
   ]);
@@ -63,15 +63,30 @@ export default async function ProcurementTendersPage({
 
   const buildLink = (updates: Record<string, string | undefined>) => {
     const params = new URLSearchParams();
-    if (sp.category) params.set("category", sp.category);
-    if (sp.source) params.set("source", sp.source);
-    if (sp.country) params.set("country", sp.country);
-    if (sp.q) params.set("q", sp.q);
-    if (sp.sort) params.set("sort", sp.sort);
-    if (sp.perPage) params.set("perPage", sp.perPage);
+    if (sp.category) {
+      params.set("category", sp.category);
+    }
+    if (sp.source) {
+      params.set("source", sp.source);
+    }
+    if (sp.country) {
+      params.set("country", sp.country);
+    }
+    if (sp.q) {
+      params.set("q", sp.q);
+    }
+    if (sp.sort) {
+      params.set("sort", sp.sort);
+    }
+    if (sp.perPage) {
+      params.set("perPage", sp.perPage);
+    }
     Object.entries(updates).forEach(([key, value]) => {
-      if (value) params.set(key, value);
-      else params.delete(key);
+      if (value) {
+        params.set(key, value);
+      } else {
+        params.delete(key);
+      }
     });
     const qs = params.toString();
     return qs ? `/procurement/tenders?${qs}` : "/procurement/tenders";
@@ -83,9 +98,9 @@ export default async function ProcurementTendersPage({
         badge="Global tenders"
         description={`Aggregated daily from TED (EU Tenders Electronic Daily) and PPRA (Pakistan). ${totalActive.toLocaleString()} tenders currently open.`}
         heroImage={{
+          alt: "Caliber’s AI matching engine scoring verified vendors against open tenders",
           enabled: true,
           src: "/procurement-hero.png",
-          alt: "Caliber’s AI matching engine scoring verified vendors against open tenders",
         }}
         title={`${totalActive.toLocaleString()} open tenders worldwide`}
       >
@@ -105,7 +120,7 @@ export default async function ProcurementTendersPage({
           <div className="relative flex-1">
             <SearchIcon
               aria-hidden="true"
-              className="-translate-y-1/2 absolute top-1/2 left-3 h-4 w-4 text-muted-foreground"
+              className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground"
             />
             <input
               className="w-full rounded-md border bg-background py-2 pr-3 pl-9 text-sm placeholder:text-muted-foreground"

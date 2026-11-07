@@ -33,7 +33,9 @@ export function SeekerJobStateProvider({ children }: { children: ReactNode }) {
   >({});
 
   useEffect(() => {
-    if (status !== "authenticated" || !isSeeker) return;
+    if (status !== "authenticated" || !isSeeker) {
+      return;
+    }
 
     let cancelled = false;
     fetch("/api/seeker/job-states")
@@ -43,7 +45,9 @@ export function SeekerJobStateProvider({ children }: { children: ReactNode }) {
           savedJobIds: string[];
           applications: Record<string, ApplicationStatus>;
         }) => {
-          if (cancelled) return;
+          if (cancelled) {
+            return;
+          }
           setSavedJobIds(new Set(data.savedJobIds));
           setApplications(data.applications);
         }
@@ -78,11 +82,13 @@ export function SeekerJobStateProvider({ children }: { children: ReactNode }) {
               method: "DELETE",
             })
           : await fetch("/api/seeker/saved-jobs", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ jobId }),
+              headers: { "Content-Type": "application/json" },
+              method: "POST",
             });
-        if (!res.ok) throw new Error("save failed");
+        if (!res.ok) {
+          throw new Error("save failed");
+        }
       } catch {
         setSavedJobIds((prev) => {
           const next = new Set(prev);
@@ -105,11 +111,13 @@ export function SeekerJobStateProvider({ children }: { children: ReactNode }) {
 
       try {
         const res = await fetch("/api/seeker/applications", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ jobId, status: statusValue }),
+          headers: { "Content-Type": "application/json" },
+          method: "POST",
         });
-        if (!res.ok) throw new Error("update failed");
+        if (!res.ok) {
+          throw new Error("update failed");
+        }
       } catch {
         setApplications((prev) => {
           const next = { ...prev };
@@ -138,7 +146,9 @@ export function SeekerJobStateProvider({ children }: { children: ReactNode }) {
         const res = await fetch(`/api/seeker/applications?jobId=${jobId}`, {
           method: "DELETE",
         });
-        if (!res.ok) throw new Error("clear failed");
+        if (!res.ok) {
+          throw new Error("clear failed");
+        }
       } catch {
         if (previous) {
           setApplications((prev) => ({ ...prev, [jobId]: previous }));
@@ -151,12 +161,12 @@ export function SeekerJobStateProvider({ children }: { children: ReactNode }) {
   return (
     <SeekerJobStateReactContext.Provider
       value={{
-        savedJobIds,
         applications,
-        isSeeker,
-        toggleSave,
-        setApplication,
         clearApplication,
+        isSeeker,
+        savedJobIds,
+        setApplication,
+        toggleSave,
       }}
     >
       {children}

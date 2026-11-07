@@ -14,10 +14,10 @@ import { generateMetadata } from "@/lib/utils/metadata";
 
 // Generate metadata for SEO
 export const metadata: Metadata = generateMetadata({
-  title: `Browse Jobs by Type | ${config.title}`,
   description:
     "Explore tech jobs by employment type. Find full-time, part-time, or contract positions that match your preferences.",
   path: "/jobs/types",
+  title: `Browse Jobs by Type | ${config.title}`,
 });
 
 // Revalidate page every 5 minutes
@@ -41,10 +41,10 @@ function TypeCard({ href, title, description, count }: TypeCardProps) {
     >
       <div className="space-y-1.5 sm:space-y-2">
         <h2 className="font-medium text-sm sm:text-base">{title}</h2>
-        <p className="line-clamp-2 text-gray-500 dark:text-gray-500 text-xs sm:text-sm">
+        <p className="line-clamp-2 text-gray-500 text-xs sm:text-sm dark:text-gray-500">
           {description}
         </p>
-        <div className="text-gray-500 dark:text-gray-500 text-xs sm:text-sm">
+        <div className="text-gray-500 text-xs sm:text-sm dark:text-gray-500">
           {count.toLocaleString()} {count === 1 ? "position" : "positions"}{" "}
           available
         </div>
@@ -71,10 +71,10 @@ export default async function JobTypesPage() {
   const sortedTypes = Object.entries(typeCounts)
     .sort((a, b) => b[1] - a[1])
     .map(([type, count]) => ({
-      type: type as JobType,
-      title: JOB_TYPE_DISPLAY_NAMES[type as JobType],
-      description: JOB_TYPE_DESCRIPTIONS[type as JobType],
       count,
+      description: JOB_TYPE_DESCRIPTIONS[type as JobType],
+      title: JOB_TYPE_DISPLAY_NAMES[type as JobType],
+      type: type as JobType,
     }));
 
   return (

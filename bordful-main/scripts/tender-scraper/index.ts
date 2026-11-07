@@ -3,6 +3,7 @@
 
 import dotenv from "dotenv";
 import { resolve } from "path";
+
 // Same env-loading convention as scripts/scraper/index.ts: CI injects
 // SUPABASE_URL/SUPABASE_SERVICE_ROLE_KEY directly, local runs fall back to
 // job-scraper/.env then .env.local.
@@ -14,8 +15,8 @@ import {
   deactivateStaleUndatedTenders,
   upsertTender,
 } from "./db";
-import { scrapeTed } from "./sources/ted";
 import { scrapePpra } from "./sources/ppra";
+import { scrapeTed } from "./sources/ted";
 
 const SOURCES: {
   name: string;
@@ -40,8 +41,11 @@ async function main() {
       for (const tender of tenders) {
         try {
           const result = await upsertTender(tender);
-          if (result === "inserted") inserted++;
-          else updated++;
+          if (result === "inserted") {
+            inserted++;
+          } else {
+            updated++;
+          }
         } catch (e) {
           errors++;
           console.error(
@@ -63,7 +67,9 @@ async function main() {
   console.log(
     `Done — inserted: ${inserted}, updated: ${updated}, deactivated: ${deactivated}, errors: ${errors}`
   );
-  if (errors > 0) process.exitCode = 1;
+  if (errors > 0) {
+    process.exitCode = 1;
+  }
 }
 
 main();

@@ -1,7 +1,7 @@
 "use client";
 
-import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { signIn } from "next-auth/react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,57 +26,66 @@ export function RecruiterSignUpForm() {
 
   const validate = () => {
     const e: Record<string, string> = {};
-    if (!name.trim()) e.name = "Your name is required.";
-    if (!email || !EMAIL_REGEX.test(email))
+    if (!name.trim()) {
+      e.name = "Your name is required.";
+    }
+    if (!(email && EMAIL_REGEX.test(email))) {
       e.email = "Enter a valid email address.";
-    if (password.length < 8)
+    }
+    if (password.length < 8) {
       e.password = "Password must be at least 8 characters.";
-    if (confirmPassword !== password)
+    }
+    if (confirmPassword !== password) {
       e.confirmPassword = "Passwords do not match.";
+    }
     setErrors(e);
     return Object.keys(e).length === 0;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!validate()) return;
+    if (!validate()) {
+      return;
+    }
     setIsSubmitting(true);
 
     try {
       const res = await fetch("/api/recruiters/signup", {
-        method: "POST",
+        body: JSON.stringify({ agency, email, name, password }),
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password, name, agency }),
+        method: "POST",
       });
       const result = await res.json();
-      if (!res.ok) throw new Error(result.error || "Sign up failed.");
+      if (!res.ok) {
+        throw new Error(result.error || "Sign up failed.");
+      }
 
       const signInResult = await signIn("credentials", {
+        accountType: "recruiter",
         email,
         password,
-        accountType: "recruiter",
         redirect: false,
       });
 
       if (signInResult?.error) {
-        toast({ title: "Account created", description: "Please sign in." });
+        toast({ description: "Please sign in.", title: "Account created" });
         router.push("/recruiter/sign-in");
         return;
       }
 
       toast({
-        title: `Welcome to ${config.title}`,
         description: "Your recruiter account is ready.",
+        title: `Welcome to ${config.title}`,
       });
       router.push("/recruiter/dashboard");
       router.refresh();
     } catch (error) {
       toast({
-        title: "Sign up failed",
+        className: "bg-destructive border border-red-600 shadow-md",
         description:
           error instanceof Error ? error.message : "Something went wrong.",
+        title: "Sign up failed",
         variant: "destructive",
-        className: "bg-destructive border border-red-600 shadow-md",
       });
     } finally {
       setIsSubmitting(false);
@@ -107,7 +116,7 @@ export function RecruiterSignUpForm() {
           <div className="space-y-2">
             <Label className="font-medium text-sm" htmlFor="agency">
               Agency / Company{" "}
-              <span className="text-zinc-400 font-normal">(optional)</span>
+              <span className="font-normal text-zinc-400">(optional)</span>
             </Label>
             <Input
               disabled={isSubmitting}

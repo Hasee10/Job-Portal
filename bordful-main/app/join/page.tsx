@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
-import config from "@/config";
 import { JoinChooser } from "@/components/auth/JoinChooser";
+import config from "@/config";
 
 export const metadata: Metadata = {
-  title: `Join ${config.title}`,
   description: "Choose how you want to use the platform.",
-  robots: { index: false, follow: false },
+  robots: { follow: false, index: false },
+  title: `Join ${config.title}`,
 };
 
 export default function JoinPage() {

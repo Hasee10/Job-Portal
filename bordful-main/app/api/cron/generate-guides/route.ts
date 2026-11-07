@@ -26,9 +26,9 @@ export async function GET(request: Request) {
     await archiveOldestPublishedGuidesOverCap(PUBLISHED_GUIDE_CAP);
 
   return NextResponse.json({
-    ok: true,
+    archivedCount: archivedIds.length,
     draftsCreated: generation.created,
     noUncoveredTopics: generation.skippedNoTopics,
-    archivedCount: archivedIds.length,
+    ok: true,
   });
 }

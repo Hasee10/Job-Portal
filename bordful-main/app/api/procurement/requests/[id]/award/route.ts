@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
+import { sendEmail } from "@/lib/email/smtp";
+import { renderProcurementAwardDecisionEmail } from "@/lib/email/templates/procurement-award-decision";
 import { awardRequest } from "@/lib/procurement/evaluation-actions";
 import { getRequestForBuyer } from "@/lib/procurement/request-actions";
 import { listResponsesForRequest } from "@/lib/procurement/response-actions";
 import { getVendorById } from "@/lib/procurement/vendor-actions";
-import { sendEmail } from "@/lib/email/smtp";
-import { renderProcurementAwardDecisionEmail } from "@/lib/email/templates/procurement-award-decision";
 
 export const dynamic = "force-dynamic";
 
@@ -39,15 +39,19 @@ export async function POST(
       const view = await listResponsesForRequest(session.user.id, id);
       if (request && !view.sealed) {
         for (const response of view.responses) {
-          if (response.isWithdrawn) continue;
+          if (response.isWithdrawn) {
+            continue;
+          }
           const vendor = await getVendorById(response.vendorId);
-          if (!vendor) continue;
+          if (!vendor) {
+            continue;
+          }
           const { subject, html } = renderProcurementAwardDecisionEmail({
+            dashboardUrl: `${process.env.NEXTAUTH_URL ?? ""}/procurement/vendor`,
             requestTitle: request.title,
             won: response.id === responseId,
-            dashboardUrl: `${process.env.NEXTAUTH_URL ?? ""}/procurement/vendor`,
           });
-          await sendEmail({ to: vendor.email, subject, html });
+          await sendEmail({ html, subject, to: vendor.email });
         }
       }
     } catch (emailErr) {

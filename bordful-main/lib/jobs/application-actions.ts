@@ -1,9 +1,9 @@
 import "server-only";
 
 import { createClient } from "@supabase/supabase-js";
-import type { ResumeContent } from "@/lib/jobs/resume-actions";
 import type { JobOwner } from "@/lib/jobs/employer-job-actions";
 import { scoreJobMatch } from "@/lib/jobs/match-scoring";
+import type { ResumeContent } from "@/lib/jobs/resume-actions";
 
 export type ApplicationStatus =
   | "new"
@@ -33,8 +33,9 @@ export type ApplicationWithSeeker = JobApplication & {
 function getAdminClient() {
   const url = process.env.SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key)
+  if (!(url && key)) {
     throw new Error("Database is not configured on this deployment.");
+  }
   return createClient(url, key, { auth: { persistSession: false } });
 }
 
@@ -45,22 +46,24 @@ function getAdminClient() {
 // invisible: the real Postgres error ("column does not exist") never made
 // it past that check. Wrapping here means the real message always survives.
 function toError(error: unknown, fallback: string): Error {
-  if (error instanceof Error) return error;
+  if (error instanceof Error) {
+    return error;
+  }
   const message = (error as { message?: string } | null)?.message;
   return new Error(message || fallback);
 }
 
 function rowToApplication(row: Record<string, unknown>): JobApplication {
   return {
+    autoShortlisted: Boolean(row.auto_shortlisted),
+    coverLetter: (row.cover_letter as string) || null,
+    createdAt: row.created_at as string,
     id: row.id as string,
     jobId: row.job_id as string,
-    seekerId: row.seeker_id as string,
-    resumeSnapshot: row.resume_snapshot as ResumeContent,
-    coverLetter: (row.cover_letter as string) || null,
-    status: row.status as ApplicationStatus,
     matchScore: (row.match_score as number) ?? 0,
-    autoShortlisted: Boolean(row.auto_shortlisted),
-    createdAt: row.created_at as string,
+    resumeSnapshot: row.resume_snapshot as ResumeContent,
+    seekerId: row.seeker_id as string,
+    status: row.status as ApplicationStatus,
     updatedAt: row.updated_at as string,
   };
 }
@@ -80,16 +83,18 @@ export async function submitApplication(
     .eq("id", jobId)
     .maybeSingle();
 
-  if (jobError) throw toError(jobError, "Failed to look up job.");
-  if (!job || !job.is_active || !job.accepts_applications) {
+  if (jobError) {
+    throw toError(jobError, "Failed to look up job.");
+  }
+  if (!(job && job.is_active && job.accepts_applications)) {
     throw new Error("This job is not accepting applications.");
   }
 
   const requiredSkills = (job.required_skills as string[]) || [];
   const match = await scoreJobMatch(input.resumeSnapshot, {
-    title: job.title as string,
     description: job.description as string | null,
     skills: requiredSkills,
+    title: job.title as string,
   });
   const matchScore = match.score;
   const threshold = (job.auto_shortlist_threshold as number) ?? 70;
@@ -103,12 +108,12 @@ export async function submitApplication(
   const { data, error } = await supabase
     .from("job_application_submissions")
     .insert({
-      job_id: jobId,
-      seeker_id: seekerId,
-      resume_snapshot: input.resumeSnapshot,
-      cover_letter: input.coverLetter,
-      match_score: matchScore,
       auto_shortlisted: autoShortlisted,
+      cover_letter: input.coverLetter,
+      job_id: jobId,
+      match_score: matchScore,
+      resume_snapshot: input.resumeSnapshot,
+      seeker_id: seekerId,
       status: autoShortlisted ? "shortlisted" : "new",
     })
     .select("*")
@@ -130,7 +135,7 @@ export async function listJobApplications(
 ): Promise<ApplicationWithSeeker[]> {
   const supabase = getAdminClient();
   const ownerColumn =
-    owner.employerId !== undefined ? "employer_id" : "recruiter_id";
+    owner.employerId === undefined ? "recruiter_id" : "employer_id";
   const ownerIdValue = owner.employerId ?? (owner.recruiterId as string);
 
   // Scope to the owner's own job - a stray jobId for someone else's
@@ -141,7 +146,9 @@ export async function listJobApplications(
     .eq("id", jobId)
     .eq(ownerColumn, ownerIdValue)
     .maybeSingle();
-  if (!job) return [];
+  if (!job) {
+    return [];
+  }
 
   const { data, error } = await supabase
     .from("job_application_submissions")
@@ -149,14 +156,16 @@ export async function listJobApplications(
     .eq("job_id", jobId)
     .order("match_score", { ascending: false });
 
-  if (error) throw toError(error, "Failed to load applications.");
+  if (error) {
+    throw toError(error, "Failed to load applications.");
+  }
 
   return (data ?? []).map((row) => {
     const seeker = row.job_seekers as Record<string, unknown> | null;
     return {
       ...rowToApplication(row),
-      seekerName: (seeker?.name as string) || null,
       seekerEmail: (seeker?.email as string) ?? "",
+      seekerName: (seeker?.name as string) || null,
     };
   });
 }
@@ -168,7 +177,7 @@ export async function updateApplicationStatus(
 ): Promise<JobApplication> {
   const supabase = getAdminClient();
   const ownerColumn =
-    owner.employerId !== undefined ? "employer_id" : "recruiter_id";
+    owner.employerId === undefined ? "recruiter_id" : "employer_id";
   const ownerIdValue = owner.employerId ?? (owner.recruiterId as string);
 
   // Verify the application belongs to one of this owner's jobs before
@@ -180,7 +189,9 @@ export async function updateApplicationStatus(
     .eq(`jobs.${ownerColumn}`, ownerIdValue)
     .maybeSingle();
 
-  if (!application) throw new Error("Application not found.");
+  if (!application) {
+    throw new Error("Application not found.");
+  }
 
   const { data, error } = await supabase
     .from("job_application_submissions")
@@ -189,7 +200,9 @@ export async function updateApplicationStatus(
     .select("*")
     .single();
 
-  if (error) throw toError(error, "Failed to update application.");
+  if (error) {
+    throw toError(error, "Failed to update application.");
+  }
   return rowToApplication(data);
 }
 
@@ -226,7 +239,9 @@ export async function getJobOwnerContact(
     .select("employer_id, recruiter_id")
     .eq("id", jobId)
     .maybeSingle();
-  if (!job) return null;
+  if (!job) {
+    return null;
+  }
 
   if (job.recruiter_id) {
     const { data: recruiter } = await supabase
@@ -234,11 +249,13 @@ export async function getJobOwnerContact(
       .select("email, name")
       .eq("id", job.recruiter_id)
       .maybeSingle();
-    if (!recruiter) return null;
+    if (!recruiter) {
+      return null;
+    }
     return {
-      type: "recruiter",
       email: recruiter.email as string,
       name: recruiter.name as string,
+      type: "recruiter",
     };
   }
 
@@ -248,11 +265,13 @@ export async function getJobOwnerContact(
       .select("email, company_name")
       .eq("id", job.employer_id)
       .maybeSingle();
-    if (!employer) return null;
+    if (!employer) {
+      return null;
+    }
     return {
-      type: "employer",
       email: employer.email as string,
       name: (employer.company_name as string) || (employer.email as string),
+      type: "employer",
     };
   }
 

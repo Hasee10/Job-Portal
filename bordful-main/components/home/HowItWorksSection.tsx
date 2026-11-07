@@ -1,22 +1,22 @@
-import { FileText, Sparkles, Send } from "lucide-react";
+import { FileText, Send, Sparkles } from "lucide-react";
 
 const STEPS = [
   {
+    description: "Sign in and build or upload a resume in minutes.",
     icon: FileText,
     title: "Create your profile",
-    description: "Sign in and build or upload a resume in minutes.",
   },
   {
-    icon: Sparkles,
-    title: "Get matched by AI",
     description:
       "We parse your skills and surface roles that actually fit - no keyword guesswork.",
+    icon: Sparkles,
+    title: "Get matched by AI",
   },
   {
-    icon: Send,
-    title: "Apply in one click",
     description:
       "Apply directly from the board, or let recruiters find and reach out to you.",
+    icon: Send,
+    title: "Apply in one click",
   },
 ] as const;
 

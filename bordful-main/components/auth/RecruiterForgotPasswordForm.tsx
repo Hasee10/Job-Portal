@@ -17,9 +17,9 @@ export function RecruiterForgotPasswordForm() {
     setIsSubmitting(true);
     try {
       await fetch("/api/recruiters/forgot-password", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),
+        headers: { "Content-Type": "application/json" },
+        method: "POST",
       });
       setSent(true);
     } finally {

@@ -23,54 +23,54 @@ Font.register({
   family: "Tinos",
   fonts: [
     { src: `${fontBaseUrl}/fonts/Tinos-Regular.ttf` },
-    { src: `${fontBaseUrl}/fonts/Tinos-Bold.ttf`, fontWeight: "bold" },
-    { src: `${fontBaseUrl}/fonts/Tinos-Italic.ttf`, fontStyle: "italic" },
+    { fontWeight: "bold", src: `${fontBaseUrl}/fonts/Tinos-Bold.ttf` },
+    { fontStyle: "italic", src: `${fontBaseUrl}/fonts/Tinos-Italic.ttf` },
     {
-      src: `${fontBaseUrl}/fonts/Tinos-BoldItalic.ttf`,
-      fontWeight: "bold",
       fontStyle: "italic",
+      fontWeight: "bold",
+      src: `${fontBaseUrl}/fonts/Tinos-BoldItalic.ttf`,
     },
   ],
 });
 
 // PDF version of the same Harvard-style layout as HarvardResumePreview.tsx.
 const styles = StyleSheet.create({
-  page: {
-    paddingVertical: 20,
-    paddingHorizontal: 50,
-    fontSize: 9.3,
-    fontFamily: "Tinos",
-    color: "#18181b",
-  },
-  header: { textAlign: "center", marginBottom: 6 },
-  name: { fontSize: 14.5, fontWeight: "bold", letterSpacing: 1 },
-  contact: { fontSize: 8.3, color: "#52525b", marginTop: 2 },
-  headline: { fontSize: 9.3, fontStyle: "italic", marginTop: 2 },
-  summary: { marginBottom: 5, lineHeight: 1.1 },
-  section: { marginBottom: 5 },
-  sectionTitle: {
-    fontSize: 9.3,
-    fontWeight: "bold",
-    letterSpacing: 1,
-    textTransform: "uppercase",
-    borderBottomWidth: 1,
-    borderBottomColor: "#a1a1aa",
-    paddingBottom: 2,
-    marginBottom: 3,
-  },
-  entry: { marginBottom: 3 },
-  entryRow: { flexDirection: "row", justifyContent: "space-between" },
-  entryTitle: { fontWeight: "bold" },
-  entryDates: { fontSize: 8.3, color: "#52525b" },
   bullet: { flexDirection: "row", marginTop: 0, paddingLeft: 9 },
-  bulletDot: { width: 9, lineHeight: 1.12 },
+  bulletDot: { lineHeight: 1.12, width: 9 },
   bulletText: { flex: 1, lineHeight: 1.12 },
+  contact: { color: "#52525b", fontSize: 8.3, marginTop: 2 },
   eduRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     marginBottom: 2,
   },
+  entry: { marginBottom: 3 },
+  entryDates: { color: "#52525b", fontSize: 8.3 },
+  entryRow: { flexDirection: "row", justifyContent: "space-between" },
+  entryTitle: { fontWeight: "bold" },
+  header: { marginBottom: 6, textAlign: "center" },
+  headline: { fontSize: 9.3, fontStyle: "italic", marginTop: 2 },
+  name: { fontSize: 14.5, fontWeight: "bold", letterSpacing: 1 },
+  page: {
+    color: "#18181b",
+    fontFamily: "Tinos",
+    fontSize: 9.3,
+    paddingHorizontal: 50,
+    paddingVertical: 20,
+  },
+  section: { marginBottom: 5 },
+  sectionTitle: {
+    borderBottomColor: "#a1a1aa",
+    borderBottomWidth: 1,
+    fontSize: 9.3,
+    fontWeight: "bold",
+    letterSpacing: 1,
+    marginBottom: 3,
+    paddingBottom: 2,
+    textTransform: "uppercase",
+  },
   skills: { lineHeight: 1.15 },
+  summary: { lineHeight: 1.1, marginBottom: 5 },
 });
 
 export function HarvardResumePdf({
@@ -101,7 +101,7 @@ export function HarvardResumePdf({
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Experience</Text>
             {resume.experience.map((entry, i) => (
-              <View key={i} style={styles.entry} minPresenceAhead={40}>
+              <View key={i} minPresenceAhead={40} style={styles.entry}>
                 <View style={styles.entryRow} wrap={false}>
                   <Text style={styles.entryTitle}>
                     {entry.title}

@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
 import { sendEmail } from "@/lib/email/smtp";
+import { renderProcurementDeadlineReminderEmail } from "@/lib/email/templates/procurement-deadline-reminder";
+import { listInvitationsForRequest } from "@/lib/procurement/invitation-actions";
 import {
   closeForResponses,
   listPublishedRequestsPastDeadline,
   listRequestsWithUpcomingDeadline,
 } from "@/lib/procurement/request-actions";
-import { listInvitationsForRequest } from "@/lib/procurement/invitation-actions";
-import { renderProcurementDeadlineReminderEmail } from "@/lib/email/templates/procurement-deadline-reminder";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -57,13 +57,15 @@ async function sendDeadlineReminders(): Promise<number> {
       );
 
       for (const invitation of pending) {
-        if (!invitation.vendorEmail) continue;
+        if (!invitation.vendorEmail) {
+          continue;
+        }
         const { subject, html } = renderProcurementDeadlineReminderEmail({
           requestTitle: request.title,
-          responseDeadline: request.responseDeadline as string,
           respondUrl: `${process.env.NEXTAUTH_URL ?? ""}/procurement/vendor/requests/${request.id}`,
+          responseDeadline: request.responseDeadline as string,
         });
-        await sendEmail({ to: invitation.vendorEmail, subject, html });
+        await sendEmail({ html, subject, to: invitation.vendorEmail });
         sent++;
       }
     } catch (error) {
@@ -86,5 +88,5 @@ export async function GET(request: Request) {
   const closed = await closeExpiredRequests();
   const remindersSent = await sendDeadlineReminders();
 
-  return NextResponse.json({ ok: true, closed, remindersSent });
+  return NextResponse.json({ closed, ok: true, remindersSent });
 }

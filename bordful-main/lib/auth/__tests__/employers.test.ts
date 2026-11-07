@@ -56,8 +56,8 @@ describe("verifyEmployerCredentials", () => {
     await expect(
       verifyEmployerCredentials("someone@example.com", TEST_PASSWORD)
     ).rejects.toMatchObject({
-      name: "EmployerAuthError",
       code: "db_unavailable",
+      name: "EmployerAuthError",
     });
     await expect(
       verifyEmployerCredentials("someone@example.com", TEST_PASSWORD)
@@ -78,16 +78,16 @@ describe("verifyEmployerCredentials", () => {
   it("returns null when the password does not match the stored hash", async () => {
     maybeSingleMock.mockResolvedValueOnce({
       data: {
-        id: "emp_1",
-        email: "employer@example.com",
         company_name: "Acme Inc.",
-        website: null,
-        logo_url: null,
-        industry: null,
         company_size: null,
-        location: null,
         description: null,
+        email: "employer@example.com",
+        id: "emp_1",
+        industry: null,
+        location: null,
+        logo_url: null,
         password_hash: validHash,
+        website: null,
       },
       error: null,
     });
@@ -103,16 +103,16 @@ describe("verifyEmployerCredentials", () => {
   it("returns the mapped employer when the password matches", async () => {
     maybeSingleMock.mockResolvedValueOnce({
       data: {
-        id: "emp_1",
-        email: "employer@example.com",
         company_name: "Acme Inc.",
-        website: "https://acme.example",
-        logo_url: null,
-        industry: "Software",
         company_size: "11-50",
-        location: "Remote",
         description: "We build things.",
+        email: "employer@example.com",
+        id: "emp_1",
+        industry: "Software",
+        location: "Remote",
+        logo_url: null,
         password_hash: validHash,
+        website: "https://acme.example",
       },
       error: null,
     });
@@ -123,15 +123,15 @@ describe("verifyEmployerCredentials", () => {
     );
 
     expect(result).toEqual({
-      id: "emp_1",
-      email: "employer@example.com",
       companyName: "Acme Inc.",
-      website: "https://acme.example",
-      logoUrl: null,
-      industry: "Software",
       companySize: "11-50",
-      location: "Remote",
       description: "We build things.",
+      email: "employer@example.com",
+      id: "emp_1",
+      industry: "Software",
+      location: "Remote",
+      logoUrl: null,
+      website: "https://acme.example",
     });
     // The lookup itself should have used the normalized (lowercased) email.
     expect(eqMock).toHaveBeenCalledWith("email", "employer@example.com");

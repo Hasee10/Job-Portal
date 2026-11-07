@@ -10,26 +10,26 @@ const CATEGORY_TYPES = ["type", "level", "language", "location"];
 
 // Special case mappings for better display names (just for section names)
 const SEGMENT_DISPLAY_NAMES: Record<string, string> = {
-  // Main sections
-  jobs: "Jobs",
-  pricing: "Pricing",
   about: "About",
+  changelog: "Changelog",
   contact: "Contact",
   faq: "FAQ",
   "job-alerts": "Job Alerts",
-  changelog: "Changelog",
-
-  // Job categories
-  types: "Job Types",
-  levels: "Career Levels",
+  // Main sections
+  jobs: "Jobs",
+  language: "Language",
   languages: "Languages",
+  level: "Level",
+  levels: "Career Levels",
+  location: "Location",
   locations: "Job Locations",
+  pricing: "Pricing",
 
   // Type mapping - match with URL segment
   type: "Type",
-  level: "Level",
-  language: "Language",
-  location: "Location",
+
+  // Job categories
+  types: "Job Types",
 };
 
 // Words that should not be capitalized in title case (unless they're the first word)
@@ -134,13 +134,11 @@ const formatSegment = (
 const handleJobDetailPage = (
   _segments: string[],
   dynamicData: { name: string; url: string }
-): { name: string; url: string }[] => {
-  return [
-    { name: "Home", url: "/" },
-    { name: "Jobs", url: "/jobs" },
-    dynamicData,
-  ];
-};
+): { name: string; url: string }[] => [
+  { name: "Home", url: "/" },
+  { name: "Jobs", url: "/jobs" },
+  dynamicData,
+];
 
 // Handle job category detail page breadcrumbs (like /jobs/type/full-time)
 const handleCategoryDetailPage = (

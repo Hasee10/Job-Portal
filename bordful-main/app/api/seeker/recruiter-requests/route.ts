@@ -23,8 +23,8 @@ export async function POST(request: Request) {
     typeof body.recruiterId === "string" ? body.recruiterId : null;
 
   const result = await createRecruiterRequest(session.user.id, {
-    recruiterId,
     message,
+    recruiterId,
   });
 
   return NextResponse.json({ request: result });

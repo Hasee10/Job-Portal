@@ -15,8 +15,9 @@ export async function GET(
 
   const { id } = await params;
   const found = await getRequestForBuyer(session.user.id, id);
-  if (!found)
+  if (!found) {
     return NextResponse.json({ error: "Request not found." }, { status: 404 });
+  }
 
   return NextResponse.json({ request: found });
 }

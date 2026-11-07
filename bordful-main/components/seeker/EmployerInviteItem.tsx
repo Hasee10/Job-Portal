@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import Link from "next/link";
 import { Check, X } from "lucide-react";
+import Link from "next/link";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import type { InviteWithJob } from "@/lib/jobs/employer-candidate-actions";
@@ -10,8 +10,8 @@ import { generateJobSlug } from "@/lib/utils/slugify";
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString("en-US", {
-    month: "short",
     day: "numeric",
+    month: "short",
     year: "numeric",
   });
 }
@@ -29,11 +29,13 @@ export function EmployerInviteItem({
     setIsResponding(true);
     try {
       const res = await fetch(`/api/seeker/invites/${invite.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action }),
+        headers: { "Content-Type": "application/json" },
+        method: "PATCH",
       });
-      if (!res.ok) throw new Error();
+      if (!res.ok) {
+        throw new Error();
+      }
       const data = await res.json();
       setInvite((prev) => ({ ...prev, status: data.invite.status }));
       toast({
@@ -41,8 +43,8 @@ export function EmployerInviteItem({
       });
     } catch {
       toast({
-        title: "Action failed",
         description: "Please try again.",
+        title: "Action failed",
         variant: "destructive",
       });
     } finally {
@@ -51,17 +53,17 @@ export function EmployerInviteItem({
   };
 
   const statusColors: Record<string, string> = {
-    pending: "border-l-amber-400",
-    read: "border-l-blue-400",
     accepted: "border-l-green-500",
     declined: "border-l-zinc-300 dark:border-l-zinc-600",
+    pending: "border-l-amber-400",
+    read: "border-l-blue-400",
   };
 
   const jobHref = `/jobs/${generateJobSlug(invite.jobTitle, invite.companyName ?? "")}`;
 
   return (
     <div
-      className={`rounded-xl border border-zinc-200 bg-white border-l-4 p-5 dark:border-zinc-800 dark:bg-zinc-900/60 ${statusColors[invite.status] ?? ""}`}
+      className={`rounded-xl border border-zinc-200 border-l-4 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900/60 ${statusColors[invite.status] ?? ""}`}
     >
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
@@ -77,23 +79,23 @@ export function EmployerInviteItem({
               {invite.companyName}
             </p>
           )}
-          <p className="text-xs text-zinc-400 mt-0.5">
+          <p className="mt-0.5 text-xs text-zinc-400">
             {formatDate(invite.createdAt)}
           </p>
         </div>
         {invite.status === "accepted" && (
-          <span className="shrink-0 rounded-full bg-green-50 px-2.5 py-0.5 text-xs font-medium text-green-700 dark:bg-green-500/10 dark:text-green-400">
+          <span className="shrink-0 rounded-full bg-green-50 px-2.5 py-0.5 font-medium text-green-700 text-xs dark:bg-green-500/10 dark:text-green-400">
             Accepted
           </span>
         )}
         {invite.status === "declined" && (
-          <span className="shrink-0 rounded-full bg-zinc-100 px-2.5 py-0.5 text-xs font-medium text-zinc-500 dark:bg-zinc-800">
+          <span className="shrink-0 rounded-full bg-zinc-100 px-2.5 py-0.5 font-medium text-xs text-zinc-500 dark:bg-zinc-800">
             Declined
           </span>
         )}
       </div>
 
-      <p className="mt-3 text-sm text-zinc-700 dark:text-zinc-300 whitespace-pre-line">
+      <p className="mt-3 whitespace-pre-line text-sm text-zinc-700 dark:text-zinc-300">
         {invite.message}
       </p>
 

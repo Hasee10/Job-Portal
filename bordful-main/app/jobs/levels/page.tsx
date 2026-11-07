@@ -11,10 +11,10 @@ import { generateMetadata } from "@/lib/utils/metadata";
 
 // Generate metadata for SEO
 export const metadata: Metadata = generateMetadata({
-  title: `Browse Jobs by Career Level | ${config.title}`,
   description:
     "Explore tech jobs by experience level. Find positions that match your career stage, from internships to executive roles.",
   path: "/jobs/levels",
+  title: `Browse Jobs by Career Level | ${config.title}`,
 });
 
 // Revalidate page every 5 minutes
@@ -37,7 +37,7 @@ function LevelCard({ href, title, count }: LevelCardProps) {
     >
       <div className="space-y-1.5 sm:space-y-2">
         <h2 className="font-medium text-sm sm:text-base">{title}</h2>
-        <div className="text-gray-500 dark:text-gray-500 text-xs sm:text-sm">
+        <div className="text-gray-500 text-xs sm:text-sm dark:text-gray-500">
           {count.toLocaleString()} {count === 1 ? "position" : "positions"}{" "}
           available
         </div>
@@ -66,9 +66,9 @@ export default async function CareerLevelsPage() {
   const sortedLevels = Object.entries(levelCounts)
     .sort((a, b) => b[1] - a[1])
     .map(([level, count]) => ({
+      count,
       level: level as CareerLevel,
       title: CAREER_LEVEL_DISPLAY_NAMES[level as CareerLevel],
-      count,
     }));
 
   // Group levels by category

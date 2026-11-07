@@ -1,8 +1,8 @@
 "use client";
 
 import { ChevronDown, User } from "lucide-react";
-import { signOut, useSession } from "next-auth/react";
 import Link from "next/link";
+import { signOut, useSession } from "next-auth/react";
 import { useEffect, useRef, useState } from "react";
 
 type AuthNavStatusProps = {
@@ -120,7 +120,7 @@ export function AuthNavStatus({
         {session.user.role === "seeker" && (
           <>
             <Link
-              className="text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"
+              className="text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
               href="/account/resume"
               onClick={onNavigate}
             >
@@ -136,14 +136,14 @@ export function AuthNavStatus({
           </>
         )}
         <Link
-          className="text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"
+          className="text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
           href={accountHref}
           onClick={onNavigate}
         >
           {displayName}
         </Link>
         <button
-          className="text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"
+          className="text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
           onClick={() => {
             onNavigate?.();
             signOut({ callbackUrl: "/" });
@@ -159,14 +159,14 @@ export function AuthNavStatus({
   return (
     <div className={`flex items-center gap-3 text-sm ${className}`}>
       <Link
-        className="text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"
+        className="text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
         href="/account/sign-in"
         onClick={onNavigate}
       >
         Sign in
       </Link>
       <Link
-        className="rounded-lg bg-zinc-900 px-3 py-1 text-xs font-medium text-white transition-colors hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
+        className="rounded-lg bg-zinc-900 px-3 py-1 font-medium text-white text-xs transition-colors hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
         href="/join"
         onClick={onNavigate}
       >

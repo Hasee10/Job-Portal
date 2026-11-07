@@ -5,26 +5,26 @@ import { HowItWorksSection } from "@/components/home/HowItWorksSection";
 import { TrustSection } from "@/components/home/TrustSection";
 import config from "@/config";
 import { HOMEPAGE_JOBS_LIMIT } from "@/lib/constants/defaults";
-import { getActiveJobsCount, getJobs } from "@/lib/db/airtable.server";
 import { listPublishedTestimonials } from "@/lib/content/testimonial-actions";
+import { getActiveJobsCount, getJobs } from "@/lib/db/airtable.server";
 import { generateMetadata } from "@/lib/utils/metadata";
 
 // Add metadata for SEO
 export const metadata: Metadata = generateMetadata({
-  title: config.title,
   description: config.description,
-  path: "/",
   openGraph: {
-    type: "website",
     images: [
       {
+        alt: `${config.title} - ${config.description}`,
+        height: 630,
         url: "/api/og",
         width: 1200,
-        height: 630,
-        alt: `${config.title} - ${config.description}`,
       },
     ],
+    type: "website",
   },
+  path: "/",
+  title: config.title,
 });
 
 // This page now branches on session (guest vs. signed-in seeker), so it's
@@ -75,7 +75,7 @@ export default async function Home() {
         new Date(b.posted_date).getTime() - new Date(a.posted_date).getTime()
     )
     .slice(0, 6)
-    .map((job) => ({ title: job.title, company: job.company }));
+    .map((job) => ({ company: job.company, title: job.title }));
 
   // Real activity numbers for the guest homepage's stats band - computed
   // server-side here since guests get an empty `jobs` array (see above),

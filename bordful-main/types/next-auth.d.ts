@@ -15,9 +15,9 @@ declare module "next-auth" {
 declare module "next-auth/jwt" {
   interface JWT {
     employerId?: string;
-    seekerId?: string;
     recruiterId?: string;
-    vendorId?: string;
     role?: "employer" | "seeker" | "recruiter" | "vendor";
+    seekerId?: string;
+    vendorId?: string;
   }
 }

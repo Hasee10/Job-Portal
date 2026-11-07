@@ -25,10 +25,10 @@ async function fetchPage(url: string): Promise<string | null> {
   try {
     const res = await fetch(url, {
       headers: {
-        "User-Agent":
-          "Mozilla/5.0 (compatible; Caliber-Aggregator/1.0; +https://caliber.app)",
         Accept: "text/html,application/xhtml+xml",
         "Accept-Language": "en-US,en;q=0.9",
+        "User-Agent":
+          "Mozilla/5.0 (compatible; Caliber-Aggregator/1.0; +https://caliber.app)",
       },
       signal: AbortSignal.timeout(15_000),
     });
@@ -51,7 +51,9 @@ export async function scrapeMustakbil(): Promise<ScrapedJob[]> {
 
     console.log(`[${SOURCE}] Page ${page}: ${url}`);
     const html = await fetchPage(url);
-    if (!html) break;
+    if (!html) {
+      break;
+    }
 
     const $ = cheerio.load(html);
     let found = 0;
@@ -82,22 +84,28 @@ export async function scrapeMustakbil(): Promise<ScrapedJob[]> {
         .toLowerCase();
 
       let type: ScrapedJob["type"] = "Full-time";
-      if (typeText.includes("part")) type = "Part-time";
-      else if (typeText.includes("contract")) type = "Contract";
-      else if (typeText.includes("freelance")) type = "Freelance";
+      if (typeText.includes("part")) {
+        type = "Part-time";
+      } else if (typeText.includes("contract")) {
+        type = "Contract";
+      } else if (typeText.includes("freelance")) {
+        type = "Freelance";
+      }
 
-      if (!title || !applyUrl) return;
+      if (!(title && applyUrl)) {
+        return;
+      }
 
       jobs.push({
-        title,
-        company: company || SOURCE,
         apply_url: applyUrl,
-        source: SOURCE,
+        company: company || SOURCE,
         job_identifier: slugFromPath(applyUrl),
+        remote_type: "onsite",
+        source: SOURCE,
+        title,
         type,
         workplace_city: city || undefined,
         workplace_country: "Pakistan",
-        remote_type: "onsite",
       });
       found++;
     });
@@ -105,9 +113,13 @@ export async function scrapeMustakbil(): Promise<ScrapedJob[]> {
     console.log(`[${SOURCE}] Page ${page}: found ${found} jobs`);
 
     // Stop early if no jobs found (past last page)
-    if (found === 0) break;
+    if (found === 0) {
+      break;
+    }
 
-    if (page < MAX_PAGES) await sleep(DELAY_MS);
+    if (page < MAX_PAGES) {
+      await sleep(DELAY_MS);
+    }
   }
 
   console.log(`[${SOURCE}] Total: ${jobs.length} jobs`);

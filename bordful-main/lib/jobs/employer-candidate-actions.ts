@@ -33,21 +33,22 @@ export type InviteWithJob = EmployerInvite & {
 function getAdminClient() {
   const url = process.env.SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key)
+  if (!(url && key)) {
     throw new Error("Database is not configured on this deployment.");
+  }
   return createClient(url, key, { auth: { persistSession: false } });
 }
 
 function rowToInvite(row: Record<string, unknown>): EmployerInvite {
   return {
-    id: row.id as string,
-    employerId: row.employer_id as string,
-    jobId: row.job_id as string,
-    seekerId: row.seeker_id as string,
-    message: row.message as string,
-    status: row.status as EmployerInvite["status"],
     createdAt: row.created_at as string,
+    employerId: row.employer_id as string,
+    id: row.id as string,
+    jobId: row.job_id as string,
+    message: row.message as string,
     respondedAt: (row.responded_at as string) || null,
+    seekerId: row.seeker_id as string,
+    status: row.status as EmployerInvite["status"],
   };
 }
 
@@ -67,7 +68,9 @@ export async function searchCandidatesForJob(
     .eq("id", jobId)
     .eq("employer_id", employerId)
     .maybeSingle();
-  if (!job) return [];
+  if (!job) {
+    return [];
+  }
   const requiredSkills = (job.required_skills as string[]) || [];
 
   const { data: seekers, error } = await supabase
@@ -76,8 +79,12 @@ export async function searchCandidatesForJob(
     .eq("open_to_recruiters", true)
     .order("created_at", { ascending: false });
 
-  if (error) throw error;
-  if (!seekers || seekers.length === 0) return [];
+  if (error) {
+    throw error;
+  }
+  if (!seekers || seekers.length === 0) {
+    return [];
+  }
 
   const seekerIds = seekers.map((s) => s.id as string);
 
@@ -107,15 +114,15 @@ export async function searchCandidatesForJob(
   let candidates: JobCandidate[] = seekers.map((s) => {
     const skills = resumeMap.get(s.id as string) ?? [];
     return {
-      seekerId: s.id as string,
-      name: (s.name as string) || null,
+      createdAt: s.created_at as string,
       email: s.email as string,
       headline: (s.headline as string) || null,
-      skills,
-      matchScore: computeSkillsOverlapScore(skills, requiredSkills),
-      createdAt: s.created_at as string,
       inviteStatus: (inviteMap.get(s.id as string) ??
         null) as JobCandidate["inviteStatus"],
+      matchScore: computeSkillsOverlapScore(skills, requiredSkills),
+      name: (s.name as string) || null,
+      seekerId: s.id as string,
+      skills,
     };
   });
 
@@ -147,7 +154,7 @@ export async function sendEmployerInvite(
     .eq("id", seekerId)
     .maybeSingle();
 
-  if (!seeker || !seeker.open_to_recruiters) {
+  if (!(seeker && seeker.open_to_recruiters)) {
     throw new Error("This candidate is not open to outreach.");
   }
 
@@ -157,15 +164,17 @@ export async function sendEmployerInvite(
     .eq("id", jobId)
     .eq("employer_id", employerId)
     .maybeSingle();
-  if (!job) throw new Error("Job not found.");
+  if (!job) {
+    throw new Error("Job not found.");
+  }
 
   const { data, error } = await supabase
     .from("employer_candidate_invites")
     .insert({
       employer_id: employerId,
       job_id: jobId,
-      seeker_id: seekerId,
       message,
+      seeker_id: seekerId,
     })
     .select("*")
     .single();
@@ -203,14 +212,16 @@ export async function listSeekerInvites(
     .eq("seeker_id", seekerId)
     .order("created_at", { ascending: false });
 
-  if (error) throw error;
+  if (error) {
+    throw error;
+  }
 
   return (data ?? []).map((row) => {
     const job = row.jobs as Record<string, unknown> | null;
     return {
       ...rowToInvite(row),
-      jobTitle: (job?.title as string) || "A job",
       companyName: (job?.company as string) || null,
+      jobTitle: (job?.title as string) || "A job",
     };
   });
 }
@@ -236,14 +247,16 @@ export async function respondToInvite(
   const supabase = getAdminClient();
   const { data, error } = await supabase
     .from("employer_candidate_invites")
-    .update({ status: response, responded_at: new Date().toISOString() })
+    .update({ responded_at: new Date().toISOString(), status: response })
     .eq("id", inviteId)
     .eq("seeker_id", seekerId)
     .in("status", ["pending", "read"])
     .select("*")
     .single();
 
-  if (error) throw error;
+  if (error) {
+    throw error;
+  }
   return rowToInvite(data);
 }
 

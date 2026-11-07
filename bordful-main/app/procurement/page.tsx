@@ -1,5 +1,3 @@
-import type { Metadata } from "next";
-import Link from "next/link";
 import {
   ArrowRight,
   ClipboardCheck,
@@ -11,15 +9,17 @@ import {
   ShieldCheck,
   Store,
 } from "lucide-react";
+import type { Metadata } from "next";
+import Link from "next/link";
 import { HeroSection } from "@/components/ui/hero-section";
+import config from "@/config";
 import { getTenderFacets } from "@/lib/procurement/scraped-tender-actions";
 import { listVerifiedVendors } from "@/lib/procurement/vendor-actions";
-import config from "@/config";
 
 export const metadata: Metadata = {
-  title: `Procurement | ${config.title}`,
   description:
     "Run RFIs, RFQs, RFPs, and full tender-grade sourcing processes — request, invite, respond, compare, and award, with a built-in audit trail.",
+  title: `Procurement | ${config.title}`,
 };
 
 export const dynamic = "force-dynamic";
@@ -32,52 +32,52 @@ const FEATURE_POINTS = [
 
 const REQUEST_TYPES = [
   {
+    description:
+      "Scope the market before you commit — gather capabilities, not prices.",
     icon: MessageSquareText,
     name: "RFI",
     title: "Request for Information",
-    description:
-      "Scope the market before you commit — gather capabilities, not prices.",
   },
   {
+    description: "Get comparable pricing fast on a well-defined spec.",
     icon: FileSearch,
     name: "RFQ",
     title: "Request for Quotation",
-    description: "Get comparable pricing fast on a well-defined spec.",
   },
   {
+    description:
+      "Invite full proposals when approach matters as much as price.",
     icon: ScrollText,
     name: "RFP",
     title: "Request for Proposal",
-    description:
-      "Invite full proposals when approach matters as much as price.",
   },
   {
+    description:
+      "Full compliance: sealed bids, prequalification, and an audited award.",
     icon: Gavel,
     name: "Tender",
     title: "Formal Tender",
-    description:
-      "Full compliance: sealed bids, prequalification, and an audited award.",
   },
 ];
 
 const HOW_IT_WORKS = [
   {
-    step: "1",
-    title: "Create your request",
     description:
       "Pick a format — RFI, RFQ, RFP, or tender — and set the spec, deadline, and evaluation criteria.",
+    step: "1",
+    title: "Create your request",
   },
   {
-    step: "2",
-    title: "Invite vendors, collect bids",
     description:
       "Invite Caliber-verified vendors. Sealed bids stay hidden — even from you — until the deadline closes.",
+    step: "2",
+    title: "Invite vendors, collect bids",
   },
   {
-    step: "3",
-    title: "Evaluate and award",
     description:
       "Compare responses side by side, score them, and award — every step logged to an audit trail.",
+    step: "3",
+    title: "Evaluate and award",
   },
 ];
 
@@ -95,9 +95,9 @@ export default async function ProcurementLandingPage() {
         badge="Matchmaking for procurement"
         description="One engine for RFIs, RFQs, RFPs, and full tender-grade sourcing — invite vendors, collect sealed bids, evaluate side by side, and award, with every step logged to an audit trail."
         heroImage={{
+          alt: "Caliber’s AI matching engine scoring verified vendors against a tender, with sealed bids and an audit trail",
           enabled: true,
           src: "/procurement-hero.png",
-          alt: "Caliber’s AI matching engine scoring verified vendors against a tender, with sealed bids and an audit trail",
         }}
         title="The same matchmaking engine, built for sourcing vendors"
       >

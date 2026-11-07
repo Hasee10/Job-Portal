@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from "react";
 import { ArrowUpRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { useState } from "react";
 import { ApplyModal } from "@/components/jobs/ApplyModal";
-import { resolveColor } from "@/lib/utils/colors";
+import { Button } from "@/components/ui/button";
 import config from "@/config";
+import { resolveColor } from "@/lib/utils/colors";
 
 export function ApplyButton({
   jobId,

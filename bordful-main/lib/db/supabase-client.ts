@@ -9,7 +9,9 @@ declare global {
 export function getSupabaseClient(): SupabaseClient | null {
   const url = process.env.SUPABASE_URL;
   const key = process.env.SUPABASE_ANON_KEY;
-  if (!url || !key) return null;
+  if (!(url && key)) {
+    return null;
+  }
 
   if (!globalThis.__supabaseClient) {
     globalThis.__supabaseClient = createClient(url, key, {

@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
-import { resolveVendorId } from "@/lib/procurement/vendor-actions";
 import {
-  uploadProposalDocument,
   getSignedDownloadUrl,
+  uploadProposalDocument,
 } from "@/lib/procurement/document-actions";
+import { resolveVendorId } from "@/lib/procurement/vendor-actions";
 import { createRateLimiter, getClientIp } from "@/lib/utils/rate-limit";
 
 export const dynamic = "force-dynamic";
@@ -17,8 +17,9 @@ export async function POST(
 ) {
   const session = await auth();
   const vendorId = await resolveVendorId(session);
-  if (!vendorId)
+  if (!vendorId) {
     return NextResponse.json({ error: "Not signed in." }, { status: 401 });
+  }
 
   const clientIp = getClientIp(request);
   if (isRateLimited(clientIp)) {
@@ -51,14 +52,16 @@ export async function GET(
 ) {
   const session = await auth();
   const vendorId = await resolveVendorId(session);
-  if (!vendorId)
+  if (!vendorId) {
     return NextResponse.json({ error: "Not signed in." }, { status: 401 });
+  }
 
   const { id } = await params;
   const { searchParams } = new URL(request.url);
   const path = searchParams.get("path");
-  if (!path)
+  if (!path) {
     return NextResponse.json({ error: "path is required." }, { status: 400 });
+  }
 
   try {
     const url = await getSignedDownloadUrl(vendorId, "vendor", id, path);

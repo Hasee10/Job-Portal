@@ -24,7 +24,7 @@ export type RecruiterRequest = {
 function getAdminClient() {
   const url = process.env.SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key) {
+  if (!(url && key)) {
     throw new Error("Database is not configured on this deployment.");
   }
   return createClient(url, key, { auth: { persistSession: false } });
@@ -32,13 +32,13 @@ function getAdminClient() {
 
 function rowToRecruiter(row: Record<string, unknown>): Recruiter {
   return {
+    avatarUrl: (row.avatar_url as string) || null,
+    bio: (row.bio as string) || null,
+    company: (row.company as string) || null,
     id: row.id as string,
     name: row.name as string,
-    title: (row.title as string) || null,
-    company: (row.company as string) || null,
-    bio: (row.bio as string) || null,
     specialties: (row.specialties as string[]) || [],
-    avatarUrl: (row.avatar_url as string) || null,
+    title: (row.title as string) || null,
   };
 }
 
@@ -59,18 +59,20 @@ export async function listActiveRecruiters(): Promise<Recruiter[]> {
       .order("created_at", { ascending: false }),
   ]);
 
-  if (legacyResult.error) throw legacyResult.error;
+  if (legacyResult.error) {
+    throw legacyResult.error;
+  }
 
   const legacy = (legacyResult.data ?? []).map(rowToRecruiter);
   const accounts = (accountsResult.data ?? []).map(
     (row: Record<string, unknown>) => ({
+      avatarUrl: null,
+      bio: (row.bio as string) || null,
+      company: (row.agency as string) || null,
       id: row.id as string,
       name: row.name as string,
-      title: null,
-      company: (row.agency as string) || null,
-      bio: (row.bio as string) || null,
       specialties: (row.specialties as string[]) || [],
-      avatarUrl: null,
+      title: null,
     })
   );
 
@@ -85,20 +87,22 @@ export async function createRecruiterRequest(
   const { data, error } = await supabase
     .from("recruiter_requests")
     .insert({
-      seeker_id: seekerId,
-      recruiter_id: input.recruiterId,
       message: input.message,
+      recruiter_id: input.recruiterId,
+      seeker_id: seekerId,
     })
     .select("*")
     .single();
 
-  if (error) throw error;
+  if (error) {
+    throw error;
+  }
   return {
-    id: data.id as string,
-    seekerId: data.seeker_id as string,
-    recruiterId: (data.recruiter_id as string) || null,
-    message: data.message as string,
-    status: data.status as RecruiterRequest["status"],
     createdAt: data.created_at as string,
+    id: data.id as string,
+    message: data.message as string,
+    recruiterId: (data.recruiter_id as string) || null,
+    seekerId: data.seeker_id as string,
+    status: data.status as RecruiterRequest["status"],
   };
 }

@@ -5,33 +5,35 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import type { ProcurementRequest } from "@/lib/procurement/request-actions";
+import type { AuditLogEntry } from "@/lib/procurement/audit-actions";
+import type { ProcurementEvaluation } from "@/lib/procurement/evaluation-actions";
 import type { InvitationWithVendor } from "@/lib/procurement/invitation-actions";
+import type { ProcurementRequest } from "@/lib/procurement/request-actions";
 import type {
   ResponsesView,
   ResponseWithVendor,
 } from "@/lib/procurement/response-actions";
-import type { ProcurementEvaluation } from "@/lib/procurement/evaluation-actions";
-import type { AuditLogEntry } from "@/lib/procurement/audit-actions";
 
 const STATUS_LABEL: Record<string, string> = {
-  draft: "Draft",
-  published: "Published",
-  closed_for_responses: "Closed for responses",
-  bids_opened: "Bids opened",
-  evaluating: "Evaluating",
   awarded: "Awarded",
+  bids_opened: "Bids opened",
   cancelled: "Cancelled",
+  closed_for_responses: "Closed for responses",
+  draft: "Draft",
+  evaluating: "Evaluating",
+  published: "Published",
 };
 
 async function callAction(url: string, body?: unknown) {
   const res = await fetch(url, {
-    method: "POST",
-    headers: body ? { "Content-Type": "application/json" } : undefined,
     body: body ? JSON.stringify(body) : undefined,
+    headers: body ? { "Content-Type": "application/json" } : undefined,
+    method: "POST",
   });
   const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(data.error || "Request failed.");
+  if (!res.ok) {
+    throw new Error(data.error || "Request failed.");
+  }
   return data;
 }
 
@@ -59,10 +61,18 @@ export function RequestDetail({
       fetch(`/api/procurement/requests/${initialRequest.id}/responses`),
       fetch(`/api/procurement/requests/${initialRequest.id}/evaluations`),
     ]);
-    if (reqRes.ok) setRequest((await reqRes.json()).request);
-    if (invRes.ok) setInvitations((await invRes.json()).invitations);
-    if (respRes.ok) setResponsesView(await respRes.json());
-    if (evalRes.ok) setEvaluations((await evalRes.json()).evaluations);
+    if (reqRes.ok) {
+      setRequest((await reqRes.json()).request);
+    }
+    if (invRes.ok) {
+      setInvitations((await invRes.json()).invitations);
+    }
+    if (respRes.ok) {
+      setResponsesView(await respRes.json());
+    }
+    if (evalRes.ok) {
+      setEvaluations((await evalRes.json()).evaluations);
+    }
   }, [initialRequest.id]);
 
   useEffect(() => {
@@ -73,7 +83,9 @@ export function RequestDetail({
     const res = await fetch(
       `/api/procurement/requests/${initialRequest.id}/audit-log`
     );
-    if (res.ok) setAuditLog((await res.json()).entries);
+    if (res.ok) {
+      setAuditLog((await res.json()).entries);
+    }
     setShowAudit(true);
   };
 
@@ -84,11 +96,11 @@ export function RequestDetail({
       await refresh();
     } catch (error) {
       toast({
-        title: `Could not ${label}`,
+        className: "bg-destructive border border-red-600 shadow-md",
         description:
           error instanceof Error ? error.message : "Something went wrong.",
+        title: `Could not ${label}`,
         variant: "destructive",
-        className: "bg-destructive border border-red-600 shadow-md",
       });
     } finally {
       setBusy(false);
@@ -101,7 +113,9 @@ export function RequestDetail({
       .split(",")
       .map((s) => s.trim())
       .filter(Boolean);
-    if (emails.length === 0) return;
+    if (emails.length === 0) {
+      return;
+    }
 
     await runAction("invite vendors", async () => {
       const data = await callAction(
@@ -112,8 +126,8 @@ export function RequestDetail({
       );
       if (data.notFound?.length) {
         toast({
-          title: "Some emails were not found",
           description: `No Caliber recruiter account for: ${data.notFound.join(", ")}`,
+          title: "Some emails were not found",
         });
       }
       setInviteEmails("");
@@ -125,17 +139,17 @@ export function RequestDetail({
   return (
     <div className="space-y-8">
       <div className="rounded-xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900/60">
-        <div className="flex items-start justify-between gap-4 flex-wrap">
+        <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <div className="flex items-center gap-2 flex-wrap">
+            <div className="flex flex-wrap items-center gap-2">
               <h1 className="font-bold text-xl text-zinc-900 dark:text-zinc-50">
                 {request.title}
               </h1>
-              <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-xs font-medium uppercase text-zinc-500 dark:bg-zinc-800">
+              <span className="rounded-full bg-zinc-100 px-2 py-0.5 font-medium text-xs text-zinc-500 uppercase dark:bg-zinc-800">
                 {request.type}
               </span>
               {request.sealedBids && (
-                <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-xs font-medium text-zinc-500 dark:bg-zinc-800">
+                <span className="rounded-full bg-zinc-100 px-2 py-0.5 font-medium text-xs text-zinc-500 dark:bg-zinc-800">
                   Sealed
                 </span>
               )}
@@ -144,7 +158,7 @@ export function RequestDetail({
               {request.category}
             </p>
           </div>
-          <span className="rounded-full bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-700 dark:bg-blue-500/10 dark:text-blue-400">
+          <span className="rounded-full bg-blue-50 px-2.5 py-1 font-medium text-blue-700 text-xs dark:bg-blue-500/10 dark:text-blue-400">
             {STATUS_LABEL[request.status] ?? request.status}
           </span>
         </div>
@@ -157,7 +171,7 @@ export function RequestDetail({
           </p>
         )}
 
-        <div className="mt-5 flex flex-wrap gap-2 border-t border-zinc-100 pt-4 dark:border-zinc-800">
+        <div className="mt-5 flex flex-wrap gap-2 border-zinc-100 border-t pt-4 dark:border-zinc-800">
           {request.status === "draft" && (
             <Button
               disabled={busy}
@@ -362,9 +376,9 @@ export function RequestDetail({
                 onEvaluate={(score, notes) =>
                   runAction("evaluate", () =>
                     callAction(`${base}/evaluations`, {
+                      notes,
                       responseId: r.id,
                       score,
-                      notes,
                     })
                   )
                 }
@@ -437,7 +451,7 @@ function ResponseCard({
         </div>
       )}
       {canEvaluate && (
-        <div className="mt-3 flex flex-col gap-2 border-t border-zinc-100 pt-3 sm:flex-row dark:border-zinc-800">
+        <div className="mt-3 flex flex-col gap-2 border-zinc-100 border-t pt-3 sm:flex-row dark:border-zinc-800">
           <Input
             className="sm:w-24"
             onChange={(e) => setScore(e.target.value)}

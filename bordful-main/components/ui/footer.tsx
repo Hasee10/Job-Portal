@@ -23,14 +23,14 @@ type BaseFooterColumn = {
 };
 
 interface LinksFooterColumn extends BaseFooterColumn {
-  type?: "links";
-  links: FooterLink[];
   autoAddFeatures?: {
     jobAlerts?: boolean;
     pricing?: boolean;
     faq?: boolean;
     contact?: boolean;
   };
+  links: FooterLink[];
+  type?: "links";
 }
 
 interface FeedsFooterColumn extends BaseFooterColumn {
@@ -57,10 +57,10 @@ export function Footer() {
     const startYear = config.footer.copyright.startYear;
     const currentYear = new Date().getFullYear();
 
-    if (currentYear !== startYear) {
-      setCopyrightYears(`${startYear}-${currentYear}`);
-    } else {
+    if (currentYear === startYear) {
       setCopyrightYears(startYear.toString());
+    } else {
+      setCopyrightYears(`${startYear}-${currentYear}`);
     }
   }, []);
 
@@ -95,8 +95,8 @@ export function Footer() {
     "transition-colors text-[var(--link-color)] hover:text-[var(--hover-color)] focus-visible:text-[var(--hover-color)]";
 
   const hoverLinkStyle = {
-    "--link-color": linkColor,
     "--hover-color": linkHoverColor,
+    "--link-color": linkColor,
   } as CSSProperties;
 
   // Define the brand column content
@@ -111,8 +111,8 @@ export function Footer() {
               height={config.footer.brand.logo.height || 34}
               src={config.footer.brand.logo.src}
               style={{
-                width: `${config.footer.brand.logo.width || 130}px`,
                 height: `${config.footer.brand.logo.height || 34}px`,
+                width: `${config.footer.brand.logo.width || 130}px`,
               }}
               width={config.footer.brand.logo.width || 130} // Don't invert in dark mode as it's already a light logo
             />
@@ -331,7 +331,7 @@ export function Footer() {
               href={link}
               style={hoverLinkStyle}
               {...(external
-                ? { target: "_blank", rel: "noopener noreferrer" }
+                ? { rel: "noopener noreferrer", target: "_blank" }
                 : {})}
             >
               {label}
@@ -348,10 +348,10 @@ export function Footer() {
   // Add brand column if enabled
   if (config.footer.brand.show) {
     footerColumns.push({
+      content: brandColumn,
       id: "brand",
       order: config.footer.brand.order || 1,
       show: true,
-      content: brandColumn,
     });
   }
 
@@ -421,13 +421,13 @@ export function Footer() {
         }
 
         footerColumns.push({
-          id: column.id,
-          order: column.order || 99,
-          show: true,
           content:
             column.type === "feeds"
               ? renderJobFeedsContent(column.title)
               : renderLinksColumn(column.title, links),
+          id: column.id,
+          order: column.order || 99,
+          show: true,
         });
       }
     });
@@ -533,7 +533,7 @@ export function Footer() {
 
                   {/* Other columns stack in remaining space */}
                   <div className="md:col-span-7 min-[960px]:col-span-9">
-                    <div className="grid grid-cols-1 gap-x-4 gap-y-8 min-[300px]:grid-cols-2 md:grid-cols-3">
+                    <div className="grid grid-cols-1 gap-x-4 gap-y-8 md:grid-cols-3 min-[300px]:grid-cols-2">
                       {sortedColumns.slice(1).map((column) => (
                         <div key={column.id}>{column.content}</div>
                       ))}

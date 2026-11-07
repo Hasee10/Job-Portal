@@ -49,8 +49,8 @@ describe("verifyRecruiterCredentials", () => {
     await expect(
       verifyRecruiterCredentials("someone@example.com", TEST_PASSWORD)
     ).rejects.toMatchObject({
-      name: "RecruiterAuthError",
       code: "db_unavailable",
+      name: "RecruiterAuthError",
     });
     await expect(
       verifyRecruiterCredentials("someone@example.com", TEST_PASSWORD)
@@ -71,20 +71,20 @@ describe("verifyRecruiterCredentials", () => {
   it("returns null when the password does not match the stored hash", async () => {
     maybeSingleMock.mockResolvedValueOnce({
       data: {
-        id: "rec_1",
-        email: "recruiter@example.com",
-        name: "Jamie Recruiter",
         agency: null,
-        specialties: [],
-        linkedin_url: null,
         bio: null,
-        is_verified: false,
-        website: null,
-        logo_url: null,
-        industry: null,
         company_size: null,
+        email: "recruiter@example.com",
+        id: "rec_1",
+        industry: null,
+        is_verified: false,
+        linkedin_url: null,
         location: null,
+        logo_url: null,
+        name: "Jamie Recruiter",
         password_hash: validHash,
+        specialties: [],
+        website: null,
       },
       error: null,
     });
@@ -100,20 +100,20 @@ describe("verifyRecruiterCredentials", () => {
   it("returns the mapped recruiter account when the password matches", async () => {
     maybeSingleMock.mockResolvedValueOnce({
       data: {
-        id: "rec_1",
-        email: "recruiter@example.com",
-        name: "Jamie Recruiter",
         agency: "Talent Co",
-        specialties: ["Engineering", "Design"],
-        linkedin_url: "https://linkedin.com/in/jamie",
         bio: "Finds great people.",
-        is_verified: true,
-        website: "https://talentco.example",
-        logo_url: null,
-        industry: "Staffing",
         company_size: "11-50",
+        email: "recruiter@example.com",
+        id: "rec_1",
+        industry: "Staffing",
+        is_verified: true,
+        linkedin_url: "https://linkedin.com/in/jamie",
         location: "Remote",
+        logo_url: null,
+        name: "Jamie Recruiter",
         password_hash: validHash,
+        specialties: ["Engineering", "Design"],
+        website: "https://talentco.example",
       },
       error: null,
     });
@@ -124,19 +124,19 @@ describe("verifyRecruiterCredentials", () => {
     );
 
     expect(result).toEqual({
-      id: "rec_1",
-      email: "recruiter@example.com",
-      name: "Jamie Recruiter",
       agency: "Talent Co",
-      specialties: ["Engineering", "Design"],
-      linkedinUrl: "https://linkedin.com/in/jamie",
       bio: "Finds great people.",
-      isVerified: true,
-      website: "https://talentco.example",
-      logoUrl: null,
-      industry: "Staffing",
       companySize: "11-50",
+      email: "recruiter@example.com",
+      id: "rec_1",
+      industry: "Staffing",
+      isVerified: true,
+      linkedinUrl: "https://linkedin.com/in/jamie",
       location: "Remote",
+      logoUrl: null,
+      name: "Jamie Recruiter",
+      specialties: ["Engineering", "Design"],
+      website: "https://talentco.example",
     });
     expect(eqMock).toHaveBeenCalledWith("email", "recruiter@example.com");
   });

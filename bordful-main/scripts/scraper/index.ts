@@ -8,14 +8,16 @@
 
 import dotenv from "dotenv";
 import { resolve } from "path";
+
 // In CI, SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are injected directly.
 // Locally: load job-scraper/.env (has Supabase keys) then .env.local as fallback.
 dotenv.config({ path: resolve(process.cwd(), "../job-scraper/.env") });
 dotenv.config({ path: resolve(process.cwd(), ".env.local") });
+
 import { closePool, upsertJob } from "./db";
-import { RSS_SOURCES, scrapeRss } from "./sources/rss";
 import { scrapeMustakbil } from "./sources/mustakbil";
 import { scrapeNaukriGulf } from "./sources/naukrigulf";
+import { RSS_SOURCES, scrapeRss } from "./sources/rss";
 import type { ScrapedJob } from "./types";
 
 const CONCURRENCY = 1; // insert jobs one at a time; DB is remote, be gentle
@@ -29,9 +31,13 @@ async function ingest(jobs: ScrapedJob[], label: string): Promise<void> {
   for (const job of jobs) {
     try {
       const result = await upsertJob(job);
-      if (result === "inserted") inserted++;
-      else if (result === "updated") updated++;
-      else skipped++;
+      if (result === "inserted") {
+        inserted++;
+      } else if (result === "updated") {
+        updated++;
+      } else {
+        skipped++;
+      }
     } catch (e) {
       errors++;
       console.error(
@@ -51,7 +57,9 @@ async function main() {
 
   const startTime = Date.now();
   console.log(`\n=== Caliber Scraper — ${new Date().toISOString()} ===`);
-  if (filter) console.log(`Running source filter: "${filter}"`);
+  if (filter) {
+    console.log(`Running source filter: "${filter}"`);
+  }
 
   try {
     // ── RSS feeds ──────────────────────────────────────────────────────────

@@ -7,9 +7,9 @@ import config from "@/config";
 import { listActiveRecruiters } from "@/lib/jobs/recruiter-actions";
 
 export const metadata: Metadata = {
-  title: `Work with a recruiter | ${config.title}`,
   description:
     "Connect with recruiters who can help match you with the right opportunity.",
+  title: `Work with a recruiter | ${config.title}`,
 };
 
 export const dynamic = "force-dynamic";

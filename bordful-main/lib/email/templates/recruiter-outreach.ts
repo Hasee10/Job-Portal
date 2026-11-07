@@ -68,7 +68,7 @@ export function renderRecruiterOutreachEmail({
   `);
 
   return {
-    subject: `${subjectDisplay} wants to connect with you`,
     html,
+    subject: `${subjectDisplay} wants to connect with you`,
   };
 }

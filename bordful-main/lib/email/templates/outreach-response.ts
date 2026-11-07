@@ -56,9 +56,9 @@ export function renderOutreachResponseEmail({
   `);
 
   return {
+    html,
     subject: accepted
       ? `${seekerDisplay} accepted your outreach`
       : `${seekerDisplay} declined your outreach`,
-    html,
   };
 }

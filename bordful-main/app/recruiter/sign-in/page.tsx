@@ -5,9 +5,9 @@ import { RecruiterSignInForm } from "@/components/auth/RecruiterSignInForm";
 import config from "@/config";
 
 export const metadata: Metadata = {
-  title: `Recruiter Sign In | ${config.title}`,
   description: "Sign in to your recruiter account.",
-  robots: { index: false, follow: false },
+  robots: { follow: false, index: false },
+  title: `Recruiter Sign In | ${config.title}`,
 };
 
 export const dynamic = "force-dynamic";

@@ -47,7 +47,9 @@ type ResumeDraft = {
 };
 
 function draftSummary(draft: ResumeDraft | undefined): string {
-  if (!draft) return "No resume details filled in yet.";
+  if (!draft) {
+    return "No resume details filled in yet.";
+  }
   const lines = [
     draft.fullName && `Name: ${draft.fullName}`,
     draft.headline && `Headline: ${draft.headline}`,
@@ -121,8 +123,8 @@ export async function POST(request: Request) {
         typeof m.content === "string"
     )
     .map((m) => ({
-      role: m.role,
       content: m.content.slice(0, MAX_MESSAGE_LENGTH),
+      role: m.role,
     }));
 
   const draft = body.draft as ResumeDraft | undefined;
@@ -131,12 +133,12 @@ export async function POST(request: Request) {
     const output = await aiChatCompletion(
       [
         {
-          role: "system",
           content: `${SYSTEM_PROMPT}\n\nCurrent resume:\n${draftSummary(draft)}`,
+          role: "system",
         },
         ...trimmedMessages,
       ],
-      { temperature: 0.5, maxTokens: 1200 }
+      { maxTokens: 1200, temperature: 0.5 }
     );
 
     return NextResponse.json({ reply: stripMarkdown(output) });

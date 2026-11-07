@@ -15,19 +15,21 @@ export function SeekerHeadlineForm({ initial }: { initial: string | null }) {
     setIsSaving(true);
     try {
       const res = await fetch("/api/seeker/inbox", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ headline: headline.trim() || null }),
+        headers: { "Content-Type": "application/json" },
+        method: "PATCH",
       });
-      if (!res.ok) throw new Error();
+      if (!res.ok) {
+        throw new Error();
+      }
       toast({
-        title: "Headline saved",
         description: "Recruiters will see this on your profile.",
+        title: "Headline saved",
       });
     } catch {
       toast({
-        title: "Failed to save",
         description: "Please try again.",
+        title: "Failed to save",
         variant: "destructive",
       });
     } finally {
@@ -38,7 +40,7 @@ export function SeekerHeadlineForm({ initial }: { initial: string | null }) {
   return (
     <form className="mt-4" onSubmit={handleSubmit}>
       <label
-        className="text-sm font-medium text-zinc-700 dark:text-zinc-300"
+        className="font-medium text-sm text-zinc-700 dark:text-zinc-300"
         htmlFor="seeker-headline"
       >
         Professional headline

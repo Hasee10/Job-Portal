@@ -16,9 +16,9 @@ import { SortOrderSelect } from "@/components/ui/sort-order-select";
 import type { JobType } from "@/lib/constants/job-types";
 import type { LanguageCode } from "@/lib/constants/languages";
 import {
-  normalizeAnnualSalary,
   type CareerLevel,
   type Job,
+  normalizeAnnualSalary,
 } from "@/lib/db/airtable";
 import { useJobSearch } from "@/lib/hooks/useJobSearch";
 import { usePagination } from "@/lib/hooks/usePagination";
@@ -175,9 +175,15 @@ export function JobsLayout({ filteredJobs }: JobsLayoutProps) {
       case "salary": {
         const aSalary = normalizeAnnualSalary(a.salary);
         const bSalary = normalizeAnnualSalary(b.salary);
-        if (aSalary === -1 && bSalary === -1) return 0;
-        if (aSalary === -1) return 1;
-        if (bSalary === -1) return -1;
+        if (aSalary === -1 && bSalary === -1) {
+          return 0;
+        }
+        if (aSalary === -1) {
+          return 1;
+        }
+        if (bSalary === -1) {
+          return -1;
+        }
         return bSalary - aSalary;
       }
       default: // newest
@@ -241,14 +247,14 @@ export function JobsLayout({ filteredJobs }: JobsLayoutProps) {
           <div className="space-y-6">
             <JobFilters
               initialFilters={{
-                types: [],
-                roles: [],
-                remote: false,
-                salaryMin: SALARY_SLIDER_MIN,
-                salaryMax: SALARY_SLIDER_MAX,
-                visa: false,
-                languages: [],
                 companies: [],
+                languages: [],
+                remote: false,
+                roles: [],
+                salaryMax: SALARY_SLIDER_MAX,
+                salaryMin: SALARY_SLIDER_MIN,
+                types: [],
+                visa: false,
               }}
               jobs={filteredJobs}
               onFilterChange={handleFilterChange}

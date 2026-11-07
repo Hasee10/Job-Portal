@@ -1,15 +1,15 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
+import config from "@/config";
 import { AIProviderError } from "@/lib/ai/types";
 import { getJobs } from "@/lib/db/airtable.server";
-import config from "@/config";
+import { sendEmail } from "@/lib/email/smtp";
 import {
   markSeekerResumeMatched,
   saveSeekerResume,
 } from "@/lib/jobs/resume-actions";
 import { extractResumeFromPdf } from "@/lib/jobs/resume-extraction";
 import { matchJobsBySkills } from "@/lib/jobs/resume-matching";
-import { sendEmail } from "@/lib/email/smtp";
 import { generateJobSlug } from "@/lib/utils/slugify";
 
 export const dynamic = "force-dynamic";
@@ -99,17 +99,17 @@ export async function POST(request: Request) {
       const jobs = await getJobs();
       const scored = matchJobsBySkills(jobs, content.skills, MAX_MATCHES);
       matches = scored.map(({ job, matchedSkills }) => ({
-        jobId: job.id,
-        title: job.title,
         company: job.company,
+        jobId: job.id,
         matchedSkills,
+        title: job.title,
       }));
 
       if (scored.length > 0 && session.user.email) {
         await sendEmail({
-          to: session.user.email,
-          subject: `${scored.length} job${scored.length > 1 ? "s" : ""} match the skills on your resume`,
           html: buildMatchEmailHtml(scored),
+          subject: `${scored.length} job${scored.length > 1 ? "s" : ""} match the skills on your resume`,
+          to: session.user.email,
         });
         await markSeekerResumeMatched(
           session.user.id,
@@ -122,5 +122,5 @@ export async function POST(request: Request) {
     }
   }
 
-  return NextResponse.json({ resume, matches });
+  return NextResponse.json({ matches, resume });
 }

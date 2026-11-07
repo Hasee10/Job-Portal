@@ -53,9 +53,9 @@ export function renderProcurementAwardDecisionEmail({
   `);
 
   return {
+    html,
     subject: won
       ? `You were awarded: ${requestTitle}`
       : `Award decision: ${requestTitle}`,
-    html,
   };
 }

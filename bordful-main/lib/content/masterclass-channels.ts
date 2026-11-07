@@ -17,56 +17,56 @@ export type MasterclassChannel = {
 export const MASTERCLASS_CHANNEL_ALLOWLIST: MasterclassChannel[] = [
   {
     channelId: "UCXUyg1vYSupswhi0zNeD-5w",
-    name: "Linda Raynier",
     defaultCategory: "Interviewing",
+    name: "Linda Raynier",
   },
   {
     channelId: "UCP1UlYJH_QL4m5HVyikcxfQ",
-    name: "Andrew LaCivita",
     defaultCategory: "Negotiation & Offers",
+    name: "Andrew LaCivita",
   },
   {
     channelId: "UCAC8Y3gJMuhGsjNWyufUNAQ",
-    name: "Career Contessa",
     defaultCategory: "Job Search",
+    name: "Career Contessa",
   },
   {
     channelId: "UCWo4IA01TXzBeGJJKWHOG9g",
-    name: "Harvard Business Review",
     defaultCategory: "Career Development",
+    name: "Harvard Business Review",
   },
   {
     channelId: "UCk4bbQAZD26f_XdGyb4wwhg",
-    name: "The Muse",
     defaultCategory: "Job Search",
+    name: "The Muse",
   },
   {
     channelId: "UCiQNvBItd1s9Bei2Zkmar4A",
-    name: "The Interview Guys",
     defaultCategory: "Interviewing",
+    name: "The Interview Guys",
   },
   {
     channelId: "UCeNm7lbfRg9wiBDSLQ-M8RA",
-    name: "Self Made Millennial",
     defaultCategory: "Job Search",
+    name: "Self Made Millennial",
   },
   {
     channelId: "UCiLeUu6mTGaopeEV1pFDVLA",
-    name: "Josh Doody (Fearless Salary Negotiation)",
     defaultCategory: "Negotiation & Offers",
+    name: "Josh Doody (Fearless Salary Negotiation)",
   },
   {
     channelId: "UCmem-D5aeCsSRyXTZkH_gKQ",
-    name: "Jennifer Brick",
     defaultCategory: "Career Development",
+    name: "Jennifer Brick",
   },
   // Jeff Su's channel is broader productivity/AI-tooling content, not
   // purely career advice - relies more heavily on the relevance keyword
   // filter below to skip his non-career videos than the other channels do.
   {
     channelId: "UCwAnu01qlnVg1Ai2AbtTMaA",
-    name: "Jeff Su",
     defaultCategory: "Career Development",
+    name: "Jeff Su",
   },
 ];
 

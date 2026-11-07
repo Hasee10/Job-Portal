@@ -22,8 +22,8 @@ export async function getJobBySlugMinimal(
         const jobSlug = generateJobSlug(job.title, job.company);
         if (jobSlug === slug) {
           return {
-            title: job.title,
             company: job.company,
+            title: job.title,
             type: job.type,
             workplace_type: job.workplace_type,
           };

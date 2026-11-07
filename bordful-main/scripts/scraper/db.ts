@@ -4,8 +4,9 @@ import type { ScrapedJob } from "./types";
 function getSupabase() {
   const url = process.env.SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key)
+  if (!(url && key)) {
     throw new Error("SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY must be set");
+  }
   return createClient(url, key, { auth: { persistSession: false } });
 }
 
@@ -30,9 +31,9 @@ export async function upsertJob(
     await supabase
       .from("jobs")
       .update({
-        title: job.title,
-        company: job.company,
         apply_url: job.apply_url,
+        company: job.company,
+        title: job.title,
         ...(job.description != null && { description: job.description }),
         ...(job.type != null && { type: job.type }),
         ...(job.remote_type != null && { remote_type: job.remote_type }),
@@ -64,36 +65,40 @@ export async function upsertJob(
     .eq("apply_url", job.apply_url)
     .maybeSingle();
 
-  if (urlConflict) return "skipped";
+  if (urlConflict) {
+    return "skipped";
+  }
 
   // Fresh insert
   const { error } = await supabase.from("jobs").insert({
-    title: job.title,
-    company: job.company,
     apply_url: job.apply_url,
-    source: job.source,
-    job_identifier: job.job_identifier,
+    career_level: [],
+    company: job.company,
     description: job.description ?? null,
-    type: job.type ?? "Full-time",
+    featured: false,
+    is_active: true,
+    job_identifier: job.job_identifier,
+    languages: [],
+    posted_at: job.posted_at ?? new Date(),
+    remote_region: "Worldwide",
     remote_type: job.remote_type ?? "onsite",
+    salary_currency: job.salary_currency ?? "USD",
+    salary_max: job.salary_max ?? null,
+    salary_min: job.salary_min ?? null,
+    salary_unit: job.salary_unit ?? "year",
+    source: job.source,
+    title: job.title,
+    type: job.type ?? "Full-time",
+    valid_through: job.valid_through ?? null,
+    visa_sponsorship: "Not specified",
     workplace_city: job.workplace_city ?? null,
     workplace_country: job.workplace_country ?? null,
-    salary_min: job.salary_min ?? null,
-    salary_max: job.salary_max ?? null,
-    salary_currency: job.salary_currency ?? "USD",
-    salary_unit: job.salary_unit ?? "year",
-    posted_at: job.posted_at ?? new Date(),
-    valid_through: job.valid_through ?? null,
-    is_active: true,
-    featured: false,
-    visa_sponsorship: "Not specified",
-    career_level: [],
-    languages: [],
-    remote_region: "Worldwide",
   });
 
   if (error) {
-    if (error.code === "23505") return "skipped";
+    if (error.code === "23505") {
+      return "skipped";
+    }
     throw new Error(error.message);
   }
   return "inserted";

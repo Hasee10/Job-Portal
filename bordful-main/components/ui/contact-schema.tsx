@@ -33,12 +33,11 @@ export const ContactSchema: FC<ContactSchemaProps> = ({
   const contactSchema: WithContext<ContactPage> = {
     "@context": "https://schema.org",
     "@type": "ContactPage",
-    name: `Contact ${companyName}`,
     description,
     mainEntity: {
       "@type": "Organization",
-      name: companyName,
       email,
+      name: companyName,
       ...(phone ? { telephone: phone } : {}),
       ...(address
         ? {
@@ -50,6 +49,7 @@ export const ContactSchema: FC<ContactSchemaProps> = ({
         : {}),
       url: config.url,
     },
+    name: `Contact ${companyName}`,
     url,
   };
 

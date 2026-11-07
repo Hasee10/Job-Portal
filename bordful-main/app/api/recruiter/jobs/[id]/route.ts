@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
+import { getRecruiterAccountById } from "@/lib/auth/recruiter-accounts";
 import {
   closeJob,
   getOwnerJob,
@@ -7,7 +8,6 @@ import {
   updateJob,
 } from "@/lib/jobs/employer-job-actions";
 import { parseJobUpdateInput } from "@/lib/jobs/parse-job-input";
-import { getRecruiterAccountById } from "@/lib/auth/recruiter-accounts";
 
 export const dynamic = "force-dynamic";
 
@@ -22,7 +22,9 @@ export async function GET(
 
   const { id } = await params;
   const job = await getOwnerJob({ recruiterId: session.user.id }, id);
-  if (!job) return NextResponse.json({ error: "Not found." }, { status: 404 });
+  if (!job) {
+    return NextResponse.json({ error: "Not found." }, { status: 404 });
+  }
   return NextResponse.json({ job });
 }
 

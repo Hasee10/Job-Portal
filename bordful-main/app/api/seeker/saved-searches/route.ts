@@ -28,32 +28,32 @@ function sanitizeFilters(value: unknown): SavedSearchFilters {
   }
   const raw = value as Partial<SavedSearchFilters>;
   return {
-    types: Array.isArray(raw.types)
-      ? raw.types.filter((v) => typeof v === "string")
+    companies: Array.isArray(raw.companies)
+      ? raw.companies.filter((v) => typeof v === "string")
       : [],
-    roles: Array.isArray(raw.roles)
-      ? (raw.roles.filter(
-          (v) => typeof v === "string"
-        ) as SavedSearchFilters["roles"])
-      : [],
-    remote: raw.remote === true,
-    salaryMin:
-      typeof raw.salaryMin === "number"
-        ? raw.salaryMin
-        : DEFAULT_SAVED_SEARCH_FILTERS.salaryMin,
-    salaryMax:
-      typeof raw.salaryMax === "number"
-        ? raw.salaryMax
-        : DEFAULT_SAVED_SEARCH_FILTERS.salaryMax,
-    visa: raw.visa === true,
     languages: Array.isArray(raw.languages)
       ? (raw.languages.filter(
           (v) => typeof v === "string"
         ) as SavedSearchFilters["languages"])
       : [],
-    companies: Array.isArray(raw.companies)
-      ? raw.companies.filter((v) => typeof v === "string")
+    remote: raw.remote === true,
+    roles: Array.isArray(raw.roles)
+      ? (raw.roles.filter(
+          (v) => typeof v === "string"
+        ) as SavedSearchFilters["roles"])
       : [],
+    salaryMax:
+      typeof raw.salaryMax === "number"
+        ? raw.salaryMax
+        : DEFAULT_SAVED_SEARCH_FILTERS.salaryMax,
+    salaryMin:
+      typeof raw.salaryMin === "number"
+        ? raw.salaryMin
+        : DEFAULT_SAVED_SEARCH_FILTERS.salaryMin,
+    types: Array.isArray(raw.types)
+      ? raw.types.filter((v) => typeof v === "string")
+      : [],
+    visa: raw.visa === true,
   };
 }
 
@@ -80,10 +80,10 @@ export async function POST(request: Request) {
 
   try {
     const savedSearch = await createSavedSearch(session.user.id, {
-      name,
-      searchTerm,
       filters: sanitizeFilters(body.filters),
       frequency,
+      name,
+      searchTerm,
     });
     return NextResponse.json({ savedSearch });
   } catch (error) {

@@ -74,5 +74,5 @@ export function renderRecruiterCandidateDigestEmail({
     })}
   `);
 
-  return { subject: headline, html };
+  return { html, subject: headline };
 }

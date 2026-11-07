@@ -23,12 +23,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   // Handle remote case
   if (locationSlug === "remote") {
     return {
-      title: `Remote Jobs | ${config.title}`,
-      description:
-        "Browse remote positions. Find the perfect remote role that matches your preferences.",
       alternates: {
         canonical: "/jobs/location/remote",
       },
+      description:
+        "Browse remote positions. Find the perfect remote role that matches your preferences.",
+      title: `Remote Jobs | ${config.title}`,
     };
   }
 
@@ -39,11 +39,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 
   return {
-    title: `${countryName} Jobs | ${config.title}`,
-    description: `Browse positions in ${countryName}. Find the perfect role that matches your location preferences.`,
     alternates: {
       canonical: `/jobs/location/${locationSlug}`,
     },
+    description: `Browse positions in ${countryName}. Find the perfect role that matches your location preferences.`,
+    title: `${countryName} Jobs | ${config.title}`,
   };
 }
 

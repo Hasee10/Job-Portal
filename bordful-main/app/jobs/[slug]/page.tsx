@@ -75,8 +75,8 @@ export async function generateMetadata({
 
   if (!job) {
     return {
-      title: `Job Not Found | ${config.title}`,
       description: "The job you're looking for could not be found.",
+      title: `Job Not Found | ${config.title}`,
     };
   }
 
@@ -129,9 +129,9 @@ export async function generateMetadata({
     }
 
     return `Apply before ${deadline.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
       day: "numeric",
+      month: "long",
+      year: "numeric",
     })}`;
   })();
 
@@ -182,20 +182,20 @@ export async function generateMetadata({
     .replace(FINAL_WORD_REGEX, "$1.");
 
   return createMetadata({
-    title: `${job.title} at ${job.company}`,
     description,
-    path: `/jobs/${slug}`,
     openGraph: {
-      type: "article",
       images: [
         {
+          alt: `${job.title} at ${job.company}`,
+          height: 630,
           url: `/api/og/jobs/${slug}`,
           width: 1200,
-          height: 630,
-          alt: `${job.title} at ${job.company}`,
         },
       ],
+      type: "article",
     },
+    path: `/jobs/${slug}`,
+    title: `${job.title} at ${job.company}`,
   });
 }
 
@@ -321,19 +321,6 @@ export default async function JobPostPage({
               {/* Use our custom utility to process Airtable's markdown format */}
               <ReactMarkdown
                 components={{
-                  // Customize heading styles - consistent with the rest of the app
-                  h1: ({ ...props }) => (
-                    <h1 className="mb-2 font-semibold text-2xl" {...props} />
-                  ),
-                  h2: ({ ...props }) => (
-                    <h2 className="mb-2 font-semibold text-xl" {...props} />
-                  ),
-                  h3: ({ ...props }) => (
-                    <h3 className="mb-2 font-semibold text-lg" {...props} />
-                  ),
-                  h4: ({ ...props }) => (
-                    <h4 className="mb-2 font-semibold text-base" {...props} />
-                  ),
                   // Style links
                   a: ({ href, ...props }) =>
                     href ? (
@@ -347,26 +334,6 @@ export default async function JobPostPage({
                     ) : (
                       <span className="text-blue-600" {...props} />
                     ),
-                  // Style lists with better nesting support
-                  ul: ({ className, ...props }) => {
-                    // Always indent top-level lists; nested lists get natural browser indent
-                    return (
-                      <ul
-                        className={`my-2 ml-4 list-disc ${className || ""}`}
-                        {...props}
-                      />
-                    );
-                  },
-                  ol: ({ className, ...props }) => {
-                    return (
-                      <ol
-                        className={`my-2 ml-4 list-decimal ${className || ""}`}
-                        {...props}
-                      />
-                    );
-                  },
-                  // Style paragraphs
-                  p: ({ ...props }) => <p className="my-2" {...props} />,
                   // Style blockquotes (for Airtable quote blocks)
                   blockquote: ({ ...props }) => (
                     <blockquote
@@ -397,6 +364,19 @@ export default async function JobPostPage({
                       </pre>
                     );
                   },
+                  // Customize heading styles - consistent with the rest of the app
+                  h1: ({ ...props }) => (
+                    <h1 className="mb-2 font-semibold text-2xl" {...props} />
+                  ),
+                  h2: ({ ...props }) => (
+                    <h2 className="mb-2 font-semibold text-xl" {...props} />
+                  ),
+                  h3: ({ ...props }) => (
+                    <h3 className="mb-2 font-semibold text-lg" {...props} />
+                  ),
+                  h4: ({ ...props }) => (
+                    <h4 className="mb-2 font-semibold text-base" {...props} />
+                  ),
                   // Style checkboxes for Airtable's checkbox format and improve list item handling
                   li: ({ children, className, ...props }) => {
                     // Check if this is a checkbox item
@@ -447,6 +427,24 @@ export default async function JobPostPage({
                       >
                         {children}
                       </li>
+                    );
+                  },
+                  ol: ({ className, ...props }) => (
+                    <ol
+                      className={`my-2 ml-4 list-decimal ${className || ""}`}
+                      {...props}
+                    />
+                  ),
+                  // Style paragraphs
+                  p: ({ ...props }) => <p className="my-2" {...props} />,
+                  // Style lists with better nesting support
+                  ul: ({ className, ...props }) => {
+                    // Always indent top-level lists; nested lists get natural browser indent
+                    return (
+                      <ul
+                        className={`my-2 ml-4 list-disc ${className || ""}`}
+                        {...props}
+                      />
                     );
                   },
                 }}
@@ -554,12 +552,12 @@ export default async function JobPostPage({
                   const deadline = new Date(job.valid_through);
                   return (
                     !Number.isNaN(deadline.getTime()) && (
-                      <span className="w-full text-center text-gray-500 text-xs dark:text-zinc-400 sm:w-auto sm:text-left">
+                      <span className="w-full text-center text-gray-500 text-xs sm:w-auto sm:text-left dark:text-zinc-400">
                         Apply before:{" "}
                         {deadline.toLocaleDateString("en-US", {
-                          year: "numeric",
-                          month: "long",
                           day: "numeric",
+                          month: "long",
+                          year: "numeric",
                         })}
                       </span>
                     )

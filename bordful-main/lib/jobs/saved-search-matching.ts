@@ -1,6 +1,6 @@
+import type { LanguageCode } from "@/lib/constants/languages";
 import type { CareerLevel, Job } from "@/lib/db/airtable";
 import { normalizeAnnualSalary } from "@/lib/db/airtable";
-import type { LanguageCode } from "@/lib/constants/languages";
 import { filterJobsBySearch } from "@/lib/utils/filter-jobs";
 
 // Mirrors SALARY_SLIDER_MIN/MAX in components/ui/job-filters.tsx - kept as a
@@ -21,14 +21,14 @@ export type SavedSearchFilters = {
 };
 
 export const DEFAULT_SAVED_SEARCH_FILTERS: SavedSearchFilters = {
-  types: [],
-  roles: [],
-  remote: false,
-  salaryMin: SALARY_MIN,
-  salaryMax: SALARY_MAX,
-  visa: false,
-  languages: [],
   companies: [],
+  languages: [],
+  remote: false,
+  roles: [],
+  salaryMax: SALARY_MAX,
+  salaryMin: SALARY_MIN,
+  types: [],
+  visa: false,
 };
 
 // Same rules as the filteredJobs logic in components/home/HomePage.tsx,
@@ -47,10 +47,11 @@ export function matchesSavedSearch(
     return false;
   }
 
-  if (filters.roles.length > 0) {
-    if (!job.career_level.some((level) => filters.roles.includes(level))) {
-      return false;
-    }
+  if (
+    filters.roles.length > 0 &&
+    !job.career_level.some((level) => filters.roles.includes(level))
+  ) {
+    return false;
   }
 
   if (filters.remote && job.workplace_type !== "Remote") {
@@ -77,10 +78,11 @@ export function matchesSavedSearch(
     }
   }
 
-  if (filters.languages.length > 0) {
-    if (!job.languages.some((lang) => filters.languages.includes(lang))) {
-      return false;
-    }
+  if (
+    filters.languages.length > 0 &&
+    !job.languages.some((lang) => filters.languages.includes(lang))
+  ) {
+    return false;
   }
 
   if (

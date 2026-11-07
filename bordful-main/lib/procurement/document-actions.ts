@@ -15,8 +15,9 @@ const ALLOWED_CONTENT_TYPES = new Set([
 function getAdminClient() {
   const url = process.env.SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key)
+  if (!(url && key)) {
     throw new Error("Database is not configured on this deployment.");
+  }
   return createClient(url, key, { auth: { persistSession: false } });
 }
 
@@ -49,7 +50,9 @@ export async function uploadProposalDocument(
     upsert: false,
   });
 
-  if (error) throw new Error(error.message || "Failed to upload document.");
+  if (error) {
+    throw new Error(error.message || "Failed to upload document.");
+  }
   return path;
 }
 
@@ -74,11 +77,15 @@ export async function getSignedDownloadUrl(
     .eq("request_id", requestId)
     .eq("proposal_document_path", documentPath)
     .maybeSingle();
-  if (!response) throw new Error("Document not found for this request.");
+  if (!response) {
+    throw new Error("Document not found for this request.");
+  }
 
   if (requesterRole === "employer") {
     const request = await getRequestForBuyer(requesterId, requestId);
-    if (!request) throw new Error("Not authorized to access this document.");
+    if (!request) {
+      throw new Error("Not authorized to access this document.");
+    }
     if (isSealedFromBuyer(request.sealedBids, request.status)) {
       throw new Error(
         "This request is sealed - documents are hidden until bids are opened."
@@ -92,7 +99,8 @@ export async function getSignedDownloadUrl(
     .from(BUCKET)
     .createSignedUrl(documentPath, 60 * 5); // 5 minutes
 
-  if (error || !data)
+  if (error || !data) {
     throw new Error(error?.message || "Failed to generate download link.");
+  }
   return data.signedUrl;
 }

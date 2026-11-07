@@ -16,7 +16,7 @@ export type SeekerProfile = {
 function getAdminClient() {
   const url = process.env.SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key) {
+  if (!(url && key)) {
     throw new Error("Database is not configured on this deployment.");
   }
   return createClient(url, key, { auth: { persistSession: false } });
@@ -24,13 +24,13 @@ function getAdminClient() {
 
 function rowToProfile(row: Record<string, unknown>): SeekerProfile {
   return {
-    seekerId: row.seeker_id as string,
-    searchTerm: (row.search_term as string) || null,
     filters: {
       ...DEFAULT_SAVED_SEARCH_FILTERS,
       ...((row.filters as Partial<SavedSearchFilters>) || {}),
     },
     onboardingCompletedAt: (row.onboarding_completed_at as string) || null,
+    searchTerm: (row.search_term as string) || null,
+    seekerId: row.seeker_id as string,
   };
 }
 
@@ -44,8 +44,12 @@ export async function getSeekerProfile(
     .eq("seeker_id", seekerId)
     .maybeSingle();
 
-  if (error) throw error;
-  if (!data) return null;
+  if (error) {
+    throw error;
+  }
+  if (!data) {
+    return null;
+  }
   return rowToProfile(data);
 }
 
@@ -58,10 +62,10 @@ export async function saveSeekerProfile(
     .from("seeker_profiles")
     .upsert(
       {
-        seeker_id: seekerId,
-        search_term: input.searchTerm,
         filters: input.filters,
         onboarding_completed_at: new Date().toISOString(),
+        search_term: input.searchTerm,
+        seeker_id: seekerId,
         updated_at: new Date().toISOString(),
       },
       { onConflict: "seeker_id" }
@@ -69,6 +73,8 @@ export async function saveSeekerProfile(
     .select("*")
     .single();
 
-  if (error) throw error;
+  if (error) {
+    throw error;
+  }
   return rowToProfile(data);
 }

@@ -5,16 +5,20 @@ import { JobPostForm } from "@/components/employer/JobPostForm";
 import config from "@/config";
 
 export const metadata: Metadata = {
+  robots: { follow: false, index: false },
   title: `Post a Job | ${config.title}`,
-  robots: { index: false, follow: false },
 };
 
 export const dynamic = "force-dynamic";
 
 export default async function NewJobPage() {
   const session = await auth();
-  if (!session?.user) redirect("/sign-in?callbackUrl=/dashboard/jobs/new");
-  if (session.user.role !== "employer") redirect("/");
+  if (!session?.user) {
+    redirect("/sign-in?callbackUrl=/dashboard/jobs/new");
+  }
+  if (session.user.role !== "employer") {
+    redirect("/");
+  }
 
   return (
     <main className="min-h-[60vh] bg-background py-12">

@@ -47,9 +47,8 @@ type FAQContentProps = {
 };
 
 // Generate a stable ID for each FAQ item – pure function, no component dependencies
-const getItemId = (categoryTitle: string, question: string) => {
-  return `${slugify(categoryTitle)}-${slugify(question)}`;
-};
+const getItemId = (categoryTitle: string, question: string) =>
+  `${slugify(categoryTitle)}-${slugify(question)}`;
 
 export function FAQContent({ categories }: FAQContentProps) {
   const router = useRouter();
@@ -162,11 +161,11 @@ export function FAQContent({ categories }: FAQContentProps) {
           (item) =>
             ({
               "@type": "Question",
-              name: item.question,
               acceptedAnswer: {
                 "@type": "Answer",
                 text: item.answer,
               } as Answer,
+              name: item.question,
             }) as Question
         )
       ),
@@ -210,7 +209,7 @@ export function FAQContent({ categories }: FAQContentProps) {
       {/* Search Bar */}
       <div className="mb-8 w-full">
         <div className="relative">
-          <Search className="-translate-y-1/2 absolute top-1/2 left-3 h-4 w-4 text-muted-foreground" />
+          <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             aria-label="Search FAQs"
             className="h-10 pl-9"
@@ -223,7 +222,7 @@ export function FAQContent({ categories }: FAQContentProps) {
           {searchTerm && (
             <button
               aria-label="Clear search"
-              className="-translate-y-1/2 absolute top-1/2 right-3 text-gray-400 dark:text-gray-600 hover:text-gray-600 dark:hover:text-gray-400"
+              className="absolute top-1/2 right-3 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:text-gray-600 dark:hover:text-gray-400"
               onClick={() => {
                 setSearchTerm("");
                 setExpandedItems([]);
@@ -273,7 +272,7 @@ export function FAQContent({ categories }: FAQContentProps) {
                   </h2>
                   <button
                     aria-label={`Copy link to ${category.title} section`}
-                    className="text-zinc-400 dark:text-zinc-600 transition-colors hover:text-zinc-600 dark:hover:text-zinc-400"
+                    className="text-zinc-400 transition-colors hover:text-zinc-600 dark:text-zinc-600 dark:hover:text-zinc-400"
                     onClick={() => {
                       navigator.clipboard.writeText(
                         `${window.location.origin}/faq#${categoryId}`
@@ -299,7 +298,7 @@ export function FAQContent({ categories }: FAQContentProps) {
                         key={itemIndex}
                         value={itemId}
                       >
-                        <AccordionTrigger className="py-4 font-medium text-sm text-zinc-800 dark:text-zinc-200 hover:no-underline">
+                        <AccordionTrigger className="py-4 font-medium text-sm text-zinc-800 hover:no-underline dark:text-zinc-200">
                           {item.question}
                         </AccordionTrigger>
                         <AccordionContent className="pt-1 pb-4 text-sm text-zinc-600 dark:text-zinc-400">

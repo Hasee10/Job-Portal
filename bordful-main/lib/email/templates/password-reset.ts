@@ -32,7 +32,7 @@ export function renderPasswordResetEmail({
   `);
 
   return {
-    subject: "Reset your Caliber password",
     html,
+    subject: "Reset your Caliber password",
   };
 }

@@ -111,7 +111,7 @@ export function renderPurchaseConfirmationEmail({
   `);
 
   return {
-    subject: `Your Caliber receipt - ${planName} plan confirmed`,
     html,
+    subject: `Your Caliber receipt - ${planName} plan confirmed`,
   };
 }

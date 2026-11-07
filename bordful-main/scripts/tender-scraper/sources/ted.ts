@@ -25,9 +25,10 @@
 //   classification-cpv - CPV codes (category), array
 // `links.html.ENG` (always present in the response, not a field you
 // request) is the public notice detail page - used as the stored URL.
-import type { ScrapedTender } from "../types";
+
 import { TENDER_CATEGORIES } from "../../../lib/procurement/tender-categories";
 import { fetchWithRetry } from "../http";
+import type { ScrapedTender } from "../types";
 
 const SEARCH_URL = "https://api.ted.europa.eu/v3/notices/search";
 const PAGE_SIZE = 250;
@@ -47,7 +48,9 @@ type TedNotice = {
 function firstValue(
   obj: Record<string, string | string[]> | undefined
 ): string | undefined {
-  if (!obj) return undefined;
+  if (!obj) {
+    return undefined;
+  }
   const val = Object.values(obj)[0];
   return Array.isArray(val) ? val[0] : val;
 }
@@ -60,17 +63,19 @@ function normalizeNotice(notice: TedNotice): ScrapedTender | null {
   const sourceId = notice.ND;
   const url = notice.links?.html?.ENG;
   const title = notice.TI?.eng ?? firstValue(notice.TI);
-  if (!sourceId || !url || !title) return null;
+  if (!(sourceId && url && title)) {
+    return null;
+  }
 
   return {
-    source: "ted",
-    sourceId,
-    title,
     buyerName: firstValue(notice["buyer-name"]),
     country: notice.CY?.[0],
     cpvCodes: notice["classification-cpv"] ?? [],
-    publicationDate: notice.PD?.slice(0, 10),
     deadlineDate: notice.DD?.[0],
+    publicationDate: notice.PD?.slice(0, 10),
+    source: "ted",
+    sourceId,
+    title,
     url,
   };
 }
@@ -90,12 +95,7 @@ export async function scrapeTed(lookbackDays = 2): Promise<ScrapedTender[]> {
     const res = await fetchWithRetry(
       SEARCH_URL,
       {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          query,
-          page,
-          limit: PAGE_SIZE,
           fields: [
             "ND",
             "PD",
@@ -105,7 +105,12 @@ export async function scrapeTed(lookbackDays = 2): Promise<ScrapedTender[]> {
             "buyer-name",
             "classification-cpv",
           ],
+          limit: PAGE_SIZE,
+          page,
+          query,
         }),
+        headers: { "Content-Type": "application/json" },
+        method: "POST",
       },
       { label: "ted" }
     );
@@ -123,10 +128,14 @@ export async function scrapeTed(lookbackDays = 2): Promise<ScrapedTender[]> {
     const notices = data.notices ?? [];
     for (const notice of notices) {
       const tender = normalizeNotice(notice);
-      if (tender) tenders.push(tender);
+      if (tender) {
+        tenders.push(tender);
+      }
     }
 
-    if (notices.length < PAGE_SIZE) break; // last page
+    if (notices.length < PAGE_SIZE) {
+      break; // last page
+    }
   }
 
   return tenders;

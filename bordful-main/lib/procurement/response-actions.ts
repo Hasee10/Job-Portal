@@ -2,8 +2,8 @@ import "server-only";
 
 import { createClient } from "@supabase/supabase-js";
 import { logAudit } from "./audit-actions";
-import { getRequestForBuyer, getRequestById } from "./request-actions";
 import { getVendorInvitation } from "./invitation-actions";
+import { getRequestById, getRequestForBuyer } from "./request-actions";
 
 export type ProcurementResponse = {
   id: string;
@@ -39,13 +39,16 @@ export type SubmitResponseInput = {
 function getAdminClient() {
   const url = process.env.SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key)
+  if (!(url && key)) {
     throw new Error("Database is not configured on this deployment.");
+  }
   return createClient(url, key, { auth: { persistSession: false } });
 }
 
 function toError(error: unknown, fallback: string): Error {
-  if (error instanceof Error) return error;
+  if (error instanceof Error) {
+    return error;
+  }
   const message = (error as { message?: string } | null)?.message;
   return new Error(message || fallback);
 }
@@ -53,14 +56,14 @@ function toError(error: unknown, fallback: string): Error {
 function rowToResponse(row: Record<string, unknown>): ProcurementResponse {
   return {
     id: row.id as string,
-    requestId: row.request_id as string,
-    vendorId: row.vendor_id as string,
     invitationId: (row.invitation_id as string) || null,
-    pricing: (row.pricing as Record<string, unknown>) || null,
-    proposalText: (row.proposal_text as string) || null,
-    proposalDocumentPath: (row.proposal_document_path as string) || null,
-    submittedAt: row.submitted_at as string,
     isWithdrawn: Boolean(row.is_withdrawn),
+    pricing: (row.pricing as Record<string, unknown>) || null,
+    proposalDocumentPath: (row.proposal_document_path as string) || null,
+    proposalText: (row.proposal_text as string) || null,
+    requestId: row.request_id as string,
+    submittedAt: row.submitted_at as string,
+    vendorId: row.vendor_id as string,
   };
 }
 
@@ -78,14 +81,18 @@ export function canVendorSubmitResponse(
   requestVisibility: "open" | "invite_only",
   invitationStatus: string | null
 ): { allowed: true } | { allowed: false; reason: string } {
-  if (requestVisibility === "open") return { allowed: true };
-  if (!invitationStatus)
+  if (requestVisibility === "open") {
+    return { allowed: true };
+  }
+  if (!invitationStatus) {
     return {
       allowed: false,
       reason: "You have not been invited to this request.",
     };
-  if (RESPONDABLE_INVITATION_STATUSES.includes(invitationStatus))
+  }
+  if (RESPONDABLE_INVITATION_STATUSES.includes(invitationStatus)) {
     return { allowed: true };
+  }
   if (invitationStatus === "prequalification_pending") {
     return {
       allowed: false,
@@ -117,7 +124,9 @@ export async function submitResponse(
   input: SubmitResponseInput
 ): Promise<ProcurementResponse> {
   const request = await getRequestById(requestId);
-  if (!request) throw new Error("Request not found.");
+  if (!request) {
+    throw new Error("Request not found.");
+  }
   if (request.status !== "published") {
     throw new Error("This request is not currently accepting responses.");
   }
@@ -133,18 +142,20 @@ export async function submitResponse(
     request.visibility,
     invitation?.status ?? null
   );
-  if (!eligibility.allowed) throw new Error(eligibility.reason);
+  if (!eligibility.allowed) {
+    throw new Error(eligibility.reason);
+  }
 
   const supabase = getAdminClient();
   const { data, error } = await supabase
     .from("procurement_responses")
     .insert({
-      request_id: requestId,
-      vendor_id: vendorId,
       invitation_id: invitation?.id ?? null,
       pricing: input.pricing,
-      proposal_text: input.proposalText,
       proposal_document_path: input.proposalDocumentPath,
+      proposal_text: input.proposalText,
+      request_id: requestId,
+      vendor_id: vendorId,
     })
     .select("*")
     .single();
@@ -159,7 +170,7 @@ export async function submitResponse(
   if (invitation) {
     await supabase
       .from("procurement_invitations")
-      .update({ status: "responded", responded_at: new Date().toISOString() })
+      .update({ responded_at: new Date().toISOString(), status: "responded" })
       .eq("id", invitation.id);
   }
 
@@ -182,8 +193,12 @@ export async function withdrawResponse(
     .select("id")
     .maybeSingle();
 
-  if (error) throw toError(error, "Failed to withdraw response.");
-  if (data) await logAudit(requestId, vendorId, "vendor", "withdrawn");
+  if (error) {
+    throw toError(error, "Failed to withdraw response.");
+  }
+  if (data) {
+    await logAudit(requestId, vendorId, "vendor", "withdrawn");
+  }
 }
 
 export async function getMyResponse(
@@ -210,7 +225,9 @@ export async function listResponsesForRequest(
   requestId: string
 ): Promise<ResponsesView> {
   const request = await getRequestForBuyer(buyerId, requestId);
-  if (!request) throw new Error("Request not found.");
+  if (!request) {
+    throw new Error("Request not found.");
+  }
 
   const supabase = getAdminClient();
   const sealed = isSealedFromBuyer(request.sealedBids, request.status);
@@ -221,8 +238,10 @@ export async function listResponsesForRequest(
       .select("id", { count: "exact", head: true })
       .eq("request_id", requestId)
       .eq("is_withdrawn", false);
-    if (error) throw toError(error, "Failed to load response count.");
-    return { sealed: true, count: count ?? 0 };
+    if (error) {
+      throw toError(error, "Failed to load response count.");
+    }
+    return { count: count ?? 0, sealed: true };
   }
 
   const { data, error } = await supabase
@@ -230,12 +249,13 @@ export async function listResponsesForRequest(
     .select("*, vendor_accounts(company_name)")
     .eq("request_id", requestId)
     .order("submitted_at", { ascending: true });
-  if (error) throw toError(error, "Failed to load responses.");
+  if (error) {
+    throw toError(error, "Failed to load responses.");
+  }
 
   await logAudit(requestId, buyerId, "employer", "viewed_responses");
 
   return {
-    sealed: false,
     responses: (data ?? []).map((row) => {
       const vendor = row.vendor_accounts as Record<string, unknown> | null;
       return {
@@ -243,6 +263,7 @@ export async function listResponsesForRequest(
         vendorCompanyName: (vendor?.company_name as string) || null,
       };
     }),
+    sealed: false,
   };
 }
 
@@ -256,9 +277,12 @@ export async function openBids(
   requestId: string
 ): Promise<void> {
   const request = await getRequestForBuyer(buyerId, requestId);
-  if (!request) throw new Error("Request not found.");
-  if (!request.sealedBids)
+  if (!request) {
+    throw new Error("Request not found.");
+  }
+  if (!request.sealedBids) {
     throw new Error("This request does not use sealed bidding.");
+  }
   if (request.status !== "closed_for_responses") {
     throw new Error(
       "This request must be closed for responses before bids can be opened."
@@ -273,6 +297,8 @@ export async function openBids(
     .eq("buyer_id", buyerId)
     .eq("status", "closed_for_responses");
 
-  if (error) throw toError(error, "Failed to open bids.");
+  if (error) {
+    throw toError(error, "Failed to open bids.");
+  }
   await logAudit(requestId, buyerId, "employer", "bids_opened");
 }

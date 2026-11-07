@@ -16,7 +16,9 @@ export function computeSkillsOverlapScore(
   resumeSkills: string[],
   jobSkills: string[]
 ): number {
-  if (jobSkills.length === 0) return 100;
+  if (jobSkills.length === 0) {
+    return 100;
+  }
   const normalizedResumeSkills = new Set(
     resumeSkills.map((s) => s.trim().toLowerCase())
   );
@@ -62,17 +64,20 @@ function parseScoreResponse(
   raw: string
 ): { score: number; reasoning: string } | null {
   const jsonMatch = raw.match(/\{[\s\S]*\}/);
-  if (!jsonMatch) return null;
+  if (!jsonMatch) {
+    return null;
+  }
   try {
     const parsed = JSON.parse(jsonMatch[0]) as {
       score?: unknown;
       reasoning?: unknown;
     };
-    if (typeof parsed.score !== "number" || !Number.isFinite(parsed.score))
+    if (typeof parsed.score !== "number" || !Number.isFinite(parsed.score)) {
       return null;
+    }
     return {
-      score: Math.max(0, Math.min(100, Math.round(parsed.score))),
       reasoning: typeof parsed.reasoning === "string" ? parsed.reasoning : "",
+      score: Math.max(0, Math.min(100, Math.round(parsed.score))),
     };
   } catch {
     return null;
@@ -86,15 +91,21 @@ function resumeSummaryText(resume: {
   experience?: { title: string; company: string; description: string }[];
 }): string {
   const lines: string[] = [];
-  if (resume.headline) lines.push(resume.headline);
-  if (resume.summary) lines.push(resume.summary);
+  if (resume.headline) {
+    lines.push(resume.headline);
+  }
+  if (resume.summary) {
+    lines.push(resume.summary);
+  }
   if (resume.experience?.length) {
     lines.push("Experience:");
     for (const job of resume.experience) {
       lines.push(`- ${job.title} at ${job.company}: ${job.description}`);
     }
   }
-  if (resume.skills.length) lines.push(`Skills: ${resume.skills.join(", ")}`);
+  if (resume.skills.length) {
+    lines.push(`Skills: ${resume.skills.join(", ")}`);
+  }
   return lines.join("\n");
 }
 
@@ -117,31 +128,33 @@ export async function scoreJobMatch(
 ): Promise<MatchResult> {
   const overlapScore = computeSkillsOverlapScore(resume.skills, job.skills);
 
-  if (!isAIConfigured() || !job.description) {
-    return { score: overlapScore, method: "skills-overlap" };
+  if (!(isAIConfigured() && job.description)) {
+    return { method: "skills-overlap", score: overlapScore };
   }
 
   try {
     const output = await aiChatCompletion(
       [
-        { role: "system", content: SCORING_SYSTEM_PROMPT },
+        { content: SCORING_SYSTEM_PROMPT, role: "system" },
         {
-          role: "user",
           content:
             `Job: ${job.title}\n${job.description.slice(0, 4000)}\n\n` +
             `Candidate resume:\n${resumeSummaryText(resume)}`,
+          role: "user",
         },
       ],
-      { temperature: 0.2, maxTokens: 200 }
+      { maxTokens: 200, temperature: 0.2 }
     );
     const parsed = parseScoreResponse(output);
-    if (!parsed) return { score: overlapScore, method: "skills-overlap" };
-    return { score: parsed.score, method: "ai", reasoning: parsed.reasoning };
+    if (!parsed) {
+      return { method: "skills-overlap", score: overlapScore };
+    }
+    return { method: "ai", reasoning: parsed.reasoning, score: parsed.score };
   } catch (error) {
     console.error(
       "[match-scoring] AI scoring failed, falling back to skills overlap:",
       error
     );
-    return { score: overlapScore, method: "skills-overlap" };
+    return { method: "skills-overlap", score: overlapScore };
   }
 }

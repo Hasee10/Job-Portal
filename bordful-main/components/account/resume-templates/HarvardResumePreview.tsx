@@ -10,7 +10,7 @@ export function HarvardResumePreview({
   return (
     <div className="mx-auto max-w-[680px] bg-white p-10 font-serif text-zinc-900 shadow-sm dark:bg-zinc-950 dark:text-zinc-50">
       <div className="text-center">
-        <h1 className="text-xl font-bold tracking-wide uppercase">
+        <h1 className="font-bold text-xl uppercase tracking-wide">
           {resume.fullName || "Your Name"}
         </h1>
         {resume.contact && (
@@ -31,7 +31,7 @@ export function HarvardResumePreview({
 
       {resume.experience.length > 0 && (
         <section className="mt-5">
-          <h2 className="border-b border-zinc-400 pb-1 text-sm font-bold tracking-wide uppercase">
+          <h2 className="border-zinc-400 border-b pb-1 font-bold text-sm uppercase tracking-wide">
             Experience
           </h2>
           <div className="mt-2 space-y-3">
@@ -64,7 +64,7 @@ export function HarvardResumePreview({
 
       {resume.education.length > 0 && (
         <section className="mt-5">
-          <h2 className="border-b border-zinc-400 pb-1 text-sm font-bold tracking-wide uppercase">
+          <h2 className="border-zinc-400 border-b pb-1 font-bold text-sm uppercase tracking-wide">
             Education
           </h2>
           <div className="mt-2 space-y-1">
@@ -88,7 +88,7 @@ export function HarvardResumePreview({
 
       {resume.skills.length > 0 && (
         <section className="mt-5">
-          <h2 className="border-b border-zinc-400 pb-1 text-sm font-bold tracking-wide uppercase">
+          <h2 className="border-zinc-400 border-b pb-1 font-bold text-sm uppercase tracking-wide">
             Skills
           </h2>
           <p className="mt-2 text-sm">{resume.skills.join(" · ")}</p>

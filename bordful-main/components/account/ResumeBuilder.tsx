@@ -1,12 +1,12 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { ResumeAssistantWidget } from "@/components/account/ResumeAssistantWidget";
+import { HarvardResumePreview } from "@/components/account/resume-templates/HarvardResumePreview";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { ResumeAssistantWidget } from "@/components/account/ResumeAssistantWidget";
-import { HarvardResumePreview } from "@/components/account/resume-templates/HarvardResumePreview";
 import type {
   ResumeContent,
   ResumeEducation,
@@ -15,26 +15,26 @@ import type {
 import type { TailoredResumeContent } from "@/lib/jobs/tailored-resume-types";
 
 const EMPTY_RESUME_CONTENT: ResumeContent = {
+  education: [],
+  experience: [],
   fullName: "",
   headline: "",
-  summary: "",
-  experience: [],
-  education: [],
   skills: [],
+  summary: "",
 };
 
 function emptyExperience(): ResumeExperience {
   return {
-    title: "",
     company: "",
-    startDate: "",
-    endDate: "",
     description: "",
+    endDate: "",
+    startDate: "",
+    title: "",
   };
 }
 
 function emptyEducation(): ResumeEducation {
-  return { school: "", degree: "", year: "" };
+  return { degree: "", school: "", year: "" };
 }
 
 export function ResumeBuilder({
@@ -104,18 +104,20 @@ export function ResumeBuilder({
       const payload: ResumeContent = { ...content, skills };
 
       const response = await fetch("/api/seeker/resume", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ content: payload }),
+        headers: { "Content-Type": "application/json" },
+        method: "POST",
       });
-      if (!response.ok) throw new Error("Failed to save resume.");
+      if (!response.ok) {
+        throw new Error("Failed to save resume.");
+      }
 
       setContent(payload);
       toast({ title: "Resume saved" });
     } catch {
       toast({
-        title: "Could not save resume",
         description: "Please try again.",
+        title: "Could not save resume",
         variant: "destructive",
       });
     } finally {
@@ -131,23 +133,24 @@ export function ResumeBuilder({
       const body = new FormData();
       body.append("file", file);
       const response = await fetch("/api/seeker/resume/upload", {
-        method: "POST",
         body,
+        method: "POST",
       });
       const data = await response.json();
-      if (!response.ok)
+      if (!response.ok) {
         throw new Error(data.error || "Failed to parse resume.");
+      }
 
       const parsed = data.resume.content as ResumeContent;
       setContent(parsed);
       setSkillsInput(parsed.skills.join(", "));
       setUploadMatches(data.matches ?? []);
       toast({
-        title: "Resume parsed",
         description:
           data.matches?.length > 0
             ? `Found ${data.matches.length} matching job${data.matches.length > 1 ? "s" : ""} - check your email too.`
             : "Review the details below and save.",
+        title: "Resume parsed",
       });
     } catch (error) {
       setUploadError(
@@ -155,12 +158,14 @@ export function ResumeBuilder({
       );
     } finally {
       setIsUploading(false);
-      if (fileInputRef.current) fileInputRef.current.value = "";
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
     }
   };
 
   const handleTailor = async () => {
-    if (!targetJob && !jobDescription.trim()) {
+    if (!(targetJob || jobDescription.trim())) {
       setTailorError("Paste a job description first.");
       return;
     }
@@ -171,13 +176,13 @@ export function ResumeBuilder({
     setUpgradeRequired(false);
     try {
       const response = await fetch("/api/seeker/resume/tailor", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(
           targetJob
-            ? { mode, jobId: targetJob.id, resume: content }
-            : { mode, jobDescription, resume: content }
+            ? { jobId: targetJob.id, mode, resume: content }
+            : { jobDescription, mode, resume: content }
         ),
+        headers: { "Content-Type": "application/json" },
+        method: "POST",
       });
       const data = await response.json();
       if (!response.ok) {
@@ -219,7 +224,9 @@ export function ResumeBuilder({
   };
 
   const handleDownloadPdf = async () => {
-    if (!tailoredResume) return;
+    if (!tailoredResume) {
+      return;
+    }
     setIsDownloadingPdf(true);
     try {
       const [{ pdf }, { HarvardResumePdf }] = await Promise.all([
@@ -240,8 +247,8 @@ export function ResumeBuilder({
     } catch (error) {
       console.error("[ResumeBuilder] PDF generation failed:", error);
       toast({
-        title: "Could not generate PDF",
         description: "Please try again.",
+        title: "Could not generate PDF",
         variant: "destructive",
       });
     } finally {
@@ -263,7 +270,9 @@ export function ResumeBuilder({
             className="hidden"
             onChange={(e) => {
               const file = e.target.files?.[0];
-              if (file) handleUpload(file);
+              if (file) {
+                handleUpload(file);
+              }
             }}
             ref={fileInputRef}
             type="file"
@@ -278,7 +287,7 @@ export function ResumeBuilder({
           </Button>
         </div>
         {uploadError && (
-          <p className="mt-2 text-sm text-red-600 dark:text-red-400">
+          <p className="mt-2 text-red-600 text-sm dark:text-red-400">
             {uploadError}
           </p>
         )}
@@ -309,7 +318,7 @@ export function ResumeBuilder({
         <div className="mt-4 space-y-4">
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
-              <label className="text-sm font-medium" htmlFor="fullName">
+              <label className="font-medium text-sm" htmlFor="fullName">
                 Full name
               </label>
               <Input
@@ -322,7 +331,7 @@ export function ResumeBuilder({
               />
             </div>
             <div>
-              <label className="text-sm font-medium" htmlFor="headline">
+              <label className="font-medium text-sm" htmlFor="headline">
                 Headline
               </label>
               <Input
@@ -338,7 +347,7 @@ export function ResumeBuilder({
           </div>
 
           <div>
-            <label className="text-sm font-medium" htmlFor="summary">
+            <label className="font-medium text-sm" htmlFor="summary">
               Summary
             </label>
             <Textarea
@@ -354,7 +363,7 @@ export function ResumeBuilder({
           </div>
 
           <div>
-            <label className="text-sm font-medium" htmlFor="skills">
+            <label className="font-medium text-sm" htmlFor="skills">
               Skills (comma-separated)
             </label>
             <Input
@@ -367,7 +376,7 @@ export function ResumeBuilder({
 
           <div>
             <div className="flex items-center justify-between">
-              <span className="text-sm font-medium">Experience</span>
+              <span className="font-medium text-sm">Experience</span>
               <Button
                 onClick={() =>
                   setContent((p) => ({
@@ -445,7 +454,7 @@ export function ResumeBuilder({
 
           <div>
             <div className="flex items-center justify-between">
-              <span className="text-sm font-medium">Education</span>
+              <span className="font-medium text-sm">Education</span>
               <Button
                 onClick={() =>
                   setContent((p) => ({
@@ -553,12 +562,12 @@ export function ResumeBuilder({
             </div>
           )}
           {tailorError && !upgradeRequired && (
-            <p className="text-sm text-red-600 dark:text-red-400">
+            <p className="text-red-600 text-sm dark:text-red-400">
               {tailorError}
             </p>
           )}
           {tailoredText && (
-            <div className="rounded-md border bg-zinc-50 p-4 text-sm whitespace-pre-wrap dark:bg-zinc-900">
+            <div className="whitespace-pre-wrap rounded-md border bg-zinc-50 p-4 text-sm dark:bg-zinc-900">
               {tailoredText}
             </div>
           )}
@@ -566,7 +575,7 @@ export function ResumeBuilder({
           {tailoredResume && (
             <div className="mt-2 grid gap-6 lg:grid-cols-2">
               <div className="space-y-3">
-                <p className="text-sm font-medium">Edit tailored resume</p>
+                <p className="font-medium text-sm">Edit tailored resume</p>
                 <div className="grid gap-2 sm:grid-cols-2">
                   <Input
                     onChange={(e) =>
@@ -667,7 +676,7 @@ export function ResumeBuilder({
               </div>
 
               <div>
-                <p className="mb-2 text-sm font-medium">Preview</p>
+                <p className="mb-2 font-medium text-sm">Preview</p>
                 <HarvardResumePreview resume={tailoredResume} />
               </div>
             </div>

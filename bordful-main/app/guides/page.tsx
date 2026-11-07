@@ -4,8 +4,8 @@ import config from "@/config";
 import { listPublishedGuides } from "@/lib/content/guide-actions";
 
 export const metadata: Metadata = {
-  title: `Career Guides | ${config.title}`,
   description: "Practical guides to help you search, apply, and negotiate.",
+  title: `Career Guides | ${config.title}`,
 };
 
 export const dynamic = "force-dynamic";

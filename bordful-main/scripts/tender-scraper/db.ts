@@ -4,8 +4,9 @@ import type { ScrapedTender } from "./types";
 function getSupabase() {
   const url = process.env.SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key)
+  if (!(url && key)) {
     throw new Error("SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY must be set");
+  }
   return createClient(url, key, { auth: { persistSession: false } });
 }
 
@@ -22,17 +23,17 @@ export async function upsertTender(
     .maybeSingle();
 
   const row = {
-    source: tender.source,
-    source_id: tender.sourceId,
-    title: tender.title,
     buyer_name: tender.buyerName ?? null,
     country: tender.country ?? null,
     cpv_codes: tender.cpvCodes,
-    publication_date: tender.publicationDate ?? null,
     deadline_date: tender.deadlineDate ?? null,
-    url: tender.url,
     is_active: true,
+    publication_date: tender.publicationDate ?? null,
+    source: tender.source,
+    source_id: tender.sourceId,
+    title: tender.title,
     updated_at: new Date().toISOString(),
+    url: tender.url,
   };
 
   if (existing) {
@@ -40,12 +41,16 @@ export async function upsertTender(
       .from("scraped_tenders")
       .update(row)
       .eq("id", existing.id);
-    if (error) throw error;
+    if (error) {
+      throw error;
+    }
     return "updated";
   }
 
   const { error } = await supabase.from("scraped_tenders").insert(row);
-  if (error) throw error;
+  if (error) {
+    throw error;
+  }
   return "inserted";
 }
 
@@ -63,7 +68,9 @@ export async function deactivateExpiredTenders(): Promise<number> {
     .not("deadline_date", "is", null)
     .select("id");
 
-  if (error) throw error;
+  if (error) {
+    throw error;
+  }
   return data?.length ?? 0;
 }
 
@@ -89,6 +96,8 @@ export async function deactivateStaleUndatedTenders(): Promise<number> {
     .lt("created_at", cutoff)
     .select("id");
 
-  if (error) throw error;
+  if (error) {
+    throw error;
+  }
   return data?.length ?? 0;
 }

@@ -4,19 +4,19 @@ import { XMLParser } from "fast-xml-parser";
 import type { ScrapedJob } from "../types";
 
 export interface RssSourceConfig {
-  name: string; // matches ScrapedJob.source
-  feedUrl: string;
-  defaultCountry?: string;
-  companyField?: string; // dot-path in parsed item (e.g. 'company', 'dc:creator')
   cityField?: string;
+  companyField?: string; // dot-path in parsed item (e.g. 'company', 'dc:creator')
   countryField?: string;
+  defaultCountry?: string;
+  feedUrl: string;
   jobIdField?: string; // dot-path for dedup ID (falls back to URL slug)
+  name: string; // matches ScrapedJob.source
   titleTransform?: (raw: string) => { title: string; company: string };
 }
 
 const parser = new XMLParser({
-  ignoreAttributes: false,
   attributeNamePrefix: "@_",
+  ignoreAttributes: false,
 });
 
 // CDATA blocks are treated as literal text — HTML entities inside them are NOT
@@ -24,22 +24,24 @@ const parser = new XMLParser({
 function decodeEntities(s: string): string {
   const named: Record<string, string> = {
     amp: "&",
-    lt: "<",
-    gt: ">",
-    quot: '"',
     apos: "'",
-    nbsp: " ",
-    ndash: "–",
-    mdash: "—",
+    gt: ">",
     hellip: "…",
     laquo: "«",
+    lt: "<",
+    mdash: "—",
+    nbsp: " ",
+    ndash: "–",
+    quot: '"',
     raquo: "»",
   };
   return s
     .replace(/&#x([0-9a-fA-F]+);/g, (_, h) =>
-      String.fromCharCode(parseInt(h, 16))
+      String.fromCharCode(Number.parseInt(h, 16))
     )
-    .replace(/&#([0-9]+);/g, (_, d) => String.fromCharCode(parseInt(d, 10)))
+    .replace(/&#([0-9]+);/g, (_, d) =>
+      String.fromCharCode(Number.parseInt(d, 10))
+    )
     .replace(/&([a-zA-Z]+);/g, (m, name) => named[name.toLowerCase()] ?? m);
 }
 
@@ -58,18 +60,20 @@ function stripHtml(s: string): string {
 }
 
 function parseDate(raw: unknown): Date | undefined {
-  if (!raw) return undefined;
+  if (!raw) {
+    return undefined;
+  }
   const d = new Date(decodeEntities(String(raw)));
   return isNaN(d.getTime()) ? undefined : d;
 }
 
 function getNestedValue(obj: Record<string, unknown>, dotPath: string): string {
   const val = dotPath.split(".").reduce<unknown>((cur, key) => {
-    if (cur && typeof cur === "object")
+    if (cur && typeof cur === "object") {
       return (cur as Record<string, unknown>)[key];
-    return undefined;
+    }
   }, obj);
-  return typeof val === "string" ? val : val != null ? String(val) : "";
+  return typeof val === "string" ? val : val == null ? "" : String(val);
 }
 
 function slugFromUrl(url: string): string {
@@ -103,7 +107,9 @@ export async function scrapeRss(
 
   const rawItems: Record<string, unknown>[] = (() => {
     const channel = parsed?.rss?.channel ?? parsed?.feed;
-    if (!channel) return [];
+    if (!channel) {
+      return [];
+    }
     const items = channel.item ?? channel.entry ?? [];
     return Array.isArray(items) ? items : [items];
   })();
@@ -119,7 +125,9 @@ export async function scrapeRss(
         : (item.link ?? item.guid ?? "")
     ).trim();
 
-    if (!rawTitle || !link) continue;
+    if (!(rawTitle && link)) {
+      continue;
+    }
 
     let title = rawTitle;
     let company = "";
@@ -140,7 +148,9 @@ export async function scrapeRss(
       company = parts[parts.length - 1].trim();
     }
 
-    if (!company) company = config.name;
+    if (!company) {
+      company = config.name;
+    }
 
     const city = config.cityField
       ? getNestedValue(item as Record<string, unknown>, config.cityField).trim()
@@ -173,16 +183,16 @@ export async function scrapeRss(
         : "onsite";
 
     jobs.push({
-      title,
-      company,
       apply_url: link,
-      source: config.name,
-      job_identifier: jobId,
+      company,
       description: description || undefined,
+      job_identifier: jobId,
+      posted_at: parseDate(pubDate),
+      remote_type,
+      source: config.name,
+      title,
       workplace_city: city || undefined,
       workplace_country: country || undefined,
-      remote_type,
-      posted_at: parseDate(pubDate),
     });
   }
 
@@ -194,24 +204,24 @@ export async function scrapeRss(
 
 export const RSS_SOURCES: RssSourceConfig[] = [
   {
+    cityField: "city",
+    companyField: "company",
+    countryField: "country",
+    defaultCountry: "Pakistan",
+    feedUrl: "https://rss.mustakbil.com/jobs-rss",
+    jobIdField: "referencenumber",
     // Verified working — 500 jobs, custom <company>/<city>/<country> tags
     name: "mustakbil",
-    feedUrl: "https://rss.mustakbil.com/jobs-rss",
-    defaultCountry: "Pakistan",
-    companyField: "company",
-    cityField: "city",
-    countryField: "country",
-    jobIdField: "referencenumber",
     // Strip Mustakbil's " Jobs in City, Country" suffix appended to every title
     titleTransform: (raw) => {
       const cleaned = raw.replace(/\s+Jobs\s+in\s+.+$/i, "").trim();
-      return { title: cleaned || raw.trim(), company: "" };
+      return { company: "", title: cleaned || raw.trim() };
     },
   },
   {
+    defaultCountry: "Pakistan",
+    feedUrl: "https://www.jobs.com.pk/rss",
     // Verified working — small feed (~6 jobs) but useful for PK coverage
     name: "jobs-com-pk",
-    feedUrl: "https://www.jobs.com.pk/rss",
-    defaultCountry: "Pakistan",
   },
 ];

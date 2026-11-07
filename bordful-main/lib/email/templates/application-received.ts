@@ -53,7 +53,7 @@ export function renderApplicationReceivedEmail({
   `);
 
   return {
-    subject: `${applicantName} applied for ${jobTitle}`,
     html,
+    subject: `${applicantName} applied for ${jobTitle}`,
   };
 }

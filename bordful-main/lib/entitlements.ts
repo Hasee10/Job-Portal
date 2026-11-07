@@ -11,10 +11,10 @@ export const TIER_LIMITS: Record<
   SeekerTier,
   { maxSavedSearches: number; maxResumeTailorsPerMonth: number }
 > = {
-  free: { maxSavedSearches: 3, maxResumeTailorsPerMonth: 5 },
+  free: { maxResumeTailorsPerMonth: 5, maxSavedSearches: 3 },
   premium: {
-    maxSavedSearches: 20,
     maxResumeTailorsPerMonth: Number.POSITIVE_INFINITY,
+    maxSavedSearches: 20,
   },
 };
 

@@ -62,7 +62,7 @@ export function renderProcurementInvitationEmail({
   `);
 
   return {
-    subject: `${buyerCompanyName} invited you to respond: ${requestTitle}`,
     html,
+    subject: `${buyerCompanyName} invited you to respond: ${requestTitle}`,
   };
 }

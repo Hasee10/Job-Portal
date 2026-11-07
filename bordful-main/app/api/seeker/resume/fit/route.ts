@@ -42,24 +42,24 @@ export async function POST(request: Request) {
 
   const result = await scoreJobMatch(
     {
-      headline: resume.content.headline,
-      summary: resume.content.summary,
-      skills: resume.content.skills,
       experience: resume.content.experience.map((entry) => ({
-        title: entry.title,
         company: entry.company,
         description: entry.description,
+        title: entry.title,
       })),
+      headline: resume.content.headline,
+      skills: resume.content.skills,
+      summary: resume.content.summary,
     },
-    { title: job.title, description: job.description, skills: jobSkills }
+    { description: job.description, skills: jobSkills, title: job.title }
   );
 
   return NextResponse.json({
     available: true,
-    score: result.score,
-    method: result.method,
-    reasoning: result.reasoning ?? null,
     matchedSkills,
+    method: result.method,
     missingSkills,
+    reasoning: result.reasoning ?? null,
+    score: result.score,
   });
 }

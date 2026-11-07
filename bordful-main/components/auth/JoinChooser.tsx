@@ -1,37 +1,37 @@
+import { ArrowRight, Briefcase, Search, Users } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, Briefcase, Search, Users } from "lucide-react";
 
 const SIGN_IN_PATHS = [
-  { label: "Job seeker sign in", href: "/account/sign-in" },
-  { label: "Recruiter sign in", href: "/recruiter/sign-in" },
-  { label: "Employer sign in", href: "/sign-in" },
+  { href: "/account/sign-in", label: "Job seeker sign in" },
+  { href: "/recruiter/sign-in", label: "Recruiter sign in" },
+  { href: "/sign-in", label: "Employer sign in" },
 ] as const;
 
 const JOB_PATHS = [
   {
-    icon: Search,
-    title: "I'm looking for a job",
+    cta: "Continue as a job seeker",
     description:
       "Save jobs, track applications, build a resume, and get matched with recruiters and employers.",
-    cta: "Continue as a job seeker",
     href: "/account/sign-in?intent=signup",
+    icon: Search,
+    title: "I'm looking for a job",
   },
   {
-    icon: Users,
-    title: "I'm a recruiter",
+    cta: "Continue as a recruiter",
     description:
       "Search candidates who are open to opportunities and reach out directly.",
-    cta: "Continue as a recruiter",
     href: "/recruiter/sign-up",
+    icon: Users,
+    title: "I'm a recruiter",
   },
   {
-    icon: Briefcase,
-    title: "I'm hiring",
+    cta: "Continue as an employer",
     description:
       "Post jobs, review applications, and find candidates for your open roles.",
-    cta: "Continue as an employer",
     href: "/sign-up",
+    icon: Briefcase,
+    title: "I'm hiring",
   },
 ] as const;
 
@@ -55,7 +55,7 @@ export function JoinChooser({ siteTitle }: { siteTitle: string }) {
           src="/caliber-bowtie-light.svg"
           width={80}
         />
-        <h1 className="font-bold text-3xl tracking-tight text-zinc-900 dark:text-zinc-50">
+        <h1 className="font-bold text-3xl text-zinc-900 tracking-tight dark:text-zinc-50">
           How will you use {siteTitle}?
         </h1>
         <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
@@ -80,7 +80,7 @@ export function JoinChooser({ siteTitle }: { siteTitle: string }) {
             <p className="mt-1.5 flex-1 text-sm text-zinc-600 dark:text-zinc-400">
               {description}
             </p>
-            <span className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-primary">
+            <span className="mt-4 inline-flex items-center gap-1 font-medium text-primary text-sm">
               {cta}
               <ArrowRight
                 aria-hidden="true"

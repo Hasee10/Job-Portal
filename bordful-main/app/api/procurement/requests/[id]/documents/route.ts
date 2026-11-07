@@ -19,8 +19,9 @@ export async function GET(
   const { id } = await params;
   const { searchParams } = new URL(request.url);
   const path = searchParams.get("path");
-  if (!path)
+  if (!path) {
     return NextResponse.json({ error: "path is required." }, { status: 400 });
+  }
 
   try {
     const url = await getSignedDownloadUrl(

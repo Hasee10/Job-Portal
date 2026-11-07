@@ -18,21 +18,22 @@ export type ScrapedTenderRow = {
 function getAdminClient() {
   const url = process.env.SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key)
+  if (!(url && key)) {
     throw new Error("Database is not configured on this deployment.");
+  }
   return createClient(url, key, { auth: { persistSession: false } });
 }
 
 function rowToTender(row: Record<string, unknown>): ScrapedTenderRow {
   return {
-    id: row.id as string,
-    source: row.source as string,
-    title: row.title as string,
     buyerName: (row.buyer_name as string) || null,
     country: (row.country as string) || null,
     cpvCodes: (row.cpv_codes as string[]) || [],
-    publicationDate: (row.publication_date as string) || null,
     deadlineDate: (row.deadline_date as string) || null,
+    id: row.id as string,
+    publicationDate: (row.publication_date as string) || null,
+    source: row.source as string,
+    title: row.title as string,
     url: row.url as string,
   };
 }
@@ -79,10 +80,16 @@ async function fetchActiveWindow(): Promise<ScrapedTenderRow[]> {
       .eq("is_active", true)
       .range(offset, Math.min(offset + POSTGREST_PAGE_SIZE, FETCH_WINDOW) - 1);
 
-    if (error) throw error;
-    if (!data || data.length === 0) break;
+    if (error) {
+      throw error;
+    }
+    if (!data || data.length === 0) {
+      break;
+    }
     rows.push(...data);
-    if (data.length < POSTGREST_PAGE_SIZE) break; // last page
+    if (data.length < POSTGREST_PAGE_SIZE) {
+      break; // last page
+    }
   }
 
   return rows.map(rowToTender);
@@ -127,8 +134,12 @@ function sortTenders(
   const sorted = [...tenders];
   if (sort === "deadline") {
     sorted.sort((a, b) => {
-      if (!a.deadlineDate) return 1;
-      if (!b.deadlineDate) return -1;
+      if (!a.deadlineDate) {
+        return 1;
+      }
+      if (!b.deadlineDate) {
+        return -1;
+      }
       return (
         new Date(a.deadlineDate).getTime() - new Date(b.deadlineDate).getTime()
       );
@@ -177,28 +188,29 @@ export async function getTenderFacets(): Promise<TenderFacets> {
   const all = await fetchActiveWindow();
 
   const categories = TENDER_CATEGORIES.map((c) => ({
-    cpvPrefix: c.cpvPrefix,
-    label: c.label,
     count: all.filter((t) =>
       t.cpvCodes.some((code) => code.startsWith(c.cpvPrefix))
     ).length,
+    cpvPrefix: c.cpvPrefix,
+    label: c.label,
   }));
 
   const sourceCounts = new Map<string, number>();
   const countryCounts = new Map<string, number>();
   for (const t of all) {
     sourceCounts.set(t.source, (sourceCounts.get(t.source) ?? 0) + 1);
-    if (t.country)
+    if (t.country) {
       countryCounts.set(t.country, (countryCounts.get(t.country) ?? 0) + 1);
+    }
   }
 
   const sources = Array.from(sourceCounts.entries())
-    .map(([source, count]) => ({ source, count }))
+    .map(([source, count]) => ({ count, source }))
     .sort((a, b) => b.count - a.count);
 
   const countries = Array.from(countryCounts.entries())
     .map(([code, count]) => ({ code, count }))
     .sort((a, b) => b.count - a.count);
 
-  return { categories, sources, countries };
+  return { categories, countries, sources };
 }

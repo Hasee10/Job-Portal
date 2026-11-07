@@ -38,12 +38,12 @@ export async function POST(request: Request) {
         companyName: employer.companyName || employer.email,
         dashboardUrl: `${config.url}/dashboard`,
       });
-      await sendEmail({ to: employer.email, subject, html });
+      await sendEmail({ html, subject, to: employer.email });
     } catch (error) {
       console.error("[api/employers/signup] welcome email failed", error);
     }
 
-    return NextResponse.json({ success: true, email: employer.email });
+    return NextResponse.json({ email: employer.email, success: true });
   } catch (error) {
     if (error instanceof EmployerAuthError) {
       const status = error.code === "db_unavailable" ? 503 : 400;

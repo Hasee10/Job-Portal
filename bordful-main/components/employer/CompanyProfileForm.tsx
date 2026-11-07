@@ -1,9 +1,9 @@
 "use client";
 
-import Image from "next/image";
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { Building2 } from "lucide-react";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -20,7 +20,9 @@ const COMPANY_SIZES = [
 ];
 
 function deriveLogoPreview(website: string): string | null {
-  if (!website.trim()) return null;
+  if (!website.trim()) {
+    return null;
+  }
   try {
     const url = website.startsWith("http") ? website : `https://${website}`;
     const domain = new URL(url).hostname.replace(/^www\./, "");
@@ -50,21 +52,23 @@ export function CompanyProfileForm({ employer }: { employer: Employer }) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!companyName.trim()) return;
+    if (!companyName.trim()) {
+      return;
+    }
     setIsSubmitting(true);
 
     try {
       const res = await fetch("/api/employer/profile", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           companyName: companyName.trim(),
-          website: website.trim() || null,
-          industry: industry.trim() || null,
           companySize: companySize || null,
-          location: location.trim() || null,
           description: description.trim() || null,
+          industry: industry.trim() || null,
+          location: location.trim() || null,
+          website: website.trim() || null,
         }),
+        headers: { "Content-Type": "application/json" },
+        method: "PATCH",
       });
 
       if (!res.ok) {
@@ -77,10 +81,10 @@ export function CompanyProfileForm({ employer }: { employer: Employer }) {
       router.refresh();
     } catch (err) {
       toast({
-        title: "Failed to save",
-        description: err instanceof Error ? err.message : "Please try again.",
-        variant: "destructive",
         className: "bg-destructive border border-red-600 shadow-md",
+        description: err instanceof Error ? err.message : "Please try again.",
+        title: "Failed to save",
+        variant: "destructive",
       });
     } finally {
       setIsSubmitting(false);
@@ -116,7 +120,7 @@ export function CompanyProfileForm({ employer }: { employer: Employer }) {
 
       <div className="space-y-1.5">
         <label
-          className="text-sm font-medium text-zinc-700 dark:text-zinc-300"
+          className="font-medium text-sm text-zinc-700 dark:text-zinc-300"
           htmlFor="company-name"
         >
           Company name <span className="text-red-500">*</span>
@@ -132,7 +136,7 @@ export function CompanyProfileForm({ employer }: { employer: Employer }) {
 
       <div className="space-y-1.5">
         <label
-          className="text-sm font-medium text-zinc-700 dark:text-zinc-300"
+          className="font-medium text-sm text-zinc-700 dark:text-zinc-300"
           htmlFor="company-website"
         >
           Website
@@ -148,7 +152,7 @@ export function CompanyProfileForm({ employer }: { employer: Employer }) {
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-1.5">
           <label
-            className="text-sm font-medium text-zinc-700 dark:text-zinc-300"
+            className="font-medium text-sm text-zinc-700 dark:text-zinc-300"
             htmlFor="company-industry"
           >
             Industry
@@ -162,7 +166,7 @@ export function CompanyProfileForm({ employer }: { employer: Employer }) {
         </div>
         <div className="space-y-1.5">
           <label
-            className="text-sm font-medium text-zinc-700 dark:text-zinc-300"
+            className="font-medium text-sm text-zinc-700 dark:text-zinc-300"
             htmlFor="company-size"
           >
             Company size
@@ -185,7 +189,7 @@ export function CompanyProfileForm({ employer }: { employer: Employer }) {
 
       <div className="space-y-1.5">
         <label
-          className="text-sm font-medium text-zinc-700 dark:text-zinc-300"
+          className="font-medium text-sm text-zinc-700 dark:text-zinc-300"
           htmlFor="company-location"
         >
           Location
@@ -200,7 +204,7 @@ export function CompanyProfileForm({ employer }: { employer: Employer }) {
 
       <div className="space-y-1.5">
         <label
-          className="text-sm font-medium text-zinc-700 dark:text-zinc-300"
+          className="font-medium text-sm text-zinc-700 dark:text-zinc-300"
           htmlFor="company-description"
         >
           About the company

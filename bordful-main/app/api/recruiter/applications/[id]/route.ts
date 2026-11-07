@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import {
-  updateApplicationStatus,
   type ApplicationStatus,
+  updateApplicationStatus,
 } from "@/lib/jobs/application-actions";
 
 export const dynamic = "force-dynamic";

@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
-import {
-  createRequest,
-  listBuyerRequests,
-} from "@/lib/procurement/request-actions";
 import type {
   ProcurementType,
   ProcurementVisibility,
   SpecField,
+} from "@/lib/procurement/request-actions";
+import {
+  createRequest,
+  listBuyerRequests,
 } from "@/lib/procurement/request-actions";
 
 export const dynamic = "force-dynamic";
@@ -52,7 +52,7 @@ export async function POST(request: Request) {
   if (!VALID_VISIBILITY.includes(visibility as ProcurementVisibility)) {
     return NextResponse.json({ error: "Invalid visibility." }, { status: 400 });
   }
-  if (!title || !description || !category) {
+  if (!(title && description && category)) {
     return NextResponse.json(
       { error: "Title, category, and description are required." },
       { status: 400 }
@@ -61,18 +61,18 @@ export async function POST(request: Request) {
 
   try {
     const created = await createRequest(session.user.id, {
-      type: type as ProcurementType,
       category,
-      title,
       description,
-      specFields,
-      visibility: visibility as ProcurementVisibility,
-      sealedBids: Boolean(body.sealedBids),
       requiresPrequalification: Boolean(body.requiresPrequalification),
       responseDeadline:
         typeof body.responseDeadline === "string"
           ? body.responseDeadline
           : null,
+      sealedBids: Boolean(body.sealedBids),
+      specFields,
+      title,
+      type: type as ProcurementType,
+      visibility: visibility as ProcurementVisibility,
     });
     return NextResponse.json({ request: created });
   } catch (error) {

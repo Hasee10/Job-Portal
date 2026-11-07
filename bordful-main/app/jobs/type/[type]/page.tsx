@@ -41,8 +41,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   if (!jobType) {
     return {
-      title: `Job Type Not Found | ${config.title}`,
       description: "The job type you're looking for doesn't exist.",
+      title: `Job Type Not Found | ${config.title}`,
     };
   }
 
@@ -50,9 +50,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const description = JOB_TYPE_DESCRIPTIONS[jobType];
 
   return createMetadata({
-    title: `${displayName} Jobs | ${config.title}`,
     description: `Browse ${displayName.toLowerCase()} jobs. ${description}`,
     path: `/jobs/type/${typeSlug}`,
+    title: `${displayName} Jobs | ${config.title}`,
   });
 }
 

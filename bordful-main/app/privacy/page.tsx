@@ -3,10 +3,10 @@ import config from "@/config";
 import { generateMetadata } from "@/lib/utils/metadata";
 
 export const metadata = generateMetadata({
-  title: `Privacy & Cookies - ${config.nav.title}`,
   description:
     "Our commitment to protecting your privacy and personal information.",
   path: "/privacy",
+  title: `Privacy & Cookies - ${config.nav.title}`,
 });
 
 // This page will be static
@@ -30,12 +30,12 @@ export default function PrivacyPage() {
         <div className="mb-8">
           <div className="space-y-2">
             <h1 className="font-semibold text-2xl">Privacy & Cookies Policy</h1>
-            <div className="text-gray-500 dark:text-gray-500 text-sm">
+            <div className="text-gray-500 text-sm dark:text-gray-500">
               Last updated:{" "}
               {new Date().toLocaleDateString("en-US", {
-                year: "numeric",
-                month: "long",
                 day: "numeric",
+                month: "long",
+                year: "numeric",
               })}
             </div>
           </div>

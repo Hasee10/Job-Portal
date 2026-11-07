@@ -26,12 +26,12 @@ export type ResumeContent = {
 };
 
 export const EMPTY_RESUME_CONTENT: ResumeContent = {
+  education: [],
+  experience: [],
   fullName: "",
   headline: "",
-  summary: "",
-  experience: [],
-  education: [],
   skills: [],
+  summary: "",
 };
 
 export type SeekerResume = {
@@ -49,7 +49,7 @@ export type SeekerResumeForMatching = SeekerResume & {
 function getAdminClient() {
   const url = process.env.SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key) {
+  if (!(url && key)) {
     throw new Error("Database is not configured on this deployment.");
   }
   return createClient(url, key, { auth: { persistSession: false } });
@@ -57,11 +57,11 @@ function getAdminClient() {
 
 function rowToResume(row: Record<string, unknown>): SeekerResume {
   return {
-    seekerId: row.seeker_id as string,
     content: {
       ...EMPTY_RESUME_CONTENT,
       ...((row.content as Partial<ResumeContent>) || {}),
     },
+    seekerId: row.seeker_id as string,
     updatedAt: row.updated_at as string,
   };
 }
@@ -76,8 +76,12 @@ export async function getSeekerResume(
     .eq("seeker_id", seekerId)
     .maybeSingle();
 
-  if (error) throw error;
-  if (!data) return null;
+  if (error) {
+    throw error;
+  }
+  if (!data) {
+    return null;
+  }
   return rowToResume(data);
 }
 
@@ -92,15 +96,17 @@ export async function listSeekerResumesForMatching(): Promise<
     .from("seeker_resumes")
     .select("*, job_seekers(email)");
 
-  if (error) throw error;
+  if (error) {
+    throw error;
+  }
 
   return (data ?? [])
     .filter((row) => row.job_seekers?.email)
     .map((row) => ({
       ...rowToResume(row),
-      seekerEmail: (row.job_seekers as { email: string }).email,
-      matchedJobIds: (row.matched_job_ids as string[]) || [],
       lastMatchedAt: (row.last_matched_at as string) || null,
+      matchedJobIds: (row.matched_job_ids as string[]) || [],
+      seekerEmail: (row.job_seekers as { email: string }).email,
     }))
     .filter((resume) => resume.content.skills.length > 0);
 }
@@ -119,7 +125,9 @@ export async function markSeekerResumeMatched(
       matched_job_ids: matchedJobIds.slice(-MAX_MATCHED_JOB_IDS),
     })
     .eq("seeker_id", seekerId);
-  if (error) throw error;
+  if (error) {
+    throw error;
+  }
 }
 
 export async function saveSeekerResume(
@@ -131,8 +139,8 @@ export async function saveSeekerResume(
     .from("seeker_resumes")
     .upsert(
       {
-        seeker_id: seekerId,
         content,
+        seeker_id: seekerId,
         updated_at: new Date().toISOString(),
       },
       { onConflict: "seeker_id" }
@@ -140,6 +148,8 @@ export async function saveSeekerResume(
     .select("*")
     .single();
 
-  if (error) throw error;
+  if (error) {
+    throw error;
+  }
   return rowToResume(data);
 }

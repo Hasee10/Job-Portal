@@ -60,9 +60,9 @@ export function ResetPasswordForm() {
 
     try {
       const response = await fetch("/api/employers/reset-password", {
-        method: "POST",
+        body: JSON.stringify({ password, token }),
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token, password }),
+        method: "POST",
       });
       const result = await response.json();
 
@@ -73,8 +73,8 @@ export function ResetPasswordForm() {
 
       setIsSuccess(true);
       toast({
-        title: "Password reset",
         description: "You can now sign in with your new password.",
+        title: "Password reset",
       });
       setTimeout(() => router.push("/sign-in"), 2000);
     } catch {

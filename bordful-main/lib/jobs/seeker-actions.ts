@@ -12,7 +12,7 @@ export type SeekerJobState = {
 function getAdminClient() {
   const url = process.env.SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key) {
+  if (!(url && key)) {
     throw new Error("Database is not configured on this deployment.");
   }
   return createClient(url, key, { auth: { persistSession: false } });
@@ -34,8 +34,12 @@ export async function getSeekerJobState(
       .eq("seeker_id", seekerId),
   ]);
 
-  if (savedResult.error) throw savedResult.error;
-  if (applicationsResult.error) throw applicationsResult.error;
+  if (savedResult.error) {
+    throw savedResult.error;
+  }
+  if (applicationsResult.error) {
+    throw applicationsResult.error;
+  }
 
   const applications: Record<string, ApplicationStatus> = {};
   for (const row of applicationsResult.data ?? []) {
@@ -43,8 +47,8 @@ export async function getSeekerJobState(
   }
 
   return {
-    savedJobIds: (savedResult.data ?? []).map((row) => row.job_id),
     applications,
+    savedJobIds: (savedResult.data ?? []).map((row) => row.job_id),
   };
 }
 
@@ -53,10 +57,12 @@ export async function saveJob(seekerId: string, jobId: string): Promise<void> {
   const { error } = await supabase
     .from("saved_jobs")
     .upsert(
-      { seeker_id: seekerId, job_id: jobId },
-      { onConflict: "seeker_id,job_id", ignoreDuplicates: true }
+      { job_id: jobId, seeker_id: seekerId },
+      { ignoreDuplicates: true, onConflict: "seeker_id,job_id" }
     );
-  if (error) throw error;
+  if (error) {
+    throw error;
+  }
 }
 
 export async function unsaveJob(
@@ -69,7 +75,9 @@ export async function unsaveJob(
     .delete()
     .eq("seeker_id", seekerId)
     .eq("job_id", jobId);
-  if (error) throw error;
+  if (error) {
+    throw error;
+  }
 }
 
 export async function setApplicationStatus(
@@ -80,14 +88,16 @@ export async function setApplicationStatus(
   const supabase = getAdminClient();
   const { error } = await supabase.from("job_applications").upsert(
     {
-      seeker_id: seekerId,
       job_id: jobId,
+      seeker_id: seekerId,
       status,
       updated_at: new Date().toISOString(),
     },
     { onConflict: "seeker_id,job_id" }
   );
-  if (error) throw error;
+  if (error) {
+    throw error;
+  }
 }
 
 export async function clearApplicationStatus(
@@ -100,7 +110,9 @@ export async function clearApplicationStatus(
     .delete()
     .eq("seeker_id", seekerId)
     .eq("job_id", jobId);
-  if (error) throw error;
+  if (error) {
+    throw error;
+  }
 }
 
 export type SavedJobWithDetails = {
@@ -121,7 +133,9 @@ export async function getSavedJobsWithDetails(
     .eq("seeker_id", seekerId)
     .order("created_at", { ascending: false });
 
-  if (error) throw error;
+  if (error) {
+    throw error;
+  }
 
   return (data ?? [])
     .filter((row) => row.jobs)
@@ -132,11 +146,11 @@ export async function getSavedJobsWithDetails(
         apply_url: string;
       };
       return {
+        applyUrl: job.apply_url,
+        company: job.company,
         jobId: row.job_id,
         savedAt: row.created_at,
         title: job.title,
-        company: job.company,
-        applyUrl: job.apply_url,
       };
     });
 }

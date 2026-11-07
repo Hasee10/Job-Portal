@@ -15,10 +15,10 @@ import { generateMetadata } from "@/lib/utils/metadata";
 
 // Generate metadata for SEO
 export const metadata: Metadata = generateMetadata({
-  title: `Browse Jobs by Location | ${config.title}`,
   description:
     "Explore tech jobs by location. Find remote opportunities or positions in your preferred country.",
   path: "/jobs/locations",
+  title: `Browse Jobs by Location | ${config.title}`,
 });
 
 // Revalidate page every 5 minutes
@@ -41,7 +41,7 @@ function LocationCard({ href, title, count }: LocationCardProps) {
     >
       <div className="space-y-1.5 sm:space-y-2">
         <h2 className="font-medium text-sm sm:text-base">{title}</h2>
-        <div className="text-gray-500 dark:text-gray-500 text-xs sm:text-sm">
+        <div className="text-gray-500 text-xs sm:text-sm dark:text-gray-500">
           {count.toLocaleString()} {count === 1 ? "position" : "positions"}{" "}
           available
         </div>
@@ -81,8 +81,8 @@ export default async function LocationsPage() {
       return acc;
     },
     {
-      countries: {},
       cities: {},
+      countries: {},
       remote: 0,
     }
   );
@@ -91,9 +91,9 @@ export default async function LocationsPage() {
   const sortedCountries = Object.entries(locationCounts.countries)
     .sort((a, b) => b[1] - a[1])
     .map(([country, count]) => ({
-      title: formatLocationTitle(country),
-      slug: createLocationSlug(country),
       count,
+      slug: createLocationSlug(country),
+      title: formatLocationTitle(country),
     }));
 
   return (

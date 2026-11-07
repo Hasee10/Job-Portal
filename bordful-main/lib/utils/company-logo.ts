@@ -18,7 +18,9 @@ async function resolveCompanyDomain(
   companyName: string
 ): Promise<string | null> {
   const secretKey = process.env.LOGODEV_SECRET_KEY;
-  if (!secretKey) return null;
+  if (!secretKey) {
+    return null;
+  }
 
   try {
     const response = await fetch(
@@ -28,7 +30,9 @@ async function resolveCompanyDomain(
         next: { revalidate: LOGO_CACHE_SECONDS },
       }
     );
-    if (!response.ok) return null;
+    if (!response.ok) {
+      return null;
+    }
 
     const results = (await response.json()) as LogoDevSearchResult[];
     return results[0]?.domain ?? null;
@@ -53,10 +57,14 @@ export async function getCompanyLogoUrl(
   companyName: string
 ): Promise<string | null> {
   const publishableKey = process.env.LOGODEV_PUBLISHABLE_KEY;
-  if (!(publishableKey && isRealCompanyName(companyName))) return null;
+  if (!(publishableKey && isRealCompanyName(companyName))) {
+    return null;
+  }
 
   const domain = await resolveCompanyDomain(companyName);
-  if (!domain) return null;
+  if (!domain) {
+    return null;
+  }
 
   return `${IMAGE_BASE_URL}/${domain}?token=${publishableKey}&size=80&format=png`;
 }

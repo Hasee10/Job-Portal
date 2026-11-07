@@ -6,9 +6,9 @@ import { SeekerSignInButtons } from "@/components/auth/SeekerSignInButtons";
 import config from "@/config";
 
 export const metadata: Metadata = {
-  title: `Sign In | ${config.title}`,
   description: "Sign in to save jobs and track your applications.",
-  robots: { index: false, follow: false },
+  robots: { follow: false, index: false },
+  title: `Sign In | ${config.title}`,
 };
 
 export const dynamic = "force-dynamic";

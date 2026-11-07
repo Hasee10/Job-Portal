@@ -24,15 +24,15 @@ export const AboutSchema: FC<AboutSchemaProps> = ({
   const aboutSchema: WithContext<AboutPage> = {
     "@context": "https://schema.org",
     "@type": "AboutPage",
-    name: `About ${companyName}`,
     description,
     mainEntity: {
       "@type": "Organization",
-      name: companyName,
       description,
+      name: companyName,
       url: config.url,
       ...(logo && { logo }),
     },
+    name: `About ${companyName}`,
     url,
   };
 

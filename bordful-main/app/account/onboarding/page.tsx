@@ -7,8 +7,8 @@ import { DEFAULT_SAVED_SEARCH_FILTERS } from "@/lib/jobs/saved-search-matching";
 import { getSeekerProfile } from "@/lib/jobs/seeker-profile-actions";
 
 export const metadata: Metadata = {
+  robots: { follow: false, index: false },
   title: `Personalize your job feed | ${config.title}`,
-  robots: { index: false, follow: false },
 };
 
 export const dynamic = "force-dynamic";

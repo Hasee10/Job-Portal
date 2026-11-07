@@ -38,13 +38,13 @@ const MAX_CAREER_LEVELS_DISPLAY = 6;
 
 // Generate metadata for SEO
 export const metadata: Metadata = generateMetadata({
-  title: `Browse All Job Categories | ${config.title}`,
   description:
     "Explore job categories including types, career levels, locations, and languages. Find your perfect position with our comprehensive job filters.",
-  path: "/jobs",
   openGraph: {
     type: "website",
   },
+  path: "/jobs",
+  title: `Browse All Job Categories | ${config.title}`,
 });
 
 // Revalidate page every 5 minutes
@@ -79,7 +79,7 @@ function CategoryCard({ href, title, count }: CategoryCardProps) {
       >
         <div className="space-y-1.5 sm:space-y-2">
           <h2 className="font-medium text-sm sm:text-base">{title}</h2>
-          <div className="text-gray-500 dark:text-gray-500 text-xs sm:text-sm">
+          <div className="text-gray-500 text-xs sm:text-sm dark:text-gray-500">
             {count.toLocaleString()} {count === 1 ? "position" : "positions"}{" "}
             available
           </div>
@@ -145,14 +145,14 @@ export default async function JobsDirectoryPage() {
       return acc;
     },
     {
-      types: {},
       careerLevels: {} as Record<CareerLevel, number>,
+      languages: {} as Record<LanguageCode, number>,
       locations: {
-        countries: {},
         cities: {},
+        countries: {},
         remote: 0,
       },
-      languages: {} as Record<LanguageCode, number>,
+      types: {},
     }
   );
 
@@ -188,26 +188,26 @@ export default async function JobsDirectoryPage() {
       itemListElement: [
         {
           "@type": "ListItem",
-          position: 1,
           name: "Job Types",
+          position: 1,
           url: `${config.url}/jobs/types`,
         },
         {
           "@type": "ListItem",
-          position: 2,
           name: "Career Levels",
+          position: 2,
           url: `${config.url}/jobs/levels`,
         },
         {
           "@type": "ListItem",
-          position: 3,
           name: "Job Locations",
+          position: 3,
           url: `${config.url}/jobs/locations`,
         },
         {
           "@type": "ListItem",
-          position: 4,
           name: "Job Languages",
+          position: 4,
           url: `${config.url}/jobs/languages`,
         },
       ] as ListItem[],

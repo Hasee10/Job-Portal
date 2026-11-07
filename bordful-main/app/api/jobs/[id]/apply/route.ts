@@ -1,15 +1,15 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { AIProviderError } from "@/lib/ai/types";
+import { sendEmail } from "@/lib/email/smtp";
+import { renderApplicationReceivedEmail } from "@/lib/email/templates/application-received";
 import {
-  submitApplication,
   getJobOwnerContact,
+  submitApplication,
 } from "@/lib/jobs/application-actions";
 import { getSeekerResume } from "@/lib/jobs/resume-actions";
 import { extractResumeFromPdf } from "@/lib/jobs/resume-extraction";
 import { createRateLimiter, getClientIp } from "@/lib/utils/rate-limit";
-import { sendEmail } from "@/lib/email/smtp";
-import { renderApplicationReceivedEmail } from "@/lib/email/templates/application-received";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 30;
@@ -77,8 +77,8 @@ export async function POST(
       session.user.id,
       id,
       {
-        resumeSnapshot,
         coverLetter,
+        resumeSnapshot,
       }
     );
 
@@ -93,14 +93,14 @@ export async function POST(
             ? `${process.env.NEXTAUTH_URL ?? ""}/recruiter/jobs/${id}/applications`
             : `${process.env.NEXTAUTH_URL ?? ""}/dashboard/jobs/${id}/applications`;
         const { subject, html } = renderApplicationReceivedEmail({
-          ownerType: owner.type,
           applicantName,
+          autoShortlisted: application.autoShortlisted,
           jobTitle,
           matchScore: application.matchScore,
-          autoShortlisted: application.autoShortlisted,
+          ownerType: owner.type,
           pipelineUrl,
         });
-        await sendEmail({ to: owner.email, subject, html });
+        await sendEmail({ html, subject, to: owner.email });
       }
     } catch (emailErr) {
       console.error(

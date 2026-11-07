@@ -1,16 +1,16 @@
+import { ArrowLeft, Inbox } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { ArrowLeft, Inbox } from "lucide-react";
 import { auth } from "@/auth";
 import { ApplicationCard } from "@/components/employer/ApplicationCard";
-import { getOwnerJob } from "@/lib/jobs/employer-job-actions";
-import { listJobApplications } from "@/lib/jobs/application-actions";
 import config from "@/config";
+import { listJobApplications } from "@/lib/jobs/application-actions";
+import { getOwnerJob } from "@/lib/jobs/employer-job-actions";
 
 export const metadata: Metadata = {
+  robots: { follow: false, index: false },
   title: `Applications | ${config.title}`,
-  robots: { index: false, follow: false },
 };
 
 export const dynamic = "force-dynamic";
@@ -21,13 +21,18 @@ export default async function RecruiterJobApplicationsPage({
   params: Promise<{ id: string }>;
 }) {
   const session = await auth();
-  if (!session?.user)
+  if (!session?.user) {
     redirect("/recruiter/sign-in?callbackUrl=/recruiter/jobs");
-  if (session.user.role !== "recruiter") redirect("/");
+  }
+  if (session.user.role !== "recruiter") {
+    redirect("/");
+  }
 
   const { id } = await params;
   const job = await getOwnerJob({ recruiterId: session.user.id }, id);
-  if (!job) notFound();
+  if (!job) {
+    notFound();
+  }
 
   const applications = await listJobApplications(
     { recruiterId: session.user.id },
@@ -57,11 +62,11 @@ export default async function RecruiterJobApplicationsPage({
           </h1>
           <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
             {applications.length} application
-            {applications.length !== 1 ? "s" : ""}
+            {applications.length === 1 ? "" : "s"}
           </p>
 
           {applications.length === 0 ? (
-            <div className="mt-10 rounded-xl border border-dashed border-zinc-200 p-10 text-center dark:border-zinc-800">
+            <div className="mt-10 rounded-xl border border-zinc-200 border-dashed p-10 text-center dark:border-zinc-800">
               <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-800">
                 <Inbox className="h-5 w-5 text-zinc-400" />
               </div>
@@ -76,7 +81,7 @@ export default async function RecruiterJobApplicationsPage({
             <div className="mt-8 space-y-8">
               {shortlisted.length > 0 && (
                 <div>
-                  <h2 className="font-semibold text-sm text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+                  <h2 className="font-semibold text-sm text-zinc-500 uppercase tracking-wider dark:text-zinc-400">
                     Shortlisted ({shortlisted.length})
                   </h2>
                   <div className="mt-3 space-y-3">
@@ -92,7 +97,7 @@ export default async function RecruiterJobApplicationsPage({
               )}
               {others.length > 0 && (
                 <div>
-                  <h2 className="font-semibold text-sm text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+                  <h2 className="font-semibold text-sm text-zinc-500 uppercase tracking-wider dark:text-zinc-400">
                     All other applications ({others.length})
                   </h2>
                   <div className="mt-3 space-y-3">

@@ -23,9 +23,9 @@ export function formatDate(dateString: string | null | undefined) {
 
   // Format full date like "Dec 10, 2024"
   const fullDate = date.toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "short",
     day: "numeric",
+    month: "short",
+    year: "numeric",
   });
 
   // Calculate relative time

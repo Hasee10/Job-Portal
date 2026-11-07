@@ -50,10 +50,10 @@ async function callMistral(
   const response = await axios.post(
     MISTRAL_API_URL,
     {
-      model: process.env.MISTRAL_MODEL || DEFAULT_MISTRAL_MODEL,
-      messages,
-      temperature: options.temperature ?? 0.5,
       max_tokens: options.maxTokens ?? 2000,
+      messages,
+      model: process.env.MISTRAL_MODEL || DEFAULT_MISTRAL_MODEL,
+      temperature: options.temperature ?? 0.5,
     },
     {
       headers: {
@@ -80,17 +80,17 @@ async function callOpenRouter(
   const response = await axios.post(
     OPENROUTER_API_URL,
     {
-      model: process.env.OPENROUTER_MODEL || DEFAULT_OPENROUTER_MODEL,
-      messages,
-      temperature: options.temperature ?? 0.5,
       max_tokens: options.maxTokens ?? 2000,
+      messages,
+      model: process.env.OPENROUTER_MODEL || DEFAULT_OPENROUTER_MODEL,
+      temperature: options.temperature ?? 0.5,
     },
     {
       headers: {
         Authorization: `Bearer ${key}`,
+        "Content-Type": "application/json",
         "HTTP-Referer": siteUrl,
         "X-Title": "Caliber",
-        "Content-Type": "application/json",
       },
       timeout: 30_000,
     }

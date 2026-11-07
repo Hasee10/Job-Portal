@@ -10,13 +10,18 @@ import config from "@/config";
 import { resolveColor } from "@/lib/utils/colors";
 
 // Format a billing term for display
-const formatPricingBillingTerm = (billingTerm: string): string => {
-  return `/${billingTerm}`;
-};
+const formatPricingBillingTerm = (billingTerm: string): string =>
+  `/${billingTerm}`;
 
 // Add metadata for SEO
 export const metadata: Metadata = {
-  title: `${config.pricing?.title || "Pricing"} | ${config.title}`,
+  alternates: {
+    canonical: "/pricing",
+    languages: {
+      en: `${config.url}/pricing`,
+      "x-default": `${config.url}/pricing`,
+    },
+  },
   description:
     config.pricing?.description ||
     "Choose the plan that's right for your job board needs.",
@@ -24,26 +29,20 @@ export const metadata: Metadata = {
     config.pricing?.keywords ||
     "job board pricing, post job, job listing plans, recruitment pricing",
   openGraph: {
-    title: `${config.pricing?.title || "Pricing"} | ${config.title}`,
     description:
       config.pricing?.description ||
       "Choose the plan that's right for your job board needs.",
+    title: `${config.pricing?.title || "Pricing"} | ${config.title}`,
     type: "website",
     url: `${config.url}/pricing`,
   },
+  title: `${config.pricing?.title || "Pricing"} | ${config.title}`,
   twitter: {
     card: "summary_large_image",
-    title: `${config.pricing?.title || "Pricing"} | ${config.title}`,
     description:
       config.pricing?.description ||
       "Choose the plan that's right for your job board needs.",
-  },
-  alternates: {
-    canonical: "/pricing",
-    languages: {
-      en: `${config.url}/pricing`,
-      "x-default": `${config.url}/pricing`,
-    },
+    title: `${config.pricing?.title || "Pricing"} | ${config.title}`,
   },
 };
 
@@ -109,13 +108,13 @@ export default function PricingPage() {
                       {plan.price === 0 ? "Free" : `$${plan.price}`}
                     </span>
                     {plan.price > 0 && (
-                      <span className="ml-1 text-gray-500 dark:text-gray-500 text-sm">
+                      <span className="ml-1 text-gray-500 text-sm dark:text-gray-500">
                         {formatPricingBillingTerm(plan.billingTerm)}
                       </span>
                     )}
                   </div>
 
-                  <div className="text-gray-600 dark:text-gray-400 text-sm">
+                  <div className="text-gray-600 text-sm dark:text-gray-400">
                     {plan.description}
                   </div>
 
@@ -125,13 +124,13 @@ export default function PricingPage() {
                       className="w-full gap-1.5 text-xs"
                       size="xs"
                       style={
-                        plan.cta.variant !== "outline"
-                          ? {
+                        plan.cta.variant === "outline"
+                          ? undefined
+                          : {
                               backgroundColor: resolveColor(
                                 config.ui.primaryColor
                               ),
                             }
-                          : undefined
                       }
                       variant={
                         plan.cta.variant === "outline" ? "outline" : "primary"
@@ -165,7 +164,7 @@ export default function PricingPage() {
                     {plan.features.map((feature, featureIndex) => (
                       <li className="flex items-start" key={featureIndex}>
                         <Check className="mt-0.5 mr-2 h-4 w-4 flex-shrink-0 text-green-600" />
-                        <span className="text-gray-700 dark:text-gray-300 text-sm">
+                        <span className="text-gray-700 text-sm dark:text-gray-300">
                           {feature}
                         </span>
                       </li>
@@ -180,7 +179,7 @@ export default function PricingPage() {
         {/* Payment Processing Information */}
         {config.pricing.paymentProcessingText && (
           <div className="mx-auto mt-12 max-w-sm text-center">
-            <p className="text-balance text-gray-500 dark:text-gray-500 text-xs">
+            <p className="text-balance text-gray-500 text-xs dark:text-gray-500">
               {config.pricing.paymentProcessingText}
             </p>
 

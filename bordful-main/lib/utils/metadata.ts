@@ -59,8 +59,8 @@ export function generateMetadata({
   // Build the Twitter metadata object
   const twitterMetadata: Record<string, string> = {
     card: "summary_large_image",
-    title,
     description,
+    title,
   };
 
   // Only add site handle if Twitter is enabled and URL is provided
@@ -73,8 +73,6 @@ export function generateMetadata({
   }
 
   return {
-    title,
-    description,
     alternates: {
       canonical: normalizedPath,
       languages: {
@@ -82,13 +80,15 @@ export function generateMetadata({
         "x-default": pageUrl,
       },
     },
+    description,
     openGraph: {
-      title: openGraph?.title || title,
       description: openGraph?.description || description,
+      title: openGraph?.title || title,
       type: openGraph?.type || "website",
       url: pageUrl,
       ...(openGraph?.images && { images: openGraph.images }),
     },
+    title,
     twitter: twitterMetadata,
   };
 }
@@ -114,8 +114,8 @@ export function generateBreadcrumbSchema(items: BreadcrumbItem[]): string {
       const isLastItem = index === items.length - 1;
       const listItem: SchemaListItem = {
         "@type": "ListItem",
-        position: index + 1,
         name: item.name,
+        position: index + 1,
       };
 
       // For the last item, omit the item property entirely

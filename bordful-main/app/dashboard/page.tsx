@@ -1,16 +1,16 @@
+import { Briefcase, Building2, Users } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Briefcase, Building2, Users } from "lucide-react";
 import { auth } from "@/auth";
 import { SignOutButton } from "@/components/auth/SignOutButton";
+import config from "@/config";
 import { getEmployerById } from "@/lib/auth/employers";
 import { listOwnerJobs } from "@/lib/jobs/employer-job-actions";
-import config from "@/config";
 
 export const metadata: Metadata = {
+  robots: { follow: false, index: false },
   title: `Dashboard | ${config.title}`,
-  robots: { index: false, follow: false },
 };
 
 export const dynamic = "force-dynamic";
@@ -20,7 +20,9 @@ export default async function DashboardPage() {
   if (!session?.user) {
     redirect("/sign-in?callbackUrl=/dashboard");
   }
-  if (session.user.role !== "employer") redirect("/");
+  if (session.user.role !== "employer") {
+    redirect("/");
+  }
 
   const [employer, jobs] = await Promise.all([
     getEmployerById(session.user.id),
@@ -48,11 +50,11 @@ export default async function DashboardPage() {
 
           {!employer?.companyName && (
             <div className="mt-6 rounded-lg border border-amber-200 bg-amber-50 p-4 dark:border-amber-500/20 dark:bg-amber-500/10">
-              <p className="text-sm font-medium text-amber-900 dark:text-amber-200">
+              <p className="font-medium text-amber-900 text-sm dark:text-amber-200">
                 Complete your company profile before posting a job.
               </p>
               <Link
-                className="mt-2 inline-block text-sm font-medium text-amber-700 underline dark:text-amber-400"
+                className="mt-2 inline-block font-medium text-amber-700 text-sm underline dark:text-amber-400"
                 href="/dashboard/profile"
               >
                 Set up company profile

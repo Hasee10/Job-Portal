@@ -44,8 +44,9 @@ export type OptInCandidate = {
 function getAdminClient() {
   const url = process.env.SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key)
+  if (!(url && key)) {
     throw new Error("Database is not configured on this deployment.");
+  }
   return createClient(url, key, { auth: { persistSession: false } });
 }
 
@@ -78,8 +79,12 @@ export async function listOptInCandidates(
     .eq("open_to_recruiters", true)
     .order("created_at", { ascending: false });
 
-  if (error) throw error;
-  if (!seekers || seekers.length === 0) return [];
+  if (error) {
+    throw error;
+  }
+  if (!seekers || seekers.length === 0) {
+    return [];
+  }
 
   const seekerIds = seekers.map((s) => s.id as string);
 
@@ -115,15 +120,15 @@ export async function listOptInCandidates(
   let candidates: OptInCandidate[] = seekers.map((s) => {
     const skills = resumeMap.get(s.id as string) ?? [];
     return {
-      seekerId: s.id as string,
-      name: (s.name as string) || null,
+      createdAt: s.created_at as string,
       email: s.email as string,
       headline: (s.headline as string) || null,
-      skills,
       matchScore: computeSkillsOverlapScore(skills, requiredSkills),
-      createdAt: s.created_at as string,
+      name: (s.name as string) || null,
       outreachStatus: (outreachMap.get(s.id as string) ??
         null) as OptInCandidate["outreachStatus"],
+      seekerId: s.id as string,
+      skills,
     };
   });
 
@@ -174,17 +179,17 @@ export async function sendOutreach(
     .eq("id", seekerId)
     .maybeSingle();
 
-  if (!seeker || !seeker.open_to_recruiters) {
+  if (!(seeker && seeker.open_to_recruiters)) {
     throw new Error("This candidate is not open to recruiter outreach.");
   }
 
   const { data, error } = await supabase
     .from("candidate_outreach")
     .insert({
+      job_id: jobId,
+      message,
       recruiter_id: recruiterId,
       seeker_id: seekerId,
-      message,
-      job_id: jobId,
     })
     .select("*")
     .single();
@@ -225,7 +230,9 @@ export async function listRecruiterOutreach(
     .eq("recruiter_id", recruiterId)
     .order("created_at", { ascending: false });
 
-  if (error) throw error;
+  if (error) {
+    throw error;
+  }
 
   const seekerIds = (data ?? []).map((r) => r.seeker_id as string);
   const { data: resumes } = seekerIds.length
@@ -246,11 +253,11 @@ export async function listRecruiterOutreach(
     const job = row.jobs as Record<string, unknown> | null;
     return {
       ...rowToOutreach(row),
-      seekerName: (seeker?.name as string) || null,
+      jobTitle: (job?.title as string) || null,
       seekerEmail: (seeker?.email as string) ?? "",
       seekerHeadline: (seeker?.headline as string) || null,
+      seekerName: (seeker?.name as string) || null,
       seekerSkills: resumeMap.get(row.seeker_id as string) ?? [],
-      jobTitle: (job?.title as string) || null,
     };
   });
 }
@@ -269,17 +276,19 @@ export async function listSeekerInbox(
     .eq("seeker_id", seekerId)
     .order("created_at", { ascending: false });
 
-  if (error) throw error;
+  if (error) {
+    throw error;
+  }
 
   return (data ?? []).map((row) => {
     const r = row.recruiter_accounts as Record<string, unknown> | null;
     return {
       ...rowToOutreach(row),
-      recruiterName: (r?.name as string) ?? "Unknown",
       recruiterAgency: (r?.agency as string) || null,
       recruiterBio: (r?.bio as string) || null,
-      recruiterSpecialties: (r?.specialties as string[]) || [],
       recruiterLinkedinUrl: (r?.linkedin_url as string) || null,
+      recruiterName: (r?.name as string) ?? "Unknown",
+      recruiterSpecialties: (r?.specialties as string[]) || [],
     };
   });
 }
@@ -309,8 +318,8 @@ export async function respondToOutreach(
   const { data, error } = await supabase
     .from("candidate_outreach")
     .update({
-      status: response,
       responded_at: new Date().toISOString(),
+      status: response,
     })
     .eq("id", outreachId)
     .eq("seeker_id", seekerId)
@@ -318,7 +327,9 @@ export async function respondToOutreach(
     .select("*")
     .single();
 
-  if (error) throw error;
+  if (error) {
+    throw error;
+  }
   return rowToOutreach(data);
 }
 
@@ -353,16 +364,18 @@ export async function listRecruitersForCandidateDigest(): Promise<
     .select("id, email, name, specialties, last_candidate_digest_at")
     .eq("is_verified", true);
 
-  if (error) throw error;
+  if (error) {
+    throw error;
+  }
 
   return (data ?? [])
     .filter((r) => Array.isArray(r.specialties) && r.specialties.length > 0)
     .map((r) => ({
-      id: r.id as string,
       email: r.email as string,
+      id: r.id as string,
+      lastCandidateDigestAt: (r.last_candidate_digest_at as string) || null,
       name: r.name as string,
       specialties: r.specialties as string[],
-      lastCandidateDigestAt: (r.last_candidate_digest_at as string) || null,
     }));
 }
 
@@ -390,11 +403,17 @@ export async function findNewCandidatesForRecruiter(
     .select("id, name, headline, created_at")
     .eq("open_to_recruiters", true)
     .order("created_at", { ascending: false });
-  if (since) query = query.gt("created_at", since);
+  if (since) {
+    query = query.gt("created_at", since);
+  }
 
   const { data: seekers, error } = await query;
-  if (error) throw error;
-  if (!seekers || seekers.length === 0) return [];
+  if (error) {
+    throw error;
+  }
+  if (!seekers || seekers.length === 0) {
+    return [];
+  }
 
   const seekerIds = seekers.map((s) => s.id as string);
 
@@ -423,11 +442,11 @@ export async function findNewCandidatesForRecruiter(
     .map((s) => {
       const skills = resumeMap.get(s.id as string) ?? [];
       return {
-        seekerId: s.id as string,
-        name: (s.name as string) || null,
         headline: (s.headline as string) || null,
-        skills,
         matchScore: computeSkillsOverlapScore(skills, specialties),
+        name: (s.name as string) || null,
+        seekerId: s.id as string,
+        skills,
       };
     })
     .filter((c) => c.matchScore > 0)
@@ -448,13 +467,13 @@ export async function markCandidateDigestSent(
 
 function rowToOutreach(row: Record<string, unknown>): CandidateOutreach {
   return {
+    createdAt: row.created_at as string,
     id: row.id as string,
-    recruiterId: row.recruiter_id as string,
-    seekerId: row.seeker_id as string,
     jobId: (row.job_id as string) || null,
     message: row.message as string,
-    status: row.status as CandidateOutreach["status"],
-    createdAt: row.created_at as string,
+    recruiterId: row.recruiter_id as string,
     respondedAt: (row.responded_at as string) || null,
+    seekerId: row.seeker_id as string,
+    status: row.status as CandidateOutreach["status"],
   };
 }

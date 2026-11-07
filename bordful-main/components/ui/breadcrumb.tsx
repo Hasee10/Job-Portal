@@ -161,7 +161,7 @@ function ServerBreadcrumb({
                     </span>
                   ) : (
                     <a
-                      className="text-gray-500 dark:text-gray-500 transition-colors hover:text-foreground"
+                      className="text-gray-500 transition-colors hover:text-foreground dark:text-gray-500"
                       href={item.url}
                     >
                       {item.name}
@@ -189,11 +189,11 @@ function ServerBreadcrumb({
 
 export {
   Breadcrumb,
-  BreadcrumbList,
+  BreadcrumbEllipsis,
   BreadcrumbItem,
   BreadcrumbLink,
+  BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-  BreadcrumbEllipsis,
   ServerBreadcrumb,
 };

@@ -15,6 +15,8 @@ import { SignOutButton } from "@/components/auth/SignOutButton";
 import config from "@/config";
 import { getJobs } from "@/lib/db/airtable.server";
 import { getSavedSearchLimit } from "@/lib/entitlements";
+import { getSeekerUnreadCount } from "@/lib/jobs/candidate-outreach-actions";
+import { getSeekerUnreadInviteCount } from "@/lib/jobs/employer-candidate-actions";
 import { getSeekerTier } from "@/lib/jobs/entitlements-actions";
 import { listSavedSearches } from "@/lib/jobs/saved-search-actions";
 import { matchesSavedSearch } from "@/lib/jobs/saved-search-matching";
@@ -23,8 +25,6 @@ import {
   getSeekerJobState,
 } from "@/lib/jobs/seeker-actions";
 import { getSeekerProfile } from "@/lib/jobs/seeker-profile-actions";
-import { getSeekerUnreadCount } from "@/lib/jobs/candidate-outreach-actions";
-import { getSeekerUnreadInviteCount } from "@/lib/jobs/employer-candidate-actions";
 import { generateJobSlug } from "@/lib/utils/slugify";
 
 const MAX_RECOMMENDED_JOBS = 10;
@@ -42,7 +42,7 @@ function StatTile({
     <div className="rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900/60">
       <div className="flex items-center gap-2 text-zinc-500 dark:text-zinc-400">
         {icon}
-        <span className="text-xs font-medium">{label}</span>
+        <span className="font-medium text-xs">{label}</span>
       </div>
       <p className="mt-1.5 font-bold text-2xl text-zinc-900 dark:text-zinc-50">
         {count}
@@ -52,8 +52,8 @@ function StatTile({
 }
 
 export const metadata: Metadata = {
+  robots: { follow: false, index: false },
   title: `My Account | ${config.title}`,
-  robots: { index: false, follow: false },
 };
 
 export const dynamic = "force-dynamic";
@@ -63,8 +63,12 @@ export default async function AccountPage() {
   if (!session?.user) {
     redirect("/account/sign-in?callbackUrl=/account");
   }
-  if (session.user.role === "employer") redirect("/dashboard");
-  if (session.user.role === "recruiter") redirect("/recruiter/dashboard");
+  if (session.user.role === "employer") {
+    redirect("/dashboard");
+  }
+  if (session.user.role === "recruiter") {
+    redirect("/recruiter/dashboard");
+  }
 
   const profile = await getSeekerProfile(session.user.id);
   // Send every seeker who hasn't finished the quiz straight there instead
@@ -118,7 +122,7 @@ export default async function AccountPage() {
             <h1 className="font-bold text-2xl">
               Welcome, {session.user.name || session.user.email}
             </h1>
-            <span className="shrink-0 rounded-full border px-2.5 py-0.5 text-xs font-medium capitalize text-zinc-600 dark:text-zinc-400">
+            <span className="shrink-0 rounded-full border px-2.5 py-0.5 font-medium text-xs text-zinc-600 capitalize dark:text-zinc-400">
               {tier} plan
             </span>
           </div>
@@ -311,10 +315,10 @@ export default async function AccountPage() {
                   className="h-5 w-5 shrink-0 text-zinc-400"
                 />
                 <div>
-                  <h2 className="font-semibold text-lg flex items-center gap-2">
+                  <h2 className="flex items-center gap-2 font-semibold text-lg">
                     Inbox
                     {unreadInbox > 0 && (
-                      <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-bold">
+                      <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-primary font-bold text-primary-foreground text-xs">
                         {unreadInbox}
                       </span>
                     )}

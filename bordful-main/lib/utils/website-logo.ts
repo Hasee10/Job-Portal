@@ -7,7 +7,9 @@
 export function deriveLogoUrl(
   website: string | null | undefined
 ): string | null {
-  if (!website) return null;
+  if (!website) {
+    return null;
+  }
   try {
     const url = website.startsWith("http") ? website : `https://${website}`;
     const domain = new URL(url).hostname.replace(/^www\./, "");

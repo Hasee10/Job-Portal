@@ -80,5 +80,5 @@ export function renderJobMatchDigestEmail({
     })}
   `);
 
-  return { subject: headline, html };
+  return { html, subject: headline };
 }

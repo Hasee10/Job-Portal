@@ -25,8 +25,8 @@ export async function TrustSection({
   const companiesWithLogos = featuredCompanies
     .filter((company) => logoUrls.has(company))
     .map((company) => ({
-      name: company,
       logoUrl: logoUrls.get(company) as string,
+      name: company,
     }));
 
   return (
@@ -93,7 +93,7 @@ export async function TrustSection({
                 <blockquote className="text-sm">
                   &ldquo;{testimonial.quote}&rdquo;
                 </blockquote>
-                <figcaption className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
+                <figcaption className="mt-3 flex items-center gap-2 text-muted-foreground text-xs">
                   {testimonial.avatarUrl ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img

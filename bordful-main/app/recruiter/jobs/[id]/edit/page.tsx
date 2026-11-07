@@ -2,12 +2,12 @@ import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { JobPostForm } from "@/components/employer/JobPostForm";
-import { getOwnerJob } from "@/lib/jobs/employer-job-actions";
 import config from "@/config";
+import { getOwnerJob } from "@/lib/jobs/employer-job-actions";
 
 export const metadata: Metadata = {
+  robots: { follow: false, index: false },
   title: `Edit Job | ${config.title}`,
-  robots: { index: false, follow: false },
 };
 
 export const dynamic = "force-dynamic";
@@ -18,13 +18,18 @@ export default async function EditRecruiterJobPage({
   params: Promise<{ id: string }>;
 }) {
   const session = await auth();
-  if (!session?.user)
+  if (!session?.user) {
     redirect("/recruiter/sign-in?callbackUrl=/recruiter/jobs");
-  if (session.user.role !== "recruiter") redirect("/");
+  }
+  if (session.user.role !== "recruiter") {
+    redirect("/");
+  }
 
   const { id } = await params;
   const job = await getOwnerJob({ recruiterId: session.user.id }, id);
-  if (!job) notFound();
+  if (!job) {
+    notFound();
+  }
 
   return (
     <main className="min-h-[60vh] bg-background py-12">

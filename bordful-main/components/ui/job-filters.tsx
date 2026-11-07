@@ -129,7 +129,7 @@ function SwitchItem({
       <div className="flex items-center space-x-2">
         <Switch checked={checked} id={id} onCheckedChange={onCheckedChange} />
         <Label
-          className="font-normal text-gray-500 dark:text-gray-500 text-sm"
+          className="font-normal text-gray-500 text-sm dark:text-gray-500"
           htmlFor={id}
         >
           {checked ? "Yes" : "No"}
@@ -402,15 +402,27 @@ export function JobFilters({
   // Memoized counts and calculations
   const counts = useMemo(
     () => ({
-      types: jobs.reduce(
+      companies: jobs.reduce(
         (acc, job) => {
-          if (job.type) {
-            acc[job.type] = (acc[job.type] || 0) + 1;
+          if (job.company) {
+            acc[job.company] = (acc[job.company] || 0) + 1;
           }
           return acc;
         },
         {} as Record<string, number>
       ),
+
+      languages: jobs.reduce(
+        (acc, job) => {
+          job.languages?.forEach((lang) => {
+            acc[lang] = (acc[lang] || 0) + 1;
+          });
+          return acc;
+        },
+        {} as Record<LanguageCode, number>
+      ),
+
+      remote: jobs.filter((job) => job.workplace_type === "Remote").length,
 
       roles: jobs.reduce(
         (acc, job) => {
@@ -423,10 +435,6 @@ export function JobFilters({
         },
         {} as Record<CareerLevel, number>
       ),
-
-      remote: jobs.filter((job) => job.workplace_type === "Remote").length,
-
-      visa: jobs.filter((job) => job.visa_sponsorship === "Yes").length,
 
       salaryInRange: jobs.filter((job) => {
         if (!job.salary) {
@@ -442,26 +450,17 @@ export function JobFilters({
           (max >= SALARY_SLIDER_MAX || annualSalary <= max)
         );
       }).length,
-
-      languages: jobs.reduce(
+      types: jobs.reduce(
         (acc, job) => {
-          job.languages?.forEach((lang) => {
-            acc[lang] = (acc[lang] || 0) + 1;
-          });
-          return acc;
-        },
-        {} as Record<LanguageCode, number>
-      ),
-
-      companies: jobs.reduce(
-        (acc, job) => {
-          if (job.company) {
-            acc[job.company] = (acc[job.company] || 0) + 1;
+          if (job.type) {
+            acc[job.type] = (acc[job.type] || 0) + 1;
           }
           return acc;
         },
         {} as Record<string, number>
       ),
+
+      visa: jobs.filter((job) => job.visa_sponsorship === "Yes").length,
     }),
     [jobs, salaryRange]
   );
@@ -478,8 +477,8 @@ export function JobFilters({
       .filter(([, count]) => count > 0);
 
     return {
-      initial: entries.slice(0, 5),
       additional: entries.slice(5),
+      initial: entries.slice(0, 5),
       visible: showAllLanguages ? entries : entries.slice(0, 5),
     };
   }, [counts.languages, showAllLanguages]);
@@ -495,8 +494,8 @@ export function JobFilters({
       .sort((a, b) => b[1] - a[1])
       .filter(([, count]) => count > 0);
     return {
-      visible: showAllCompanies ? entries : entries.slice(0, 6),
       extra: entries.length > 6 ? entries.length - 6 : 0,
+      visible: showAllCompanies ? entries : entries.slice(0, 6),
     };
   }, [counts.companies, showAllCompanies]);
 
@@ -508,7 +507,7 @@ export function JobFilters({
           <button
             aria-controls="filter-content"
             aria-expanded={isExpanded}
-            className="flex items-center text-sm text-zinc-900 dark:text-zinc-100 md:hidden"
+            className="flex items-center text-sm text-zinc-900 md:hidden dark:text-zinc-100"
             onClick={() => setIsExpanded(!isExpanded)}
           >
             {isExpanded ? (
@@ -522,7 +521,7 @@ export function JobFilters({
           </button>
         </div>
         <button
-          className="text-sm text-zinc-900 dark:text-zinc-100 underline underline-offset-4 transition-colors hover:text-zinc-700 dark:hover:text-zinc-300"
+          className="text-sm text-zinc-900 underline underline-offset-4 transition-colors hover:text-zinc-700 dark:text-zinc-100 dark:hover:text-zinc-300"
           onClick={handleClearFilters}
         >
           Clear all
@@ -559,7 +558,7 @@ export function JobFilters({
             </div>
             {companyEntries.extra > 0 && (
               <button
-                className="text-sm text-zinc-900 dark:text-zinc-100 underline underline-offset-4 transition-colors hover:text-zinc-700 dark:hover:text-zinc-300"
+                className="text-sm text-zinc-900 underline underline-offset-4 transition-colors hover:text-zinc-700 dark:text-zinc-100 dark:hover:text-zinc-300"
                 onClick={() => setShowAllCompanies(!showAllCompanies)}
               >
                 {showAllCompanies
@@ -606,7 +605,7 @@ export function JobFilters({
             ))}
           </div>
           <button
-            className="text-sm text-zinc-900 dark:text-zinc-100 underline underline-offset-4 transition-colors hover:text-zinc-700 dark:hover:text-zinc-300"
+            className="text-sm text-zinc-900 underline underline-offset-4 transition-colors hover:text-zinc-700 dark:text-zinc-100 dark:hover:text-zinc-300"
             onClick={() => setShowAllLevels(!showAllLevels)}
           >
             {showAllLevels ? "Show fewer levels" : "Show more levels"}
@@ -682,7 +681,7 @@ export function JobFilters({
           </div>
           {languageEntries.additional.length > 0 && (
             <button
-              className="text-sm text-zinc-900 dark:text-zinc-100 underline underline-offset-4 transition-colors hover:text-zinc-700 dark:hover:text-zinc-300"
+              className="text-sm text-zinc-900 underline underline-offset-4 transition-colors hover:text-zinc-700 dark:text-zinc-100 dark:hover:text-zinc-300"
               onClick={() => setShowAllLanguages(!showAllLanguages)}
             >
               {showAllLanguages

@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -13,20 +13,20 @@ import type {
 
 const TYPES: { value: ProcurementType; label: string; hint: string }[] = [
   {
-    value: "rfi",
-    label: "RFI",
     hint: "Request for Information — lightweight, no pricing required",
+    label: "RFI",
+    value: "rfi",
   },
-  { value: "rfq", label: "RFQ", hint: "Request for Quote — pricing required" },
+  { hint: "Request for Quote — pricing required", label: "RFQ", value: "rfq" },
   {
-    value: "rfp",
-    label: "RFP",
     hint: "Request for Proposal — pricing + methodology required",
+    label: "RFP",
+    value: "rfp",
   },
   {
-    value: "tender",
-    label: "Tender",
     hint: "Full formal tender — document upload required, usually sealed",
+    label: "Tender",
+    value: "tender",
   },
 ];
 
@@ -62,38 +62,42 @@ export function RequestForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title.trim() || !description.trim() || !category.trim()) return;
+    if (!(title.trim() && description.trim() && category.trim())) {
+      return;
+    }
 
     setIsSubmitting(true);
     try {
       const res = await fetch("/api/procurement/requests", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          type,
           category: category.trim(),
-          title: title.trim(),
           description: description.trim(),
-          specFields: [],
-          visibility,
-          sealedBids,
           requiresPrequalification,
           responseDeadline: responseDeadline
             ? new Date(responseDeadline).toISOString()
             : null,
+          sealedBids,
+          specFields: [],
+          title: title.trim(),
+          type,
+          visibility,
         }),
+        headers: { "Content-Type": "application/json" },
+        method: "POST",
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed to create request.");
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to create request.");
+      }
 
       router.push(`/procurement/requests/${data.request.id}`);
     } catch (error) {
       toast({
-        title: "Could not create request",
+        className: "bg-destructive border border-red-600 shadow-md",
         description:
           error instanceof Error ? error.message : "Something went wrong.",
+        title: "Could not create request",
         variant: "destructive",
-        className: "bg-destructive border border-red-600 shadow-md",
       });
     } finally {
       setIsSubmitting(false);

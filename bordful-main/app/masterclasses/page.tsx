@@ -4,9 +4,9 @@ import config from "@/config";
 import { listPublishedMasterclasses } from "@/lib/content/masterclass-actions";
 
 export const metadata: Metadata = {
-  title: `MasterClasses | ${config.title}`,
   description:
     "Video sessions with hiring experts on job searching and interviewing.",
+  title: `MasterClasses | ${config.title}`,
 };
 
 export const dynamic = "force-dynamic";

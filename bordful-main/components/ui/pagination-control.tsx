@@ -65,7 +65,9 @@ export function PaginationControl({
   };
 
   const handlePageChange = (newPage: number) => {
-    if (newPage < 1 || newPage > totalPages || newPage === page) return;
+    if (newPage < 1 || newPage > totalPages || newPage === page) {
+      return;
+    }
     setPage(newPage);
   };
 

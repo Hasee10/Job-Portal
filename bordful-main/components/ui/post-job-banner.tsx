@@ -28,7 +28,7 @@ export function PostJobBanner() {
 
       {showTrustedBy && (
         <div className="mb-4 flex items-center gap-2">
-          <div className="-space-x-3 flex">
+          <div className="flex -space-x-3">
             {companyAvatars.map((avatar, index) => (
               <Avatar className="h-7 w-7 border border-background" key={index}>
                 <AvatarImage alt={avatar.alt} src={avatar.src} />

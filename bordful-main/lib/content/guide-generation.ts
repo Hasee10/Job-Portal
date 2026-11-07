@@ -49,14 +49,18 @@ function parseGeneratedGuide(
   raw: string
 ): { summary: string; content: string } | null {
   const separatorIndex = raw.indexOf(CONTENT_SEPARATOR);
-  if (separatorIndex === -1) return null;
+  if (separatorIndex === -1) {
+    return null;
+  }
 
   const summaryPart = raw.slice(0, separatorIndex).trim();
   const content = raw.slice(separatorIndex + CONTENT_SEPARATOR.length).trim();
   const summary = summaryPart.replace(SUMMARY_MARKER, "").trim();
 
-  if (!(summary && content)) return null;
-  return { summary, content };
+  if (!(summary && content)) {
+    return null;
+  }
+  return { content, summary };
 }
 
 async function pickUncoveredTopics(count: number): Promise<GuideTopic[]> {
@@ -96,10 +100,10 @@ export async function generateDraftGuides(
       const userPrompt = `Write a guide titled "${topic.title}" (category: ${topic.category}). Focus: ${topic.brief}`;
       const raw = await aiChatCompletion(
         [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: userPrompt },
+          { content: systemPrompt, role: "system" },
+          { content: userPrompt, role: "user" },
         ],
-        { temperature: 0.6, maxTokens: 1400 }
+        { maxTokens: 1400, temperature: 0.6 }
       );
 
       const parsed = parseGeneratedGuide(raw);
@@ -111,11 +115,11 @@ export async function generateDraftGuides(
       }
 
       const input: DraftGuideInput = {
-        slug: slugify(topic.title),
-        title: topic.title,
-        summary: parsed.summary,
-        content: parsed.content,
         category: topic.category,
+        content: parsed.content,
+        slug: slugify(topic.title),
+        summary: parsed.summary,
+        title: topic.title,
       };
       const guide = await insertDraftGuide(input);
       created.push({ slug: guide.slug, title: guide.title });

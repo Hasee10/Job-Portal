@@ -12,33 +12,33 @@ import { getJobs } from "@/lib/db/airtable.server";
 
 // Add metadata for SEO
 export const metadata: Metadata = {
-  title: "Job Alerts | Get Notified of New Opportunities",
-  description:
-    config.jobAlerts.form?.description ||
-    "Subscribe to job alerts and get notified when new opportunities are posted.",
-  keywords:
-    "job alerts, job notifications, career alerts, employment updates, job subscription",
-  openGraph: {
-    title: "Job Alerts | Get Notified of New Opportunities",
-    description:
-      config.jobAlerts.form?.description ||
-      "Subscribe to job alerts and get notified when new opportunities are posted.",
-    type: "website",
-    url: `${config.url}/job-alerts`,
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Job Alerts | Get Notified of New Opportunities",
-    description:
-      config.jobAlerts.form?.description ||
-      "Subscribe to job alerts and get notified when new opportunities are posted.",
-  },
   alternates: {
     canonical: `${config.url}/job-alerts`,
     languages: {
       en: `${config.url}/job-alerts`,
       "x-default": `${config.url}/job-alerts`,
     },
+  },
+  description:
+    config.jobAlerts.form?.description ||
+    "Subscribe to job alerts and get notified when new opportunities are posted.",
+  keywords:
+    "job alerts, job notifications, career alerts, employment updates, job subscription",
+  openGraph: {
+    description:
+      config.jobAlerts.form?.description ||
+      "Subscribe to job alerts and get notified when new opportunities are posted.",
+    title: "Job Alerts | Get Notified of New Opportunities",
+    type: "website",
+    url: `${config.url}/job-alerts`,
+  },
+  title: "Job Alerts | Get Notified of New Opportunities",
+  twitter: {
+    card: "summary_large_image",
+    description:
+      config.jobAlerts.form?.description ||
+      "Subscribe to job alerts and get notified when new opportunities are posted.",
+    title: "Job Alerts | Get Notified of New Opportunities",
   },
 };
 

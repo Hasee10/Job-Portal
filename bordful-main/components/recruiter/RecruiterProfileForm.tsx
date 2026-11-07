@@ -1,9 +1,9 @@
 "use client";
 
-import Image from "next/image";
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { Building2 } from "lucide-react";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -23,7 +23,9 @@ const selectClass =
   "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2";
 
 function deriveLogoPreview(website: string): string | null {
-  if (!website.trim()) return null;
+  if (!website.trim()) {
+    return null;
+  }
   try {
     const url = website.startsWith("http") ? website : `https://${website}`;
     const domain = new URL(url).hostname.replace(/^www\./, "");
@@ -62,7 +64,9 @@ export function RecruiterProfileForm({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim()) return;
+    if (!name.trim()) {
+      return;
+    }
     setIsSubmitting(true);
 
     const specialties = specialtiesRaw
@@ -73,19 +77,19 @@ export function RecruiterProfileForm({
 
     try {
       const res = await fetch("/api/recruiter/profile", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          name: name.trim(),
           agency: agency.trim() || null,
           bio: bio.trim() || null,
+          companySize: companySize || null,
+          industry: industry.trim() || null,
           linkedinUrl: linkedinUrl.trim() || null,
+          location: location.trim() || null,
+          name: name.trim(),
           specialties,
           website: website.trim() || null,
-          industry: industry.trim() || null,
-          companySize: companySize || null,
-          location: location.trim() || null,
         }),
+        headers: { "Content-Type": "application/json" },
+        method: "PATCH",
       });
 
       if (!res.ok) {
@@ -98,10 +102,10 @@ export function RecruiterProfileForm({
       router.refresh();
     } catch (err) {
       toast({
-        title: "Failed to save",
-        description: err instanceof Error ? err.message : "Please try again.",
-        variant: "destructive",
         className: "bg-destructive border border-red-600 shadow-md",
+        description: err instanceof Error ? err.message : "Please try again.",
+        title: "Failed to save",
+        variant: "destructive",
       });
     } finally {
       setIsSubmitting(false);
@@ -137,7 +141,7 @@ export function RecruiterProfileForm({
 
       <div className="space-y-1.5">
         <label
-          className="text-sm font-medium text-zinc-700 dark:text-zinc-300"
+          className="font-medium text-sm text-zinc-700 dark:text-zinc-300"
           htmlFor="profile-name"
         >
           Full name <span className="text-red-500">*</span>
@@ -153,7 +157,7 @@ export function RecruiterProfileForm({
 
       <div className="space-y-1.5">
         <label
-          className="text-sm font-medium text-zinc-700 dark:text-zinc-300"
+          className="font-medium text-sm text-zinc-700 dark:text-zinc-300"
           htmlFor="profile-agency"
         >
           Agency / company
@@ -168,7 +172,7 @@ export function RecruiterProfileForm({
 
       <div className="space-y-1.5">
         <label
-          className="text-sm font-medium text-zinc-700 dark:text-zinc-300"
+          className="font-medium text-sm text-zinc-700 dark:text-zinc-300"
           htmlFor="profile-website"
         >
           Website
@@ -184,7 +188,7 @@ export function RecruiterProfileForm({
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-1.5">
           <label
-            className="text-sm font-medium text-zinc-700 dark:text-zinc-300"
+            className="font-medium text-sm text-zinc-700 dark:text-zinc-300"
             htmlFor="profile-industry"
           >
             Industry focus
@@ -198,7 +202,7 @@ export function RecruiterProfileForm({
         </div>
         <div className="space-y-1.5">
           <label
-            className="text-sm font-medium text-zinc-700 dark:text-zinc-300"
+            className="font-medium text-sm text-zinc-700 dark:text-zinc-300"
             htmlFor="profile-size"
           >
             Agency size
@@ -221,7 +225,7 @@ export function RecruiterProfileForm({
 
       <div className="space-y-1.5">
         <label
-          className="text-sm font-medium text-zinc-700 dark:text-zinc-300"
+          className="font-medium text-sm text-zinc-700 dark:text-zinc-300"
           htmlFor="profile-location"
         >
           Location
@@ -236,7 +240,7 @@ export function RecruiterProfileForm({
 
       <div className="space-y-1.5">
         <label
-          className="text-sm font-medium text-zinc-700 dark:text-zinc-300"
+          className="font-medium text-sm text-zinc-700 dark:text-zinc-300"
           htmlFor="profile-bio"
         >
           Bio
@@ -254,7 +258,7 @@ export function RecruiterProfileForm({
 
       <div className="space-y-1.5">
         <label
-          className="text-sm font-medium text-zinc-700 dark:text-zinc-300"
+          className="font-medium text-sm text-zinc-700 dark:text-zinc-300"
           htmlFor="profile-specialties"
         >
           Specialties
@@ -272,7 +276,7 @@ export function RecruiterProfileForm({
 
       <div className="space-y-1.5">
         <label
-          className="text-sm font-medium text-zinc-700 dark:text-zinc-300"
+          className="font-medium text-sm text-zinc-700 dark:text-zinc-300"
           htmlFor="profile-linkedin"
         >
           LinkedIn URL

@@ -1,14 +1,14 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
+import { getEmployerById } from "@/lib/auth/employers";
+import { sendEmail } from "@/lib/email/smtp";
+import { renderProcurementInvitationEmail } from "@/lib/email/templates/procurement-invitation";
 import { inviteVendors } from "@/lib/procurement/invitation-actions";
+import { getRequestForBuyer } from "@/lib/procurement/request-actions";
 import {
   getOrCreateVendorForRecruiterEmail,
   getVendorById,
 } from "@/lib/procurement/vendor-actions";
-import { getRequestForBuyer } from "@/lib/procurement/request-actions";
-import { getEmployerById } from "@/lib/auth/employers";
-import { sendEmail } from "@/lib/email/smtp";
-import { renderProcurementInvitationEmail } from "@/lib/email/templates/procurement-invitation";
 
 export const dynamic = "force-dynamic";
 
@@ -40,8 +40,11 @@ export async function POST(
   const notFound: string[] = [];
   for (const email of emails) {
     const vendor = await getOrCreateVendorForRecruiterEmail(email);
-    if (vendor) vendorIds.push(vendor.id);
-    else notFound.push(email);
+    if (vendor) {
+      vendorIds.push(vendor.id);
+    } else {
+      notFound.push(email);
+    }
   }
 
   if (vendorIds.length === 0) {
@@ -66,16 +69,18 @@ export async function POST(
       if (request && employer) {
         for (const invitation of invitations) {
           const vendor = await getVendorById(invitation.vendorId);
-          if (!vendor) continue;
+          if (!vendor) {
+            continue;
+          }
           const { subject, html } = renderProcurementInvitationEmail({
             buyerCompanyName: employer.companyName || employer.email,
             requestTitle: request.title,
             requestType: request.type,
-            responseDeadline: request.responseDeadline,
             requiresPrequalification: request.requiresPrequalification,
             respondUrl: `${process.env.NEXTAUTH_URL ?? ""}/procurement/vendor/requests/${id}`,
+            responseDeadline: request.responseDeadline,
           });
-          await sendEmail({ to: vendor.email, subject, html });
+          await sendEmail({ html, subject, to: vendor.email });
         }
       }
     } catch (emailErr) {
