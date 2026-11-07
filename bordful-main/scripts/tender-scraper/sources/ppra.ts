@@ -18,6 +18,18 @@
 // deliberate simplification - see tender-categories.ts - so the one
 // cpv_codes column and the feed page's category filter work uniformly
 // across sources that don't share a real classification standard).
+//
+// 2026-11-07: re-verified live against the current site (this had silently
+// gone from fetching real rows to fetching zero - see parseListPage). PPRA
+// redesigned the table since this was first written: it gained a leading
+// "Sr" (row number) column, which shifts every later column one index to
+// the right, and the buyer/organization name moved out of the visible row
+// entirely into a per-row expandable detail row (rendered server-side in
+// the same HTML, just CSS-hidden - no JS/clicking needed to read it, cheerio
+// sees it fine). Selecting columns by their `data-label` attribute instead
+// of a raw numeric index survives this kind of reshuffle; a future redesign
+// that renames labels would still break it, same as any scraper tied to a
+// specific markup shape.
 import * as cheerio from "cheerio";
 import { fetchWithRetry } from "../http";
 import type { ScrapedTender } from "../types";
@@ -97,26 +109,36 @@ async function fetchPage(url: string): Promise<string | null> {
   }
 }
 
+// The organization name lives in the row's expandable detail card, not the
+// main row - rendered server-side right after it as a sibling <tr>, just
+// hidden until the row's own expand button is clicked. No JS execution
+// needed to read it, but it does mean reading the *next* row, not this one.
+function extractOrgFromDetailRow(
+  $: cheerio.CheerioAPI,
+  detailRow: ReturnType<cheerio.CheerioAPI>
+): string {
+  const orgLabel = detailRow
+    .find(".cb-rt-dl")
+    .filter((_, el) => $(el).text().trim() === "Organization");
+  return orgLabel.next(".cb-rt-dv").find("strong").first().text().trim();
+}
+
 function parseListPage(html: string, cpvPrefix: string): ScrapedTender[] {
   const $ = cheerio.load(html);
   const tenders: ScrapedTender[] = [];
 
-  $("table.table-hover tbody tr").each((_, row) => {
-    const cells = $(row).find("td");
-    if (cells.length < 7) {
-      return;
-    }
+  $("table.cb-rt tbody tr.cb-rt-main").each((_, row) => {
+    const $row = $(row);
+    const cell = (label: string) =>
+      $row.find(`td[data-label="${label}"]`).first();
 
-    const tenderNo = $(cells[1]).find("strong").first().text().trim();
-    const detailsCell = $(cells[2]);
-    const title = detailsCell.find("strong").first().text().trim();
-    const orgCell = $(cells[3]);
-    const org = orgCell.find(".tender-org").first().text().trim();
-    const advertisedDate = $(cells[5]).text().trim();
-    const closingCell = $(cells[6]);
+    const tenderNo = cell("Tender No").find("strong").first().text().trim();
+    const title = cell("Tender Details").find("strong").first().text().trim();
+    const advertisedDate = cell("Advertised").text().trim();
+    const closingCell = cell("Closing");
     const closingDate = closingCell.find("strong").first().text().trim();
     const closingTime = closingCell.find("small").first().text().trim();
-    const detailHref = $(row)
+    const detailHref = $row
       .find('a[href*="/tenders/tender-details/"]')
       .first()
       .attr("href");
@@ -124,6 +146,8 @@ function parseListPage(html: string, cpvPrefix: string): ScrapedTender[] {
     if (!(tenderNo && title && detailHref)) {
       return;
     }
+
+    const org = extractOrgFromDetailRow($, $row.next("tr.cb-rt-detail"));
 
     tenders.push({
       buyerName: org || undefined,
