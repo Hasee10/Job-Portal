@@ -1,6 +1,11 @@
 {
-  "$schema": "https://biomejs.dev/schemas/2.2.2/schema.json",
-  "extends": ["ultracite/biome/core", "ultracite/biome/react", "ultracite/biome/next", "ultracite/biome/vitest"],
+  "$schema": "https://biomejs.dev/schemas/2.5.9/schema.json",
+  "extends": [
+    "ultracite/biome/core",
+    "ultracite/biome/react",
+    "ultracite/biome/next",
+    "ultracite/biome/vitest"
+  ],
   "linter": {
     "rules": {
       "suspicious": {
