@@ -15,21 +15,24 @@ import {
   deactivateStaleUndatedTenders,
   upsertTender,
 } from "./db";
+import { scrapeBahrain } from "./sources/bahrain";
 import { scrapePpra } from "./sources/ppra";
 import { scrapeTed } from "./sources/ted";
 import type { ScrapedTender } from "./types";
 
-// ppra first, ted second: this used to be ted-then-ppra, but ted alone can
-// return several thousand notices, and upserting those one at a time (see
-// UPSERT_CONCURRENCY below) was slow enough to hit this workflow's 20-minute
-// CI timeout - when it did, ted being first meant ppra, run after it, never
-// got to execute at all. Smaller/faster sources going first means a slow
-// source timing out can no longer starve the others out of every run.
+// Smallest/fastest sources first: this used to be ted-then-ppra, but ted
+// alone can return several thousand notices, and upserting those one at a
+// time (see UPSERT_CONCURRENCY below) was slow enough to hit this
+// workflow's 20-minute CI timeout - when it did, ted being first meant
+// whatever ran after it never got to execute at all. Ordering by ascending
+// volume means a slow source timing out can no longer starve the others
+// out of every run.
 const SOURCES: {
   name: string;
   scrape: () => Promise<ScrapedTender[]>;
 }[] = [
   { name: "ppra", scrape: scrapePpra },
+  { name: "bahrain", scrape: scrapeBahrain },
   { name: "ted", scrape: scrapeTed },
 ];
 
