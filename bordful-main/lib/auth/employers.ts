@@ -54,6 +54,13 @@ export class EmployerAuthError extends Error {
 }
 
 const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+// RFC 5321's own address-length limit - without this, EMAIL_REGEX's
+// unbounded `+` quantifiers accept an arbitrarily long string, which
+// nodemailer's addressparser has had multiple quadratic-time DoS advisories
+// against (GHSA-2x7j-588g-ccc2, GHSA-v53p-9fqp-m79j) for exactly that input
+// shape - every signed-up account's email ends up back through there on
+// every notification email sent to it.
+const MAX_EMAIL_LENGTH = 254;
 
 function getAdminClient() {
   const url = process.env.SUPABASE_URL;
@@ -78,7 +85,10 @@ export async function createEmployer(
 ): Promise<Employer> {
   const normalizedEmail = email.trim().toLowerCase();
 
-  if (!EMAIL_REGEX.test(normalizedEmail)) {
+  if (
+    normalizedEmail.length > MAX_EMAIL_LENGTH ||
+    !EMAIL_REGEX.test(normalizedEmail)
+  ) {
     throw new EmployerAuthError(
       "Enter a valid email address.",
       "invalid_email"

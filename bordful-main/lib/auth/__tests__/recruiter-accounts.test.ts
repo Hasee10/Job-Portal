@@ -21,9 +21,11 @@ vi.mock("@supabase/supabase-js", () => ({
   createClient: (...args: unknown[]) => createClientMock(...args),
 }));
 
-const { verifyRecruiterCredentials, RecruiterAuthError } = await import(
-  "@/lib/auth/recruiter-accounts"
-);
+const {
+  createRecruiterAccount,
+  verifyRecruiterCredentials,
+  RecruiterAuthError,
+} = await import("@/lib/auth/recruiter-accounts");
 
 const TEST_PASSWORD = "correct-horse-battery-staple";
 let validHash: string;
@@ -40,6 +42,25 @@ beforeEach(() => {
 
 afterEach(() => {
   vi.unstubAllEnvs();
+});
+
+describe("createRecruiterAccount", () => {
+  it("rejects an email longer than 254 characters without attempting to create the account", async () => {
+    // Same guard, same reason as lib/auth/__tests__/employers.test.ts's
+    // equivalent test - see MAX_EMAIL_LENGTH's comment in
+    // lib/auth/recruiter-accounts.ts.
+    const overlongLocalPart = "a".repeat(255);
+    fromMock.mockClear(); // isolate this assertion from any earlier test's calls
+
+    await expect(
+      createRecruiterAccount(
+        `${overlongLocalPart}@example.com`,
+        TEST_PASSWORD,
+        "Jamie Recruiter"
+      )
+    ).rejects.toMatchObject({ code: "invalid_email" });
+    expect(fromMock).not.toHaveBeenCalled();
+  });
 });
 
 describe("verifyRecruiterCredentials", () => {

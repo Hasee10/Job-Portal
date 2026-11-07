@@ -26,9 +26,8 @@ vi.mock("@supabase/supabase-js", () => ({
 // Imported after the mock is registered above (vi.mock is hoisted by
 // Vitest, so this ordering in source is fine either way, but keeping it
 // explicit here for readability).
-const { verifyEmployerCredentials, EmployerAuthError } = await import(
-  "@/lib/auth/employers"
-);
+const { createEmployer, verifyEmployerCredentials, EmployerAuthError } =
+  await import("@/lib/auth/employers");
 
 const TEST_PASSWORD = "correct-horse-battery-staple";
 let validHash: string;
@@ -47,6 +46,23 @@ beforeEach(() => {
 
 afterEach(() => {
   vi.unstubAllEnvs();
+});
+
+describe("createEmployer", () => {
+  it("rejects an email longer than 254 characters without attempting to create the account", async () => {
+    // EMAIL_REGEX's own `+` quantifiers are unbounded - this guards the
+    // length separately so an absurdly long (but pattern-valid) address
+    // can't reach nodemailer's address parser later (see MAX_EMAIL_LENGTH's
+    // comment in lib/auth/employers.ts for the specific advisories this
+    // heads off).
+    const overlongLocalPart = "a".repeat(255);
+    fromMock.mockClear(); // isolate this assertion from any earlier test's calls
+
+    await expect(
+      createEmployer(`${overlongLocalPart}@example.com`, TEST_PASSWORD)
+    ).rejects.toMatchObject({ code: "invalid_email" });
+    expect(fromMock).not.toHaveBeenCalled();
+  });
 });
 
 describe("verifyEmployerCredentials", () => {
