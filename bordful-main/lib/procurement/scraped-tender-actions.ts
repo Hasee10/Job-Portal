@@ -63,30 +63,45 @@ export type TenderListOpts = {
 // 1000-row pages is required to actually reach FETCH_WINDOW.
 const POSTGREST_PAGE_SIZE = 1000;
 
-// Category/country/source filtering happens in JS over a bounded recent
-// window rather than in SQL - cpv_codes are full 8-digit codes (e.g.
-// "72413000") and category filtering is by 2-digit division prefix, which
-// PostgREST's array-contains filter can't express directly. Matches the
-// same fetch-then-filter pattern already used for candidate search in
+// Category/query filtering happens in JS over a bounded recent window
+// rather than in SQL - cpv_codes are full 8-digit codes (e.g. "72413000")
+// and category filtering is by 2-digit division prefix, which PostgREST's
+// array-contains filter can't express directly, and free-text query needs
+// a substring match across two columns. Matches the same fetch-then-filter
+// pattern already used for candidate search in
 // lib/jobs/candidate-outreach-actions.ts.
 //
-// The ordering here is load-bearing, not cosmetic: with 63k+ active rows
-// and only a 3000-row window, an unordered .range() returns whatever
-// arbitrary slice Postgres' scan happens to produce - confirmed live, an
-// unordered 1000-row fetch today returns 100% TED and 0% of PPRA's active
-// rows, even though PPRA has some. Ordering newest-first means the window
-// is a deterministic "most recent 3000", so a lower-volume source's
-// tenders actually surface instead of only ever losing a popularity
-// contest against TED's volume.
-async function fetchActiveWindow(): Promise<ScrapedTenderRow[]> {
+// source/country DO get pushed into the SQL query below (via .in()) rather
+// than filtered here in JS, specifically so they don't share this
+// limitation: with 63k+ active rows overwhelmingly from one source (TED),
+// a global newest-3000 window filtered afterward in JS could easily miss
+// most or all of a smaller source's own active tenders - confirmed live,
+// an unordered 1000-row fetch returned 100% TED and 0% PPRA even though
+// PPRA had active rows. Filtering source/country in SQL first means the
+// window is over the complete matching set for that filter, not an
+// arbitrary slice of the whole table.
+//
+// The ordering is still load-bearing even with that fix: it's what makes
+// an unfiltered (or category/query-only) window deterministically "most
+// recent", rather than whatever scan order Postgres happens to produce.
+async function fetchActiveWindow(
+  filters: { sources?: string[]; countries?: string[] } = {}
+): Promise<ScrapedTenderRow[]> {
   const supabase = getAdminClient();
   const rows: Record<string, unknown>[] = [];
 
   for (let offset = 0; offset < FETCH_WINDOW; offset += POSTGREST_PAGE_SIZE) {
-    const { data, error } = await supabase
+    let query = supabase
       .from("scraped_tenders")
       .select("*")
-      .eq("is_active", true)
+      .eq("is_active", true);
+    if (filters.sources && filters.sources.length > 0) {
+      query = query.in("source", filters.sources);
+    }
+    if (filters.countries && filters.countries.length > 0) {
+      query = query.in("country", filters.countries);
+    }
+    const { data, error } = await query
       .order("publication_date", { ascending: false, nullsFirst: false })
       .range(offset, Math.min(offset + POSTGREST_PAGE_SIZE, FETCH_WINDOW) - 1);
 
@@ -116,14 +131,6 @@ function applyFilters(
     result = result.filter((t) =>
       t.cpvCodes.some((code) => categories.some((c) => code.startsWith(c)))
     );
-  }
-  if (opts.sources && opts.sources.length > 0) {
-    const sources = new Set(opts.sources);
-    result = result.filter((t) => sources.has(t.source));
-  }
-  if (opts.countries && opts.countries.length > 0) {
-    const countries = new Set(opts.countries);
-    result = result.filter((t) => t.country && countries.has(t.country));
   }
   if (opts.query && opts.query.trim()) {
     const q = opts.query.trim().toLowerCase();
@@ -171,7 +178,10 @@ function sortTenders(
 export async function listActiveTenders(
   opts: TenderListOpts
 ): Promise<{ tenders: ScrapedTenderRow[]; total: number }> {
-  const all = await fetchActiveWindow();
+  const all = await fetchActiveWindow({
+    countries: opts.countries,
+    sources: opts.sources,
+  });
   const filtered = applyFilters(all, opts);
   const sorted = sortTenders(filtered, opts.sort ?? "newest");
 
