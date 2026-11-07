@@ -23,7 +23,12 @@ export const authorizeCredentials: CredentialsConfig["authorize"] = async (
   // recruiter logins from employer logins — both use the same Credentials
   // provider, same cookie, same JWT. Defaults to 'employer' so the
   // existing employer sign-in form keeps working with no changes.
+  // The `?.` here is load-bearing even though the cast makes the type
+  // checker treat the receiver as non-nullish: `credentials` itself is
+  // typed as possibly undefined one line up, and the cast doesn't change
+  // what NextAuth can actually pass at runtime.
   const accountType =
+    // biome-ignore lint/suspicious/noUnnecessaryConditions: the cast changes the perceived type, not the real runtime nullability - see comment above
     (credentials as Record<string, unknown>)?.accountType ?? "employer";
   if (typeof email !== "string" || typeof password !== "string") {
     return null;

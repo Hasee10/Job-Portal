@@ -46,13 +46,15 @@ type SessionArgs = Parameters<typeof authSessionCallback>[0];
 // types/next-auth.d.ts in a shape TS can read back after the call - these
 // narrow the result to what this app actually puts there, for assertions
 // only.
-type TokenShape = {
+interface TokenShape {
   employerId?: string;
   recruiterId?: string;
-  seekerId?: string;
   role?: string;
-};
-type SessionShape = { user?: { id?: string; role?: string } };
+  seekerId?: string;
+}
+interface SessionShape {
+  user?: { id?: string; role?: string };
+}
 
 beforeEach(() => {
   verifyEmployerCredentialsMock.mockReset();
@@ -64,6 +66,8 @@ beforeEach(() => {
 // Each test below uses its own IP so the module-level rate limiter (shared,
 // unreset state for the lifetime of this file) can't make an earlier test's
 // attempts count against a later, unrelated one.
+const TOO_MANY_ATTEMPTS_ERROR = /too many sign-in attempts/i;
+
 function requestFrom(ip: string): Request {
   return new Request("http://localhost/api/auth/callback/credentials", {
     headers: { "x-forwarded-for": ip },
@@ -157,19 +161,25 @@ describe("authorizeCredentials", () => {
     verifyEmployerCredentialsMock.mockResolvedValue(null);
     const ip = "203.0.113.24";
 
-    for (let i = 0; i < 10; i++) {
-      await authorize(
-        { email: "nobody@example.com", password: "wrong" },
-        requestFrom(ip)
-      );
-    }
+    // Array.from's mapper runs synchronously once per index, in order, so
+    // these 10 authorize() calls start (and hit the rate limiter) in the
+    // same sequence a real for-loop would - just without a loop body
+    // containing an await.
+    await Promise.all(
+      Array.from({ length: 10 }, () =>
+        authorize(
+          { email: "nobody@example.com", password: "wrong" },
+          requestFrom(ip)
+        )
+      )
+    );
 
     await expect(
       authorize(
         { email: "nobody@example.com", password: "wrong" },
         requestFrom(ip)
       )
-    ).rejects.toThrow(/too many sign-in attempts/i);
+    ).rejects.toThrow(TOO_MANY_ATTEMPTS_ERROR);
   });
 });
 

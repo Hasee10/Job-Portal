@@ -68,21 +68,23 @@ export const authJwtCallback: NonNullable<AuthCallbacks["jwt"]> = async ({
   return token;
 };
 
-export const authSessionCallback: NonNullable<AuthCallbacks["session"]> =
-  async ({ session, token }) => {
-    if (session.user) {
-      if (token.role === "seeker") {
-        session.user.id = token.seekerId as string;
-      } else if (token.role === "recruiter") {
-        session.user.id = token.recruiterId as string;
-      } else {
-        session.user.id = token.employerId as string;
-      }
-      session.user.role = token.role as
-        | "employer"
-        | "seeker"
-        | "recruiter"
-        | undefined;
+export const authSessionCallback: NonNullable<AuthCallbacks["session"]> = ({
+  session,
+  token,
+}) => {
+  if (session.user) {
+    if (token.role === "seeker") {
+      session.user.id = token.seekerId as string;
+    } else if (token.role === "recruiter") {
+      session.user.id = token.recruiterId as string;
+    } else {
+      session.user.id = token.employerId as string;
     }
-    return session;
-  };
+    session.user.role = token.role as
+      | "employer"
+      | "seeker"
+      | "recruiter"
+      | undefined;
+  }
+  return session;
+};
