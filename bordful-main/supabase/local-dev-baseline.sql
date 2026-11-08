@@ -24,6 +24,27 @@ create table if not exists public.employers (
   created_at timestamptz not null default now()
 );
 
+-- The columns lib/auth/employers.ts actually reads and writes, so employer
+-- sign-up and sign-in can be exercised locally: password_hash is written by
+-- createEmployer() and read by verifyEmployerCredentials(), and the rest are
+-- PROFILE_COLUMNS, selected on every employer read. Without them PostgREST
+-- rejects those queries with "column employers.password_hash does not exist"
+-- and no authenticated flow can run at all.
+--
+-- Added as ALTERs rather than in the CREATE above because "create table if
+-- not exists" does nothing to a table that already exists, and this baseline
+-- has already been applied to the local database. Types come from how the
+-- code uses each column, not from guesswork about the hosted schema - this is
+-- the minimum that makes the auth path work, not a reconstruction of it.
+alter table public.employers
+  add column if not exists password_hash text,
+  add column if not exists website       text,
+  add column if not exists logo_url      text,
+  add column if not exists industry      text,
+  add column if not exists company_size  text,
+  add column if not exists location      text,
+  add column if not exists description   text;
+
 create table if not exists public.recruiter_accounts (
   id uuid primary key default gen_random_uuid(),
   email text not null unique,
