@@ -126,6 +126,18 @@ revoke all on public.organizations,
              public.organization_members
   from anon, authenticated;
 
+-- PostgreSQL grants EXECUTE on a new function to PUBLIC by default, and
+-- anon/authenticated inherit that grant - revoking from those two roles
+-- alone would leave the function callable through PUBLIC, and PostgREST
+-- exposes any function the request role can execute. That matters here
+-- because member_id and member_type are parameters: a caller who could
+-- reach this would be able to create an organization owned by someone
+-- else. Revoke PUBLIC first, then grant execute back to service_role only,
+-- which is the single role the server-side client uses.
 revoke all on function public.create_organization_with_owner(
   text, boolean, boolean, uuid, text, text, text, text, text, text
-) from anon, authenticated;
+) from public, anon, authenticated;
+
+grant execute on function public.create_organization_with_owner(
+  text, boolean, boolean, uuid, text, text, text, text, text, text
+) to service_role;
