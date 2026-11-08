@@ -24,3 +24,10 @@ cred.txt
 # Local Supabase env files (generated dev credentials, never production).
 bordful-main/.env.local
 bordful-main/.env.development.local
+
+# Internal discussion notes. This repository is public, and these record
+# meetings verbatim - colleagues by name, commercial strategy, and remarks
+# that would read badly to a buyer or competitor. Keep them on disk, out of
+# git: pushing one would be permanent, since history keeps it after a delete.
+new_integration_discussion.txt
+*_discussion.txt
