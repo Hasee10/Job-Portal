@@ -877,7 +877,16 @@ export const config = {
         label: "Jobs",
         link: "/jobs",
       },
-      { label: "Procurement", link: "/procurement" },
+      {
+        dropdown: true,
+        items: [
+          { label: "Overview", link: "/procurement" },
+          { label: "Business Directory", link: "/procurement/directory" },
+          { label: "Tenders", link: "/procurement/tenders" },
+        ],
+        label: "Procurement",
+        link: "/procurement",
+      },
       {
         dropdown: true,
         items: [

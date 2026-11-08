@@ -101,6 +101,18 @@ export function AuthNavStatus({
                       Procurement
                     </Link>
                   )}
+                  {/* Every signed-in account can own a business, whatever
+                      recruitment role it carries, so this is not gated on
+                      capability - the page itself lists only organizations
+                      the caller is actually a member of. */}
+                  <Link
+                    className="block px-4 py-2 text-sm text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
+                    href="/procurement/organizations"
+                    onClick={closeAndNavigate}
+                    role="menuitem"
+                  >
+                    Organizations
+                  </Link>
                   <Link
                     className="block px-4 py-2 text-sm text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
                     href={accountHref}
@@ -157,6 +169,13 @@ export function AuthNavStatus({
             Procurement
           </Link>
         )}
+        <Link
+          className="text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
+          href="/procurement/organizations"
+          onClick={onNavigate}
+        >
+          Organizations
+        </Link>
         <Link
           className="text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
           href={accountHref}
