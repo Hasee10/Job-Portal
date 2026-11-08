@@ -11,8 +11,13 @@ import {
 } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
+import { auth } from "@/auth";
 import { HeroSection } from "@/components/ui/hero-section";
 import config from "@/config";
+import {
+  capabilitiesFor,
+  procurementWorkspaceHref,
+} from "@/lib/auth/capabilities";
 import { getTenderFacets } from "@/lib/procurement/scraped-tender-actions";
 import { listVerifiedVendors } from "@/lib/procurement/vendor-actions";
 
@@ -82,10 +87,17 @@ const HOW_IT_WORKS = [
 ];
 
 export default async function ProcurementLandingPage() {
-  const [facets, vendors] = await Promise.all([
+  const [session, facets, vendors] = await Promise.all([
+    auth(),
     getTenderFacets().catch(() => null),
     listVerifiedVendors().catch(() => []),
   ]);
+  // The landing page stays public (it's the marketing surface for the
+  // marketplace), but a signed-in account gets the one workspace it can
+  // actually reach instead of both buyer and supplier calls to action - the
+  // other one would only bounce off that workspace's own role guard.
+  const capabilities = capabilitiesFor(session?.user?.role);
+  const workspaceHref = procurementWorkspaceHref(capabilities);
   const totalOpenTenders =
     facets?.sources.reduce((sum, s) => sum + s.count, 0) ?? null;
 
@@ -102,18 +114,33 @@ export default async function ProcurementLandingPage() {
         title="The same matchmaking engine, built for sourcing vendors"
       >
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-          <Link
-            className="inline-flex items-center justify-center rounded-md bg-white px-5 py-2.5 font-medium text-primary text-sm hover:opacity-90"
-            href="/procurement/requests"
-          >
-            Go to my requests
-          </Link>
-          <Link
-            className="inline-flex items-center justify-center rounded-md border border-white/40 px-5 py-2.5 font-medium text-sm text-white hover:bg-white/10"
-            href="/procurement/vendor"
-          >
-            I'm a vendor
-          </Link>
+          {session?.user ? (
+            workspaceHref && (
+              <Link
+                className="inline-flex items-center justify-center rounded-md bg-white px-5 py-2.5 font-medium text-primary text-sm hover:opacity-90"
+                href={workspaceHref}
+              >
+                {capabilities.procurementBuyer
+                  ? "Go to my requests"
+                  : "Go to my vendor workspace"}
+              </Link>
+            )
+          ) : (
+            <>
+              <Link
+                className="inline-flex items-center justify-center rounded-md bg-white px-5 py-2.5 font-medium text-primary text-sm hover:opacity-90"
+                href="/procurement/requests"
+              >
+                Go to my requests
+              </Link>
+              <Link
+                className="inline-flex items-center justify-center rounded-md border border-white/40 px-5 py-2.5 font-medium text-sm text-white hover:bg-white/10"
+                href="/procurement/vendor"
+              >
+                I'm a vendor
+              </Link>
+            </>
+          )}
         </div>
         <p className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-white/80">
           <Link

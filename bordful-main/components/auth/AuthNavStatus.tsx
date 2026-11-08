@@ -4,6 +4,10 @@ import { ChevronDown, User } from "lucide-react";
 import Link from "next/link";
 import { signOut, useSession } from "next-auth/react";
 import { useEffect, useRef, useState } from "react";
+import {
+  capabilitiesFor,
+  procurementWorkspaceHref,
+} from "@/lib/auth/capabilities";
 
 type AuthNavStatusProps = {
   className?: string;
@@ -39,12 +43,11 @@ export function AuthNavStatus({
   }
 
   if (session?.user) {
-    const accountHref =
-      session.user.role === "seeker"
-        ? "/account"
-        : session.user.role === "recruiter"
-          ? "/recruiter/dashboard"
-          : "/dashboard";
+    const capabilities = capabilitiesFor(session.user.role);
+    const accountHref = capabilities.workspaceHref;
+    // Buyers and suppliers have different procurement homes, and an account
+    // with no procurement capability gets no entry point at all.
+    const procurementHref = procurementWorkspaceHref(capabilities);
     const displayName = session.user.name || session.user.email;
 
     const closeAndNavigate = () => {
@@ -86,6 +89,16 @@ export function AuthNavStatus({
                       role="menuitem"
                     >
                       Resume Builder
+                    </Link>
+                  )}
+                  {procurementHref && (
+                    <Link
+                      className="block px-4 py-2 text-sm text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
+                      href={procurementHref}
+                      onClick={closeAndNavigate}
+                      role="menuitem"
+                    >
+                      Procurement
                     </Link>
                   )}
                   <Link
@@ -134,6 +147,15 @@ export function AuthNavStatus({
               Go Premium
             </Link>
           </>
+        )}
+        {procurementHref && (
+          <Link
+            className="text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
+            href={procurementHref}
+            onClick={onNavigate}
+          >
+            Procurement
+          </Link>
         )}
         <Link
           className="text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
