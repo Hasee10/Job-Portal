@@ -1,15 +1,15 @@
-import type { Metadata } from 'next';
-import { MasterclassGrid } from '@/components/content/MasterclassGrid';
-import config from '@/config';
-import { listPublishedMasterclasses } from '@/lib/content/masterclass-actions';
+import type { Metadata } from "next";
+import { MasterclassGrid } from "@/components/content/MasterclassGrid";
+import config from "@/config";
+import { listPublishedMasterclasses } from "@/lib/content/masterclass-actions";
 
 export const metadata: Metadata = {
-  title: `MasterClasses | ${config.title}`,
   description:
-    'Video sessions with hiring experts on job searching and interviewing.',
+    "Video sessions with hiring experts on job searching and interviewing.",
+  title: `MasterClasses | ${config.title}`,
 };
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 export default async function MasterclassesPage() {
   const masterclasses = await listPublishedMasterclasses();
@@ -32,8 +32,8 @@ export default async function MasterclassesPage() {
                 MasterClasses are launching soon.
               </p>
               <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-                We&apos;re lining up sessions with hiring experts - check
-                back soon.
+                We&apos;re lining up sessions with hiring experts - check back
+                soon.
               </p>
             </div>
           ) : (

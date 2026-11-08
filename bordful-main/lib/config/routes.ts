@@ -10,72 +10,72 @@ export type RouteConfig = {
 // Route configuration
 export const routes: RouteConfig[] = [
   {
-    path: '/',
-    name: 'Home',
+    name: "Home",
+    path: "/",
   },
   {
-    path: '/jobs',
-    name: 'Jobs',
+    name: "Jobs",
+    path: "/jobs",
   },
   {
-    path: '/jobs/[slug]',
-    name: 'Job Details',
+    name: "Job Details",
+    path: "/jobs/[slug]",
   },
   {
-    path: '/jobs/type/[type]',
-    name: 'Job Type',
+    name: "Job Type",
+    path: "/jobs/type/[type]",
   },
   {
-    path: '/jobs/level/[level]',
-    name: 'Career Level',
+    name: "Career Level",
+    path: "/jobs/level/[level]",
   },
   {
-    path: '/jobs/language/[language]',
-    name: 'Language',
+    name: "Language",
+    path: "/jobs/language/[language]",
   },
   {
-    path: '/jobs/location/[location]',
-    name: 'Location',
+    name: "Location",
+    path: "/jobs/location/[location]",
   },
   {
-    path: '/jobs/types',
-    name: 'Job Types',
+    name: "Job Types",
+    path: "/jobs/types",
   },
   {
-    path: '/jobs/levels',
-    name: 'Career Levels',
+    name: "Career Levels",
+    path: "/jobs/levels",
   },
   {
-    path: '/jobs/languages',
-    name: 'Languages',
+    name: "Languages",
+    path: "/jobs/languages",
   },
   {
-    path: '/jobs/locations',
-    name: 'Job Locations',
+    name: "Job Locations",
+    path: "/jobs/locations",
   },
   {
-    path: '/pricing',
-    name: 'Pricing',
+    name: "Pricing",
+    path: "/pricing",
   },
   {
-    path: '/about',
-    name: 'About',
+    name: "About",
+    path: "/about",
   },
   {
-    path: '/contact',
-    name: 'Contact',
+    name: "Contact",
+    path: "/contact",
   },
   {
-    path: '/faq',
-    name: 'FAQ',
+    name: "FAQ",
+    path: "/faq",
   },
   {
-    path: '/job-alerts',
-    name: 'Job Alerts',
+    name: "Job Alerts",
+    path: "/job-alerts",
   },
   {
-    path: '/changelog',
-    name: 'Changelog',
+    name: "Changelog",
+    path: "/changelog",
   },
 ];
 
@@ -83,11 +83,11 @@ export const routes: RouteConfig[] = [
 export function matchRoute(path: string): RouteConfig | undefined {
   return routes.find((route) => {
     // Check if route has dynamic parameters (contains [param] syntax)
-    if (route.path.includes('[')) {
+    if (route.path.includes("[")) {
       // Convert route path to regex pattern
       const pattern = route.path
-        .replace(/\[([^\]]+)\]/g, '([^/]+)') // Replace [param] with regex capture group
-        .replace(/\//g, '\\/'); // Escape forward slashes
+        .replace(/\[([^\]]+)\]/g, "([^/]+)") // Replace [param] with regex capture group
+        .replace(/\//g, "\\/"); // Escape forward slashes
       const regex = new RegExp(`^${pattern}$`);
       return regex.test(path);
     }
@@ -101,13 +101,13 @@ export function extractParams(
   route: RouteConfig
 ): Record<string, string> {
   // If the route doesn't contain dynamic parameters, return empty object
-  if (!route.path.includes('[')) {
+  if (!route.path.includes("[")) {
     return {};
   }
 
   const pattern = route.path
-    .replace(/\[([^\]]+)\]/g, '([^/]+)') // Replace [param] with regex capture group
-    .replace(/\//g, '\\/'); // Escape forward slashes
+    .replace(/\[([^\]]+)\]/g, "([^/]+)") // Replace [param] with regex capture group
+    .replace(/\//g, "\\/"); // Escape forward slashes
   const regex = new RegExp(`^${pattern}$`);
   const matches = path.match(regex);
 

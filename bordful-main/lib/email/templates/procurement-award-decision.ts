@@ -1,4 +1,10 @@
-import { EMAIL_BRAND_COLOR, emailFooter, emailHeader, h, wrapEmailBody } from './shared';
+import {
+  EMAIL_BRAND_COLOR,
+  emailFooter,
+  emailHeader,
+  h,
+  wrapEmailBody,
+} from "./shared";
 
 export type ProcurementAwardDecisionEmailData = {
   requestTitle: string;
@@ -11,15 +17,15 @@ export function renderProcurementAwardDecisionEmail({
   won,
   dashboardUrl,
 }: ProcurementAwardDecisionEmailData): { subject: string; html: string } {
-  const accentColor = won ? '#16a34a' : '#71717a';
-  const badgeBg = won ? '#f0fdf4' : '#f4f4f5';
+  const accentColor = won ? "#16a34a" : "#71717a";
+  const badgeBg = won ? "#f0fdf4" : "#f4f4f5";
 
   const html = wrapEmailBody(`
     ${emailHeader()}
 
     <div style="padding: 40px 40px 36px;">
       <div style="display: inline-block; font-size: 12px; font-weight: 700; color: ${accentColor}; background: ${badgeBg}; padding: 4px 10px; border-radius: 100px; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 18px;">
-        ${won ? 'Awarded' : 'Decision made'}
+        ${won ? "Awarded" : "Decision made"}
       </div>
       <h1 style="margin: 0 0 14px; font-size: 22px; line-height: 1.3; font-weight: 800; color: #18181b; letter-spacing: -0.01em;">
         ${won ? `You were awarded ${h(requestTitle)}` : `${h(requestTitle)} has been awarded`}
@@ -41,12 +47,15 @@ export function renderProcurementAwardDecisionEmail({
     </div>
 
     ${emailFooter({
-      customBottomLine: "You're receiving this because you submitted a response to this procurement request.",
+      customBottomLine:
+        "You're receiving this because you submitted a response to this procurement request.",
     })}
   `);
 
   return {
-    subject: won ? `You were awarded: ${requestTitle}` : `Award decision: ${requestTitle}`,
     html,
+    subject: won
+      ? `You were awarded: ${requestTitle}`
+      : `Award decision: ${requestTitle}`,
   };
 }

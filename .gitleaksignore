@@ -1,0 +1,11 @@
+# Fingerprints gitleaks should not report, as <commit>:<file>:<rule>:<line>.
+#
+# Entries are pinned to one finding each, deliberately - allowlisting the
+# whole .env.example path would also hide a real key if one were ever pasted
+# into it, which is exactly the mistake this scan exists to catch.
+
+# generic-api-key on `MISTRAL_API_KEY_1=` in bordful-main/.env.example.
+# False positive: .env.example is the tracked placeholder file the README
+# documents, and this entry has an empty value - the rule matches the
+# variable name, not a committed secret.
+ad79d233af3009f95d45994e619cee0813c8a681:bordful-main/.env.example:generic-api-key:69

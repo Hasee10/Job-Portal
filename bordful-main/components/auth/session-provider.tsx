@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { SessionProvider } from 'next-auth/react';
-import type { Session } from 'next-auth';
-import type { ReactNode } from 'react';
+import type { Session } from "next-auth";
+import { SessionProvider } from "next-auth/react";
+import type { ReactNode } from "react";
 
 // Thin client-boundary wrapper - RootLayout (a server component) can't
 // import next-auth/react's SessionProvider directly, but it CAN render this

@@ -1,5 +1,5 @@
-import nodemailer from 'nodemailer';
-import { EmailProviderError } from './types';
+import nodemailer from "nodemailer";
+import { EmailProviderError } from "./types";
 
 // Gmail SMTP instead of a transactional provider (Resend/SendGrid/etc.) -
 // those all restrict delivery to a verified custom domain, which costs
@@ -13,37 +13,41 @@ let cachedTransporter: ReturnType<typeof nodemailer.createTransport> | null =
   null;
 
 function getTransporter() {
-  if (cachedTransporter) return cachedTransporter;
+  if (cachedTransporter) {
+    return cachedTransporter;
+  }
 
   const user = process.env.GMAIL_USER;
   const pass = process.env.GMAIL_APP_PASSWORD;
-  if (!user || !pass) {
+  if (!(user && pass)) {
     return null;
   }
 
   cachedTransporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: { user, pass },
+    auth: { pass, user },
+    service: "gmail",
   });
   return cachedTransporter;
 }
 
 function assertConfigured(featureLabel: string): boolean {
-  if (getTransporter()) return false;
+  if (getTransporter()) {
+    return false;
+  }
 
-  if (process.env.NODE_ENV === 'development') {
+  if (process.env.NODE_ENV === "development") {
     return true; // simulate success locally without credentials
   }
 
   console.error(
     `[email/smtp] GMAIL_USER / GMAIL_APP_PASSWORD is not set - ${featureLabel} ` +
-      'is failing. Set both in the deployment environment (a free Gmail ' +
-      'App Password, not your regular password - generate one at ' +
-      'myaccount.google.com/apppasswords).'
+      "is failing. Set both in the deployment environment (a free Gmail " +
+      "App Password, not your regular password - generate one at " +
+      "myaccount.google.com/apppasswords)."
   );
   throw new EmailProviderError(
-    'Gmail SMTP credentials are required in production',
-    'smtp',
+    "Gmail SMTP credentials are required in production",
+    "smtp",
     true
   );
 }
@@ -63,14 +67,18 @@ export async function sendEmail(data: {
       // Unreachable in practice (assertConfigured already threw above when
       // credentials are missing outside development), but keeps this
       // function's control flow provably safe for TypeScript.
-      throw new EmailProviderError('Gmail SMTP is not configured', 'smtp', true);
+      throw new EmailProviderError(
+        "Gmail SMTP is not configured",
+        "smtp",
+        true
+      );
     }
 
     await transporter.sendMail({
       from: `Caliber <${process.env.GMAIL_USER}>`,
-      to: data.to,
-      subject: data.subject,
       html: data.html,
+      subject: data.subject,
+      to: data.to,
     });
 
     return { success: true };
@@ -79,7 +87,7 @@ export async function sendEmail(data: {
       throw error;
     }
     const errorMessage =
-      error instanceof Error ? error.message : 'Failed to send email';
-    throw new EmailProviderError(errorMessage, 'smtp');
+      error instanceof Error ? error.message : "Failed to send email";
+    throw new EmailProviderError(errorMessage, "smtp");
   }
 }

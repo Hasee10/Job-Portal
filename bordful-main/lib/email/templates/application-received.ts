@@ -1,7 +1,13 @@
-import { EMAIL_BRAND_COLOR, emailFooter, emailHeader, h, wrapEmailBody } from './shared';
+import {
+  EMAIL_BRAND_COLOR,
+  emailFooter,
+  emailHeader,
+  h,
+  wrapEmailBody,
+} from "./shared";
 
 export type ApplicationReceivedEmailData = {
-  ownerType: 'employer' | 'recruiter';
+  ownerType: "employer" | "recruiter";
   applicantName: string;
   jobTitle: string;
   matchScore: number;
@@ -47,7 +53,7 @@ export function renderApplicationReceivedEmail({
   `);
 
   return {
-    subject: `${applicantName} applied for ${jobTitle}`,
     html,
+    subject: `${applicantName} applied for ${jobTitle}`,
   };
 }

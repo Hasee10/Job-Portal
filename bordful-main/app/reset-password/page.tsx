@@ -1,14 +1,14 @@
-import type { Metadata } from 'next';
-import { Suspense } from 'react';
-import { ResetPasswordForm } from '@/components/auth/ResetPasswordForm';
-import config from '@/config';
+import type { Metadata } from "next";
+import { Suspense } from "react";
+import { ResetPasswordForm } from "@/components/auth/ResetPasswordForm";
+import config from "@/config";
 
 export const metadata: Metadata = {
+  robots: { follow: false, index: false },
   title: `Reset Password | ${config.title}`,
-  robots: { index: false, follow: false },
 };
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 export default function ResetPasswordPage() {
   return (

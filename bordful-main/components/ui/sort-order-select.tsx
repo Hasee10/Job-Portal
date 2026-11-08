@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import {
   Select,
@@ -6,21 +6,21 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import config from '@/config';
+} from "@/components/ui/select";
+import config from "@/config";
 import {
   SORT_TRIGGER_WIDTH,
   SORT_TRIGGER_WIDTH_SM,
-} from '@/lib/constants/defaults';
-import { useSortOrder } from '@/lib/hooks/useSortOrder';
+} from "@/lib/constants/defaults";
+import { useSortOrder } from "@/lib/hooks/useSortOrder";
 
-type SortOption = 'newest' | 'oldest' | 'salary';
+type SortOption = "newest" | "oldest" | "salary";
 
 // Sort option labels mapping
 const sortOptionLabels: Record<SortOption, string> = {
-  newest: 'Newest first',
-  oldest: 'Oldest first',
-  salary: 'Highest salary',
+  newest: "Newest first",
+  oldest: "Oldest first",
+  salary: "Highest salary",
 };
 
 export function SortOrderSelect() {
@@ -28,18 +28,18 @@ export function SortOrderSelect() {
 
   // Get available sort options from config or use default
   const availableSortOptions = config.jobListings?.sortOptions || [
-    'newest',
-    'oldest',
-    'salary',
+    "newest",
+    "oldest",
+    "salary",
   ];
 
   // Get default sort order from config or use "newest"
   const defaultSortOrder =
-    (config.jobListings?.defaultSortOrder as SortOption) || 'newest';
+    (config.jobListings?.defaultSortOrder as SortOption) || "newest";
 
   // Get label configuration with fallbacks
   const showLabel = config.jobListings?.labels?.sortOrder?.show ?? true;
-  const labelText = config.jobListings?.labels?.sortOrder?.text || 'Sort by:';
+  const labelText = config.jobListings?.labels?.sortOrder?.text || "Sort by:";
 
   // Adjust width based on whether label is shown
   const triggerWidth = `w-[${SORT_TRIGGER_WIDTH}px] sm:w-[${SORT_TRIGGER_WIDTH_SM}px]`;

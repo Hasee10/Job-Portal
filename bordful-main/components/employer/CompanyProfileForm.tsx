@@ -1,22 +1,31 @@
-'use client';
+"use client";
 
-import Image from 'next/image';
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { Building2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { useToast } from '@/hooks/use-toast';
-import type { Employer } from '@/lib/auth/employers';
+import { Building2 } from "lucide-react";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/hooks/use-toast";
+import type { Employer } from "@/lib/auth/employers";
 
-const COMPANY_SIZES = ['1-10', '11-50', '51-200', '201-500', '501-1000', '1000+'];
+const COMPANY_SIZES = [
+  "1-10",
+  "11-50",
+  "51-200",
+  "201-500",
+  "501-1000",
+  "1000+",
+];
 
 function deriveLogoPreview(website: string): string | null {
-  if (!website.trim()) return null;
+  if (!website.trim()) {
+    return null;
+  }
   try {
-    const url = website.startsWith('http') ? website : `https://${website}`;
-    const domain = new URL(url).hostname.replace(/^www\./, '');
+    const url = website.startsWith("http") ? website : `https://${website}`;
+    const domain = new URL(url).hostname.replace(/^www\./, "");
     return domain ? `https://logo.clearbit.com/${domain}` : null;
   } catch {
     return null;
@@ -27,12 +36,12 @@ export function CompanyProfileForm({ employer }: { employer: Employer }) {
   const router = useRouter();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [companyName, setCompanyName] = useState(employer.companyName ?? '');
-  const [website, setWebsite] = useState(employer.website ?? '');
-  const [industry, setIndustry] = useState(employer.industry ?? '');
-  const [companySize, setCompanySize] = useState(employer.companySize ?? '');
-  const [location, setLocation] = useState(employer.location ?? '');
-  const [description, setDescription] = useState(employer.description ?? '');
+  const [companyName, setCompanyName] = useState(employer.companyName ?? "");
+  const [website, setWebsite] = useState(employer.website ?? "");
+  const [industry, setIndustry] = useState(employer.industry ?? "");
+  const [companySize, setCompanySize] = useState(employer.companySize ?? "");
+  const [location, setLocation] = useState(employer.location ?? "");
+  const [description, setDescription] = useState(employer.description ?? "");
   const [logoLoadFailed, setLogoLoadFailed] = useState(false);
 
   const previewLogoUrl = deriveLogoPreview(website) ?? employer.logoUrl;
@@ -43,37 +52,39 @@ export function CompanyProfileForm({ employer }: { employer: Employer }) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!companyName.trim()) return;
+    if (!companyName.trim()) {
+      return;
+    }
     setIsSubmitting(true);
 
     try {
-      const res = await fetch('/api/employer/profile', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch("/api/employer/profile", {
         body: JSON.stringify({
           companyName: companyName.trim(),
-          website: website.trim() || null,
-          industry: industry.trim() || null,
           companySize: companySize || null,
-          location: location.trim() || null,
           description: description.trim() || null,
+          industry: industry.trim() || null,
+          location: location.trim() || null,
+          website: website.trim() || null,
         }),
+        headers: { "Content-Type": "application/json" },
+        method: "PATCH",
       });
 
       if (!res.ok) {
         const data = await res.json();
-        throw new Error(data.error || 'Failed to save.');
+        throw new Error(data.error || "Failed to save.");
       }
 
-      toast({ title: 'Company profile saved' });
-      router.push('/dashboard');
+      toast({ title: "Company profile saved" });
+      router.push("/dashboard");
       router.refresh();
     } catch (err) {
       toast({
-        title: 'Failed to save',
-        description: err instanceof Error ? err.message : 'Please try again.',
-        variant: 'destructive',
-        className: 'bg-destructive border border-red-600 shadow-md',
+        className: "bg-destructive border border-red-600 shadow-md",
+        description: err instanceof Error ? err.message : "Please try again.",
+        title: "Failed to save",
+        variant: "destructive",
       });
     } finally {
       setIsSubmitting(false);
@@ -95,16 +106,23 @@ export function CompanyProfileForm({ employer }: { employer: Employer }) {
               width={64}
             />
           ) : (
-            <Building2 aria-hidden="true" className="h-6 w-6 text-zinc-300 dark:text-zinc-600" />
+            <Building2
+              aria-hidden="true"
+              className="h-6 w-6 text-zinc-300 dark:text-zinc-600"
+            />
           )}
         </span>
         <p className="text-xs text-zinc-500 dark:text-zinc-400">
-          Logo is auto-detected from your website. Add a website below to preview it.
+          Logo is auto-detected from your website. Add a website below to
+          preview it.
         </p>
       </div>
 
       <div className="space-y-1.5">
-        <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300" htmlFor="company-name">
+        <label
+          className="font-medium text-sm text-zinc-700 dark:text-zinc-300"
+          htmlFor="company-name"
+        >
           Company name <span className="text-red-500">*</span>
         </label>
         <Input
@@ -117,7 +135,10 @@ export function CompanyProfileForm({ employer }: { employer: Employer }) {
       </div>
 
       <div className="space-y-1.5">
-        <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300" htmlFor="company-website">
+        <label
+          className="font-medium text-sm text-zinc-700 dark:text-zinc-300"
+          htmlFor="company-website"
+        >
           Website
         </label>
         <Input
@@ -130,7 +151,10 @@ export function CompanyProfileForm({ employer }: { employer: Employer }) {
 
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-1.5">
-          <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300" htmlFor="company-industry">
+          <label
+            className="font-medium text-sm text-zinc-700 dark:text-zinc-300"
+            htmlFor="company-industry"
+          >
             Industry
           </label>
           <Input
@@ -141,7 +165,10 @@ export function CompanyProfileForm({ employer }: { employer: Employer }) {
           />
         </div>
         <div className="space-y-1.5">
-          <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300" htmlFor="company-size">
+          <label
+            className="font-medium text-sm text-zinc-700 dark:text-zinc-300"
+            htmlFor="company-size"
+          >
             Company size
           </label>
           <select
@@ -161,7 +188,10 @@ export function CompanyProfileForm({ employer }: { employer: Employer }) {
       </div>
 
       <div className="space-y-1.5">
-        <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300" htmlFor="company-location">
+        <label
+          className="font-medium text-sm text-zinc-700 dark:text-zinc-300"
+          htmlFor="company-location"
+        >
           Location
         </label>
         <Input
@@ -173,7 +203,10 @@ export function CompanyProfileForm({ employer }: { employer: Employer }) {
       </div>
 
       <div className="space-y-1.5">
-        <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300" htmlFor="company-description">
+        <label
+          className="font-medium text-sm text-zinc-700 dark:text-zinc-300"
+          htmlFor="company-description"
+        >
           About the company
         </label>
         <Textarea
@@ -189,9 +222,14 @@ export function CompanyProfileForm({ employer }: { employer: Employer }) {
 
       <div className="flex gap-3 pt-2">
         <Button disabled={isSubmitting || !companyName.trim()} type="submit">
-          {isSubmitting ? 'Saving…' : 'Save profile'}
+          {isSubmitting ? "Saving…" : "Save profile"}
         </Button>
-        <Button disabled={isSubmitting} onClick={() => router.back()} type="button" variant="outline">
+        <Button
+          disabled={isSubmitting}
+          onClick={() => router.back()}
+          type="button"
+          variant="outline"
+        >
           Cancel
         </Button>
       </div>

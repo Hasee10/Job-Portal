@@ -1,4 +1,4 @@
-import { Briefcase, CheckCircle2, Sparkles } from 'lucide-react';
+import { Briefcase, CheckCircle2, Sparkles } from "lucide-react";
 
 // Guest-only hero - deliberately NOT the shared <HeroSection> component
 // used everywhere else on the site (job pages, job-alerts, etc.), so this
@@ -8,7 +8,7 @@ import { Briefcase, CheckCircle2, Sparkles } from 'lucide-react';
 // so the color scheme still reads as one product, just a different layout/
 // visual on this one page.
 const BRAND_GRADIENT =
-  'linear-gradient(135deg, #065C79 0%, #0982AC 50%, #0BA6DA 100%)';
+  "linear-gradient(135deg, #065C79 0%, #0982AC 50%, #0BA6DA 100%)";
 
 export function GuestHero({
   badge,
@@ -52,7 +52,7 @@ export function GuestHero({
               except the two numbers, which reuse the real counts already
               shown on the left. */}
           <div className="relative hidden h-72 md:block lg:h-80">
-            <div className="absolute right-6 top-2 w-56 -rotate-3 rounded-xl border border-white/10 bg-white/95 p-4 shadow-xl backdrop-blur dark:bg-zinc-900/95">
+            <div className="absolute top-2 right-6 w-56 -rotate-3 rounded-xl border border-white/10 bg-white/95 p-4 shadow-xl backdrop-blur dark:bg-zinc-900/95">
               <div className="flex items-center gap-2">
                 <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
                   <Briefcase aria-hidden="true" className="h-4 w-4" />
@@ -66,7 +66,7 @@ export function GuestHero({
               </div>
             </div>
 
-            <div className="absolute left-4 top-20 w-52 rotate-2 rounded-xl border border-white/10 bg-white/95 p-4 shadow-xl backdrop-blur dark:bg-zinc-900/95">
+            <div className="absolute top-20 left-4 w-52 rotate-2 rounded-xl border border-white/10 bg-white/95 p-4 shadow-xl backdrop-blur dark:bg-zinc-900/95">
               <div className="flex items-center gap-2">
                 <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-green-50 text-green-600 dark:bg-green-500/10 dark:text-green-400">
                   <CheckCircle2 aria-hidden="true" className="h-4 w-4" />
@@ -80,7 +80,7 @@ export function GuestHero({
               </div>
             </div>
 
-            <div className="absolute bottom-4 right-10 w-48 -rotate-2 rounded-xl border border-white/10 bg-white/95 p-4 shadow-xl backdrop-blur dark:bg-zinc-900/95">
+            <div className="absolute right-10 bottom-4 w-48 -rotate-2 rounded-xl border border-white/10 bg-white/95 p-4 shadow-xl backdrop-blur dark:bg-zinc-900/95">
               <div className="flex items-center gap-3">
                 <div className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary/10">
                   <svg className="h-11 w-11 -rotate-90" viewBox="0 0 44 44">
@@ -114,7 +114,9 @@ export function GuestHero({
                   <p className="font-semibold text-xs text-zinc-900 dark:text-zinc-50">
                     AI match score
                   </p>
-                  <p className="text-[11px] text-zinc-500">Based on your resume</p>
+                  <p className="text-[11px] text-zinc-500">
+                    Based on your resume
+                  </p>
                 </div>
               </div>
             </div>

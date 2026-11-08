@@ -1,18 +1,18 @@
-import 'server-only';
+import "server-only";
 
-import axios from 'axios';
+import axios from "axios";
 import {
   insertDraftMasterclass,
   listAllMasterclassVideoUrls,
-} from './masterclass-actions';
+} from "./masterclass-actions";
 import {
   MASTERCLASS_CATEGORY_KEYWORDS,
   MASTERCLASS_CHANNEL_ALLOWLIST,
   MASTERCLASS_RELEVANCE_KEYWORDS,
   type MasterclassChannel,
-} from './masterclass-channels';
+} from "./masterclass-channels";
 
-const YOUTUBE_API_BASE = 'https://www.googleapis.com/youtube/v3';
+const YOUTUBE_API_BASE = "https://www.googleapis.com/youtube/v3";
 const UPLOADS_PER_CHANNEL = 5;
 const MAX_NEW_DRAFTS_PER_RUN = 3;
 
@@ -43,9 +43,9 @@ async function getUploadsPlaylistId(channelId: string): Promise<string | null> {
     `${YOUTUBE_API_BASE}/channels`,
     {
       params: {
-        part: 'contentDetails',
         id: channelId,
         key: getApiKey(),
+        part: "contentDetails",
       },
       timeout: 15_000,
     }
@@ -62,10 +62,10 @@ async function getRecentUploads(
     `${YOUTUBE_API_BASE}/playlistItems`,
     {
       params: {
-        part: 'snippet,contentDetails',
-        playlistId,
-        maxResults: UPLOADS_PER_CHANNEL,
         key: getApiKey(),
+        maxResults: UPLOADS_PER_CHANNEL,
+        part: "snippet,contentDetails",
+        playlistId,
       },
       timeout: 15_000,
     }
@@ -77,7 +77,9 @@ async function getRecentUploads(
 // YouTube's Data API only ever returns this format for video durations.
 function parseIso8601DurationToMinutes(duration: string): number | null {
   const match = duration.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
-  if (!match) return null;
+  if (!match) {
+    return null;
+  }
   const hours = Number(match[1] || 0);
   const minutes = Number(match[2] || 0);
   const seconds = Number(match[3] || 0);
@@ -88,21 +90,25 @@ function parseIso8601DurationToMinutes(duration: string): number | null {
 async function getVideoDurationsMinutes(
   videoIds: string[]
 ): Promise<Map<string, number | null>> {
-  if (videoIds.length === 0) return new Map();
+  if (videoIds.length === 0) {
+    return new Map();
+  }
   const response = await axios.get<YouTubeVideosResponse>(
     `${YOUTUBE_API_BASE}/videos`,
     {
       params: {
-        part: 'contentDetails',
-        id: videoIds.join(','),
+        id: videoIds.join(","),
         key: getApiKey(),
+        part: "contentDetails",
       },
       timeout: 15_000,
     }
   );
   const durations = new Map<string, number | null>();
   for (const item of response.data.items ?? []) {
-    if (!item.id) continue;
+    if (!item.id) {
+      continue;
+    }
     durations.set(
       item.id,
       item.contentDetails?.duration
@@ -123,7 +129,9 @@ function isRelevant(title: string, description: string): boolean {
 function categorize(title: string, channel: MasterclassChannel): string {
   const lowerTitle = title.toLowerCase();
   for (const [keyword, category] of MASTERCLASS_CATEGORY_KEYWORDS) {
-    if (lowerTitle.includes(keyword)) return category;
+    if (lowerTitle.includes(keyword)) {
+      return category;
+    }
   }
   return channel.defaultCategory;
 }
@@ -147,24 +155,34 @@ export async function discoverNewMasterclasses(): Promise<DiscoverMasterclassesR
   const created: { title: string; channel: string }[] = [];
 
   for (const channel of MASTERCLASS_CHANNEL_ALLOWLIST) {
-    if (created.length >= MAX_NEW_DRAFTS_PER_RUN) break;
+    if (created.length >= MAX_NEW_DRAFTS_PER_RUN) {
+      break;
+    }
 
     try {
       const uploadsPlaylistId = await getUploadsPlaylistId(channel.channelId);
-      if (!uploadsPlaylistId) continue;
+      if (!uploadsPlaylistId) {
+        continue;
+      }
 
       const uploads = await getRecentUploads(uploadsPlaylistId);
       const candidates = uploads.filter((item) => {
         const videoId = item.contentDetails?.videoId;
-        const title = item.snippet?.title ?? '';
-        const description = item.snippet?.description ?? '';
-        if (!(videoId && title)) return false;
+        const title = item.snippet?.title ?? "";
+        const description = item.snippet?.description ?? "";
+        if (!(videoId && title)) {
+          return false;
+        }
         const url = `https://www.youtube.com/watch?v=${videoId}`;
-        if (existingUrls.has(url)) return false;
+        if (existingUrls.has(url)) {
+          return false;
+        }
         return isRelevant(title, description);
       });
 
-      if (candidates.length === 0) continue;
+      if (candidates.length === 0) {
+        continue;
+      }
 
       const videoIds = candidates
         .map((item) => item.contentDetails?.videoId)
@@ -172,22 +190,26 @@ export async function discoverNewMasterclasses(): Promise<DiscoverMasterclassesR
       const durations = await getVideoDurationsMinutes(videoIds);
 
       for (const item of candidates) {
-        if (created.length >= MAX_NEW_DRAFTS_PER_RUN) break;
+        if (created.length >= MAX_NEW_DRAFTS_PER_RUN) {
+          break;
+        }
         const videoId = item.contentDetails?.videoId;
         const title = item.snippet?.title;
-        if (!(videoId && title)) continue;
+        if (!(videoId && title)) {
+          continue;
+        }
 
         const url = `https://www.youtube.com/watch?v=${videoId}`;
         const masterclass = await insertDraftMasterclass({
-          title,
+          category: categorize(title, channel),
           description: item.snippet?.description?.slice(0, 300) || null,
+          durationMinutes: durations.get(videoId) ?? null,
           instructorName: channel.name,
           instructorTitle: null,
+          title,
           videoUrl: url,
-          durationMinutes: durations.get(videoId) ?? null,
-          category: categorize(title, channel),
         });
-        created.push({ title: masterclass.title, channel: channel.name });
+        created.push({ channel: channel.name, title: masterclass.title });
         existingUrls.add(url);
       }
     } catch (error) {

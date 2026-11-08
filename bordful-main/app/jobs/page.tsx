@@ -4,31 +4,31 @@ import {
   Globe,
   GraduationCap,
   Languages,
-} from 'lucide-react';
-import type { Metadata } from 'next';
-import Link from 'next/link';
-import Script from 'next/script';
-import type { ItemList, ListItem, WithContext } from 'schema-dts';
-import { Button } from '@/components/ui/button';
-import { HeroSection } from '@/components/ui/hero-section';
-import { MetadataBreadcrumb } from '@/components/ui/metadata-breadcrumb';
-import { PostJobBanner } from '@/components/ui/post-job-banner';
-import config from '@/config';
-import { CAREER_LEVEL_DISPLAY_NAMES } from '@/lib/constants/career-levels';
-import type { Country } from '@/lib/constants/countries';
+} from "lucide-react";
+import type { Metadata } from "next";
+import Link from "next/link";
+import Script from "next/script";
+import type { ItemList, ListItem, WithContext } from "schema-dts";
+import { Button } from "@/components/ui/button";
+import { HeroSection } from "@/components/ui/hero-section";
+import { MetadataBreadcrumb } from "@/components/ui/metadata-breadcrumb";
+import { PostJobBanner } from "@/components/ui/post-job-banner";
+import config from "@/config";
+import { CAREER_LEVEL_DISPLAY_NAMES } from "@/lib/constants/career-levels";
+import type { Country } from "@/lib/constants/countries";
 import {
   getDisplayNameFromCode,
   type LanguageCode,
-} from '@/lib/constants/languages';
+} from "@/lib/constants/languages";
 import {
   createLocationSlug,
   formatLocationTitle,
-} from '@/lib/constants/locations';
-import type { CareerLevel } from '@/lib/db/airtable';
-import { getJobs } from '@/lib/db/airtable.server';
-import { resolveColor } from '@/lib/utils/colors';
-import { safeJsonLdStringify } from '@/lib/utils/json-ld';
-import { generateMetadata } from '@/lib/utils/metadata';
+} from "@/lib/constants/locations";
+import type { CareerLevel } from "@/lib/db/jobs";
+import { getJobs } from "@/lib/db/jobs.server";
+import { resolveColor } from "@/lib/utils/colors";
+import { safeJsonLdStringify } from "@/lib/utils/json-ld";
+import { generateMetadata } from "@/lib/utils/metadata";
 
 // Constants for display limits
 const MAX_CATEGORIES_DISPLAY = 12;
@@ -38,13 +38,13 @@ const MAX_CAREER_LEVELS_DISPLAY = 6;
 
 // Generate metadata for SEO
 export const metadata: Metadata = generateMetadata({
-  title: `Browse All Job Categories | ${config.title}`,
   description:
-    'Explore job categories including types, career levels, locations, and languages. Find your perfect position with our comprehensive job filters.',
-  path: '/jobs',
+    "Explore job categories including types, career levels, locations, and languages. Find your perfect position with our comprehensive job filters.",
   openGraph: {
-    type: 'website',
+    type: "website",
   },
+  path: "/jobs",
+  title: `Browse All Job Categories | ${config.title}`,
 });
 
 // Revalidate page every 5 minutes
@@ -72,15 +72,15 @@ function CategoryCard({ href, title, count }: CategoryCardProps) {
     <div className="group relative">
       <Link
         aria-label={`Browse ${count.toLocaleString()} ${title} ${
-          count === 1 ? 'position' : 'positions'
+          count === 1 ? "position" : "positions"
         }`}
         className="block rounded-lg border p-4 transition-all hover:border-gray-400 sm:p-5"
         href={href}
       >
         <div className="space-y-1.5 sm:space-y-2">
           <h2 className="font-medium text-sm sm:text-base">{title}</h2>
-          <div className="text-gray-500 dark:text-gray-500 text-xs sm:text-sm">
-            {count.toLocaleString()} {count === 1 ? 'position' : 'positions'}{' '}
+          <div className="text-gray-500 text-xs sm:text-sm dark:text-gray-500">
+            {count.toLocaleString()} {count === 1 ? "position" : "positions"}{" "}
             available
           </div>
         </div>
@@ -116,7 +116,7 @@ export default async function JobsDirectoryPage() {
 
       // Count by career level (skip NotSpecified)
       for (const level of job.career_level) {
-        if (level !== 'NotSpecified') {
+        if (level !== "NotSpecified") {
           acc.careerLevels[level] = (acc.careerLevels[level] || 0) + 1;
         }
       }
@@ -131,7 +131,7 @@ export default async function JobsDirectoryPage() {
         acc.locations.cities[job.workplace_city] =
           (acc.locations.cities[job.workplace_city] || 0) + 1;
       }
-      if (job.workplace_type === 'Remote') {
+      if (job.workplace_type === "Remote") {
         acc.locations.remote += 1;
       }
 
@@ -145,27 +145,27 @@ export default async function JobsDirectoryPage() {
       return acc;
     },
     {
-      types: {},
       careerLevels: {} as Record<CareerLevel, number>,
+      languages: {} as Record<LanguageCode, number>,
       locations: {
-        countries: {},
         cities: {},
+        countries: {},
         remote: 0,
       },
-      languages: {} as Record<LanguageCode, number>,
+      types: {},
     }
   );
 
   // Sort and filter job types to ensure consistent order
   const sortedJobTypes = Object.entries(jobCounts.types)
     .filter(
-      ([type]) => type !== 'undefined' && type.toLowerCase() !== 'not specified'
+      ([type]) => type !== "undefined" && type.toLowerCase() !== "not specified"
     )
     .sort((a, b) => b[1] - a[1]); // Sort by count
 
   // Sort and filter career levels to ensure consistent order
   const sortedCareerLevels = Object.entries(jobCounts.careerLevels)
-    .filter(([level]) => level !== 'NotSpecified')
+    .filter(([level]) => level !== "NotSpecified")
     .sort((a, b) => b[1] - a[1]); // Sort by count
 
   // Sort languages by count
@@ -183,31 +183,31 @@ export default async function JobsDirectoryPage() {
   const generateItemListSchema = () => {
     // Create type-safe schema using schema-dts
     const itemListSchema: WithContext<ItemList> = {
-      '@context': 'https://schema.org',
-      '@type': 'ItemList',
+      "@context": "https://schema.org",
+      "@type": "ItemList",
       itemListElement: [
         {
-          '@type': 'ListItem',
+          "@type": "ListItem",
+          name: "Job Types",
           position: 1,
-          name: 'Job Types',
           url: `${config.url}/jobs/types`,
         },
         {
-          '@type': 'ListItem',
+          "@type": "ListItem",
+          name: "Career Levels",
           position: 2,
-          name: 'Career Levels',
           url: `${config.url}/jobs/levels`,
         },
         {
-          '@type': 'ListItem',
+          "@type": "ListItem",
+          name: "Job Locations",
           position: 3,
-          name: 'Job Locations',
           url: `${config.url}/jobs/locations`,
         },
         {
-          '@type': 'ListItem',
+          "@type": "ListItem",
+          name: "Job Languages",
           position: 4,
-          name: 'Job Languages',
           url: `${config.url}/jobs/languages`,
         },
       ] as ListItem[],
@@ -240,8 +240,8 @@ export default async function JobsDirectoryPage() {
               <div className="mb-6">
                 <MetadataBreadcrumb
                   items={[
-                    { name: 'Home', url: '/' },
-                    { name: 'Jobs', url: '/jobs' },
+                    { name: "Home", url: "/" },
+                    { name: "Jobs", url: "/jobs" },
                   ]}
                   metadata={metadata}
                   pathname="/jobs"

@@ -25,11 +25,12 @@
 //   classification-cpv - CPV codes (category), array
 // `links.html.ENG` (always present in the response, not a field you
 // request) is the public notice detail page - used as the stored URL.
-import type { ScrapedTender } from '../types';
-import { TENDER_CATEGORIES } from '../../../lib/procurement/tender-categories';
-import { fetchWithRetry } from '../http';
 
-const SEARCH_URL = 'https://api.ted.europa.eu/v3/notices/search';
+import { TENDER_CATEGORIES } from "../../../lib/procurement/tender-categories";
+import { fetchWithRetry } from "../http";
+import type { ScrapedTender } from "../types";
+
+const SEARCH_URL = "https://api.ted.europa.eu/v3/notices/search";
 const PAGE_SIZE = 250;
 const MAX_PAGES = 16; // hard cap (4000 notices/run) - raised alongside the category expansion from 3 to 6 divisions
 
@@ -39,36 +40,42 @@ type TedNotice = {
   DD?: string[];
   CY?: string[];
   TI?: Record<string, string>;
-  'buyer-name'?: Record<string, string[]>;
-  'classification-cpv'?: string[];
+  "buyer-name"?: Record<string, string[]>;
+  "classification-cpv"?: string[];
   links?: { html?: Record<string, string> };
 };
 
-function firstValue(obj: Record<string, string | string[]> | undefined): string | undefined {
-  if (!obj) return undefined;
+function firstValue(
+  obj: Record<string, string | string[]> | undefined
+): string | undefined {
+  if (!obj) {
+    return undefined;
+  }
   const val = Object.values(obj)[0];
   return Array.isArray(val) ? val[0] : val;
 }
 
 function toYyyymmdd(date: Date): string {
-  return date.toISOString().slice(0, 10).replace(/-/g, '');
+  return date.toISOString().slice(0, 10).replace(/-/g, "");
 }
 
 function normalizeNotice(notice: TedNotice): ScrapedTender | null {
   const sourceId = notice.ND;
   const url = notice.links?.html?.ENG;
   const title = notice.TI?.eng ?? firstValue(notice.TI);
-  if (!sourceId || !url || !title) return null;
+  if (!(sourceId && url && title)) {
+    return null;
+  }
 
   return {
-    source: 'ted',
+    buyerName: firstValue(notice["buyer-name"]),
+    country: notice.CY?.[0],
+    cpvCodes: notice["classification-cpv"] ?? [],
+    deadlineDate: notice.DD?.[0],
+    publicationDate: notice.PD?.slice(0, 10),
+    source: "ted",
     sourceId,
     title,
-    buyerName: firstValue(notice['buyer-name']),
-    country: notice.CY?.[0],
-    cpvCodes: notice['classification-cpv'] ?? [],
-    publicationDate: notice.PD?.slice(0, 10),
-    deadlineDate: notice.DD?.[0],
     url,
   };
 }
@@ -78,7 +85,9 @@ function normalizeNotice(notice: TedNotice): ScrapedTender | null {
 // dedupe on (source, source_id) makes re-fetching already-seen notices free.
 export async function scrapeTed(lookbackDays = 2): Promise<ScrapedTender[]> {
   const since = new Date(Date.now() - lookbackDays * 24 * 60 * 60 * 1000);
-  const cpvQuery = TENDER_CATEGORIES.map((c) => `classification-cpv=${c.cpvPrefix}*`).join(' OR ');
+  const cpvQuery = TENDER_CATEGORIES.map(
+    (c) => `classification-cpv=${c.cpvPrefix}*`
+  ).join(" OR ");
   const query = `(${cpvQuery}) AND publication-date>=${toYyyymmdd(since)}`;
 
   const tenders: ScrapedTender[] = [];
@@ -86,30 +95,47 @@ export async function scrapeTed(lookbackDays = 2): Promise<ScrapedTender[]> {
     const res = await fetchWithRetry(
       SEARCH_URL,
       {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          query,
-          page,
+          fields: [
+            "ND",
+            "PD",
+            "DD",
+            "CY",
+            "TI",
+            "buyer-name",
+            "classification-cpv",
+          ],
           limit: PAGE_SIZE,
-          fields: ['ND', 'PD', 'DD', 'CY', 'TI', 'buyer-name', 'classification-cpv'],
+          page,
+          query,
         }),
+        headers: { "Content-Type": "application/json" },
+        method: "POST",
       },
-      { label: 'ted' }
+      { label: "ted" }
     );
 
     if (!res.ok) {
-      throw new Error(`TED search failed: HTTP ${res.status} ${await res.text()}`);
+      throw new Error(
+        `TED search failed: HTTP ${res.status} ${await res.text()}`
+      );
     }
 
-    const data = (await res.json()) as { notices?: TedNotice[]; totalNoticeCount?: number };
+    const data = (await res.json()) as {
+      notices?: TedNotice[];
+      totalNoticeCount?: number;
+    };
     const notices = data.notices ?? [];
     for (const notice of notices) {
       const tender = normalizeNotice(notice);
-      if (tender) tenders.push(tender);
+      if (tender) {
+        tenders.push(tender);
+      }
     }
 
-    if (notices.length < PAGE_SIZE) break; // last page
+    if (notices.length < PAGE_SIZE) {
+      break; // last page
+    }
   }
 
   return tenders;

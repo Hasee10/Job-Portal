@@ -1,30 +1,30 @@
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import { ChevronDown, ChevronUp } from "lucide-react";
 import {
   parseAsArrayOf,
   parseAsBoolean,
   parseAsInteger,
   parseAsString,
   useQueryState,
-} from 'nuqs';
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Label } from '@/components/ui/label';
-import { Slider } from '@/components/ui/slider';
-import { Switch } from '@/components/ui/switch';
-import { CAREER_LEVEL_DISPLAY_NAMES } from '@/lib/constants/career-levels';
+} from "nuqs";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+import { Slider } from "@/components/ui/slider";
+import { Switch } from "@/components/ui/switch";
+import { CAREER_LEVEL_DISPLAY_NAMES } from "@/lib/constants/career-levels";
 import {
   JOB_TYPE_DISPLAY_NAMES,
   type JobType,
-} from '@/lib/constants/job-types';
+} from "@/lib/constants/job-types";
 import {
   getDisplayNameFromCode,
   type LanguageCode,
-} from '@/lib/constants/languages';
+} from "@/lib/constants/languages";
 import {
   type CareerLevel,
   type Job,
   normalizeAnnualSalary,
-} from '@/lib/db/airtable';
+} from "@/lib/db/jobs";
 
 // Salary range slider bounds - annual, in USD-equivalent terms (jobs already
 // go through normalizeAnnualSalary before comparison).
@@ -33,14 +33,14 @@ export const SALARY_SLIDER_MAX = 300_000;
 export const SALARY_SLIDER_STEP = 5000;
 
 type FilterType =
-  | 'type'
-  | 'role'
-  | 'remote'
-  | 'salary'
-  | 'visa'
-  | 'language'
-  | 'company'
-  | 'clear';
+  | "type"
+  | "role"
+  | "remote"
+  | "salary"
+  | "visa"
+  | "language"
+  | "company"
+  | "clear";
 type FilterValue =
   | string[]
   | boolean
@@ -97,7 +97,9 @@ function FilterItem({
       </div>
       <span
         className={`rounded-full px-2 py-0.5 text-xs ${
-          checked ? 'bg-zinc-900 text-zinc-50' : 'bg-zinc-100 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400'
+          checked
+            ? "bg-zinc-900 text-zinc-50"
+            : "bg-zinc-100 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400"
         }`}
       >
         {count.toLocaleString()}
@@ -126,17 +128,22 @@ function SwitchItem({
     <div className="flex items-center justify-between">
       <div className="flex items-center space-x-2">
         <Switch checked={checked} id={id} onCheckedChange={onCheckedChange} />
-        <Label className="font-normal text-gray-500 dark:text-gray-500 text-sm" htmlFor={id}>
-          {checked ? 'Yes' : 'No'}
+        <Label
+          className="font-normal text-gray-500 text-sm dark:text-gray-500"
+          htmlFor={id}
+        >
+          {checked ? "Yes" : "No"}
         </Label>
       </div>
       <span
         className={`rounded-full px-2 py-0.5 text-xs ${
-          checked ? 'bg-zinc-900 text-zinc-50' : 'bg-zinc-100 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400'
+          checked
+            ? "bg-zinc-900 text-zinc-50"
+            : "bg-zinc-100 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400"
         }`}
       >
         {count.toLocaleString()}
-        {total ? ` of ${total.toLocaleString()}` : ''}
+        {total ? ` of ${total.toLocaleString()}` : ""}
       </span>
     </div>
   );
@@ -152,23 +159,23 @@ export function JobFilters({
 
   // URL state for job types filter using nuqs
   const [typesParam, setTypesParam] = useQueryState(
-    'types',
+    "types",
     parseAsArrayOf(parseAsString).withDefault([])
   );
 
   // URL state for career levels filter using nuqs
   const [rolesParam, setRolesParam] = useQueryState(
-    'roles',
+    "roles",
     parseAsArrayOf(parseAsString).withDefault([])
   );
 
   // URL state for salary range slider using nuqs
   const [salaryMinParam, setSalaryMinParam] = useQueryState(
-    'salary_min',
+    "salary_min",
     parseAsInteger.withDefault(SALARY_SLIDER_MIN)
   );
   const [salaryMaxParam, setSalaryMaxParam] = useQueryState(
-    'salary_max',
+    "salary_max",
     parseAsInteger.withDefault(SALARY_SLIDER_MAX)
   );
   // Local slider value so the thumb moves smoothly while dragging; only
@@ -180,24 +187,24 @@ export function JobFilters({
 
   // URL state for languages filter using nuqs
   const [languagesParam, setLanguagesParam] = useQueryState(
-    'languages',
+    "languages",
     parseAsArrayOf(parseAsString).withDefault([])
   );
 
   // URL state for company filter using nuqs
   const [companiesParam, setCompaniesParam] = useQueryState(
-    'companies',
+    "companies",
     parseAsArrayOf(parseAsString).withDefault([])
   );
 
   // URL state for boolean filters using nuqs
   const [remoteParam, setRemoteParam] = useQueryState(
-    'remote',
+    "remote",
     parseAsBoolean.withDefault(false)
   );
 
   const [visaParam, setVisaParam] = useQueryState(
-    'visa',
+    "visa",
     parseAsBoolean.withDefault(false)
   );
 
@@ -286,7 +293,7 @@ export function JobFilters({
   // real filtering.
   const syncToUrl = (promise: Promise<unknown>) => {
     promise.catch((err) => {
-      console.error('Failed to sync filter to URL:', err);
+      console.error("Failed to sync filter to URL:", err);
     });
   };
 
@@ -294,7 +301,7 @@ export function JobFilters({
     const newValues = checked
       ? [...typesParam, value]
       : typesParam.filter((item) => item !== value);
-    onFilterChange('type', newValues);
+    onFilterChange("type", newValues);
     syncToUrl(setTypesParam(newValues.length ? newValues : null));
   };
 
@@ -302,13 +309,13 @@ export function JobFilters({
     const newValues = checked
       ? [...rolesParam, value]
       : rolesParam.filter((item) => item !== value);
-    onFilterChange('role', newValues as CareerLevel[]);
+    onFilterChange("role", newValues as CareerLevel[]);
     syncToUrl(setRolesParam(newValues.length ? newValues : null));
   };
 
   const handleSalaryCommit = (range: number[]) => {
     const [min, max] = range;
-    onFilterChange('salary', [min, max]);
+    onFilterChange("salary", [min, max]);
     syncToUrl(
       Promise.all([
         setSalaryMinParam(min > SALARY_SLIDER_MIN ? min : null),
@@ -321,7 +328,7 @@ export function JobFilters({
     const newValues = checked
       ? [...languagesParam, value]
       : languagesParam.filter((item) => item !== value);
-    onFilterChange('language', newValues as LanguageCode[]);
+    onFilterChange("language", newValues as LanguageCode[]);
     syncToUrl(setLanguagesParam(newValues.length ? newValues : null));
   };
 
@@ -329,17 +336,17 @@ export function JobFilters({
     const newValues = checked
       ? [...companiesParam, value]
       : companiesParam.filter((item) => item !== value);
-    onFilterChange('company', newValues);
+    onFilterChange("company", newValues);
     syncToUrl(setCompaniesParam(newValues.length ? newValues : null));
   };
 
   const handleRemoteChange = (checked: boolean) => {
-    onFilterChange('remote', checked);
+    onFilterChange("remote", checked);
     syncToUrl(setRemoteParam(checked || null));
   };
 
   const handleVisaChange = (checked: boolean) => {
-    onFilterChange('visa', checked);
+    onFilterChange("visa", checked);
     syncToUrl(setVisaParam(checked || null));
   };
 
@@ -350,33 +357,33 @@ export function JobFilters({
 
   // Predefined lists
   const initialLevels: CareerLevel[] = [
-    'Internship',
-    'EntryLevel',
-    'Associate',
-    'Junior',
-    'MidLevel',
-    'Senior',
-    'Staff',
-    'Principal',
+    "Internship",
+    "EntryLevel",
+    "Associate",
+    "Junior",
+    "MidLevel",
+    "Senior",
+    "Staff",
+    "Principal",
   ];
 
   const additionalLevels: CareerLevel[] = [
-    'Lead',
-    'Manager',
-    'SeniorManager',
-    'Director',
-    'SeniorDirector',
-    'VP',
-    'SVP',
-    'EVP',
-    'CLevel',
-    'Founder',
+    "Lead",
+    "Manager",
+    "SeniorManager",
+    "Director",
+    "SeniorDirector",
+    "VP",
+    "SVP",
+    "EVP",
+    "CLevel",
+    "Founder",
   ];
 
   // Handle clearing all filters - clears every nuqs param and tells the
   // parent to reset the visible list in one go.
   const handleClearFilters = () => {
-    onFilterChange('clear', true);
+    onFilterChange("clear", true);
     setSalaryRange([SALARY_SLIDER_MIN, SALARY_SLIDER_MAX]);
     syncToUrl(
       Promise.all([
@@ -395,20 +402,32 @@ export function JobFilters({
   // Memoized counts and calculations
   const counts = useMemo(
     () => ({
-      types: jobs.reduce(
+      companies: jobs.reduce(
         (acc, job) => {
-          if (job.type) {
-            acc[job.type] = (acc[job.type] || 0) + 1;
+          if (job.company) {
+            acc[job.company] = (acc[job.company] || 0) + 1;
           }
           return acc;
         },
         {} as Record<string, number>
       ),
 
+      languages: jobs.reduce(
+        (acc, job) => {
+          job.languages?.forEach((lang) => {
+            acc[lang] = (acc[lang] || 0) + 1;
+          });
+          return acc;
+        },
+        {} as Record<LanguageCode, number>
+      ),
+
+      remote: jobs.filter((job) => job.workplace_type === "Remote").length,
+
       roles: jobs.reduce(
         (acc, job) => {
           job.career_level.forEach((level) => {
-            if (level !== 'NotSpecified') {
+            if (level !== "NotSpecified") {
               acc[level] = (acc[level] || 0) + 1;
             }
           });
@@ -416,10 +435,6 @@ export function JobFilters({
         },
         {} as Record<CareerLevel, number>
       ),
-
-      remote: jobs.filter((job) => job.workplace_type === 'Remote').length,
-
-      visa: jobs.filter((job) => job.visa_sponsorship === 'Yes').length,
 
       salaryInRange: jobs.filter((job) => {
         if (!job.salary) {
@@ -435,26 +450,17 @@ export function JobFilters({
           (max >= SALARY_SLIDER_MAX || annualSalary <= max)
         );
       }).length,
-
-      languages: jobs.reduce(
+      types: jobs.reduce(
         (acc, job) => {
-          job.languages?.forEach((lang) => {
-            acc[lang] = (acc[lang] || 0) + 1;
-          });
-          return acc;
-        },
-        {} as Record<LanguageCode, number>
-      ),
-
-      companies: jobs.reduce(
-        (acc, job) => {
-          if (job.company) {
-            acc[job.company] = (acc[job.company] || 0) + 1;
+          if (job.type) {
+            acc[job.type] = (acc[job.type] || 0) + 1;
           }
           return acc;
         },
         {} as Record<string, number>
       ),
+
+      visa: jobs.filter((job) => job.visa_sponsorship === "Yes").length,
     }),
     [jobs, salaryRange]
   );
@@ -471,8 +477,8 @@ export function JobFilters({
       .filter(([, count]) => count > 0);
 
     return {
-      initial: entries.slice(0, 5),
       additional: entries.slice(5),
+      initial: entries.slice(0, 5),
       visible: showAllLanguages ? entries : entries.slice(0, 5),
     };
   }, [counts.languages, showAllLanguages]);
@@ -488,8 +494,8 @@ export function JobFilters({
       .sort((a, b) => b[1] - a[1])
       .filter(([, count]) => count > 0);
     return {
-      visible: showAllCompanies ? entries : entries.slice(0, 6),
       extra: entries.length > 6 ? entries.length - 6 : 0,
+      visible: showAllCompanies ? entries : entries.slice(0, 6),
     };
   }, [counts.companies, showAllCompanies]);
 
@@ -501,7 +507,7 @@ export function JobFilters({
           <button
             aria-controls="filter-content"
             aria-expanded={isExpanded}
-            className="flex items-center text-sm text-zinc-900 dark:text-zinc-100 md:hidden"
+            className="flex items-center text-sm text-zinc-900 md:hidden dark:text-zinc-100"
             onClick={() => setIsExpanded(!isExpanded)}
           >
             {isExpanded ? (
@@ -510,12 +516,12 @@ export function JobFilters({
               <ChevronDown className="h-4 w-4" />
             )}
             <span className="sr-only">
-              {isExpanded ? 'Collapse filters' : 'Expand filters'}
+              {isExpanded ? "Collapse filters" : "Expand filters"}
             </span>
           </button>
         </div>
         <button
-          className="text-sm text-zinc-900 dark:text-zinc-100 underline underline-offset-4 transition-colors hover:text-zinc-700 dark:hover:text-zinc-300"
+          className="text-sm text-zinc-900 underline underline-offset-4 transition-colors hover:text-zinc-700 dark:text-zinc-100 dark:hover:text-zinc-300"
           onClick={handleClearFilters}
         >
           Clear all
@@ -527,8 +533,8 @@ export function JobFilters({
       )}
 
       <div
-        className={`${isExpanded ? 'mt-6' : 'mt-0'} space-y-6 ${
-          isExpanded ? 'block' : 'hidden md:mt-6 md:block'
+        className={`${isExpanded ? "mt-6" : "mt-0"} space-y-6 ${
+          isExpanded ? "block" : "hidden md:mt-6 md:block"
         }`}
         id="filter-content"
       >
@@ -541,21 +547,23 @@ export function JobFilters({
                 <FilterItem
                   checked={companiesParam.includes(company)}
                   count={count}
-                  id={`company-${company.toLowerCase().replace(/\s+/g, '-')}`}
+                  id={`company-${company.toLowerCase().replace(/\s+/g, "-")}`}
                   key={company}
                   label={company}
-                  onCheckedChange={(checked) => handleCompanyChange(checked, company)}
+                  onCheckedChange={(checked) =>
+                    handleCompanyChange(checked, company)
+                  }
                 />
               ))}
             </div>
             {companyEntries.extra > 0 && (
               <button
-                className="text-sm text-zinc-900 dark:text-zinc-100 underline underline-offset-4 transition-colors hover:text-zinc-700 dark:hover:text-zinc-300"
+                className="text-sm text-zinc-900 underline underline-offset-4 transition-colors hover:text-zinc-700 dark:text-zinc-100 dark:hover:text-zinc-300"
                 onClick={() => setShowAllCompanies(!showAllCompanies)}
               >
                 {showAllCompanies
-                  ? 'Show fewer companies'
-                  : `Show ${companyEntries.extra} more compan${companyEntries.extra === 1 ? 'y' : 'ies'}`}
+                  ? "Show fewer companies"
+                  : `Show ${companyEntries.extra} more compan${companyEntries.extra === 1 ? "y" : "ies"}`}
               </button>
             )}
           </div>
@@ -589,7 +597,7 @@ export function JobFilters({
               <FilterItem
                 checked={rolesParam.includes(level)}
                 count={counts.roles[level] || 0}
-                id={level.toLowerCase().replace(' ', '-')}
+                id={level.toLowerCase().replace(" ", "-")}
                 key={level}
                 label={CAREER_LEVEL_DISPLAY_NAMES[level]}
                 onCheckedChange={(checked) => handleLevelChange(checked, level)}
@@ -597,10 +605,10 @@ export function JobFilters({
             ))}
           </div>
           <button
-            className="text-sm text-zinc-900 dark:text-zinc-100 underline underline-offset-4 transition-colors hover:text-zinc-700 dark:hover:text-zinc-300"
+            className="text-sm text-zinc-900 underline underline-offset-4 transition-colors hover:text-zinc-700 dark:text-zinc-100 dark:hover:text-zinc-300"
             onClick={() => setShowAllLevels(!showAllLevels)}
           >
-            {showAllLevels ? 'Show fewer levels' : 'Show more levels'}
+            {showAllLevels ? "Show fewer levels" : "Show more levels"}
           </button>
         </div>
 
@@ -673,13 +681,13 @@ export function JobFilters({
           </div>
           {languageEntries.additional.length > 0 && (
             <button
-              className="text-sm text-zinc-900 dark:text-zinc-100 underline underline-offset-4 transition-colors hover:text-zinc-700 dark:hover:text-zinc-300"
+              className="text-sm text-zinc-900 underline underline-offset-4 transition-colors hover:text-zinc-700 dark:text-zinc-100 dark:hover:text-zinc-300"
               onClick={() => setShowAllLanguages(!showAllLanguages)}
             >
               {showAllLanguages
-                ? 'Show fewer languages'
+                ? "Show fewer languages"
                 : `Show ${languageEntries.additional.length} more language${
-                    languageEntries.additional.length > 1 ? 's' : ''
+                    languageEntries.additional.length > 1 ? "s" : ""
                   }`}
             </button>
           )}

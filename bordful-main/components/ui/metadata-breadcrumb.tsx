@@ -1,5 +1,5 @@
-import type { Metadata } from 'next';
-import { ServerBreadcrumb } from '@/components/ui/breadcrumb';
+import type { Metadata } from "next";
+import { ServerBreadcrumb } from "@/components/ui/breadcrumb";
 
 type MetadataBreadcrumbProps = {
   /**
@@ -32,21 +32,21 @@ function extractBreadcrumbsFromMetadata(
 ): { name: string; url: string }[] {
   // Start with home
   const breadcrumbs: { name: string; url: string }[] = [
-    { name: 'Home', url: '/' },
+    { name: "Home", url: "/" },
   ];
 
   // Get title from metadata
-  let title = '';
-  if (typeof metadata.title === 'string') {
+  let title = "";
+  if (typeof metadata.title === "string") {
     title = metadata.title;
-  } else if (metadata.title && 'default' in metadata.title) {
+  } else if (metadata.title && "default" in metadata.title) {
     title = metadata.title.default as string;
   }
 
   // If we have a title, add the current page
   if (title) {
     // Remove any site suffix (e.g., " | My Site")
-    const cleanedTitle = title.split('|')[0].trim();
+    const cleanedTitle = title.split("|")[0].trim();
     breadcrumbs.push({
       name: cleanedTitle,
       url: pathname,

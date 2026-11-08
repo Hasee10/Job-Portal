@@ -1,52 +1,34 @@
-import type { NextConfig } from 'next';
+import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  images: {
-    remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: 'images.unsplash.com',
-      },
-      {
-        protocol: 'https',
-        hostname: 'img.youtube.com',
-      },
-      {
-        protocol: 'https',
-        hostname: 'img.logo.dev',
-      },
-    ],
-  },
   async headers() {
     return [
       {
-        // Apply these headers to all routes
-        source: '/:path*',
         headers: [
           {
-            key: 'X-Robots-Tag',
+            key: "X-Robots-Tag",
             value:
-              'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1',
+              "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
           },
           // Prevent the site from being framed by another origin (clickjacking).
-          { key: 'X-Frame-Options', value: 'DENY' },
+          { key: "X-Frame-Options", value: "DENY" },
           // Stop browsers from MIME-sniffing a response away from its declared Content-Type.
-          { key: 'X-Content-Type-Options', value: 'nosniff' },
+          { key: "X-Content-Type-Options", value: "nosniff" },
           // Only send the origin (not full URL/path) on cross-origin navigations/requests.
           {
-            key: 'Referrer-Policy',
-            value: 'strict-origin-when-cross-origin',
+            key: "Referrer-Policy",
+            value: "strict-origin-when-cross-origin",
           },
           // Force HTTPS for a year, including subdomains, once first seen over HTTPS.
           {
-            key: 'Strict-Transport-Security',
-            value: 'max-age=63072000; includeSubDomains; preload',
+            key: "Strict-Transport-Security",
+            value: "max-age=63072000; includeSubDomains; preload",
           },
           // Disable browser features this site never needs.
           {
-            key: 'Permissions-Policy',
+            key: "Permissions-Policy",
             value:
-              'camera=(), microphone=(), geolocation=(), payment=(), usb=()',
+              "camera=(), microphone=(), geolocation=(), payment=(), usb=()",
           },
           // Baseline CSP: blocks framing, restricts script/style/connect origins
           // to self plus the Umami analytics endpoint, disallows plugins/objects.
@@ -62,11 +44,11 @@ const nextConfig: NextConfig = {
           // connect-src allows data: for the same reason - the wasm binary is
           // fetched from a data: URI rather than a same-origin request.
           {
-            key: 'Content-Security-Policy',
+            key: "Content-Security-Policy",
             value: [
               "default-src 'self'",
               `script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'${
-                process.env.NODE_ENV === 'development' ? " 'unsafe-eval'" : ''
+                process.env.NODE_ENV === "development" ? " 'unsafe-eval'" : ""
               }`,
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' data: https:",
@@ -77,61 +59,79 @@ const nextConfig: NextConfig = {
               "form-action 'self'",
               "frame-src https://www.youtube.com",
               "frame-ancestors 'none'",
-            ].join('; '),
+            ].join("; "),
           },
         ],
+        // Apply these headers to all routes
+        source: "/:path*",
       },
       {
-        // Apply specific headers to image files
-        source: '/:path*.jpg',
         headers: [
           {
-            key: 'X-Robots-Tag',
-            value: 'index, max-image-preview:large',
+            key: "X-Robots-Tag",
+            value: "index, max-image-preview:large",
           },
         ],
+        // Apply specific headers to image files
+        source: "/:path*.jpg",
       },
       {
-        // Apply specific headers to image files
-        source: '/:path*.jpeg',
         headers: [
           {
-            key: 'X-Robots-Tag',
-            value: 'index, max-image-preview:large',
+            key: "X-Robots-Tag",
+            value: "index, max-image-preview:large",
           },
         ],
+        // Apply specific headers to image files
+        source: "/:path*.jpeg",
       },
       {
-        // Apply specific headers to image files
-        source: '/:path*.png',
         headers: [
           {
-            key: 'X-Robots-Tag',
-            value: 'index, max-image-preview:large',
+            key: "X-Robots-Tag",
+            value: "index, max-image-preview:large",
           },
         ],
+        // Apply specific headers to image files
+        source: "/:path*.png",
       },
       {
-        // Apply specific headers to image files
-        source: '/:path*.svg',
         headers: [
           {
-            key: 'X-Robots-Tag',
-            value: 'index, max-image-preview:large',
+            key: "X-Robots-Tag",
+            value: "index, max-image-preview:large",
           },
         ],
+        // Apply specific headers to image files
+        source: "/:path*.svg",
       },
       {
+        headers: [
+          {
+            key: "X-Robots-Tag",
+            value: "index, nosnippet",
+          },
+        ],
         // Apply specific headers to PDF files
-        source: '/:path*.pdf',
-        headers: [
-          {
-            key: 'X-Robots-Tag',
-            value: 'index, nosnippet',
-          },
-        ],
+        source: "/:path*.pdf",
       },
     ];
+  },
+  images: {
+    remotePatterns: [
+      {
+        hostname: "images.unsplash.com",
+        protocol: "https",
+      },
+      {
+        hostname: "img.youtube.com",
+        protocol: "https",
+      },
+      {
+        hostname: "img.logo.dev",
+        protocol: "https",
+      },
+    ],
   },
 };
 

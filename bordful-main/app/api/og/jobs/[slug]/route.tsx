@@ -1,19 +1,19 @@
-import config from '@/config';
+import config from "@/config";
 import {
   getFontFamilyCSS,
   getFontInfo,
   loadGoogleFontData,
   prepareImageResponseFonts,
-} from '@/lib/utils/font-utils';
-import { fetchImageAsDataURI } from '@/lib/utils/image-utils';
-import { validateJobAndParams } from '@/lib/utils/job-validation';
+} from "@/lib/utils/font-utils";
+import { fetchImageAsDataURI } from "@/lib/utils/image-utils";
+import { validateJobAndParams } from "@/lib/utils/job-validation";
 import {
   createJobOGConfig,
   createJobOGImageResponse,
-} from '@/lib/utils/og-job-helpers';
+} from "@/lib/utils/og-job-helpers";
 
 // Use the nodejs runtime to ensure full environment variable access
-export const runtime = 'nodejs';
+export const runtime = "nodejs";
 
 /**
  * Generate a dynamic Open Graph image for a specific job post
@@ -60,7 +60,7 @@ export async function GET(
     // Prepare background image
     const bgImageDataUri = jobConfig.backgroundImage
       ? await fetchImageAsDataURI(jobConfig.backgroundImage, config.url)
-      : '';
+      : "";
 
     // Prepare logo
     const ogJobConfig = config.og?.jobs || {};
@@ -68,7 +68,7 @@ export async function GET(
     const logoDataUri =
       (logoConfig.show as boolean) !== false && logoConfig.src
         ? await fetchImageAsDataURI(logoConfig.src, config.url)
-        : '';
+        : "";
 
     // Generate and return the image
     return await createJobOGImageResponse(

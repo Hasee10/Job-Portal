@@ -1,16 +1,16 @@
-import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
-import { JobsLayout } from '@/components/jobs/JobsLayout';
-import { HeroSection } from '@/components/ui/hero-section';
-import { JobSearchInput } from '@/components/ui/job-search-input';
-import config from '@/config';
+import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+import { JobsLayout } from "@/components/jobs/JobsLayout";
+import { HeroSection } from "@/components/ui/hero-section";
+import { JobSearchInput } from "@/components/ui/job-search-input";
+import config from "@/config";
 import {
   getDisplayNameFromCode,
   LANGUAGE_CODES,
   type LanguageCode,
-} from '@/lib/constants/languages';
-import { getJobs } from '@/lib/db/airtable.server';
-import { generateMetadata as createMetadata } from '@/lib/utils/metadata';
+} from "@/lib/constants/languages";
+import { getJobs } from "@/lib/db/jobs.server";
+import { generateMetadata as createMetadata } from "@/lib/utils/metadata";
 
 // Revalidate page every 5 minutes
 export const revalidate = 300;
@@ -30,17 +30,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   // Check if valid language code
   if (!LANGUAGE_CODES.includes(languageCode as LanguageCode)) {
     return {
-      title: `Language Not Found | ${config.title}`,
       description: "The language you're looking for doesn't exist.",
+      title: `Language Not Found | ${config.title}`,
     };
   }
 
   const displayName = getDisplayNameFromCode(languageCode as LanguageCode);
 
   return createMetadata({
-    title: `${displayName} Jobs | ${config.title}`,
     description: `Browse jobs requiring ${displayName} language skills. Find the perfect role that matches your language abilities.`,
     path: `/jobs/language/${languageCode}`,
+    title: `${displayName} Jobs | ${config.title}`,
   });
 }
 
@@ -69,7 +69,7 @@ export default async function LanguagePage({ params }: Props) {
       <HeroSection
         badge={displayName}
         description={`Browse ${filteredJobs.length.toLocaleString()} ${
-          filteredJobs.length === 1 ? 'position' : 'positions'
+          filteredJobs.length === 1 ? "position" : "positions"
         } requiring ${displayName} language skills. Find the perfect role that matches your language abilities.`}
         heroImage={config.jobsPages?.dynamicPages?.language?.heroImage}
         title={`${displayName} Jobs`}

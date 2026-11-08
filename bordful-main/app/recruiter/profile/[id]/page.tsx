@@ -1,11 +1,11 @@
-import type { Metadata } from 'next';
-import Link from 'next/link';
-import { notFound } from 'next/navigation';
-import { ArrowLeft, ExternalLink } from 'lucide-react';
-import { getRecruiterAccountById } from '@/lib/auth/recruiter-accounts';
-import config from '@/config';
+import { ArrowLeft, ExternalLink } from "lucide-react";
+import type { Metadata } from "next";
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import config from "@/config";
+import { getRecruiterAccountById } from "@/lib/auth/recruiter-accounts";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({
   params,
@@ -14,10 +14,13 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { id } = await params;
   const recruiter = await getRecruiterAccountById(id);
-  if (!recruiter) return { title: `Recruiter | ${config.title}` };
+  if (!recruiter) {
+    return { title: `Recruiter | ${config.title}` };
+  }
   return {
+    description:
+      recruiter.bio ?? `${recruiter.name} is a recruiter on ${config.title}.`,
     title: `${recruiter.name} | ${config.title}`,
-    description: recruiter.bio ?? `${recruiter.name} is a recruiter on ${config.title}.`,
   };
 }
 
@@ -28,12 +31,14 @@ export default async function RecruiterPublicProfilePage({
 }) {
   const { id } = await params;
   const recruiter = await getRecruiterAccountById(id);
-  if (!recruiter) notFound();
+  if (!recruiter) {
+    notFound();
+  }
 
   const initials = recruiter.name.charAt(0).toUpperCase();
   const displayTitle = recruiter.agency
     ? `Recruiter at ${recruiter.agency}`
-    : 'Independent Recruiter';
+    : "Independent Recruiter";
 
   return (
     <main className="min-h-[60vh] bg-background py-12">
@@ -57,10 +62,12 @@ export default async function RecruiterPublicProfilePage({
                 <h1 className="font-bold text-xl text-zinc-900 dark:text-zinc-50">
                   {recruiter.name}
                 </h1>
-                <p className="mt-0.5 text-sm text-zinc-500 dark:text-zinc-400">{displayTitle}</p>
+                <p className="mt-0.5 text-sm text-zinc-500 dark:text-zinc-400">
+                  {displayTitle}
+                </p>
                 {recruiter.linkedinUrl && (
                   <a
-                    className="mt-1 inline-flex items-center gap-1 text-sm text-primary hover:underline"
+                    className="mt-1 inline-flex items-center gap-1 text-primary text-sm hover:underline"
                     href={recruiter.linkedinUrl}
                     rel="noopener noreferrer"
                     target="_blank"
@@ -74,10 +81,10 @@ export default async function RecruiterPublicProfilePage({
             {/* Bio */}
             {recruiter.bio && (
               <div className="mt-5">
-                <h2 className="text-xs font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
+                <h2 className="font-semibold text-xs text-zinc-400 uppercase tracking-wider dark:text-zinc-500">
                   About
                 </h2>
-                <p className="mt-2 text-sm text-zinc-700 dark:text-zinc-300 whitespace-pre-line">
+                <p className="mt-2 whitespace-pre-line text-sm text-zinc-700 dark:text-zinc-300">
                   {recruiter.bio}
                 </p>
               </div>
@@ -86,13 +93,13 @@ export default async function RecruiterPublicProfilePage({
             {/* Specialties */}
             {recruiter.specialties.length > 0 && (
               <div className="mt-5">
-                <h2 className="text-xs font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
+                <h2 className="font-semibold text-xs text-zinc-400 uppercase tracking-wider dark:text-zinc-500">
                   Specialties
                 </h2>
                 <div className="mt-2 flex flex-wrap gap-1.5">
                   {recruiter.specialties.map((s) => (
                     <span
-                      className="rounded-full border border-cyan-200 bg-cyan-50 px-2.5 py-0.5 text-xs font-medium text-cyan-700 dark:border-cyan-500/20 dark:bg-cyan-500/10 dark:text-cyan-400"
+                      className="rounded-full border border-cyan-200 bg-cyan-50 px-2.5 py-0.5 font-medium text-cyan-700 text-xs dark:border-cyan-500/20 dark:bg-cyan-500/10 dark:text-cyan-400"
                       key={s}
                     >
                       {s}
@@ -104,7 +111,7 @@ export default async function RecruiterPublicProfilePage({
 
             {/* Verification badge */}
             {recruiter.isVerified && (
-              <div className="mt-5 flex items-center gap-2 text-xs text-green-700 dark:text-green-400">
+              <div className="mt-5 flex items-center gap-2 text-green-700 text-xs dark:text-green-400">
                 <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-green-100 dark:bg-green-500/10">
                   ✓
                 </span>

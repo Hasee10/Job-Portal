@@ -1,0 +1,16 @@
+# Normalize line endings to LF in the repository and on checkout, regardless
+# of OS or local core.autocrlf settings, so Biome/ultracite's formatter (and
+# any other LF-only tooling) sees the same bytes on Windows, Linux, and CI.
+* text=auto eol=lf
+
+# Known binary types - never touch line endings or diff these as text.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.ttf binary
+*.woff binary
+*.woff2 binary
+*.eot binary
+*.pdf binary

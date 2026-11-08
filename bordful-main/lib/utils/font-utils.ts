@@ -1,4 +1,4 @@
-import { FONT_URL_REGEX, WHITESPACE_REGEX } from '@/lib/constants/defaults';
+import { FONT_URL_REGEX, WHITESPACE_REGEX } from "@/lib/constants/defaults";
 
 export type ImageResponseFont = {
   name: string;
@@ -17,20 +17,20 @@ export type FontInfo = {
  */
 export function getFontInfo(fontFamily: string): FontInfo {
   switch (fontFamily) {
-    case 'inter':
+    case "inter":
       return {
-        familyName: 'Inter',
-        nameToLoad: 'Inter',
+        familyName: "Inter",
+        nameToLoad: "Inter",
       };
-    case 'ibm-plex-serif':
+    case "ibm-plex-serif":
       return {
-        familyName: 'IBM Plex Serif',
-        nameToLoad: 'IBM Plex Serif',
+        familyName: "IBM Plex Serif",
+        nameToLoad: "IBM Plex Serif",
       };
     default: // geist or others
       return {
-        familyName: '',
-        nameToLoad: '',
+        familyName: "",
+        nameToLoad: "",
       };
   }
 }
@@ -43,7 +43,7 @@ export async function loadGoogleFontData(
   text: string
 ): Promise<ArrayBuffer | null> {
   // Replace spaces for URL compatibility
-  const fontNameForUrl = fontFamily.replace(WHITESPACE_REGEX, '+');
+  const fontNameForUrl = fontFamily.replace(WHITESPACE_REGEX, "+");
   // Fetch CSS for the family, subset by text, WITHOUT specifying weight
   const url = `https://fonts.googleapis.com/css2?family=${fontNameForUrl}&text=${encodeURIComponent(
     text
@@ -71,7 +71,7 @@ export async function loadGoogleFontData(
 
     return await fontResponse.arrayBuffer();
   } catch (error: unknown) {
-    console.error('Error loading Google Font:', error);
+    console.error("Error loading Google Font:", error);
     return null;
   }
 }
@@ -91,27 +91,27 @@ export function prepareImageResponseFonts(
   // Load font data if needed
   if (fontInfo.nameToLoad && fontData) {
     fonts.push({
-      name: fontInfo.familyName,
       data: fontData,
+      name: fontInfo.familyName,
+      style: "normal",
       weight: 800, // For title
-      style: 'normal',
     });
     fonts.push({
-      name: fontInfo.familyName,
       data: fontData,
+      name: fontInfo.familyName,
+      style: "normal",
       weight: 400, // For description
-      style: 'normal',
     });
   } else {
     // Use system fonts as fallback
     fonts.push({
-      name: 'system-ui',
       data: new ArrayBuffer(0), // Empty buffer for system fonts
+      name: "system-ui",
       weight: 800,
     });
     fonts.push({
-      name: 'system-ui',
       data: new ArrayBuffer(0),
+      name: "system-ui",
       weight: 400,
     });
   }
@@ -131,9 +131,9 @@ export function getFontFamilyCSS(
     return fontInfo.familyName;
   }
 
-  if (fontFamily === 'ibm-plex-serif') {
-    return 'IBM Plex Serif, serif';
+  if (fontFamily === "ibm-plex-serif") {
+    return "IBM Plex Serif, serif";
   }
 
-  return 'system-ui, -apple-system, sans-serif';
+  return "system-ui, -apple-system, sans-serif";
 }

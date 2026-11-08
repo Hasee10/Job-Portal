@@ -1,9 +1,8 @@
-import { Feed } from 'feed';
-import config from '@/config';
-import { DEFAULT_DESCRIPTION_LENGTH } from '@/lib/constants/defaults';
-import { formatSalary } from '@/lib/db/airtable';
-import { getJob, getJobs } from '@/lib/db/airtable.server';
-import { generateJobSlug } from '@/lib/utils/slugify';
+import { Feed } from "feed";
+import config from "@/config";
+import { formatSalary } from "@/lib/db/jobs";
+import { getJob, getJobs } from "@/lib/db/jobs.server";
+import { generateJobSlug } from "@/lib/utils/slugify";
 
 // Feeds are meant to be a "what's new" digest, not a full database dump -
 // with the jobs table now in the thousands, an uncapped feed would embed
@@ -41,7 +40,7 @@ export type JobItem = {
  */
 export function isFeedEnabled(
   feedConfig: FeedConfig | undefined,
-  format: 'rss' | 'json' | 'atom'
+  format: "rss" | "json" | "atom"
 ): boolean {
   return Boolean(feedConfig?.enabled && feedConfig?.formats?.[format]);
 }
@@ -51,21 +50,21 @@ export function isFeedEnabled(
  */
 export function createFeed(baseUrl: string, feedConfig: FeedConfig): Feed {
   return new Feed({
-    title: feedConfig?.title || `${config.title} | Job Feed`,
-    description: config.description,
-    id: baseUrl,
-    link: baseUrl,
-    language: 'en',
-    image: `${baseUrl}/opengraph-image.png`,
-    favicon: `${baseUrl}/favicon.ico`,
     copyright: `All rights reserved ${new Date().getFullYear()}`,
-    updated: new Date(),
-    generator: 'Caliber Job Board',
+    description: config.description,
+    favicon: `${baseUrl}/favicon.ico`,
     feedLinks: {
-      rss2: `${baseUrl}/feed.xml`,
-      json: `${baseUrl}/feed.json`,
       atom: `${baseUrl}/atom.xml`,
+      json: `${baseUrl}/feed.json`,
+      rss2: `${baseUrl}/feed.xml`,
     },
+    generator: "Caliber Job Board",
+    id: baseUrl,
+    image: `${baseUrl}/opengraph-image.png`,
+    language: "en",
+    link: baseUrl,
+    title: feedConfig?.title || `${config.title} | Job Feed`,
+    updated: new Date(),
   });
 }
 
@@ -74,18 +73,18 @@ export function createFeed(baseUrl: string, feedConfig: FeedConfig): Feed {
  */
 export function formatJobDate(postedDate?: string): string {
   if (!postedDate) {
-    return 'Date not available';
+    return "Date not available";
   }
 
   const date = new Date(postedDate);
   if (Number.isNaN(date.getTime())) {
-    return 'Invalid date';
+    return "Invalid date";
   }
 
-  return date.toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
+  return date.toLocaleDateString("en-US", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
   });
 }
 
@@ -100,8 +99,8 @@ export function createJobDescription(
 ## ${job.title} at ${job.company}
 
 **Type:** ${job.type}
-**Location:** ${job.workplace_type}${job.workplace_city ? ` - ${job.workplace_city}` : ''}${job.workplace_country ? `, ${job.workplace_country}` : ''}
-**Salary:** ${job.salary ? formatSalary(job.salary, true) : 'Not specified'}
+**Location:** ${job.workplace_type}${job.workplace_city ? ` - ${job.workplace_city}` : ""}${job.workplace_country ? `, ${job.workplace_country}` : ""}
+**Salary:** ${job.salary ? formatSalary(job.salary, true) : "Not specified"}
 **Posted:** ${formatJobDate(job.posted_date)}
 
 ${job.description.substring(0, descriptionLength)}...
@@ -125,28 +124,28 @@ export function addJobToFeed(
   const jobDescription = createJobDescription(job, descriptionLength);
 
   feed.addItem({
-    title: `${job.title} at ${job.company}`,
-    id: jobUrl,
-    link: jobUrl,
-    description: jobDescription,
-    content: jobDescription,
     author: [
       {
-        name: job.company,
         link: job.apply_url,
+        name: job.company,
       },
     ],
-    date:
-      job.posted_date && !Number.isNaN(new Date(job.posted_date).getTime())
-        ? new Date(job.posted_date)
-        : new Date(),
-    image: undefined, // Could be added later if job.featured exists
     category: [
       { name: job.type },
       ...(Array.isArray(job.workplace_type)
         ? []
         : [{ name: job.workplace_type }]),
     ],
+    content: jobDescription,
+    date:
+      job.posted_date && !Number.isNaN(new Date(job.posted_date).getTime())
+        ? new Date(job.posted_date)
+        : new Date(),
+    description: jobDescription,
+    id: jobUrl,
+    image: undefined, // Could be added later if job.featured exists
+    link: jobUrl,
+    title: `${job.title} at ${job.company}`,
   });
 }
 
@@ -165,15 +164,13 @@ export async function processJobsForFeed(
   // cheap at 50 jobs, unlike doing it for the entire table.
   const liteJobs = await getJobs();
   const recentActive = liteJobs
-    .filter((job) => job.status === 'active')
+    .filter((job) => job.status === "active")
     .slice(0, FEED_MAX_ITEMS);
 
-  const fullJobs = await Promise.all(
-    recentActive.map((job) => getJob(job.id))
-  );
+  const fullJobs = await Promise.all(recentActive.map((job) => getJob(job.id)));
 
   for (const job of fullJobs) {
-    if (job && job.status === 'active') {
+    if (job && job.status === "active") {
       addJobToFeed(feed, job, baseUrl, descriptionLength);
     }
   }

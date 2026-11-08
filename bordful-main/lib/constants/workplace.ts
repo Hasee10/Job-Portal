@@ -1,34 +1,34 @@
-import type { Country } from './countries';
+import type { Country } from "./countries";
 
-export type WorkplaceType = 'On-site' | 'Hybrid' | 'Remote' | 'Not specified';
+export type WorkplaceType = "On-site" | "Hybrid" | "Remote" | "Not specified";
 
 export const workplaceTypes: WorkplaceType[] = [
-  'On-site',
-  'Hybrid',
-  'Remote',
-  'Not specified',
+  "On-site",
+  "Hybrid",
+  "Remote",
+  "Not specified",
 ] as const;
 
 export type RemoteRegion =
-  | 'Worldwide'
-  | 'Americas Only'
-  | 'Europe Only'
-  | 'Asia-Pacific Only'
-  | 'US Only'
-  | 'EU Only'
-  | 'UK/EU Only'
-  | 'US/Canada Only'
+  | "Worldwide"
+  | "Americas Only"
+  | "Europe Only"
+  | "Asia-Pacific Only"
+  | "US Only"
+  | "EU Only"
+  | "UK/EU Only"
+  | "US/Canada Only"
   | null;
 
 export const remoteRegions: RemoteRegion[] = [
-  'Worldwide',
-  'Americas Only',
-  'Europe Only',
-  'Asia-Pacific Only',
-  'US Only',
-  'EU Only',
-  'UK/EU Only',
-  'US/Canada Only',
+  "Worldwide",
+  "Americas Only",
+  "Europe Only",
+  "Asia-Pacific Only",
+  "US Only",
+  "EU Only",
+  "UK/EU Only",
+  "US/Canada Only",
 ] as const;
 
 export type WorkplaceSettings = {
@@ -39,19 +39,19 @@ export type WorkplaceSettings = {
   workplace_country: Country | null;
 };
 
-export type RemoteFriendly = 'Yes' | 'No' | 'Hybrid' | 'Not specified';
+export type RemoteFriendly = "Yes" | "No" | "Hybrid" | "Not specified";
 
 export function getRemoteFriendlyStatus(
-  settings: Pick<WorkplaceSettings, 'workplace_type'>
+  settings: Pick<WorkplaceSettings, "workplace_type">
 ): RemoteFriendly {
   switch (settings.workplace_type) {
-    case 'Remote':
-      return 'Yes';
-    case 'Hybrid':
-      return 'Hybrid';
-    case 'On-site':
-      return 'No';
+    case "Remote":
+      return "Yes";
+    case "Hybrid":
+      return "Hybrid";
+    case "On-site":
+      return "No";
     default:
-      return 'Not specified';
+      return "Not specified";
   }
 }

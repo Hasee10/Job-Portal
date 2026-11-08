@@ -1,6 +1,6 @@
-import 'server-only';
+import "server-only";
 
-import { createClient } from '@supabase/supabase-js';
+import { createClient } from "@supabase/supabase-js";
 
 export type JobSeeker = {
   id: string;
@@ -18,8 +18,8 @@ export type JobSeeker = {
 function getAdminClient() {
   const url = process.env.SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key) {
-    throw new Error('Database is not configured on this deployment.');
+  if (!(url && key)) {
+    throw new Error("Database is not configured on this deployment.");
   }
   return createClient(url, key, { auth: { persistSession: false } });
 }
@@ -40,31 +40,33 @@ export async function upsertJobSeeker(profile: {
   const updatedAt = new Date();
 
   const { data, error } = await supabase
-    .from('job_seekers')
+    .from("job_seekers")
     .upsert(
       {
+        avatar_url: profile.avatarUrl,
         email: normalizedEmail,
         name: profile.name,
-        avatar_url: profile.avatarUrl,
         provider: profile.provider,
         provider_account_id: profile.providerAccountId,
         updated_at: updatedAt.toISOString(),
       },
-      { onConflict: 'email' }
+      { onConflict: "email" }
     )
-    .select('id, email, name, avatar_url, created_at')
+    .select("id, email, name, avatar_url, created_at")
     .single();
 
-  if (error) throw error;
+  if (error) {
+    throw error;
+  }
 
   const createdAt = new Date(data.created_at as string);
   const isNew = Math.abs(updatedAt.getTime() - createdAt.getTime()) < 5000;
 
   return {
-    id: data.id,
-    email: data.email,
-    name: data.name,
     avatarUrl: data.avatar_url,
+    email: data.email,
+    id: data.id,
     isNew,
+    name: data.name,
   };
 }

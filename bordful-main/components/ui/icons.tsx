@@ -23,32 +23,19 @@ import {
   Trash,
   User,
   X,
-} from 'lucide-react';
+} from "lucide-react";
 
 export type Icon = LucideIcon;
 
 export const Icons = {
-  logo: Command,
-  close: X,
-  spinner: Loader2,
+  add: Plus,
+  arrowRight: ArrowRight,
+  billing: CreditCard,
+  check: Check,
   chevronLeft: ChevronLeft,
   chevronRight: ChevronRight,
-  trash: Trash,
-  post: FileText,
-  page: File,
-  media: Image,
-  settings: Settings,
-  billing: CreditCard,
+  close: X,
   ellipsis: MoreVertical,
-  add: Plus,
-  warning: AlertTriangle,
-  user: User,
-  arrowRight: ArrowRight,
-  help: HelpCircle,
-  pizza: Pizza,
-  sun: SunMedium,
-  moon: Moon,
-  laptop: Laptop,
   gitHub: ({ ...props }: LucideProps) => (
     <svg
       aria-hidden="true"
@@ -66,6 +53,18 @@ export const Icons = {
       />
     </svg>
   ),
+  help: HelpCircle,
+  laptop: Laptop,
+  logo: Command,
+  media: Image,
+  moon: Moon,
+  page: File,
+  pizza: Pizza,
+  post: FileText,
+  settings: Settings,
+  spinner: Loader2,
+  sun: SunMedium,
+  trash: Trash,
   // Twitter/X isn't part of lucide-react (brand icons were dropped
   // upstream) - same static asset SupportChannelCard.tsx uses.
   twitter: ({ ...props }: LucideProps) => (
@@ -80,5 +79,6 @@ export const Icons = {
       <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
     </svg>
   ),
-  check: Check,
+  user: User,
+  warning: AlertTriangle,
 };

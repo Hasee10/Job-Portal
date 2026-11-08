@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import {
   Briefcase,
@@ -6,23 +6,25 @@ import {
   ChevronDown,
   Menu,
   X,
-} from 'lucide-react';
-import { useTheme } from 'next-themes';
-import Image from 'next/image';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+} from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useSession } from "next-auth/react";
+import { useTheme } from "next-themes";
 import {
   type ReactNode,
   useCallback,
   useEffect,
   useRef,
   useState,
-} from 'react';
-import { AuthNavStatus } from '@/components/auth/AuthNavStatus';
-import { Button } from '@/components/ui/button';
-import { ThemeToggle } from '@/components/ui/theme-toggle';
-import config from '@/config';
-import { resolveColor } from '@/lib/utils/colors';
+} from "react";
+import { AuthNavStatus } from "@/components/auth/AuthNavStatus";
+import { Button } from "@/components/ui/button";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
+import config from "@/config";
+import { capabilitiesFor, hasProcurementAccess } from "@/lib/auth/capabilities";
+import { resolveColor } from "@/lib/utils/colors";
 
 // Brand icon component that uses the configured icon name or falls back to BriefcaseBusiness
 function BrandIcon() {
@@ -64,11 +66,13 @@ function NavLink({
   isActive,
   onClick,
   children,
-  className = '',
+  className = "",
 }: NavLinkProps) {
-  const baseClasses = 'text-sm px-2.5 py-1 rounded-lg transition-colors';
-  const activeClasses = 'text-zinc-900 dark:text-zinc-100 bg-zinc-100 dark:bg-zinc-800';
-  const inactiveClasses = 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-800';
+  const baseClasses = "text-sm px-2.5 py-1 rounded-lg transition-colors";
+  const activeClasses =
+    "text-zinc-900 dark:text-zinc-100 bg-zinc-100 dark:bg-zinc-800";
+  const inactiveClasses =
+    "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-800";
 
   const linkClasses = `${baseClasses} ${
     isActive ? activeClasses : inactiveClasses
@@ -86,7 +90,7 @@ function SocialLink({ href, label, children }: SocialLinkProps) {
   return (
     <Link
       aria-label={label}
-      className="text-zinc-600 dark:text-zinc-400 transition-colors hover:text-zinc-900 dark:hover:text-zinc-100"
+      className="text-zinc-600 transition-colors hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
       href={href}
       rel="noopener noreferrer"
       target="_blank"
@@ -107,10 +111,10 @@ function SocialIcon({ src, alt }: SocialIconProps) {
         height={16}
         src={src}
         style={{
-          width: '16px',
-          height: '16px',
           filter:
-            'invert(41%) sepia(9%) saturate(380%) hue-rotate(202deg) brightness(94%) contrast(91%)', // zinc-600
+            "invert(41%) sepia(9%) saturate(380%) hue-rotate(202deg) brightness(94%) contrast(91%)", // zinc-600
+          height: "16px",
+          width: "16px",
         }}
         width={16}
       />
@@ -123,10 +127,10 @@ function SocialIcon({ src, alt }: SocialIconProps) {
         height={16}
         src={src}
         style={{
-          width: '16px',
-          height: '16px',
           filter:
-            'invert(14%) sepia(8%) saturate(427%) hue-rotate(202deg) brightness(93%) contrast(90%)', // zinc-900
+            "invert(14%) sepia(8%) saturate(427%) hue-rotate(202deg) brightness(93%) contrast(90%)", // zinc-900
+          height: "16px",
+          width: "16px",
         }}
         width={16}
       />
@@ -141,9 +145,11 @@ function DropdownItem({
   onClick,
   children,
 }: DropdownItemProps) {
-  const baseClasses = 'block px-4 py-2 text-sm';
-  const activeClasses = 'bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100';
-  const inactiveClasses = 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-zinc-100';
+  const baseClasses = "block px-4 py-2 text-sm";
+  const activeClasses =
+    "bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100";
+  const inactiveClasses =
+    "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-zinc-100";
 
   const itemClasses = `${baseClasses} ${
     isActive ? activeClasses : inactiveClasses
@@ -163,65 +169,65 @@ type SocialPlatformConfig = {
   src: string;
   alt: string;
   labelPrefix: string;
-  enabled: (config: typeof import('@/config').default) => boolean;
-  getUrl: (config?: typeof import('@/config').default) => string;
+  enabled: (config: typeof import("@/config").default) => boolean;
+  getUrl: (config?: typeof import("@/config").default) => string;
 };
 
 // Define social platforms with their properties outside of component for reuse
 const SOCIAL_PLATFORMS: SocialPlatformConfig[] = [
   {
-    id: 'rss',
-    configProp: 'rssFeed',
-    src: '/assets/social/rss.svg',
-    alt: 'RSS Feed',
-    labelPrefix: 'Subscribe to',
+    alt: "RSS Feed",
+    configProp: "rssFeed",
     enabled: () => false,
-    getUrl: () => '/feed.xml',
+    getUrl: () => "/feed.xml",
+    id: "rss",
+    labelPrefix: "Subscribe to",
+    src: "/assets/social/rss.svg",
   },
   {
-    id: 'github',
-    configProp: 'github',
-    src: '/assets/social/github.svg',
-    alt: 'GitHub',
-    labelPrefix: 'View on',
+    alt: "GitHub",
+    configProp: "github",
     enabled: (config) => config.nav.github?.show,
-    getUrl: (config) => config?.nav.github?.url || '',
+    getUrl: (config) => config?.nav.github?.url || "",
+    id: "github",
+    labelPrefix: "View on",
+    src: "/assets/social/github.svg",
   },
   {
-    id: 'linkedin',
-    configProp: 'linkedin',
-    src: '/assets/social/linkedin.svg',
-    alt: 'LinkedIn',
-    labelPrefix: 'Follow us on',
+    alt: "LinkedIn",
+    configProp: "linkedin",
     enabled: (config) => config.nav.linkedin?.show,
-    getUrl: (config) => config?.nav.linkedin?.url || '',
+    getUrl: (config) => config?.nav.linkedin?.url || "",
+    id: "linkedin",
+    labelPrefix: "Follow us on",
+    src: "/assets/social/linkedin.svg",
   },
   {
-    id: 'twitter',
-    configProp: 'twitter',
-    src: '/assets/social/twitter.svg',
-    alt: 'Twitter',
-    labelPrefix: 'Follow us on X (',
+    alt: "Twitter",
+    configProp: "twitter",
     enabled: (config) => config.nav.twitter?.show,
-    getUrl: (config) => config?.nav.twitter?.url || '',
+    getUrl: (config) => config?.nav.twitter?.url || "",
+    id: "twitter",
+    labelPrefix: "Follow us on X (",
+    src: "/assets/social/twitter.svg",
   },
   {
-    id: 'bluesky',
-    configProp: 'bluesky',
-    src: '/assets/social/bluesky.svg',
-    alt: 'Bluesky',
-    labelPrefix: 'Follow us on',
+    alt: "Bluesky",
+    configProp: "bluesky",
     enabled: (config) => config.nav.bluesky?.show,
-    getUrl: (config) => config?.nav.bluesky?.url || '',
+    getUrl: (config) => config?.nav.bluesky?.url || "",
+    id: "bluesky",
+    labelPrefix: "Follow us on",
+    src: "/assets/social/bluesky.svg",
   },
   {
-    id: 'reddit',
-    configProp: 'reddit',
-    src: '/assets/social/reddit.svg',
-    alt: 'Reddit',
-    labelPrefix: 'Follow us on',
+    alt: "Reddit",
+    configProp: "reddit",
     enabled: (config) => config.nav.reddit?.show,
-    getUrl: (config) => config?.nav.reddit?.url || '',
+    getUrl: (config) => config?.nav.reddit?.url || "",
+    id: "reddit",
+    labelPrefix: "Follow us on",
+    src: "/assets/social/reddit.svg",
   },
 ];
 
@@ -275,9 +281,9 @@ function useDropdownMenu() {
       });
     }
 
-    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
 
@@ -301,7 +307,7 @@ export function Nav() {
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
   const logoSrc =
-    mounted && resolvedTheme === 'dark' && config.nav.logoDark
+    mounted && resolvedTheme === "dark" && config.nav.logoDark
       ? config.nav.logoDark
       : config.nav.logo.src;
 
@@ -309,12 +315,31 @@ export function Nav() {
   const { openDropdowns, registerDropdownRef, toggleDropdown } =
     useDropdownMenu();
 
-  // Use menu items directly from config
-  const menuItems = config.nav.menu || [];
+  // JobLo ships two products on one account system (recruitment and the
+  // procurement marketplace). Guests see both - each is a public marketing
+  // surface - but once signed in, the nav drops the product this account has
+  // no capability for, so a job seeker isn't shown procurement controls and a
+  // standalone vendor isn't shown the job board. This is presentation only:
+  // every protected page and server action enforces access on its own, since
+  // a hidden link is not authorization.
+  const { data: session } = useSession();
+  const capabilities = capabilitiesFor(session?.user?.role);
+  const menuItems = (config.nav.menu || []).filter((item) => {
+    if (!session?.user) {
+      return true;
+    }
+    if (item.link.startsWith("/procurement")) {
+      return hasProcurementAccess(capabilities);
+    }
+    if (item.link.startsWith("/jobs") || item.link === "/job-alerts") {
+      return capabilities.recruitment;
+    }
+    return true;
+  });
 
   // Check if a path is active (exact match or starts with for /jobs)
   const isActivePath = (path: string): boolean => {
-    if (path === '/jobs') {
+    if (path === "/jobs") {
       return pathname.startsWith(path);
     }
     return pathname === path;
@@ -333,7 +358,7 @@ export function Nav() {
 
           const label =
             platform.labelPrefix +
-            (platform.id === 'twitter' ? 'Twitter)' : ` ${platform.alt}`);
+            (platform.id === "twitter" ? "Twitter)" : ` ${platform.alt}`);
 
           return (
             <SocialLink
@@ -395,8 +420,8 @@ export function Nav() {
               aria-expanded={isDropdownOpen}
               className={`flex items-center rounded-lg px-2.5 py-1 text-sm ${
                 pathname.startsWith(item.link)
-                  ? 'bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100'
-                  : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-zinc-100'
+                  ? "bg-zinc-100 text-zinc-900 dark:bg-zinc-800 dark:text-zinc-100"
+                  : "text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
               } transition-colors`}
               onClick={() => toggleDropdown(item.label)}
             >
@@ -427,7 +452,7 @@ export function Nav() {
       // Regular menu items
       return (
         <NavLink
-          className={isMobile ? 'mb-1 block' : ''}
+          className={isMobile ? "mb-1 block" : ""}
           href={item.link}
           isActive={isActivePath(item.link)}
           key={item.link}
@@ -483,7 +508,7 @@ export function Nav() {
           {/* Brand */}
           <Link
             aria-label="Home"
-            className="flex items-center space-x-1.5 text-zinc-900 dark:text-zinc-100 transition-colors hover:text-zinc-800 dark:hover:text-zinc-200"
+            className="flex items-center space-x-1.5 text-zinc-900 transition-colors hover:text-zinc-800 dark:text-zinc-100 dark:hover:text-zinc-200"
             href="/"
           >
             {config.nav.logo.enabled ? (
@@ -495,8 +520,8 @@ export function Nav() {
                 priority
                 src={logoSrc}
                 style={{
-                  width: `${config.nav.logo.width}px`,
                   height: `${config.nav.logo.height}px`,
+                  width: `${config.nav.logo.width}px`,
                 }}
                 width={config.nav.logo.width}
               />
@@ -517,18 +542,18 @@ export function Nav() {
                 className="gap-1 px-2 py-1 text-xs"
                 size="xs"
                 style={
-                  config.nav.postJob.variant === 'primary'
+                  config.nav.postJob.variant === "primary"
                     ? {
                         backgroundColor: resolveColor(config.ui.primaryColor),
                       }
                     : undefined
                 }
-                variant={config.nav.postJob.variant || 'default'}
+                variant={config.nav.postJob.variant || "default"}
               >
                 <Link
                   href={config.nav.postJob.link}
                   {...(config.nav.postJob.external
-                    ? { target: '_blank', rel: 'noopener noreferrer' }
+                    ? { rel: "noopener noreferrer", target: "_blank" }
                     : {})}
                 >
                   {config.nav.postJob.label}
@@ -543,7 +568,7 @@ export function Nav() {
             <button
               aria-expanded={isOpen}
               aria-label="Toggle menu"
-              className="p-2 text-zinc-600 dark:text-zinc-400 transition-colors hover:text-zinc-900 dark:hover:text-zinc-100"
+              className="p-2 text-zinc-600 transition-colors hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
               onClick={() => setIsOpen(!isOpen)}
             >
               {isOpen ? (
@@ -570,25 +595,22 @@ export function Nav() {
                 className="gap-1.5 whitespace-nowrap text-xs"
                 size="sm"
                 style={
-                  config.nav.postJob.variant === 'primary'
+                  config.nav.postJob.variant === "primary"
                     ? {
                         backgroundColor: resolveColor(config.ui.primaryColor),
                       }
                     : undefined
                 }
-                variant={config.nav.postJob.variant || 'default'}
+                variant={config.nav.postJob.variant || "default"}
               >
                 <Link
                   href={config.nav.postJob.link}
                   {...(config.nav.postJob.external
-                    ? { target: '_blank', rel: 'noopener noreferrer' }
+                    ? { rel: "noopener noreferrer", target: "_blank" }
                     : {})}
                 >
                   {config.nav.postJob.label}
-                  <Briefcase
-                    aria-hidden="true"
-                    className="ml-1 h-3.5 w-3.5"
-                  />
+                  <Briefcase aria-hidden="true" className="ml-1 h-3.5 w-3.5" />
                 </Link>
               </Button>
             )}
@@ -638,10 +660,10 @@ export function Nav() {
                 <div className="px-4 pt-2 lg:hidden">
                   <Button
                     asChild
-                    className={'w-full gap-1.5 text-xs'}
+                    className={"w-full gap-1.5 text-xs"}
                     size="xs"
                     style={
-                      config.nav.postJob.variant === 'primary'
+                      config.nav.postJob.variant === "primary"
                         ? {
                             backgroundColor: resolveColor(
                               config.ui.primaryColor
@@ -649,12 +671,12 @@ export function Nav() {
                           }
                         : undefined
                     }
-                    variant={config.nav.postJob.variant || 'default'}
+                    variant={config.nav.postJob.variant || "default"}
                   >
                     <Link
                       href={config.nav.postJob.link}
                       {...(config.nav.postJob.external
-                        ? { target: '_blank', rel: 'noopener noreferrer' }
+                        ? { rel: "noopener noreferrer", target: "_blank" }
                         : {})}
                       className="flex items-center justify-center"
                       onClick={() => setIsOpen(false)}

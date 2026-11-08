@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { useEffect, useState } from 'react';
-import { JobBadge } from '@/components/ui/job-badge';
-import { formatSalary, type Job } from '@/lib/db/airtable';
-import { formatDate } from '@/lib/utils/formatDate';
-import { generateJobSlug } from '@/lib/utils/slugify';
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import { JobBadge } from "@/components/ui/job-badge";
+import { formatSalary, type Job } from "@/lib/db/jobs";
+import { formatDate } from "@/lib/utils/formatDate";
+import { generateJobSlug } from "@/lib/utils/slugify";
 
 export function CompactJobCard({ job }: { job: Job }) {
   const { relativeTime } = formatDate(job.posted_date);
@@ -31,7 +31,7 @@ export function CompactJobCard({ job }: { job: Job }) {
   }, [job.posted_date]);
 
   // Simplify location to just the type
-  const workplaceType = job.workplace_type || '';
+  const workplaceType = job.workplace_type || "";
 
   // Limit title length to prevent layout issues
   const limitedTitle =
@@ -40,7 +40,7 @@ export function CompactJobCard({ job }: { job: Job }) {
   return (
     <Link
       className={`block px-3 py-2.5 transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-800 ${
-        job.featured ? 'bg-zinc-50 dark:bg-zinc-900' : ''
+        job.featured ? "bg-zinc-50 dark:bg-zinc-900" : ""
       }`}
       href={`/jobs/${generateJobSlug(job.title, job.company)}`}
     >

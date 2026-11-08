@@ -1,4 +1,4 @@
-import type { Job } from '@/lib/db/airtable';
+import type { Job } from "@/lib/db/jobs";
 
 export function filterJobsBySearch(jobs: Job[], searchTerm: string): Job[] {
   if (!searchTerm) {
@@ -11,7 +11,7 @@ export function filterJobsBySearch(jobs: Job[], searchTerm: string): Job[] {
     (job) =>
       job.title.toLowerCase().includes(searchLower) ||
       job.company.toLowerCase().includes(searchLower) ||
-      (job.workplace_city?.toLowerCase() || '').includes(searchLower) ||
-      (job.workplace_country?.toLowerCase() || '').includes(searchLower)
+      (job.workplace_city?.toLowerCase() || "").includes(searchLower) ||
+      (job.workplace_country?.toLowerCase() || "").includes(searchLower)
   );
 }

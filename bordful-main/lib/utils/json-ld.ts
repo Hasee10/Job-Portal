@@ -9,5 +9,5 @@
  * unicode form neutralizes that without changing the parsed JSON value.
  */
 export function safeJsonLdStringify(data: unknown): string {
-  return JSON.stringify(data).replace(/</g, '\\u003c');
+  return JSON.stringify(data).replace(/</g, "\\u003c");
 }

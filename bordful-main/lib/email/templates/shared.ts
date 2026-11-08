@@ -7,9 +7,9 @@
 // tables are the only layout primitive that reliably renders identically
 // across Gmail, Apple Mail, and Outlook.
 
-export const EMAIL_BRAND_COLOR = '#042454';
-export const EMAIL_BRAND_COLOR_DARK = '#021830';
-export const EMAIL_ACCENT_COLOR = '#38bdf8';
+export const EMAIL_BRAND_COLOR = "#042454";
+export const EMAIL_BRAND_COLOR_DARK = "#021830";
+export const EMAIL_ACCENT_COLOR = "#38bdf8";
 
 // HTML-escapes a value before it's interpolated into email markup - every
 // template that embeds user-supplied text (names, messages, job titles)
@@ -18,11 +18,11 @@ export const EMAIL_ACCENT_COLOR = '#38bdf8';
 // to get it right.
 export function h(s: string): string {
   return s
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
 }
 
 // Same square "C" mark as app/icon.svg (the site favicon) - inlined as an
@@ -56,7 +56,7 @@ export function emailHeader(): string {
 
 export function emailFooter(options?: {
   isReceipt?: boolean;
-  audience?: 'employer' | 'seeker' | 'recruiter';
+  audience?: "employer" | "seeker" | "recruiter";
   // Overrides the default "you created an account" line - for
   // notification-type sends (outreach, application alerts, digests) where
   // that framing doesn't apply. Takes precedence over `audience`.
@@ -71,10 +71,10 @@ export function emailFooter(options?: {
   const bottomLine = options?.customBottomLine
     ? options.customBottomLine
     : options?.isReceipt
-      ? 'This is a receipt for your records - keep it for your files.'
-      : options?.audience === 'seeker'
+      ? "This is a receipt for your records - keep it for your files."
+      : options?.audience === "seeker"
         ? "You're receiving this because you created a Caliber job seeker account."
-        : options?.audience === 'recruiter'
+        : options?.audience === "recruiter"
           ? "You're receiving this because you created a Caliber recruiter account."
           : "You're receiving this because you created a Caliber employer account.";
 
@@ -84,8 +84,8 @@ export function emailFooter(options?: {
     <td style="padding: 28px 40px 32px; text-align: center; background: #fafafa;">
       <p style="margin: 0 0 8px; font-size: 13px; color: #71717a;">${
         options?.isReceipt
-          ? 'Need a hand? Contact us at'
-          : 'Questions? Reply anytime or write to'
+          ? "Need a hand? Contact us at"
+          : "Questions? Reply anytime or write to"
       } <a href="mailto:hello@caliber.com" style="color: ${EMAIL_BRAND_COLOR}; font-weight: 600; text-decoration: none;">hello@caliber.com</a></p>
       <p style="margin: 0 0 14px; font-size: 12px; color: #a1a1aa; line-height: 1.6;">${bottomLine}</p>
       <p style="margin: 0; font-size: 12px; color: #d4d4d8; font-weight: 600; letter-spacing: 0.02em;">CALIBER, INC.</p>

@@ -1,6 +1,6 @@
-import Image from 'next/image';
-import { RecruiterRequestForm } from '@/components/recruiters/RecruiterRequestForm';
-import type { Recruiter } from '@/lib/jobs/recruiter-actions';
+import Image from "next/image";
+import { RecruiterRequestForm } from "@/components/recruiters/RecruiterRequestForm";
+import type { Recruiter } from "@/lib/jobs/recruiter-actions";
 
 export function RecruiterCard({
   recruiter,
@@ -34,7 +34,9 @@ export function RecruiterCard({
           </h2>
           {(recruiter.title || recruiter.company) && (
             <p className="text-sm text-zinc-600 dark:text-zinc-400">
-              {[recruiter.title, recruiter.company].filter(Boolean).join(' at ')}
+              {[recruiter.title, recruiter.company]
+                .filter(Boolean)
+                .join(" at ")}
             </p>
           )}
         </div>

@@ -1,4 +1,10 @@
-import { EMAIL_BRAND_COLOR, emailFooter, emailHeader, h, wrapEmailBody } from './shared';
+import {
+  EMAIL_BRAND_COLOR,
+  emailFooter,
+  emailHeader,
+  h,
+  wrapEmailBody,
+} from "./shared";
 
 export type CandidateDigestRow = {
   name: string;
@@ -25,17 +31,17 @@ export function renderRecruiterCandidateDigestEmail({
         <td style="padding: 0 0 18px;">
           <div style="font-size: 15px; font-weight: 700; color: #18181b;">${h(c.name)}</div>
           <div style="margin-top: 2px; font-size: 13px; color: #71717a;">
-            ${c.headline ? h(c.headline) : 'No headline provided'}
+            ${c.headline ? h(c.headline) : "No headline provided"}
           </div>
           <div style="margin-top: 3px; font-size: 12px; color: #a1a1aa;">
-            ${c.matchScore}% match${c.skills.length ? ` &middot; ${h(c.skills.slice(0, 5).join(', '))}` : ''}
+            ${c.matchScore}% match${c.skills.length ? ` &middot; ${h(c.skills.slice(0, 5).join(", "))}` : ""}
           </div>
         </td>
       </tr>`
     )
-    .join('');
+    .join("");
 
-  const headline = `${candidates.length} new candidate${candidates.length > 1 ? 's' : ''} match your specialties`;
+  const headline = `${candidates.length} new candidate${candidates.length > 1 ? "s" : ""} match your specialties`;
 
   const html = wrapEmailBody(`
     ${emailHeader()}
@@ -62,10 +68,11 @@ export function renderRecruiterCandidateDigestEmail({
     <div style="padding: 0 40px 32px;"></div>
 
     ${emailFooter({
-      audience: 'recruiter',
-      customBottomLine: "You're receiving this because you're a verified recruiter on Caliber with specialties set on your profile.",
+      audience: "recruiter",
+      customBottomLine:
+        "You're receiving this because you're a verified recruiter on Caliber with specialties set on your profile.",
     })}
   `);
 
-  return { subject: headline, html };
+  return { html, subject: headline };
 }

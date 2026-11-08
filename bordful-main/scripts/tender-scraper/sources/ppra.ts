@@ -18,20 +18,32 @@
 // deliberate simplification - see tender-categories.ts - so the one
 // cpv_codes column and the feed page's category filter work uniformly
 // across sources that don't share a real classification standard).
-import * as cheerio from 'cheerio';
-import type { ScrapedTender } from '../types';
-import { fetchWithRetry } from '../http';
+//
+// 2026-11-07: re-verified live against the current site (this had silently
+// gone from fetching real rows to fetching zero - see parseListPage). PPRA
+// redesigned the table since this was first written: it gained a leading
+// "Sr" (row number) column, which shifts every later column one index to
+// the right, and the buyer/organization name moved out of the visible row
+// entirely into a per-row expandable detail row (rendered server-side in
+// the same HTML, just CSS-hidden - no JS/clicking needed to read it, cheerio
+// sees it fine). Selecting columns by their `data-label` attribute instead
+// of a raw numeric index survives this kind of reshuffle; a future redesign
+// that renames labels would still break it, same as any scraper tied to a
+// specific markup shape.
+import * as cheerio from "cheerio";
+import { fetchWithRetry } from "../http";
+import type { ScrapedTender } from "../types";
 
-const BASE = 'https://epms.ppra.gov.pk';
-const LIST_PATH = '/public/tenders/active-tenders';
+const BASE = "https://epms.ppra.gov.pk";
+const LIST_PATH = "/public/tenders/active-tenders";
 const PAGE_SIZE = 50;
 const MAX_PAGES = 10;
 const DELAY_MS = 1500;
 
 const PROCUREMENT_CATEGORY_TO_CPV_PREFIX: Record<string, string> = {
-  '2': '45', // Works -> Construction
-  '3': '79', // Consultancy Services -> Business services
-  '4': '79', // Non-consultancy Services -> Business services
+  "2": "45", // Works -> Construction
+  "3": "79", // Consultancy Services -> Business services
+  "4": "79", // Non-consultancy Services -> Business services
 };
 
 function sleep(ms: number) {
@@ -47,8 +59,12 @@ function toYyyyMmDd(date: Date): string {
 // (UTC+5), the authority's own timezone, since that's what a Pakistani
 // buyer reading the site would assume.
 function parseDeadline(dateText: string, timeText: string): string | undefined {
-  if (!dateText) return undefined;
-  const combined = timeText ? `${dateText} ${timeText} GMT+0500` : `${dateText} GMT+0500`;
+  if (!dateText) {
+    return undefined;
+  }
+  const combined = timeText
+    ? `${dateText} ${timeText} GMT+0500`
+    : `${dateText} GMT+0500`;
   const parsed = new Date(combined);
   return Number.isNaN(parsed.getTime()) ? undefined : parsed.toISOString();
 }
@@ -58,9 +74,13 @@ function parseDeadline(dateText: string, timeText: string): string | undefined {
 // publication_date: no "Published" line on its card, and "Newest first"
 // sort couldn't order PPRA tenders against each other or against TED.
 function parsePublicationDate(dateText: string): string | undefined {
-  if (!dateText) return undefined;
+  if (!dateText) {
+    return undefined;
+  }
   const parsed = new Date(`${dateText} GMT+0500`);
-  return Number.isNaN(parsed.getTime()) ? undefined : parsed.toISOString().slice(0, 10);
+  return Number.isNaN(parsed.getTime())
+    ? undefined
+    : parsed.toISOString().slice(0, 10);
 }
 
 async function fetchPage(url: string): Promise<string | null> {
@@ -69,13 +89,14 @@ async function fetchPage(url: string): Promise<string | null> {
       url,
       {
         headers: {
-          'User-Agent': 'Mozilla/5.0 (compatible; Caliber-Aggregator/1.0; +https://caliber.app)',
-          Accept: 'text/html,application/xhtml+xml',
-          'Accept-Language': 'en-US,en;q=0.9',
+          Accept: "text/html,application/xhtml+xml",
+          "Accept-Language": "en-US,en;q=0.9",
+          "User-Agent":
+            "Mozilla/5.0 (compatible; Caliber-Aggregator/1.0; +https://caliber.app)",
         },
         signal: AbortSignal.timeout(20_000),
       },
-      { label: 'ppra' }
+      { label: "ppra" }
     );
     if (!res.ok) {
       console.warn(`[ppra] HTTP ${res.status} for ${url}`);
@@ -83,41 +104,60 @@ async function fetchPage(url: string): Promise<string | null> {
     }
     return await res.text();
   } catch (e) {
-    console.warn('[ppra] Fetch error:', (e as Error).message);
+    console.warn("[ppra] Fetch error:", (e as Error).message);
     return null;
   }
+}
+
+// The organization name lives in the row's expandable detail card, not the
+// main row - rendered server-side right after it as a sibling <tr>, just
+// hidden until the row's own expand button is clicked. No JS execution
+// needed to read it, but it does mean reading the *next* row, not this one.
+function extractOrgFromDetailRow(
+  $: cheerio.CheerioAPI,
+  detailRow: ReturnType<cheerio.CheerioAPI>
+): string {
+  const orgLabel = detailRow
+    .find(".cb-rt-dl")
+    .filter((_, el) => $(el).text().trim() === "Organization");
+  return orgLabel.next(".cb-rt-dv").find("strong").first().text().trim();
 }
 
 function parseListPage(html: string, cpvPrefix: string): ScrapedTender[] {
   const $ = cheerio.load(html);
   const tenders: ScrapedTender[] = [];
 
-  $('table.table-hover tbody tr').each((_, row) => {
-    const cells = $(row).find('td');
-    if (cells.length < 7) return;
+  $("table.cb-rt tbody tr.cb-rt-main").each((_, row) => {
+    const $row = $(row);
+    const cell = (label: string) =>
+      $row.find(`td[data-label="${label}"]`).first();
 
-    const tenderNo = $(cells[1]).find('strong').first().text().trim();
-    const detailsCell = $(cells[2]);
-    const title = detailsCell.find('strong').first().text().trim();
-    const orgCell = $(cells[3]);
-    const org = orgCell.find('.tender-org').first().text().trim();
-    const advertisedDate = $(cells[5]).text().trim();
-    const closingCell = $(cells[6]);
-    const closingDate = closingCell.find('strong').first().text().trim();
-    const closingTime = closingCell.find('small').first().text().trim();
-    const detailHref = $(row).find('a[href*="/tenders/tender-details/"]').first().attr('href');
+    const tenderNo = cell("Tender No").find("strong").first().text().trim();
+    const title = cell("Tender Details").find("strong").first().text().trim();
+    const advertisedDate = cell("Advertised").text().trim();
+    const closingCell = cell("Closing");
+    const closingDate = closingCell.find("strong").first().text().trim();
+    const closingTime = closingCell.find("small").first().text().trim();
+    const detailHref = $row
+      .find('a[href*="/tenders/tender-details/"]')
+      .first()
+      .attr("href");
 
-    if (!tenderNo || !title || !detailHref) return;
+    if (!(tenderNo && title && detailHref)) {
+      return;
+    }
+
+    const org = extractOrgFromDetailRow($, $row.next("tr.cb-rt-detail"));
 
     tenders.push({
-      source: 'ppra',
+      buyerName: org || undefined,
+      country: "PAK",
+      cpvCodes: [cpvPrefix],
+      deadlineDate: parseDeadline(closingDate, closingTime),
+      publicationDate: parsePublicationDate(advertisedDate),
+      source: "ppra",
       sourceId: tenderNo,
       title,
-      buyerName: org || undefined,
-      country: 'PAK',
-      cpvCodes: [cpvPrefix],
-      publicationDate: parsePublicationDate(advertisedDate),
-      deadlineDate: parseDeadline(closingDate, closingTime),
       url: `${BASE}${detailHref}`,
     });
   });
@@ -128,19 +168,27 @@ function parseListPage(html: string, cpvPrefix: string): ScrapedTender[] {
 // lookbackDays mirrors ted.ts: covers the daily cron's own cadence plus a
 // buffer, dedupe on (source, source_id) makes re-fetching free.
 export async function scrapePpra(lookbackDays = 2): Promise<ScrapedTender[]> {
-  const since = toYyyyMmDd(new Date(Date.now() - lookbackDays * 24 * 60 * 60 * 1000));
+  const since = toYyyyMmDd(
+    new Date(Date.now() - lookbackDays * 24 * 60 * 60 * 1000)
+  );
   const tenders: ScrapedTender[] = [];
 
-  for (const [category, cpvPrefix] of Object.entries(PROCUREMENT_CATEGORY_TO_CPV_PREFIX)) {
+  for (const [category, cpvPrefix] of Object.entries(
+    PROCUREMENT_CATEGORY_TO_CPV_PREFIX
+  )) {
     for (let page = 1; page <= MAX_PAGES; page++) {
       const url = `${BASE}${LIST_PATH}?procurement_category=${category}&advertise_date_from=${since}&page=${page}`;
       const html = await fetchPage(url);
-      if (!html) break;
+      if (!html) {
+        break;
+      }
 
       const pageTenders = parseListPage(html, cpvPrefix);
       tenders.push(...pageTenders);
 
-      if (pageTenders.length < PAGE_SIZE) break; // last page
+      if (pageTenders.length < PAGE_SIZE) {
+        break; // last page
+      }
       await sleep(DELAY_MS);
     }
   }

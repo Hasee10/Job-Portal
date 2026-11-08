@@ -1,54 +1,53 @@
-import { ArrowUpRight, Check, Sparkles } from 'lucide-react';
-import type { Metadata } from 'next';
-import Image from 'next/image';
-import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import { HeroSection } from '@/components/ui/hero-section';
-import { JobBadge } from '@/components/ui/job-badge';
-import { MetadataBreadcrumb } from '@/components/ui/metadata-breadcrumb';
-import config from '@/config';
-import { resolveColor } from '@/lib/utils/colors';
+import { ArrowUpRight, Check, Sparkles } from "lucide-react";
+import type { Metadata } from "next";
+import Image from "next/image";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { HeroSection } from "@/components/ui/hero-section";
+import { JobBadge } from "@/components/ui/job-badge";
+import { MetadataBreadcrumb } from "@/components/ui/metadata-breadcrumb";
+import config from "@/config";
+import { resolveColor } from "@/lib/utils/colors";
 
 // Format a billing term for display
-const formatPricingBillingTerm = (billingTerm: string): string => {
-  return `/${billingTerm}`;
-};
+const formatPricingBillingTerm = (billingTerm: string): string =>
+  `/${billingTerm}`;
 
 // Add metadata for SEO
 export const metadata: Metadata = {
-  title: `${config.pricing?.title || 'Pricing'} | ${config.title}`,
+  alternates: {
+    canonical: "/pricing",
+    languages: {
+      en: `${config.url}/pricing`,
+      "x-default": `${config.url}/pricing`,
+    },
+  },
   description:
     config.pricing?.description ||
     "Choose the plan that's right for your job board needs.",
   keywords:
     config.pricing?.keywords ||
-    'job board pricing, post job, job listing plans, recruitment pricing',
+    "job board pricing, post job, job listing plans, recruitment pricing",
   openGraph: {
-    title: `${config.pricing?.title || 'Pricing'} | ${config.title}`,
     description:
       config.pricing?.description ||
       "Choose the plan that's right for your job board needs.",
-    type: 'website',
+    title: `${config.pricing?.title || "Pricing"} | ${config.title}`,
+    type: "website",
     url: `${config.url}/pricing`,
   },
+  title: `${config.pricing?.title || "Pricing"} | ${config.title}`,
   twitter: {
-    card: 'summary_large_image',
-    title: `${config.pricing?.title || 'Pricing'} | ${config.title}`,
+    card: "summary_large_image",
     description:
       config.pricing?.description ||
       "Choose the plan that's right for your job board needs.",
-  },
-  alternates: {
-    canonical: '/pricing',
-    languages: {
-      en: `${config.url}/pricing`,
-      'x-default': `${config.url}/pricing`,
-    },
+    title: `${config.pricing?.title || "Pricing"} | ${config.title}`,
   },
 };
 
 // This page will be static
-export const dynamic = 'force-static';
+export const dynamic = "force-static";
 
 export default function PricingPage() {
   // If pricing is not enabled, redirect to home page
@@ -69,7 +68,7 @@ export default function PricingPage() {
   return (
     <main className="min-h-screen bg-background">
       <HeroSection
-        badge={config.pricing.badge || 'Pricing'}
+        badge={config.pricing.badge || "Pricing"}
         description={config.pricing.description}
         heroImage={config.pricing.heroImage}
         title={config.pricing.title}
@@ -87,8 +86,8 @@ export default function PricingPage() {
               <div
                 className={`block h-full rounded-lg border px-5 py-6 transition-all ${
                   plan.highlighted
-                    ? 'border-zinc-400 shadow-sm'
-                    : 'hover:border-gray-400'
+                    ? "border-zinc-400 shadow-sm"
+                    : "hover:border-gray-400"
                 }`}
               >
                 <div className="space-y-4">
@@ -97,7 +96,7 @@ export default function PricingPage() {
                     {plan.badge && (
                       <JobBadge
                         icon={<Sparkles className="h-3 w-3" />}
-                        type={plan.badge.type || 'featured'}
+                        type={plan.badge.type || "featured"}
                       >
                         {plan.badge.text}
                       </JobBadge>
@@ -106,16 +105,16 @@ export default function PricingPage() {
 
                   <div className="flex items-baseline">
                     <span className="font-bold text-2xl">
-                      {plan.price === 0 ? 'Free' : `$${plan.price}`}
+                      {plan.price === 0 ? "Free" : `$${plan.price}`}
                     </span>
                     {plan.price > 0 && (
-                      <span className="ml-1 text-gray-500 dark:text-gray-500 text-sm">
+                      <span className="ml-1 text-gray-500 text-sm dark:text-gray-500">
                         {formatPricingBillingTerm(plan.billingTerm)}
                       </span>
                     )}
                   </div>
 
-                  <div className="text-gray-600 dark:text-gray-400 text-sm">
+                  <div className="text-gray-600 text-sm dark:text-gray-400">
                     {plan.description}
                   </div>
 
@@ -125,28 +124,28 @@ export default function PricingPage() {
                       className="w-full gap-1.5 text-xs"
                       size="xs"
                       style={
-                        plan.cta.variant !== 'outline'
-                          ? {
+                        plan.cta.variant === "outline"
+                          ? undefined
+                          : {
                               backgroundColor: resolveColor(
                                 config.ui.primaryColor
                               ),
                             }
-                          : undefined
                       }
                       variant={
-                        plan.cta.variant === 'outline' ? 'outline' : 'primary'
+                        plan.cta.variant === "outline" ? "outline" : "primary"
                       }
                     >
                       <Link
                         href={plan.cta.link}
                         rel={
-                          plan.cta.link.startsWith('http')
-                            ? 'noopener noreferrer'
+                          plan.cta.link.startsWith("http")
+                            ? "noopener noreferrer"
                             : undefined
                         }
                         target={
-                          plan.cta.link.startsWith('http')
-                            ? '_blank'
+                          plan.cta.link.startsWith("http")
+                            ? "_blank"
                             : undefined
                         }
                       >
@@ -165,7 +164,9 @@ export default function PricingPage() {
                     {plan.features.map((feature, featureIndex) => (
                       <li className="flex items-start" key={featureIndex}>
                         <Check className="mt-0.5 mr-2 h-4 w-4 flex-shrink-0 text-green-600" />
-                        <span className="text-gray-700 dark:text-gray-300 text-sm">{feature}</span>
+                        <span className="text-gray-700 text-sm dark:text-gray-300">
+                          {feature}
+                        </span>
                       </li>
                     ))}
                   </ul>
@@ -178,7 +179,7 @@ export default function PricingPage() {
         {/* Payment Processing Information */}
         {config.pricing.paymentProcessingText && (
           <div className="mx-auto mt-12 max-w-sm text-center">
-            <p className="text-balance text-gray-500 dark:text-gray-500 text-xs">
+            <p className="text-balance text-gray-500 text-xs dark:text-gray-500">
               {config.pricing.paymentProcessingText}
             </p>
 
@@ -199,7 +200,7 @@ export default function PricingPage() {
                       alt={icon.alt || `${icon.name} payment method`}
                       fill
                       src={`/assets/${icon.name}.svg`}
-                      style={{ objectFit: 'contain' }}
+                      style={{ objectFit: "contain" }}
                     />
                   </div>
                 ))}

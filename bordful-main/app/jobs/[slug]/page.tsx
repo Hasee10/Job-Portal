@@ -1,29 +1,29 @@
-import { ClipboardList } from 'lucide-react';
-import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
-import React from 'react';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import { ApplyButton } from '@/components/jobs/ApplyButton';
-import { GenerateResumeButton } from '@/components/jobs/GenerateResumeButton';
-import { JobApplicationActions } from '@/components/jobs/JobApplicationActions';
-import { JobFitBadge } from '@/components/jobs/JobFitBadge';
-import { SaveJobButton } from '@/components/jobs/SaveJobButton';
-import { ClientBreadcrumb } from '@/components/ui/client-breadcrumb';
-import { JobDetailsSidebar } from '@/components/ui/job-details-sidebar';
-import { JobSchema } from '@/components/ui/job-schema';
-import { PostJobBanner } from '@/components/ui/post-job-banner';
-import { SimilarJobs } from '@/components/ui/similar-jobs';
-import config from '@/config';
+import { ClipboardList } from "lucide-react";
+import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+import React from "react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import { ApplyButton } from "@/components/jobs/ApplyButton";
+import { GenerateResumeButton } from "@/components/jobs/GenerateResumeButton";
+import { JobApplicationActions } from "@/components/jobs/JobApplicationActions";
+import { JobFitBadge } from "@/components/jobs/JobFitBadge";
+import { SaveJobButton } from "@/components/jobs/SaveJobButton";
+import { ClientBreadcrumb } from "@/components/ui/client-breadcrumb";
+import { JobDetailsSidebar } from "@/components/ui/job-details-sidebar";
+import { JobSchema } from "@/components/ui/job-schema";
+import { PostJobBanner } from "@/components/ui/post-job-banner";
+import { SimilarJobs } from "@/components/ui/similar-jobs";
+import config from "@/config";
 import {
   PARENTHESIS_CONTENT_REGEX,
   STATIC_JOB_PAGES_LIMIT,
-} from '@/lib/constants/defaults';
-import { formatSalary } from '@/lib/db/airtable';
-import { getJob, getJobs } from '@/lib/db/airtable.server';
-import { formatDate } from '@/lib/utils/formatDate';
-import { generateMetadata as createMetadata } from '@/lib/utils/metadata';
-import { generateJobSlug } from '@/lib/utils/slugify';
+} from "@/lib/constants/defaults";
+import { formatSalary } from "@/lib/db/jobs";
+import { getJob, getJobs } from "@/lib/db/jobs.server";
+import { formatDate } from "@/lib/utils/formatDate";
+import { generateMetadata as createMetadata } from "@/lib/utils/metadata";
+import { generateJobSlug } from "@/lib/utils/slugify";
 
 // Constants for checkbox text extraction
 const CHECKBOX_MARKER_LENGTH = 4;
@@ -49,7 +49,7 @@ export async function generateStaticParams() {
   const jobs = await getJobs({ limit: STATIC_JOB_PAGES_LIMIT });
   // getJobs already filters for active jobs, but we'll explicitly filter here for clarity
   return jobs
-    .filter((job) => job.status === 'active')
+    .filter((job) => job.status === "active")
     .map((job) => ({
       slug: generateJobSlug(job.title, job.company),
     }));
@@ -75,22 +75,22 @@ export async function generateMetadata({
 
   if (!job) {
     return {
-      title: `Job Not Found | ${config.title}`,
       description: "The job you're looking for could not be found.",
+      title: `Job Not Found | ${config.title}`,
     };
   }
 
   // Format location for metadata based on workplace type
   const metaLocation = (() => {
     // For Remote jobs, show the region if available
-    if (job.workplace_type === 'Remote') {
+    if (job.workplace_type === "Remote") {
       if (!job.remote_region) {
-        return 'Remote position (Worldwide)';
+        return "Remote position (Worldwide)";
       }
 
       // For Worldwide specifically, don't use "in"
-      if (job.remote_region === 'Worldwide') {
-        return 'Remote position (Worldwide)';
+      if (job.remote_region === "Worldwide") {
+        return "Remote position (Worldwide)";
       }
 
       // For other regions, use "in"
@@ -98,40 +98,40 @@ export async function generateMetadata({
     }
 
     // For Hybrid jobs, show the location with Hybrid prefix
-    if (job.workplace_type === 'Hybrid') {
+    if (job.workplace_type === "Hybrid") {
       const location = [job.workplace_city, job.workplace_country]
         .filter(Boolean)
-        .join(', ');
-      return location ? `Hybrid position in ${location}` : 'Hybrid position';
+        .join(", ");
+      return location ? `Hybrid position in ${location}` : "Hybrid position";
     }
 
     // For On-site jobs, show the location directly
-    if (job.workplace_type === 'On-site') {
+    if (job.workplace_type === "On-site") {
       const location = [job.workplace_city, job.workplace_country]
         .filter(Boolean)
-        .join(', ');
-      return location ? `in ${location}` : '';
+        .join(", ");
+      return location ? `in ${location}` : "";
     }
 
     // Default case (Not specified)
-    return '';
+    return "";
   })();
 
   // Format deadline if available
   const deadlineText = (() => {
     if (!job.valid_through) {
-      return 'Apply now';
+      return "Apply now";
     }
 
     const deadline = new Date(job.valid_through);
     if (Number.isNaN(deadline.getTime())) {
-      return 'Apply now';
+      return "Apply now";
     }
 
-    return `Apply before ${deadline.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
+    return `Apply before ${deadline.toLocaleDateString("en-US", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
     })}`;
   })();
 
@@ -139,18 +139,18 @@ export async function generateMetadata({
   const parts: string[] = [];
 
   // First part - company, job type and title (removing parentheses if present in the title)
-  const cleanTitle = job.title.replace(PARENTHESIS_CONTENT_REGEX, ' ').trim();
+  const cleanTitle = job.title.replace(PARENTHESIS_CONTENT_REGEX, " ").trim();
 
   // Base description
   let baseDescription = `${job.company} is hiring ${
-    job.type ? job.type.toLowerCase() : ''
+    job.type ? job.type.toLowerCase() : ""
   } ${cleanTitle}`.trim();
   let baseDescriptionAdded = false;
 
   // Add location only if it exists
   if (metaLocation) {
     // For "in X" format, append directly; for other formats, add as new sentence
-    if (metaLocation.startsWith('in ')) {
+    if (metaLocation.startsWith("in ")) {
       baseDescription += ` ${metaLocation}`;
     } else {
       parts.push(baseDescription);
@@ -175,27 +175,27 @@ export async function generateMetadata({
   // Use our utility to generate consistent metadata
   // Join with periods and ensure proper formatting
   const description = parts
-    .join('. ')
+    .join(". ")
     // Fix any double periods
-    .replace(/\.\./g, '.')
+    .replace(/\.\./g, ".")
     // Ensure there's a period at the end
-    .replace(FINAL_WORD_REGEX, '$1.');
+    .replace(FINAL_WORD_REGEX, "$1.");
 
   return createMetadata({
-    title: `${job.title} at ${job.company}`,
     description,
-    path: `/jobs/${slug}`,
     openGraph: {
-      type: 'article',
       images: [
         {
+          alt: `${job.title} at ${job.company}`,
+          height: 630,
           url: `/api/og/jobs/${slug}`,
           width: 1200,
-          height: 630,
-          alt: `${job.title} at ${job.company}`,
         },
       ],
+      type: "article",
     },
+    path: `/jobs/${slug}`,
+    title: `${job.title} at ${job.company}`,
   });
 }
 
@@ -208,7 +208,9 @@ export default async function JobPostPage({
   params: Promise<{ slug: string }>;
 }) {
   const [jobs, { slug }] = await Promise.all([getJobs(), params]);
-  const liteJob = jobs.find((j) => generateJobSlug(j.title, j.company) === slug);
+  const liteJob = jobs.find(
+    (j) => generateJobSlug(j.title, j.company) === slug
+  );
 
   if (!liteJob) {
     notFound();
@@ -224,7 +226,7 @@ export default async function JobPostPage({
   }
 
   // Return 404 for inactive jobs as per Google's structured data guidelines
-  if (job.status !== 'active') {
+  if (job.status !== "active") {
     notFound();
   }
 
@@ -235,22 +237,22 @@ export default async function JobPostPage({
   // Format location based on workplace type
   let location: string | null = null;
 
-  if (job.workplace_type === 'Remote') {
+  if (job.workplace_type === "Remote") {
     location = job.remote_region ? `Remote (${job.remote_region})` : null;
-  } else if (job.workplace_type === 'Hybrid') {
+  } else if (job.workplace_type === "Hybrid") {
     const hybridParts = [
       job.workplace_city,
       job.workplace_country,
       job.remote_region ? `Hybrid (${job.remote_region})` : null,
     ].filter(Boolean);
 
-    location = hybridParts.length > 0 ? hybridParts.join(', ') : null;
+    location = hybridParts.length > 0 ? hybridParts.join(", ") : null;
   } else {
     // On-site or other types
     const onsiteParts = [job.workplace_city, job.workplace_country].filter(
       Boolean
     );
-    location = onsiteParts.length > 0 ? onsiteParts.join(', ') : null;
+    location = onsiteParts.length > 0 ? onsiteParts.join(", ") : null;
   }
 
   return (
@@ -319,19 +321,6 @@ export default async function JobPostPage({
               {/* Use our custom utility to process Airtable's markdown format */}
               <ReactMarkdown
                 components={{
-                  // Customize heading styles - consistent with the rest of the app
-                  h1: ({ ...props }) => (
-                    <h1 className="mb-2 font-semibold text-2xl" {...props} />
-                  ),
-                  h2: ({ ...props }) => (
-                    <h2 className="mb-2 font-semibold text-xl" {...props} />
-                  ),
-                  h3: ({ ...props }) => (
-                    <h3 className="mb-2 font-semibold text-lg" {...props} />
-                  ),
-                  h4: ({ ...props }) => (
-                    <h4 className="mb-2 font-semibold text-base" {...props} />
-                  ),
                   // Style links
                   a: ({ href, ...props }) =>
                     href ? (
@@ -345,26 +334,6 @@ export default async function JobPostPage({
                     ) : (
                       <span className="text-blue-600" {...props} />
                     ),
-                  // Style lists with better nesting support
-                  ul: ({ className, ...props }) => {
-                    // Always indent top-level lists; nested lists get natural browser indent
-                    return (
-                      <ul
-                        className={`my-2 ml-4 list-disc ${className || ''}`}
-                        {...props}
-                      />
-                    );
-                  },
-                  ol: ({ className, ...props }) => {
-                    return (
-                      <ol
-                        className={`my-2 ml-4 list-decimal ${className || ''}`}
-                        {...props}
-                      />
-                    );
-                  },
-                  // Style paragraphs
-                  p: ({ ...props }) => <p className="my-2" {...props} />,
                   // Style blockquotes (for Airtable quote blocks)
                   blockquote: ({ ...props }) => (
                     <blockquote
@@ -395,15 +364,28 @@ export default async function JobPostPage({
                       </pre>
                     );
                   },
+                  // Customize heading styles - consistent with the rest of the app
+                  h1: ({ ...props }) => (
+                    <h1 className="mb-2 font-semibold text-2xl" {...props} />
+                  ),
+                  h2: ({ ...props }) => (
+                    <h2 className="mb-2 font-semibold text-xl" {...props} />
+                  ),
+                  h3: ({ ...props }) => (
+                    <h3 className="mb-2 font-semibold text-lg" {...props} />
+                  ),
+                  h4: ({ ...props }) => (
+                    <h4 className="mb-2 font-semibold text-base" {...props} />
+                  ),
                   // Style checkboxes for Airtable's checkbox format and improve list item handling
                   li: ({ children, className, ...props }) => {
                     // Check if this is a checkbox item
                     if (
-                      typeof children === 'string' &&
-                      (children.startsWith('[x] ') ||
-                        children.startsWith('[ ] '))
+                      typeof children === "string" &&
+                      (children.startsWith("[x] ") ||
+                        children.startsWith("[ ] "))
                     ) {
-                      const checkedBox = children.startsWith('[x] ');
+                      const checkedBox = children.startsWith("[x] ");
                       const text = children.substring(CHECKBOX_MARKER_LENGTH);
                       return (
                         <li className="my-1 flex items-start gap-2" {...props}>
@@ -421,9 +403,9 @@ export default async function JobPostPage({
                     // Check if this is a bold list item (like "**Lifecycle Marketing**")
                     // This is a special case for job descriptions with bold list headers
                     const isBoldListItem =
-                      typeof children === 'object' &&
+                      typeof children === "object" &&
                       React.isValidElement(children) &&
-                      children.type === 'strong';
+                      children.type === "strong";
 
                     if (isBoldListItem) {
                       return (
@@ -434,9 +416,9 @@ export default async function JobPostPage({
                     }
 
                     // Default list item
-                    const listItemClass = className || '';
+                    const listItemClass = className || "";
                     // Use standard padding for list items
-                    const spacingClass = 'pl-1';
+                    const spacingClass = "pl-1";
 
                     return (
                       <li
@@ -447,6 +429,24 @@ export default async function JobPostPage({
                       </li>
                     );
                   },
+                  ol: ({ className, ...props }) => (
+                    <ol
+                      className={`my-2 ml-4 list-decimal ${className || ""}`}
+                      {...props}
+                    />
+                  ),
+                  // Style paragraphs
+                  p: ({ ...props }) => <p className="my-2" {...props} />,
+                  // Style lists with better nesting support
+                  ul: ({ className, ...props }) => {
+                    // Always indent top-level lists; nested lists get natural browser indent
+                    return (
+                      <ul
+                        className={`my-2 ml-4 list-disc ${className || ""}`}
+                        {...props}
+                      />
+                    );
+                  },
                 }}
                 remarkPlugins={[remarkGfm]}
               >
@@ -455,9 +455,9 @@ export default async function JobPostPage({
               {/^.*[…]$|\.\.\.\s*$/.test(job.description.trim()) &&
                 job.apply_url && (
                   <p className="not-prose mt-4 text-gray-500 text-sm">
-                    This listing was imported from{' '}
-                    {job.job_source_name || 'an external source'} and only
-                    includes a partial description.{' '}
+                    This listing was imported from{" "}
+                    {job.job_source_name || "an external source"} and only
+                    includes a partial description.{" "}
                     <a
                       className="text-blue-600 hover:text-blue-800"
                       href={job.apply_url}
@@ -473,7 +473,9 @@ export default async function JobPostPage({
           </div>
 
           {/* Structured skills/education/experience blocks, when the job data has them */}
-          {(job.skills || job.education_requirements || job.experience_requirements) && (
+          {(job.skills ||
+            job.education_requirements ||
+            job.experience_requirements) && (
             <div className="mt-6 space-y-4">
               {job.skills && (
                 <div>
@@ -550,12 +552,12 @@ export default async function JobPostPage({
                   const deadline = new Date(job.valid_through);
                   return (
                     !Number.isNaN(deadline.getTime()) && (
-                      <span className="w-full text-center text-gray-500 text-xs dark:text-zinc-400 sm:w-auto sm:text-left">
-                        Apply before:{' '}
-                        {deadline.toLocaleDateString('en-US', {
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric',
+                      <span className="w-full text-center text-gray-500 text-xs sm:w-auto sm:text-left dark:text-zinc-400">
+                        Apply before:{" "}
+                        {deadline.toLocaleDateString("en-US", {
+                          day: "numeric",
+                          month: "long",
+                          year: "numeric",
                         })}
                       </span>
                     )

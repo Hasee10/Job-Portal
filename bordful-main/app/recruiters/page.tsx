@@ -1,25 +1,25 @@
-import { Users } from 'lucide-react';
-import type { Metadata } from 'next';
-import { auth } from '@/auth';
-import { RecruiterCard } from '@/components/recruiters/RecruiterCard';
-import { RecruiterRequestForm } from '@/components/recruiters/RecruiterRequestForm';
-import config from '@/config';
-import { listActiveRecruiters } from '@/lib/jobs/recruiter-actions';
+import { Users } from "lucide-react";
+import type { Metadata } from "next";
+import { auth } from "@/auth";
+import { RecruiterCard } from "@/components/recruiters/RecruiterCard";
+import { RecruiterRequestForm } from "@/components/recruiters/RecruiterRequestForm";
+import config from "@/config";
+import { listActiveRecruiters } from "@/lib/jobs/recruiter-actions";
 
 export const metadata: Metadata = {
-  title: `Work with a recruiter | ${config.title}`,
   description:
-    'Connect with recruiters who can help match you with the right opportunity.',
+    "Connect with recruiters who can help match you with the right opportunity.",
+  title: `Work with a recruiter | ${config.title}`,
 };
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 export default async function RecruitersPage() {
   const [session, recruiters] = await Promise.all([
     auth(),
     listActiveRecruiters(),
   ]);
-  const isSeeker = session?.user?.role === 'seeker';
+  const isSeeker = session?.user?.role === "seeker";
 
   return (
     <main className="min-h-[60vh] bg-background py-16">
@@ -59,7 +59,6 @@ export default async function RecruitersPage() {
               ))}
             </div>
           )}
-
         </div>
       </div>
     </main>

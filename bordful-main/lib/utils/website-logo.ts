@@ -4,11 +4,15 @@
 // can still override it. Distinct from lib/utils/company-logo.ts, which
 // resolves a logo from a company *name* (via Logo.dev) for job listing
 // cards where no website URL is available.
-export function deriveLogoUrl(website: string | null | undefined): string | null {
-  if (!website) return null;
+export function deriveLogoUrl(
+  website: string | null | undefined
+): string | null {
+  if (!website) {
+    return null;
+  }
   try {
-    const url = website.startsWith('http') ? website : `https://${website}`;
-    const domain = new URL(url).hostname.replace(/^www\./, '');
+    const url = website.startsWith("http") ? website : `https://${website}`;
+    const domain = new URL(url).hostname.replace(/^www\./, "");
     return domain ? `https://logo.clearbit.com/${domain}` : null;
   } catch {
     return null;

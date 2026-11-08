@@ -1,34 +1,40 @@
-'use client';
+"use client";
 
-import { useRef, useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { useToast } from '@/hooks/use-toast';
-import { ResumeAssistantWidget } from '@/components/account/ResumeAssistantWidget';
-import { HarvardResumePreview } from '@/components/account/resume-templates/HarvardResumePreview';
+import { useRef, useState } from "react";
+import { ResumeAssistantWidget } from "@/components/account/ResumeAssistantWidget";
+import { HarvardResumePreview } from "@/components/account/resume-templates/HarvardResumePreview";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/hooks/use-toast";
 import type {
   ResumeContent,
   ResumeEducation,
   ResumeExperience,
-} from '@/lib/jobs/resume-actions';
-import type { TailoredResumeContent } from '@/lib/jobs/tailored-resume-types';
+} from "@/lib/jobs/resume-actions";
+import type { TailoredResumeContent } from "@/lib/jobs/tailored-resume-types";
 
 const EMPTY_RESUME_CONTENT: ResumeContent = {
-  fullName: '',
-  headline: '',
-  summary: '',
-  experience: [],
   education: [],
+  experience: [],
+  fullName: "",
+  headline: "",
   skills: [],
+  summary: "",
 };
 
 function emptyExperience(): ResumeExperience {
-  return { title: '', company: '', startDate: '', endDate: '', description: '' };
+  return {
+    company: "",
+    description: "",
+    endDate: "",
+    startDate: "",
+    title: "",
+  };
 }
 
 function emptyEducation(): ResumeEducation {
-  return { school: '', degree: '', year: '' };
+  return { degree: "", school: "", year: "" };
 }
 
 export function ResumeBuilder({
@@ -44,17 +50,18 @@ export function ResumeBuilder({
       ? initialContent
       : EMPTY_RESUME_CONTENT
   );
-  const [skillsInput, setSkillsInput] = useState(content.skills.join(', '));
+  const [skillsInput, setSkillsInput] = useState(content.skills.join(", "));
   const [isSaving, setIsSaving] = useState(false);
 
-  const [jobDescription, setJobDescription] = useState('');
-  const [mode, setMode] = useState<'resume' | 'cover-letter'>('resume');
+  const [jobDescription, setJobDescription] = useState("");
+  const [mode, setMode] = useState<"resume" | "cover-letter">("resume");
   const [isTailoring, setIsTailoring] = useState(false);
   // Cover-letter mode returns plain text; resume mode returns a structured,
   // live-editable document (see /api/seeker/resume/tailor) rendered with
   // HarvardResumePreview and exportable as a PDF with the same layout.
   const [tailoredText, setTailoredText] = useState<string | null>(null);
-  const [tailoredResume, setTailoredResume] = useState<TailoredResumeContent | null>(null);
+  const [tailoredResume, setTailoredResume] =
+    useState<TailoredResumeContent | null>(null);
   const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
   const [tailorError, setTailorError] = useState<string | null>(null);
   const [upgradeRequired, setUpgradeRequired] = useState(false);
@@ -66,7 +73,10 @@ export function ResumeBuilder({
     { jobId: string; title: string; company: string; matchedSkills: string[] }[]
   >([]);
 
-  const updateExperience = (index: number, patch: Partial<ResumeExperience>) => {
+  const updateExperience = (
+    index: number,
+    patch: Partial<ResumeExperience>
+  ) => {
     setContent((prev) => ({
       ...prev,
       experience: prev.experience.map((entry, i) =>
@@ -88,25 +98,27 @@ export function ResumeBuilder({
     setIsSaving(true);
     try {
       const skills = skillsInput
-        .split(',')
+        .split(",")
         .map((s) => s.trim())
         .filter(Boolean);
       const payload: ResumeContent = { ...content, skills };
 
-      const response = await fetch('/api/seeker/resume', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/seeker/resume", {
         body: JSON.stringify({ content: payload }),
+        headers: { "Content-Type": "application/json" },
+        method: "POST",
       });
-      if (!response.ok) throw new Error('Failed to save resume.');
+      if (!response.ok) {
+        throw new Error("Failed to save resume.");
+      }
 
       setContent(payload);
-      toast({ title: 'Resume saved' });
+      toast({ title: "Resume saved" });
     } catch {
       toast({
-        title: 'Could not save resume',
-        description: 'Please try again.',
-        variant: 'destructive',
+        description: "Please try again.",
+        title: "Could not save resume",
+        variant: "destructive",
       });
     } finally {
       setIsSaving(false);
@@ -119,38 +131,42 @@ export function ResumeBuilder({
     setUploadMatches([]);
     try {
       const body = new FormData();
-      body.append('file', file);
-      const response = await fetch('/api/seeker/resume/upload', {
-        method: 'POST',
+      body.append("file", file);
+      const response = await fetch("/api/seeker/resume/upload", {
         body,
+        method: "POST",
       });
       const data = await response.json();
-      if (!response.ok) throw new Error(data.error || 'Failed to parse resume.');
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to parse resume.");
+      }
 
       const parsed = data.resume.content as ResumeContent;
       setContent(parsed);
-      setSkillsInput(parsed.skills.join(', '));
+      setSkillsInput(parsed.skills.join(", "));
       setUploadMatches(data.matches ?? []);
       toast({
-        title: 'Resume parsed',
         description:
           data.matches?.length > 0
-            ? `Found ${data.matches.length} matching job${data.matches.length > 1 ? 's' : ''} - check your email too.`
-            : 'Review the details below and save.',
+            ? `Found ${data.matches.length} matching job${data.matches.length > 1 ? "s" : ""} - check your email too.`
+            : "Review the details below and save.",
+        title: "Resume parsed",
       });
     } catch (error) {
       setUploadError(
-        error instanceof Error ? error.message : 'Something went wrong.'
+        error instanceof Error ? error.message : "Something went wrong."
       );
     } finally {
       setIsUploading(false);
-      if (fileInputRef.current) fileInputRef.current.value = '';
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
     }
   };
 
   const handleTailor = async () => {
-    if (!targetJob && !jobDescription.trim()) {
-      setTailorError('Paste a job description first.');
+    if (!(targetJob || jobDescription.trim())) {
+      setTailorError("Paste a job description first.");
       return;
     }
     setIsTailoring(true);
@@ -159,28 +175,28 @@ export function ResumeBuilder({
     setTailoredResume(null);
     setUpgradeRequired(false);
     try {
-      const response = await fetch('/api/seeker/resume/tailor', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/seeker/resume/tailor", {
         body: JSON.stringify(
           targetJob
-            ? { mode, jobId: targetJob.id, resume: content }
-            : { mode, jobDescription, resume: content }
+            ? { jobId: targetJob.id, mode, resume: content }
+            : { jobDescription, mode, resume: content }
         ),
+        headers: { "Content-Type": "application/json" },
+        method: "POST",
       });
       const data = await response.json();
       if (!response.ok) {
         setUpgradeRequired(Boolean(data.upgradeRequired));
-        throw new Error(data.error || 'Failed to generate tailored content.');
+        throw new Error(data.error || "Failed to generate tailored content.");
       }
-      if (data.kind === 'resume') {
+      if (data.kind === "resume") {
         setTailoredResume(data.output as TailoredResumeContent);
       } else {
         setTailoredText(data.output as string);
       }
     } catch (error) {
       setTailorError(
-        error instanceof Error ? error.message : 'Something went wrong.'
+        error instanceof Error ? error.message : "Something went wrong."
       );
     } finally {
       setIsTailoring(false);
@@ -193,7 +209,7 @@ export function ResumeBuilder({
 
   const updateTailoredExperience = (
     index: number,
-    patch: Partial<TailoredResumeContent['experience'][number]>
+    patch: Partial<TailoredResumeContent["experience"][number]>
   ) => {
     setTailoredResume((prev) =>
       prev
@@ -208,28 +224,32 @@ export function ResumeBuilder({
   };
 
   const handleDownloadPdf = async () => {
-    if (!tailoredResume) return;
+    if (!tailoredResume) {
+      return;
+    }
     setIsDownloadingPdf(true);
     try {
       const [{ pdf }, { HarvardResumePdf }] = await Promise.all([
-        import('@react-pdf/renderer'),
-        import('@/components/account/resume-templates/HarvardResumePdf'),
+        import("@react-pdf/renderer"),
+        import("@/components/account/resume-templates/HarvardResumePdf"),
       ]);
-      const blob = await pdf(<HarvardResumePdf resume={tailoredResume} />).toBlob();
+      const blob = await pdf(
+        <HarvardResumePdf resume={tailoredResume} />
+      ).toBlob();
       const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
+      const a = document.createElement("a");
       a.href = url;
-      a.download = `${tailoredResume.fullName || 'resume'}-tailored.pdf`;
+      a.download = `${tailoredResume.fullName || "resume"}-tailored.pdf`;
       document.body.appendChild(a);
       a.click();
       a.remove();
       URL.revokeObjectURL(url);
     } catch (error) {
-      console.error('[ResumeBuilder] PDF generation failed:', error);
+      console.error("[ResumeBuilder] PDF generation failed:", error);
       toast({
-        title: 'Could not generate PDF',
-        description: 'Please try again.',
-        variant: 'destructive',
+        description: "Please try again.",
+        title: "Could not generate PDF",
+        variant: "destructive",
       });
     } finally {
       setIsDownloadingPdf(false);
@@ -250,7 +270,9 @@ export function ResumeBuilder({
             className="hidden"
             onChange={(e) => {
               const file = e.target.files?.[0];
-              if (file) handleUpload(file);
+              if (file) {
+                handleUpload(file);
+              }
             }}
             ref={fileInputRef}
             type="file"
@@ -261,18 +283,18 @@ export function ResumeBuilder({
             type="button"
             variant="outline"
           >
-            {isUploading ? 'Parsing...' : 'Upload PDF resume'}
+            {isUploading ? "Parsing..." : "Upload PDF resume"}
           </Button>
         </div>
         {uploadError && (
-          <p className="mt-2 text-sm text-red-600 dark:text-red-400">
+          <p className="mt-2 text-red-600 text-sm dark:text-red-400">
             {uploadError}
           </p>
         )}
         {uploadMatches.length > 0 && (
           <div className="mt-4 space-y-2">
             <p className="font-medium text-sm">
-              {uploadMatches.length} job{uploadMatches.length > 1 ? 's' : ''}{' '}
+              {uploadMatches.length} job{uploadMatches.length > 1 ? "s" : ""}{" "}
               match your skills:
             </p>
             <ul className="space-y-1">
@@ -280,8 +302,9 @@ export function ResumeBuilder({
                 <li className="text-sm" key={match.jobId}>
                   <span className="font-medium">{match.title}</span>
                   <span className="text-zinc-500 dark:text-zinc-400">
-                    {' '}
-                    at {match.company} &mdash; matches: {match.matchedSkills.join(', ')}
+                    {" "}
+                    at {match.company} &mdash; matches:{" "}
+                    {match.matchedSkills.join(", ")}
                   </span>
                 </li>
               ))}
@@ -295,24 +318,28 @@ export function ResumeBuilder({
         <div className="mt-4 space-y-4">
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
-              <label className="text-sm font-medium" htmlFor="fullName">
+              <label className="font-medium text-sm" htmlFor="fullName">
                 Full name
               </label>
               <Input
                 className="mt-1"
                 id="fullName"
-                onChange={(e) => setContent((p) => ({ ...p, fullName: e.target.value }))}
+                onChange={(e) =>
+                  setContent((p) => ({ ...p, fullName: e.target.value }))
+                }
                 value={content.fullName}
               />
             </div>
             <div>
-              <label className="text-sm font-medium" htmlFor="headline">
+              <label className="font-medium text-sm" htmlFor="headline">
                 Headline
               </label>
               <Input
                 className="mt-1"
                 id="headline"
-                onChange={(e) => setContent((p) => ({ ...p, headline: e.target.value }))}
+                onChange={(e) =>
+                  setContent((p) => ({ ...p, headline: e.target.value }))
+                }
                 placeholder="e.g. Senior Product Designer"
                 value={content.headline}
               />
@@ -320,13 +347,15 @@ export function ResumeBuilder({
           </div>
 
           <div>
-            <label className="text-sm font-medium" htmlFor="summary">
+            <label className="font-medium text-sm" htmlFor="summary">
               Summary
             </label>
             <Textarea
               className="mt-1"
               id="summary"
-              onChange={(e) => setContent((p) => ({ ...p, summary: e.target.value }))}
+              onChange={(e) =>
+                setContent((p) => ({ ...p, summary: e.target.value }))
+              }
               placeholder="A 2-3 sentence overview of your experience and what you're looking for next."
               rows={3}
               value={content.summary}
@@ -334,7 +363,7 @@ export function ResumeBuilder({
           </div>
 
           <div>
-            <label className="text-sm font-medium" htmlFor="skills">
+            <label className="font-medium text-sm" htmlFor="skills">
               Skills (comma-separated)
             </label>
             <Input
@@ -347,7 +376,7 @@ export function ResumeBuilder({
 
           <div>
             <div className="flex items-center justify-between">
-              <span className="text-sm font-medium">Experience</span>
+              <span className="font-medium text-sm">Experience</span>
               <Button
                 onClick={() =>
                   setContent((p) => ({
@@ -367,29 +396,39 @@ export function ResumeBuilder({
                 <div className="rounded-md border p-3" key={`experience-${i}`}>
                   <div className="grid gap-2 sm:grid-cols-2">
                     <Input
-                      onChange={(e) => updateExperience(i, { title: e.target.value })}
+                      onChange={(e) =>
+                        updateExperience(i, { title: e.target.value })
+                      }
                       placeholder="Job title"
                       value={entry.title}
                     />
                     <Input
-                      onChange={(e) => updateExperience(i, { company: e.target.value })}
+                      onChange={(e) =>
+                        updateExperience(i, { company: e.target.value })
+                      }
                       placeholder="Company"
                       value={entry.company}
                     />
                     <Input
-                      onChange={(e) => updateExperience(i, { startDate: e.target.value })}
+                      onChange={(e) =>
+                        updateExperience(i, { startDate: e.target.value })
+                      }
                       placeholder="Start (e.g. 2021)"
                       value={entry.startDate}
                     />
                     <Input
-                      onChange={(e) => updateExperience(i, { endDate: e.target.value })}
+                      onChange={(e) =>
+                        updateExperience(i, { endDate: e.target.value })
+                      }
                       placeholder="End (e.g. Present)"
                       value={entry.endDate}
                     />
                   </div>
                   <Textarea
                     className="mt-2"
-                    onChange={(e) => updateExperience(i, { description: e.target.value })}
+                    onChange={(e) =>
+                      updateExperience(i, { description: e.target.value })
+                    }
                     placeholder="What did you work on?"
                     rows={2}
                     value={entry.description}
@@ -415,7 +454,7 @@ export function ResumeBuilder({
 
           <div>
             <div className="flex items-center justify-between">
-              <span className="text-sm font-medium">Education</span>
+              <span className="font-medium text-sm">Education</span>
               <Button
                 onClick={() =>
                   setContent((p) => ({
@@ -432,19 +471,28 @@ export function ResumeBuilder({
             </div>
             <div className="mt-2 space-y-3">
               {content.education.map((entry, i) => (
-                <div className="grid gap-2 sm:grid-cols-3" key={`education-${i}`}>
+                <div
+                  className="grid gap-2 sm:grid-cols-3"
+                  key={`education-${i}`}
+                >
                   <Input
-                    onChange={(e) => updateEducation(i, { school: e.target.value })}
+                    onChange={(e) =>
+                      updateEducation(i, { school: e.target.value })
+                    }
                     placeholder="School"
                     value={entry.school}
                   />
                   <Input
-                    onChange={(e) => updateEducation(i, { degree: e.target.value })}
+                    onChange={(e) =>
+                      updateEducation(i, { degree: e.target.value })
+                    }
                     placeholder="Degree"
                     value={entry.degree}
                   />
                   <Input
-                    onChange={(e) => updateEducation(i, { year: e.target.value })}
+                    onChange={(e) =>
+                      updateEducation(i, { year: e.target.value })
+                    }
                     placeholder="Year"
                     value={entry.year}
                   />
@@ -454,7 +502,7 @@ export function ResumeBuilder({
           </div>
 
           <Button disabled={isSaving} onClick={handleSave} type="button">
-            {isSaving ? 'Saving...' : 'Save resume'}
+            {isSaving ? "Saving..." : "Save resume"}
           </Button>
         </div>
       </div>
@@ -463,7 +511,7 @@ export function ResumeBuilder({
         <h2 className="font-semibold text-lg">Tailor for a job</h2>
         {targetJob ? (
           <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-            Tailoring for{' '}
+            Tailoring for{" "}
             <span className="font-medium text-foreground">
               {targetJob.title} at {targetJob.company}
             </span>
@@ -478,18 +526,18 @@ export function ResumeBuilder({
         <div className="mt-4 space-y-3">
           <div className="flex gap-2">
             <Button
-              onClick={() => setMode('resume')}
+              onClick={() => setMode("resume")}
               size="xs"
               type="button"
-              variant={mode === 'resume' ? 'default' : 'outline'}
+              variant={mode === "resume" ? "default" : "outline"}
             >
               Tailored resume
             </Button>
             <Button
-              onClick={() => setMode('cover-letter')}
+              onClick={() => setMode("cover-letter")}
               size="xs"
               type="button"
-              variant={mode === 'cover-letter' ? 'default' : 'outline'}
+              variant={mode === "cover-letter" ? "default" : "outline"}
             >
               Cover letter
             </Button>
@@ -503,7 +551,7 @@ export function ResumeBuilder({
             />
           )}
           <Button disabled={isTailoring} onClick={handleTailor} type="button">
-            {isTailoring ? 'Generating...' : 'Generate'}
+            {isTailoring ? "Generating..." : "Generate"}
           </Button>
           {tailorError && upgradeRequired && (
             <div className="rounded-md border border-dashed p-3 text-sm">
@@ -514,10 +562,12 @@ export function ResumeBuilder({
             </div>
           )}
           {tailorError && !upgradeRequired && (
-            <p className="text-sm text-red-600 dark:text-red-400">{tailorError}</p>
+            <p className="text-red-600 text-sm dark:text-red-400">
+              {tailorError}
+            </p>
           )}
           {tailoredText && (
-            <div className="rounded-md border bg-zinc-50 p-4 text-sm whitespace-pre-wrap dark:bg-zinc-900">
+            <div className="whitespace-pre-wrap rounded-md border bg-zinc-50 p-4 text-sm dark:bg-zinc-900">
               {tailoredText}
             </div>
           )}
@@ -525,48 +575,67 @@ export function ResumeBuilder({
           {tailoredResume && (
             <div className="mt-2 grid gap-6 lg:grid-cols-2">
               <div className="space-y-3">
-                <p className="text-sm font-medium">Edit tailored resume</p>
+                <p className="font-medium text-sm">Edit tailored resume</p>
                 <div className="grid gap-2 sm:grid-cols-2">
                   <Input
-                    onChange={(e) => updateTailoredResume({ fullName: e.target.value })}
+                    onChange={(e) =>
+                      updateTailoredResume({ fullName: e.target.value })
+                    }
                     placeholder="Full name"
                     value={tailoredResume.fullName}
                   />
                   <Input
-                    onChange={(e) => updateTailoredResume({ contact: e.target.value })}
+                    onChange={(e) =>
+                      updateTailoredResume({ contact: e.target.value })
+                    }
                     placeholder="Contact (email/phone)"
                     value={tailoredResume.contact}
                   />
                 </div>
                 <Input
-                  onChange={(e) => updateTailoredResume({ headline: e.target.value })}
+                  onChange={(e) =>
+                    updateTailoredResume({ headline: e.target.value })
+                  }
                   placeholder="Headline"
                   value={tailoredResume.headline}
                 />
                 <Textarea
-                  onChange={(e) => updateTailoredResume({ summary: e.target.value })}
+                  onChange={(e) =>
+                    updateTailoredResume({ summary: e.target.value })
+                  }
                   placeholder="Summary"
                   rows={3}
                   value={tailoredResume.summary}
                 />
 
                 {tailoredResume.experience.map((entry, i) => (
-                  <div className="rounded-md border p-3" key={`tailored-experience-${i}`}>
+                  <div
+                    className="rounded-md border p-3"
+                    key={`tailored-experience-${i}`}
+                  >
                     <div className="grid gap-2 sm:grid-cols-2">
                       <Input
-                        onChange={(e) => updateTailoredExperience(i, { title: e.target.value })}
+                        onChange={(e) =>
+                          updateTailoredExperience(i, { title: e.target.value })
+                        }
                         placeholder="Title"
                         value={entry.title}
                       />
                       <Input
-                        onChange={(e) => updateTailoredExperience(i, { company: e.target.value })}
+                        onChange={(e) =>
+                          updateTailoredExperience(i, {
+                            company: e.target.value,
+                          })
+                        }
                         placeholder="Company"
                         value={entry.company}
                       />
                     </div>
                     <Input
                       className="mt-2"
-                      onChange={(e) => updateTailoredExperience(i, { dates: e.target.value })}
+                      onChange={(e) =>
+                        updateTailoredExperience(i, { dates: e.target.value })
+                      }
                       placeholder="Dates"
                       value={entry.dates}
                     />
@@ -574,12 +643,12 @@ export function ResumeBuilder({
                       className="mt-2"
                       onChange={(e) =>
                         updateTailoredExperience(i, {
-                          bullets: e.target.value.split('\n'),
+                          bullets: e.target.value.split("\n"),
                         })
                       }
                       placeholder="One bullet point per line"
                       rows={4}
-                      value={entry.bullets.join('\n')}
+                      value={entry.bullets.join("\n")}
                     />
                   </div>
                 ))}
@@ -587,20 +656,27 @@ export function ResumeBuilder({
                 <Input
                   onChange={(e) =>
                     updateTailoredResume({
-                      skills: e.target.value.split(',').map((s) => s.trim()).filter(Boolean),
+                      skills: e.target.value
+                        .split(",")
+                        .map((s) => s.trim())
+                        .filter(Boolean),
                     })
                   }
                   placeholder="Skills (comma-separated)"
-                  value={tailoredResume.skills.join(', ')}
+                  value={tailoredResume.skills.join(", ")}
                 />
 
-                <Button disabled={isDownloadingPdf} onClick={handleDownloadPdf} type="button">
-                  {isDownloadingPdf ? 'Preparing PDF...' : 'Download as PDF'}
+                <Button
+                  disabled={isDownloadingPdf}
+                  onClick={handleDownloadPdf}
+                  type="button"
+                >
+                  {isDownloadingPdf ? "Preparing PDF..." : "Download as PDF"}
                 </Button>
               </div>
 
               <div>
-                <p className="mb-2 text-sm font-medium">Preview</p>
+                <p className="mb-2 font-medium text-sm">Preview</p>
                 <HarvardResumePreview resume={tailoredResume} />
               </div>
             </div>

@@ -1,31 +1,36 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { Send, CheckCircle, XCircle, Clock, UserCheck } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { OutreachModal } from './OutreachModal';
-import type { OptInCandidate } from '@/lib/jobs/candidate-outreach-actions';
+import { CheckCircle, Clock, Send, UserCheck, XCircle } from "lucide-react";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import type { OptInCandidate } from "@/lib/jobs/candidate-outreach-actions";
+import { OutreachModal } from "./OutreachModal";
 
-const STATUS_BADGE: Record<string, { label: string; icon: React.ReactNode; className: string }> = {
-  pending: {
-    label: 'Sent',
-    icon: <Clock className="h-3 w-3" />,
-    className: 'bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400',
-  },
-  read: {
-    label: 'Viewed',
-    icon: <UserCheck className="h-3 w-3" />,
-    className: 'bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400',
-  },
+const STATUS_BADGE: Record<
+  string,
+  { label: string; icon: React.ReactNode; className: string }
+> = {
   accepted: {
-    label: 'Accepted',
+    className:
+      "bg-green-50 text-green-700 dark:bg-green-500/10 dark:text-green-400",
     icon: <CheckCircle className="h-3 w-3" />,
-    className: 'bg-green-50 text-green-700 dark:bg-green-500/10 dark:text-green-400',
+    label: "Accepted",
   },
   declined: {
-    label: 'Declined',
+    className: "bg-red-50 text-red-600 dark:bg-red-500/10 dark:text-red-400",
     icon: <XCircle className="h-3 w-3" />,
-    className: 'bg-red-50 text-red-600 dark:bg-red-500/10 dark:text-red-400',
+    label: "Declined",
+  },
+  pending: {
+    className: "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400",
+    icon: <Clock className="h-3 w-3" />,
+    label: "Sent",
+  },
+  read: {
+    className:
+      "bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400",
+    icon: <UserCheck className="h-3 w-3" />,
+    label: "Viewed",
   },
 };
 
@@ -43,9 +48,11 @@ export function CandidateCard({
   jobTitle?: string;
 }) {
   const [showModal, setShowModal] = useState(false);
-  const displayName = candidate.name || 'Anonymous';
+  const displayName = candidate.name || "Anonymous";
   const initials = displayName.charAt(0).toUpperCase();
-  const statusInfo = candidate.outreachStatus ? STATUS_BADGE[candidate.outreachStatus] : null;
+  const statusInfo = candidate.outreachStatus
+    ? STATUS_BADGE[candidate.outreachStatus]
+    : null;
 
   return (
     <>
@@ -55,26 +62,30 @@ export function CandidateCard({
             {initials}
           </span>
           <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-2 flex-wrap">
-              <h3 className="font-semibold text-sm text-zinc-900 dark:text-zinc-50 truncate">
+            <div className="flex flex-wrap items-center gap-2">
+              <h3 className="truncate font-semibold text-sm text-zinc-900 dark:text-zinc-50">
                 {displayName}
               </h3>
               {statusInfo && (
-                <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${statusInfo.className}`}>
+                <span
+                  className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 font-medium text-xs ${statusInfo.className}`}
+                >
                   {statusInfo.icon}
                   {statusInfo.label}
                 </span>
               )}
             </div>
             {candidate.headline && (
-              <p className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400 truncate">
+              <p className="mt-0.5 truncate text-xs text-zinc-500 dark:text-zinc-400">
                 {candidate.headline}
               </p>
             )}
           </div>
           {jobId && (
             <div className="shrink-0 text-right">
-              <p className="font-bold text-sm text-zinc-900 dark:text-zinc-50">{candidate.matchScore}%</p>
+              <p className="font-bold text-sm text-zinc-900 dark:text-zinc-50">
+                {candidate.matchScore}%
+              </p>
               <p className="text-[10px] text-zinc-400">match</p>
             </div>
           )}
@@ -91,14 +102,16 @@ export function CandidateCard({
               </span>
             ))}
             {candidate.skills.length > 8 && (
-              <span className="text-xs text-zinc-400 self-center">+{candidate.skills.length - 8} more</span>
+              <span className="self-center text-xs text-zinc-400">
+                +{candidate.skills.length - 8} more
+              </span>
             )}
           </div>
         )}
 
-        <div className="mt-4 border-t border-zinc-100 pt-3 dark:border-zinc-800">
-          {candidate.outreachStatus === 'accepted' ? (
-            <p className="text-xs text-green-700 dark:text-green-400 font-medium">
+        <div className="mt-4 border-zinc-100 border-t pt-3 dark:border-zinc-800">
+          {candidate.outreachStatus === "accepted" ? (
+            <p className="font-medium text-green-700 text-xs dark:text-green-400">
               Contact: {candidate.email}
             </p>
           ) : candidate.outreachStatus ? (
@@ -111,7 +124,7 @@ export function CandidateCard({
               variant="outline"
             >
               <Send className="h-3 w-3" />
-              {jobId ? 'Invite to apply' : 'Send outreach'}
+              {jobId ? "Invite to apply" : "Send outreach"}
             </Button>
           )}
         </div>

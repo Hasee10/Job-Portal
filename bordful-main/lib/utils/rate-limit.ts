@@ -1,6 +1,6 @@
-import 'server-only';
+import "server-only";
 
-import { RATE_LIMIT_WINDOW_MS } from '@/lib/constants/defaults';
+import { RATE_LIMIT_WINDOW_MS } from "@/lib/constants/defaults";
 
 type RateLimitInfo = {
   count: number;
@@ -26,7 +26,10 @@ export function createRateLimiter(maxRequests: number) {
     const info = rateLimitMap.get(key);
 
     if (!info || now > info.resetTime) {
-      rateLimitMap.set(key, { count: 1, resetTime: now + RATE_LIMIT_WINDOW_MS });
+      rateLimitMap.set(key, {
+        count: 1,
+        resetTime: now + RATE_LIMIT_WINDOW_MS,
+      });
       return false;
     }
 
@@ -38,8 +41,8 @@ export function createRateLimiter(maxRequests: number) {
 
 export function getClientIp(request: Request): string {
   return (
-    request.headers.get('x-forwarded-for')?.split(',')[0].trim() ||
-    request.headers.get('x-real-ip') ||
-    (process.env.NODE_ENV === 'development' ? '203.0.113.1' : 'unknown')
+    request.headers.get("x-forwarded-for")?.split(",")[0].trim() ||
+    request.headers.get("x-real-ip") ||
+    (process.env.NODE_ENV === "development" ? "203.0.113.1" : "unknown")
   );
 }

@@ -1,4 +1,9 @@
-import { EMAIL_BRAND_COLOR, emailFooter, emailHeader, wrapEmailBody } from './shared';
+import {
+  EMAIL_BRAND_COLOR,
+  emailFooter,
+  emailHeader,
+  wrapEmailBody,
+} from "./shared";
 
 export type PurchaseConfirmationEmailData = {
   planName: string;
@@ -39,8 +44,8 @@ export function renderPurchaseConfirmationEmail({
 
   const detailRow = (label: string, value: string, isTotal = false) => `
     <tr>
-      <td style="padding: ${isTotal ? '10px 0 0' : '0 0 10px'}; font-size: 13px; color: ${isTotal ? '#18181b' : '#71717a'}; font-weight: ${isTotal ? '700' : '400'}; ${isTotal ? 'border-top: 1px solid #f0f0f1;' : ''}">${label}</td>
-      <td align="right" style="padding: ${isTotal ? '10px 0 0' : '0 0 10px'}; font-size: 13px; color: #18181b; font-weight: ${isTotal ? '700' : '500'}; ${isTotal ? 'border-top: 1px solid #f0f0f1;' : ''}">${value}</td>
+      <td style="padding: ${isTotal ? "10px 0 0" : "0 0 10px"}; font-size: 13px; color: ${isTotal ? "#18181b" : "#71717a"}; font-weight: ${isTotal ? "700" : "400"}; ${isTotal ? "border-top: 1px solid #f0f0f1;" : ""}">${label}</td>
+      <td align="right" style="padding: ${isTotal ? "10px 0 0" : "0 0 10px"}; font-size: 13px; color: #18181b; font-weight: ${isTotal ? "700" : "500"}; ${isTotal ? "border-top: 1px solid #f0f0f1;" : ""}">${value}</td>
     </tr>`;
 
   const html = wrapEmailBody(`
@@ -69,10 +74,10 @@ export function renderPurchaseConfirmationEmail({
             <tr>
               <td colspan="2" style="padding: 16px 20px 4px;">
                 <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
-                  ${detailRow('Billing', billingDescription)}
-                  ${detailRow('Charged to', paymentMethodLabel)}
-                  ${detailRow('Date', dateFormatted)}
-                  ${detailRow('Total charged', priceFormatted, true)}
+                  ${detailRow("Billing", billingDescription)}
+                  ${detailRow("Charged to", paymentMethodLabel)}
+                  ${detailRow("Date", dateFormatted)}
+                  ${detailRow("Total charged", priceFormatted, true)}
                 </table>
               </td>
             </tr>
@@ -84,7 +89,7 @@ export function renderPurchaseConfirmationEmail({
         <td style="padding: 24px 40px 8px;">
           <div style="font-size: 12px; font-weight: 700; color: #a1a1aa; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 12px;">What's included</div>
           <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
-            ${features.map(featureRow).join('')}
+            ${features.map(featureRow).join("")}
           </table>
         </td>
       </tr>
@@ -106,7 +111,7 @@ export function renderPurchaseConfirmationEmail({
   `);
 
   return {
-    subject: `Your Caliber receipt - ${planName} plan confirmed`,
     html,
+    subject: `Your Caliber receipt - ${planName} plan confirmed`,
   };
 }

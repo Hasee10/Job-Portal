@@ -1,5 +1,5 @@
-import config from '@/config';
-import { DEFAULT_BACKGROUND_OPACITY } from '@/lib/constants/defaults';
+import config from "@/config";
+import { DEFAULT_BACKGROUND_OPACITY } from "@/lib/constants/defaults";
 
 // Define TypeScript interfaces to match our configuration
 export type OGLogoPosition = {
@@ -61,50 +61,50 @@ export type ProcessedOGConfig = {
  * Parse and validate OG configuration with fallbacks
  */
 export function parseOGConfig(ogConfig: OGConfig = {}): ProcessedOGConfig {
-  const fontFamily = ogConfig.font?.family || config.font.family || 'geist';
-  const siteTitle = ogConfig.title || config.title || 'Caliber';
+  const fontFamily = ogConfig.font?.family || config.font.family || "geist";
+  const siteTitle = ogConfig.title || config.title || "Caliber";
   const siteDescription =
-    ogConfig.description || config.description || 'Find your dream job today!';
+    ogConfig.description || config.description || "Find your dream job today!";
   const backgroundColor =
-    ogConfig.backgroundColor || config.ui.heroBackgroundColor || '#005450';
+    ogConfig.backgroundColor || config.ui.heroBackgroundColor || "#005450";
   const backgroundOpacity =
-    ogConfig.backgroundOpacity !== undefined
-      ? ogConfig.backgroundOpacity
-      : DEFAULT_BACKGROUND_OPACITY;
+    ogConfig.backgroundOpacity === undefined
+      ? DEFAULT_BACKGROUND_OPACITY
+      : ogConfig.backgroundOpacity;
   const backgroundImage = ogConfig.backgroundImage || null;
   const titleColor =
-    ogConfig.titleColor || config.ui.heroTitleColor || '#FFFFFF';
+    ogConfig.titleColor || config.ui.heroTitleColor || "#FFFFFF";
   const descriptionColor =
-    ogConfig.descriptionColor || config.ui.heroSubtitleColor || '#FFFFFF';
+    ogConfig.descriptionColor || config.ui.heroSubtitleColor || "#FFFFFF";
 
   // Gradient configuration
   const gradientEnabled = ogConfig.gradient?.enabled !== false;
   const gradientColor = ogConfig.gradient?.color || backgroundColor;
   const gradientAngle =
-    ogConfig.gradient?.angle !== undefined ? ogConfig.gradient.angle : 0;
+    ogConfig.gradient?.angle === undefined ? 0 : ogConfig.gradient.angle;
   const gradientStartOpacity =
-    ogConfig.gradient?.startOpacity !== undefined
-      ? ogConfig.gradient.startOpacity
-      : 0;
+    ogConfig.gradient?.startOpacity === undefined
+      ? 0
+      : ogConfig.gradient.startOpacity;
   const gradientEndOpacity =
-    ogConfig.gradient?.endOpacity !== undefined
-      ? ogConfig.gradient.endOpacity
-      : 1;
+    ogConfig.gradient?.endOpacity === undefined
+      ? 1
+      : ogConfig.gradient.endOpacity;
 
   return {
-    fontFamily,
-    siteTitle,
-    siteDescription,
     backgroundColor,
-    backgroundOpacity,
     backgroundImage,
-    titleColor,
+    backgroundOpacity,
     descriptionColor,
-    gradientEnabled,
-    gradientColor,
+    fontFamily,
     gradientAngle,
-    gradientStartOpacity,
+    gradientColor,
+    gradientEnabled,
     gradientEndOpacity,
+    gradientStartOpacity,
+    siteDescription,
+    siteTitle,
+    titleColor,
   };
 }
 
@@ -128,12 +128,12 @@ export function createLinearGradient(
     color +
     Math.round(startOpacity * 255)
       .toString(16)
-      .padStart(2, '0');
+      .padStart(2, "0");
   const endColor =
     color +
     Math.round(endOpacity * 255)
       .toString(16)
-      .padStart(2, '0');
+      .padStart(2, "0");
 
   return `linear-gradient(${angle}deg, ${startColor}, ${endColor})`;
 }
@@ -142,7 +142,7 @@ export function createLinearGradient(
  * Convert hex color to RGBA
  */
 export function hexToRGBA(hex: string, opacity: number): string {
-  const cleanHex = hex.replace('#', '');
+  const cleanHex = hex.replace("#", "");
   const r = Number.parseInt(cleanHex.substring(0, 2), 16);
   const g = Number.parseInt(cleanHex.substring(2, 4), 16);
   const b = Number.parseInt(cleanHex.substring(4, 6), 16);

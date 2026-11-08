@@ -1,6 +1,6 @@
-import 'server-only';
+import "server-only";
 
-import { createClient } from '@supabase/supabase-js';
+import { createClient } from "@supabase/supabase-js";
 
 export type ResumeExperience = {
   title: string;
@@ -26,12 +26,12 @@ export type ResumeContent = {
 };
 
 export const EMPTY_RESUME_CONTENT: ResumeContent = {
-  fullName: '',
-  headline: '',
-  summary: '',
-  experience: [],
   education: [],
+  experience: [],
+  fullName: "",
+  headline: "",
   skills: [],
+  summary: "",
 };
 
 export type SeekerResume = {
@@ -49,19 +49,19 @@ export type SeekerResumeForMatching = SeekerResume & {
 function getAdminClient() {
   const url = process.env.SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key) {
-    throw new Error('Database is not configured on this deployment.');
+  if (!(url && key)) {
+    throw new Error("Database is not configured on this deployment.");
   }
   return createClient(url, key, { auth: { persistSession: false } });
 }
 
 function rowToResume(row: Record<string, unknown>): SeekerResume {
   return {
-    seekerId: row.seeker_id as string,
     content: {
       ...EMPTY_RESUME_CONTENT,
       ...((row.content as Partial<ResumeContent>) || {}),
     },
+    seekerId: row.seeker_id as string,
     updatedAt: row.updated_at as string,
   };
 }
@@ -71,13 +71,17 @@ export async function getSeekerResume(
 ): Promise<SeekerResume | null> {
   const supabase = getAdminClient();
   const { data, error } = await supabase
-    .from('seeker_resumes')
-    .select('*')
-    .eq('seeker_id', seekerId)
+    .from("seeker_resumes")
+    .select("*")
+    .eq("seeker_id", seekerId)
     .maybeSingle();
 
-  if (error) throw error;
-  if (!data) return null;
+  if (error) {
+    throw error;
+  }
+  if (!data) {
+    return null;
+  }
   return rowToResume(data);
 }
 
@@ -89,18 +93,20 @@ export async function listSeekerResumesForMatching(): Promise<
 > {
   const supabase = getAdminClient();
   const { data, error } = await supabase
-    .from('seeker_resumes')
-    .select('*, job_seekers(email)');
+    .from("seeker_resumes")
+    .select("*, job_seekers(email)");
 
-  if (error) throw error;
+  if (error) {
+    throw error;
+  }
 
   return (data ?? [])
     .filter((row) => row.job_seekers?.email)
     .map((row) => ({
       ...rowToResume(row),
-      seekerEmail: (row.job_seekers as { email: string }).email,
-      matchedJobIds: (row.matched_job_ids as string[]) || [],
       lastMatchedAt: (row.last_matched_at as string) || null,
+      matchedJobIds: (row.matched_job_ids as string[]) || [],
+      seekerEmail: (row.job_seekers as { email: string }).email,
     }))
     .filter((resume) => resume.content.skills.length > 0);
 }
@@ -113,13 +119,15 @@ export async function markSeekerResumeMatched(
 ): Promise<void> {
   const supabase = getAdminClient();
   const { error } = await supabase
-    .from('seeker_resumes')
+    .from("seeker_resumes")
     .update({
       last_matched_at: new Date().toISOString(),
       matched_job_ids: matchedJobIds.slice(-MAX_MATCHED_JOB_IDS),
     })
-    .eq('seeker_id', seekerId);
-  if (error) throw error;
+    .eq("seeker_id", seekerId);
+  if (error) {
+    throw error;
+  }
 }
 
 export async function saveSeekerResume(
@@ -128,18 +136,20 @@ export async function saveSeekerResume(
 ): Promise<SeekerResume> {
   const supabase = getAdminClient();
   const { data, error } = await supabase
-    .from('seeker_resumes')
+    .from("seeker_resumes")
     .upsert(
       {
-        seeker_id: seekerId,
         content,
+        seeker_id: seekerId,
         updated_at: new Date().toISOString(),
       },
-      { onConflict: 'seeker_id' }
+      { onConflict: "seeker_id" }
     )
-    .select('*')
+    .select("*")
     .single();
 
-  if (error) throw error;
+  if (error) {
+    throw error;
+  }
   return rowToResume(data);
 }

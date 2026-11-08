@@ -9,10 +9,10 @@
 // map cleanly onto 71/80/85 specifically - those three are TED-only for now,
 // same honest limitation already noted in ppra.ts for 79 vs 45.
 export const TENDER_CATEGORIES: { cpvPrefix: string; label: string }[] = [
-  { cpvPrefix: '72', label: 'IT services (software, consulting, support)' },
-  { cpvPrefix: '79', label: 'Business services (consulting, staffing, admin)' },
-  { cpvPrefix: '45', label: 'Construction' },
-  { cpvPrefix: '71', label: 'Architecture and engineering services' },
-  { cpvPrefix: '80', label: 'Education and training services' },
-  { cpvPrefix: '85', label: 'Health and social work services' },
+  { cpvPrefix: "72", label: "IT services (software, consulting, support)" },
+  { cpvPrefix: "79", label: "Business services (consulting, staffing, admin)" },
+  { cpvPrefix: "45", label: "Construction" },
+  { cpvPrefix: "71", label: "Architecture and engineering services" },
+  { cpvPrefix: "80", label: "Education and training services" },
+  { cpvPrefix: "85", label: "Health and social work services" },
 ];

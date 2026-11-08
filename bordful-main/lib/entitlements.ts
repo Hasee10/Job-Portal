@@ -5,14 +5,17 @@
 // for what each tier is allowed, so gating logic never has magic numbers
 // scattered across routes.
 
-export type SeekerTier = 'free' | 'premium';
+export type SeekerTier = "free" | "premium";
 
 export const TIER_LIMITS: Record<
   SeekerTier,
   { maxSavedSearches: number; maxResumeTailorsPerMonth: number }
 > = {
-  free: { maxSavedSearches: 3, maxResumeTailorsPerMonth: 5 },
-  premium: { maxSavedSearches: 20, maxResumeTailorsPerMonth: Number.POSITIVE_INFINITY },
+  free: { maxResumeTailorsPerMonth: 5, maxSavedSearches: 3 },
+  premium: {
+    maxResumeTailorsPerMonth: Number.POSITIVE_INFINITY,
+    maxSavedSearches: 20,
+  },
 };
 
 export function getSavedSearchLimit(tier: SeekerTier): number {

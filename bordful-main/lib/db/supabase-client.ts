@@ -1,5 +1,5 @@
-import 'server-only';
-import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+import "server-only";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
 declare global {
   // eslint-disable-next-line no-var
@@ -9,7 +9,9 @@ declare global {
 export function getSupabaseClient(): SupabaseClient | null {
   const url = process.env.SUPABASE_URL;
   const key = process.env.SUPABASE_ANON_KEY;
-  if (!url || !key) return null;
+  if (!(url && key)) {
+    return null;
+  }
 
   if (!globalThis.__supabaseClient) {
     globalThis.__supabaseClient = createClient(url, key, {

@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { AlertCircle } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { useToast } from '@/hooks/use-toast';
-import type { OptInCandidate } from '@/lib/jobs/candidate-outreach-actions';
+import { AlertCircle } from "lucide-react";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/hooks/use-toast";
+import type { OptInCandidate } from "@/lib/jobs/candidate-outreach-actions";
 
 export function OutreachModal({
   candidate,
@@ -22,57 +22,65 @@ export function OutreachModal({
   jobId?: string;
   jobTitle?: string;
 }) {
-  const [message, setMessage] = useState('');
+  const [message, setMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
 
-  const displayName = candidate.name || candidate.email.split('@')[0];
+  const displayName = candidate.name || candidate.email.split("@")[0];
   const atLimit = dailyRemaining <= 0;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!message.trim() || atLimit) return;
+    if (!message.trim() || atLimit) {
+      return;
+    }
     setIsSubmitting(true);
 
     try {
-      const res = await fetch('/api/recruiter/outreach', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch("/api/recruiter/outreach", {
         body: JSON.stringify({
-          seekerId: candidate.seekerId,
-          seekerEmail: candidate.email,
-          message: message.trim(),
           jobId: jobId ?? null,
           jobTitle: jobTitle ?? null,
+          message: message.trim(),
+          seekerEmail: candidate.email,
+          seekerId: candidate.seekerId,
         }),
+        headers: { "Content-Type": "application/json" },
+        method: "POST",
       });
       const result = await res.json();
       if (!res.ok) {
         if (result.limitReached) {
           toast({
-            title: 'Daily limit reached',
+            className: "bg-destructive border border-red-600 shadow-md",
             description: result.error,
-            variant: 'destructive',
-            className: 'bg-destructive border border-red-600 shadow-md',
+            title: "Daily limit reached",
+            variant: "destructive",
           });
           onClose();
           return;
         }
-        throw new Error(result.error || 'Failed to send.');
+        throw new Error(result.error || "Failed to send.");
       }
 
       toast({
-        title: 'Message sent',
         description: `${displayName} will be notified by email.`,
+        title: "Message sent",
       });
-      onSent(candidate.seekerId, typeof result.remaining === 'number' ? result.remaining : dailyRemaining - 1);
+      onSent(
+        candidate.seekerId,
+        typeof result.remaining === "number"
+          ? result.remaining
+          : dailyRemaining - 1
+      );
       onClose();
     } catch (error) {
       toast({
-        title: 'Failed to send',
-        description: error instanceof Error ? error.message : 'Please try again.',
-        variant: 'destructive',
-        className: 'bg-destructive border border-red-600 shadow-md',
+        className: "bg-destructive border border-red-600 shadow-md",
+        description:
+          error instanceof Error ? error.message : "Please try again.",
+        title: "Failed to send",
+        variant: "destructive",
       });
     } finally {
       setIsSubmitting(false);
@@ -89,20 +97,31 @@ export function OutreachModal({
         onClick={(e) => e.stopPropagation()}
       >
         <h2 className="font-semibold text-lg text-zinc-900 dark:text-zinc-50">
-          {jobTitle ? `Invite ${displayName} to apply` : `Message ${displayName}`}
+          {jobTitle
+            ? `Invite ${displayName} to apply`
+            : `Message ${displayName}`}
         </h2>
-        {jobTitle && <p className="mt-0.5 text-sm text-zinc-500 dark:text-zinc-400">{jobTitle}</p>}
+        {jobTitle && (
+          <p className="mt-0.5 text-sm text-zinc-500 dark:text-zinc-400">
+            {jobTitle}
+          </p>
+        )}
         {candidate.headline && (
-          <p className="mt-0.5 text-sm text-zinc-500 dark:text-zinc-400">{candidate.headline}</p>
+          <p className="mt-0.5 text-sm text-zinc-500 dark:text-zinc-400">
+            {candidate.headline}
+          </p>
         )}
 
         {atLimit ? (
           <div className="mt-4 flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 p-4 dark:border-amber-500/20 dark:bg-amber-500/10">
-            <AlertCircle className="h-5 w-5 shrink-0 text-amber-600 dark:text-amber-400 mt-0.5" />
+            <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-amber-600 dark:text-amber-400" />
             <div>
-              <p className="font-medium text-sm text-amber-900 dark:text-amber-200">Daily limit reached</p>
-              <p className="mt-0.5 text-xs text-amber-700 dark:text-amber-300">
-                You&rsquo;ve sent 20 outreach messages today. Your limit resets in 24 hours.
+              <p className="font-medium text-amber-900 text-sm dark:text-amber-200">
+                Daily limit reached
+              </p>
+              <p className="mt-0.5 text-amber-700 text-xs dark:text-amber-300">
+                You&rsquo;ve sent 20 outreach messages today. Your limit resets
+                in 24 hours.
               </p>
             </div>
           </div>
@@ -110,7 +129,7 @@ export function OutreachModal({
           <form className="mt-4 space-y-4" onSubmit={handleSubmit}>
             <div className="space-y-1.5">
               <label
-                className="text-sm font-medium text-zinc-700 dark:text-zinc-300"
+                className="font-medium text-sm text-zinc-700 dark:text-zinc-300"
                 htmlFor="outreach-msg"
               >
                 Your message
@@ -125,7 +144,8 @@ export function OutreachModal({
               <div className="flex items-center justify-between">
                 <p className="text-xs text-zinc-400">{message.length}/2000</p>
                 <p className="text-xs text-zinc-400">
-                  {dailyRemaining} message{dailyRemaining !== 1 ? 's' : ''} remaining today
+                  {dailyRemaining} message{dailyRemaining === 1 ? "" : "s"}{" "}
+                  remaining today
                 </p>
               </div>
             </div>
@@ -136,7 +156,7 @@ export function OutreachModal({
                 disabled={isSubmitting || !message.trim()}
                 type="submit"
               >
-                {isSubmitting ? 'Sending…' : 'Send message'}
+                {isSubmitting ? "Sending…" : "Send message"}
               </Button>
               <Button
                 disabled={isSubmitting}

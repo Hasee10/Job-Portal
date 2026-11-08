@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { ArrowUpRight } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { ApplyModal } from '@/components/jobs/ApplyModal';
-import { resolveColor } from '@/lib/utils/colors';
-import config from '@/config';
+import { ArrowUpRight } from "lucide-react";
+import { useState } from "react";
+import { ApplyModal } from "@/components/jobs/ApplyModal";
+import { Button } from "@/components/ui/button";
+import config from "@/config";
+import { resolveColor } from "@/lib/utils/colors";
 
 export function ApplyButton({
   jobId,
@@ -50,7 +50,11 @@ export function ApplyButton({
         <ArrowUpRight aria-hidden="true" className="h-3.5 w-3.5" />
       </Button>
       {showModal && (
-        <ApplyModal jobId={jobId} jobTitle={jobTitle} onClose={() => setShowModal(false)} />
+        <ApplyModal
+          jobId={jobId}
+          jobTitle={jobTitle}
+          onClose={() => setShowModal(false)}
+        />
       )}
     </>
   );

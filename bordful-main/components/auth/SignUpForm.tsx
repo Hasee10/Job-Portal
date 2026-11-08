@@ -1,23 +1,23 @@
-'use client';
+"use client";
 
-import { signIn } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { PasswordInput } from '@/components/ui/password-input';
-import config from '@/config';
-import { useToast } from '@/hooks/use-toast';
-import { resolveColor } from '@/lib/utils/colors';
+import { useRouter } from "next/navigation";
+import { signIn } from "next-auth/react";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { PasswordInput } from "@/components/ui/password-input";
+import config from "@/config";
+import { useToast } from "@/hooks/use-toast";
+import { resolveColor } from "@/lib/utils/colors";
 
 const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
 export function SignUpForm() {
-  const [companyName, setCompanyName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [companyName, setCompanyName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<{
     email?: string;
@@ -33,14 +33,14 @@ export function SignUpForm() {
       password?: string;
       confirmPassword?: string;
     } = {};
-    if (!email || !EMAIL_REGEX.test(email)) {
-      newErrors.email = 'Enter a valid email address.';
+    if (!(email && EMAIL_REGEX.test(email))) {
+      newErrors.email = "Enter a valid email address.";
     }
     if (password.length < 8) {
-      newErrors.password = 'Password must be at least 8 characters.';
+      newErrors.password = "Password must be at least 8 characters.";
     }
     if (confirmPassword !== password) {
-      newErrors.confirmPassword = 'Passwords do not match.';
+      newErrors.confirmPassword = "Passwords do not match.";
     }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -54,20 +54,20 @@ export function SignUpForm() {
 
     setIsSubmitting(true);
     try {
-      const response = await fetch('/api/employers/signup', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password, companyName }),
+      const response = await fetch("/api/employers/signup", {
+        body: JSON.stringify({ companyName, email, password }),
+        headers: { "Content-Type": "application/json" },
+        method: "POST",
       });
       const result = await response.json();
 
       if (!response.ok) {
-        throw new Error(result.error || 'Sign up failed.');
+        throw new Error(result.error || "Sign up failed.");
       }
 
       // Immediately sign in with the same credentials so the new employer
       // doesn't have to fill the sign-in form right after signing up.
-      const signInResult = await signIn('credentials', {
+      const signInResult = await signIn("credentials", {
         email,
         password,
         redirect: false,
@@ -75,26 +75,26 @@ export function SignUpForm() {
 
       if (signInResult?.error) {
         toast({
-          title: 'Account created',
-          description: 'Please sign in with your new account.',
+          description: "Please sign in with your new account.",
+          title: "Account created",
         });
-        router.push('/sign-in');
+        router.push("/sign-in");
         return;
       }
 
       toast({
-        title: 'Welcome to Caliber',
-        description: 'Your employer account is ready.',
+        description: "Your employer account is ready.",
+        title: "Welcome to Caliber",
       });
-      router.push('/dashboard');
+      router.push("/dashboard");
       router.refresh();
     } catch (error) {
       toast({
-        title: 'Sign up failed',
+        className: "bg-destructive border border-red-600 shadow-md",
         description:
-          error instanceof Error ? error.message : 'Something went wrong.',
-        variant: 'destructive',
-        className: 'bg-destructive border border-red-600 shadow-md',
+          error instanceof Error ? error.message : "Something went wrong.",
+        title: "Sign up failed",
+        variant: "destructive",
       });
     } finally {
       setIsSubmitting(false);
@@ -181,7 +181,7 @@ export function SignUpForm() {
           type="submit"
           variant="primary"
         >
-          {isSubmitting ? 'Creating account...' : 'Create employer account'}
+          {isSubmitting ? "Creating account..." : "Create employer account"}
         </Button>
       </form>
     </div>

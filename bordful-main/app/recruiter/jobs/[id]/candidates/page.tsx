@@ -1,22 +1,22 @@
-import type { Metadata } from 'next';
-import Link from 'next/link';
-import { notFound, redirect } from 'next/navigation';
-import { ArrowLeft } from 'lucide-react';
-import { auth } from '@/auth';
-import { CandidateSearch } from '@/components/recruiter/CandidateSearch';
-import { getOwnerJob } from '@/lib/jobs/employer-job-actions';
+import { ArrowLeft } from "lucide-react";
+import type { Metadata } from "next";
+import Link from "next/link";
+import { notFound, redirect } from "next/navigation";
+import { auth } from "@/auth";
+import { CandidateSearch } from "@/components/recruiter/CandidateSearch";
+import config from "@/config";
 import {
   getRecruiterDailyOutreachCount,
   listOptInCandidates,
-} from '@/lib/jobs/candidate-outreach-actions';
-import config from '@/config';
+} from "@/lib/jobs/candidate-outreach-actions";
+import { getOwnerJob } from "@/lib/jobs/employer-job-actions";
 
 export const metadata: Metadata = {
+  robots: { follow: false, index: false },
   title: `Search Candidates | ${config.title}`,
-  robots: { index: false, follow: false },
 };
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 export default async function RecruiterJobCandidatesPage({
   params,
@@ -24,12 +24,18 @@ export default async function RecruiterJobCandidatesPage({
   params: Promise<{ id: string }>;
 }) {
   const session = await auth();
-  if (!session?.user) redirect('/recruiter/sign-in?callbackUrl=/recruiter/jobs');
-  if (session.user.role !== 'recruiter') redirect('/');
+  if (!session?.user) {
+    redirect("/recruiter/sign-in?callbackUrl=/recruiter/jobs");
+  }
+  if (session.user.role !== "recruiter") {
+    redirect("/");
+  }
 
   const { id } = await params;
   const job = await getOwnerJob({ recruiterId: session.user.id }, id);
-  if (!job) notFound();
+  if (!job) {
+    notFound();
+  }
 
   const [candidates, dailyCount] = await Promise.all([
     listOptInCandidates(session.user.id, { jobId: id }),
@@ -53,7 +59,8 @@ export default async function RecruiterJobCandidatesPage({
             Search candidates for {job.title}
           </h1>
           <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-            Candidates who&rsquo;ve opted in to outreach, ranked by match to this job&rsquo;s required skills.
+            Candidates who&rsquo;ve opted in to outreach, ranked by match to
+            this job&rsquo;s required skills.
           </p>
 
           <div className="mt-8">

@@ -1,46 +1,46 @@
-import type { Metadata } from 'next';
-import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import { FAQContent } from '@/components/ui/faq-content';
-import { HeroSection } from '@/components/ui/hero-section';
-import { MetadataBreadcrumb } from '@/components/ui/metadata-breadcrumb';
-import config from '@/config';
+import type { Metadata } from "next";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { FAQContent } from "@/components/ui/faq-content";
+import { HeroSection } from "@/components/ui/hero-section";
+import { MetadataBreadcrumb } from "@/components/ui/metadata-breadcrumb";
+import config from "@/config";
 
 // Add metadata for SEO
 export const metadata: Metadata = {
-  title: `${config.faq?.title || 'FAQ'} | ${config.title}`,
-  description:
-    config.faq?.description ||
-    'Find answers to common questions about our job board and services.',
-  keywords:
-    config.faq?.keywords ||
-    'job board FAQ, frequently asked questions, job search help, employer questions',
-  openGraph: {
-    title: `${config.faq?.title || 'FAQ'} | ${config.title}`,
-    description:
-      config.faq?.description ||
-      'Find answers to common questions about our job board and services.',
-    type: 'website',
-    url: `${config.url}/faq`,
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: `${config.faq?.title || 'FAQ'} | ${config.title}`,
-    description:
-      config.faq?.description ||
-      'Find answers to common questions about our job board and services.',
-  },
   alternates: {
-    canonical: '/faq',
+    canonical: "/faq",
     languages: {
       en: `${config.url}/faq`,
-      'x-default': `${config.url}/faq`,
+      "x-default": `${config.url}/faq`,
     },
+  },
+  description:
+    config.faq?.description ||
+    "Find answers to common questions about our job board and services.",
+  keywords:
+    config.faq?.keywords ||
+    "job board FAQ, frequently asked questions, job search help, employer questions",
+  openGraph: {
+    description:
+      config.faq?.description ||
+      "Find answers to common questions about our job board and services.",
+    title: `${config.faq?.title || "FAQ"} | ${config.title}`,
+    type: "website",
+    url: `${config.url}/faq`,
+  },
+  title: `${config.faq?.title || "FAQ"} | ${config.title}`,
+  twitter: {
+    card: "summary_large_image",
+    description:
+      config.faq?.description ||
+      "Find answers to common questions about our job board and services.",
+    title: `${config.faq?.title || "FAQ"} | ${config.title}`,
   },
 };
 
 // This page will be static
-export const dynamic = 'force-static';
+export const dynamic = "force-static";
 
 export default function FAQPage() {
   // If FAQ is not enabled, redirect to home page
@@ -61,7 +61,7 @@ export default function FAQPage() {
   return (
     <main className="min-h-screen bg-background">
       <HeroSection
-        badge={config.faq.badge || 'FAQ'}
+        badge={config.faq.badge || "FAQ"}
         description={config.faq.description}
         heroImage={config.faq.heroImage}
         title={config.faq.title}

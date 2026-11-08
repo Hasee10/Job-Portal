@@ -1,49 +1,49 @@
-import type { Metadata } from 'next';
-import Link from 'next/link';
-import { ContactInfoSection } from '@/components/contact/ContactInfoSection';
-import { SupportChannelCard } from '@/components/contact/SupportChannelCard';
-import { Button } from '@/components/ui/button';
-import { ContactSchema } from '@/components/ui/contact-schema';
-import { HeroSection } from '@/components/ui/hero-section';
-import { MetadataBreadcrumb } from '@/components/ui/metadata-breadcrumb';
-import config from '@/config';
-import { resolveColor } from '@/lib/utils/colors';
+import type { Metadata } from "next";
+import Link from "next/link";
+import { ContactInfoSection } from "@/components/contact/ContactInfoSection";
+import { SupportChannelCard } from "@/components/contact/SupportChannelCard";
+import { Button } from "@/components/ui/button";
+import { ContactSchema } from "@/components/ui/contact-schema";
+import { HeroSection } from "@/components/ui/hero-section";
+import { MetadataBreadcrumb } from "@/components/ui/metadata-breadcrumb";
+import config from "@/config";
+import { resolveColor } from "@/lib/utils/colors";
 
 // Add metadata for SEO
 export const metadata: Metadata = {
-  title: `${config.contact?.title || 'Contact'} | ${config.title}`,
+  alternates: {
+    canonical: "/contact",
+    languages: {
+      en: `${config.url}/contact`,
+      "x-default": `${config.url}/contact`,
+    },
+  },
   description:
     config.contact?.description ||
     "Have questions or feedback? We'd love to hear from you.",
   keywords:
     config.contact?.keywords ||
-    'contact us, support, help, questions, feedback, get in touch',
+    "contact us, support, help, questions, feedback, get in touch",
   openGraph: {
-    title: `${config.contact?.title || 'Contact'} | ${config.title}`,
     description:
       config.contact?.description ||
       "Have questions or feedback? We'd love to hear from you.",
-    type: 'website',
+    title: `${config.contact?.title || "Contact"} | ${config.title}`,
+    type: "website",
     url: `${config.url}/contact`,
   },
+  title: `${config.contact?.title || "Contact"} | ${config.title}`,
   twitter: {
-    card: 'summary_large_image',
-    title: `${config.contact?.title || 'Contact'} | ${config.title}`,
+    card: "summary_large_image",
     description:
       config.contact?.description ||
       "Have questions or feedback? We'd love to hear from you.",
-  },
-  alternates: {
-    canonical: '/contact',
-    languages: {
-      en: `${config.url}/contact`,
-      'x-default': `${config.url}/contact`,
-    },
+    title: `${config.contact?.title || "Contact"} | ${config.title}`,
   },
 };
 
 // This page will be static
-export const dynamic = 'force-static';
+export const dynamic = "force-static";
 
 export default function ContactPage() {
   // If contact page is not enabled, redirect to home page
@@ -80,7 +80,7 @@ export default function ContactPage() {
       />
 
       <HeroSection
-        badge={config.contact.badge || 'Contact Us'}
+        badge={config.contact.badge || "Contact Us"}
         description={config.contact.description}
         heroImage={config.contact.heroImage}
         title={config.contact.title}

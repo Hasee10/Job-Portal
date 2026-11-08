@@ -1,24 +1,24 @@
 import {
   LEADING_DASHES_REGEX,
   TRAILING_DASHES_REGEX,
-} from '@/lib/constants/defaults';
+} from "@/lib/constants/defaults";
 
 export function slugify(text: string | null | undefined): string {
   // Handle null, undefined, or empty values
   if (!text) {
-    return '';
+    return "";
   }
 
   return text
     .toString()
     .toLowerCase()
     .trim()
-    .replace(/\s+/g, '-') // Replace spaces with -
-    .replace(/&/g, '-and-') // Replace & with 'and'
-    .replace(/[^\w-]+/g, '') // Remove all non-word characters
-    .replace(/--+/g, '-') // Replace multiple - with single -
-    .replace(LEADING_DASHES_REGEX, '') // Trim - from start of text
-    .replace(TRAILING_DASHES_REGEX, ''); // Trim - from end of text
+    .replace(/\s+/g, "-") // Replace spaces with -
+    .replace(/&/g, "-and-") // Replace & with 'and'
+    .replace(/[^\w-]+/g, "") // Remove all non-word characters
+    .replace(/--+/g, "-") // Replace multiple - with single -
+    .replace(LEADING_DASHES_REGEX, "") // Trim - from start of text
+    .replace(TRAILING_DASHES_REGEX, ""); // Trim - from end of text
 }
 
 export function generateJobSlug(
@@ -30,7 +30,7 @@ export function generateJobSlug(
 
   // Handle cases where either title or company is missing
   if (!(titleSlug || companySlug)) {
-    return 'job'; // Fallback for completely missing data
+    return "job"; // Fallback for completely missing data
   }
   if (!titleSlug) {
     return companySlug;

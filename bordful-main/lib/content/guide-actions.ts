@@ -1,6 +1,6 @@
-import 'server-only';
+import "server-only";
 
-import { createClient } from '@supabase/supabase-js';
+import { createClient } from "@supabase/supabase-js";
 
 export type CareerGuide = {
   id: string;
@@ -16,22 +16,22 @@ export type CareerGuide = {
 function getAdminClient() {
   const url = process.env.SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key) {
-    throw new Error('Database is not configured on this deployment.');
+  if (!(url && key)) {
+    throw new Error("Database is not configured on this deployment.");
   }
   return createClient(url, key, { auth: { persistSession: false } });
 }
 
 function rowToGuide(row: Record<string, unknown>): CareerGuide {
   return {
-    id: row.id as string,
-    slug: row.slug as string,
-    title: row.title as string,
-    summary: (row.summary as string) || null,
-    content: (row.content as string) || '',
-    category: (row.category as string) || null,
-    publishedAt: (row.published_at as string) || null,
     archivedAt: (row.archived_at as string) || null,
+    category: (row.category as string) || null,
+    content: (row.content as string) || "",
+    id: row.id as string,
+    publishedAt: (row.published_at as string) || null,
+    slug: row.slug as string,
+    summary: (row.summary as string) || null,
+    title: row.title as string,
   };
 }
 
@@ -40,12 +40,14 @@ function rowToGuide(row: Record<string, unknown>): CareerGuide {
 export async function listPublishedGuides(): Promise<CareerGuide[]> {
   const supabase = getAdminClient();
   const { data, error } = await supabase
-    .from('career_guides')
-    .select('*')
-    .eq('is_published', true)
-    .order('published_at', { ascending: false });
+    .from("career_guides")
+    .select("*")
+    .eq("is_published", true)
+    .order("published_at", { ascending: false });
 
-  if (error) throw error;
+  if (error) {
+    throw error;
+  }
   return (data ?? []).map(rowToGuide);
 }
 
@@ -54,13 +56,15 @@ export async function getPublishedGuideBySlug(
 ): Promise<CareerGuide | null> {
   const supabase = getAdminClient();
   const { data, error } = await supabase
-    .from('career_guides')
-    .select('*')
-    .eq('slug', slug)
-    .eq('is_published', true)
+    .from("career_guides")
+    .select("*")
+    .eq("slug", slug)
+    .eq("is_published", true)
     .maybeSingle();
 
-  if (error) throw error;
+  if (error) {
+    throw error;
+  }
   return data ? rowToGuide(data) : null;
 }
 
@@ -69,8 +73,10 @@ export async function getPublishedGuideBySlug(
 // live guide, a pending draft, or a previously archived one.
 export async function listAllGuideSlugs(): Promise<Set<string>> {
   const supabase = getAdminClient();
-  const { data, error } = await supabase.from('career_guides').select('slug');
-  if (error) throw error;
+  const { data, error } = await supabase.from("career_guides").select("slug");
+  if (error) {
+    throw error;
+  }
   return new Set((data ?? []).map((row) => row.slug as string));
 }
 
@@ -83,13 +89,15 @@ export async function listPublishedGuidesForStyleReference(
 ): Promise<CareerGuide[]> {
   const supabase = getAdminClient();
   const { data, error } = await supabase
-    .from('career_guides')
-    .select('*')
-    .eq('is_published', true)
-    .order('published_at', { ascending: false })
+    .from("career_guides")
+    .select("*")
+    .eq("is_published", true)
+    .order("published_at", { ascending: false })
     .limit(limit);
 
-  if (error) throw error;
+  if (error) {
+    throw error;
+  }
   return (data ?? []).map(rowToGuide);
 }
 
@@ -109,19 +117,21 @@ export async function insertDraftGuide(
 ): Promise<CareerGuide> {
   const supabase = getAdminClient();
   const { data, error } = await supabase
-    .from('career_guides')
+    .from("career_guides")
     .insert({
-      slug: input.slug,
-      title: input.title,
-      summary: input.summary,
-      content: input.content,
       category: input.category,
+      content: input.content,
       is_published: false,
+      slug: input.slug,
+      summary: input.summary,
+      title: input.title,
     })
-    .select('*')
+    .select("*")
     .single();
 
-  if (error) throw error;
+  if (error) {
+    throw error;
+  }
   return rowToGuide(data);
 }
 
@@ -136,22 +146,28 @@ export async function archiveOldestPublishedGuidesOverCap(
 ): Promise<string[]> {
   const supabase = getAdminClient();
   const { data, error } = await supabase
-    .from('career_guides')
-    .select('id, published_at')
-    .eq('is_published', true)
-    .order('published_at', { ascending: false });
+    .from("career_guides")
+    .select("id, published_at")
+    .eq("is_published", true)
+    .order("published_at", { ascending: false });
 
-  if (error) throw error;
+  if (error) {
+    throw error;
+  }
 
   const overCap = (data ?? []).slice(cap);
-  if (overCap.length === 0) return [];
+  if (overCap.length === 0) {
+    return [];
+  }
 
   const idsToArchive = overCap.map((row) => row.id as string);
   const { error: archiveError } = await supabase
-    .from('career_guides')
-    .update({ is_published: false, archived_at: new Date().toISOString() })
-    .in('id', idsToArchive);
+    .from("career_guides")
+    .update({ archived_at: new Date().toISOString(), is_published: false })
+    .in("id", idsToArchive);
 
-  if (archiveError) throw archiveError;
+  if (archiveError) {
+    throw archiveError;
+  }
   return idsToArchive;
 }

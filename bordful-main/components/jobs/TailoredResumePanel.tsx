@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { useSession } from 'next-auth/react';
-import { Loader2, Maximize2, Minimize2, X } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { HarvardResumePreview } from '@/components/account/resume-templates/HarvardResumePreview';
-import { ResumeAssistantWidget } from '@/components/account/ResumeAssistantWidget';
-import { cn } from '@/lib/utils';
-import type { TailoredResumeContent } from '@/lib/jobs/tailored-resume-types';
-import type { PanelJobRef } from './ResumePanelProvider';
+import { Loader2, Maximize2, Minimize2, X } from "lucide-react";
+import { useSession } from "next-auth/react";
+import { useEffect, useState } from "react";
+import { ResumeAssistantWidget } from "@/components/account/ResumeAssistantWidget";
+import { HarvardResumePreview } from "@/components/account/resume-templates/HarvardResumePreview";
+import { Button } from "@/components/ui/button";
+import type { TailoredResumeContent } from "@/lib/jobs/tailored-resume-types";
+import { cn } from "@/lib/utils";
+import type { PanelJobRef } from "./ResumePanelProvider";
 
 // Right-hand slide-over opened from a job page's "Generate tailored resume"
 // button (see ResumePanelProvider, which pushes the page content left to
@@ -33,12 +33,15 @@ export function TailoredResumePanel({
   const [error, setError] = useState<string | null>(null);
   const [upgradeRequired, setUpgradeRequired] = useState(false);
   const [needsResume, setNeedsResume] = useState(false);
-  const [tailoredResume, setTailoredResume] = useState<TailoredResumeContent | null>(null);
+  const [tailoredResume, setTailoredResume] =
+    useState<TailoredResumeContent | null>(null);
   const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
   const [pdfError, setPdfError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (status !== 'authenticated') return;
+    if (status !== "authenticated") {
+      return;
+    }
     let cancelled = false;
 
     (async () => {
@@ -46,10 +49,13 @@ export function TailoredResumePanel({
       setError(null);
       setUpgradeRequired(false);
       try {
-        const resumeRes = await fetch('/api/seeker/resume');
+        const resumeRes = await fetch("/api/seeker/resume");
         const resumeData = await resumeRes.json();
         const savedContent = resumeData.resume?.content;
-        if (!savedContent || (!savedContent.fullName && savedContent.experience.length === 0)) {
+        if (
+          !savedContent ||
+          (!savedContent.fullName && savedContent.experience.length === 0)
+        ) {
           if (!cancelled) {
             setNeedsResume(true);
             setIsLoading(false);
@@ -57,24 +63,34 @@ export function TailoredResumePanel({
           return;
         }
 
-        const tailorRes = await fetch('/api/seeker/resume/tailor', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ mode: 'resume', jobId: job.id, resume: savedContent }),
+        const tailorRes = await fetch("/api/seeker/resume/tailor", {
+          body: JSON.stringify({
+            jobId: job.id,
+            mode: "resume",
+            resume: savedContent,
+          }),
+          headers: { "Content-Type": "application/json" },
+          method: "POST",
         });
         const tailorData = await tailorRes.json();
         if (!tailorRes.ok) {
           if (!cancelled) {
             setUpgradeRequired(Boolean(tailorData.upgradeRequired));
-            setError(tailorData.error || 'Failed to generate tailored resume.');
+            setError(tailorData.error || "Failed to generate tailored resume.");
           }
           return;
         }
-        if (!cancelled) setTailoredResume(tailorData.output as TailoredResumeContent);
+        if (!cancelled) {
+          setTailoredResume(tailorData.output as TailoredResumeContent);
+        }
       } catch {
-        if (!cancelled) setError('Something went wrong. Please try again.');
+        if (!cancelled) {
+          setError("Something went wrong. Please try again.");
+        }
       } finally {
-        if (!cancelled) setIsLoading(false);
+        if (!cancelled) {
+          setIsLoading(false);
+        }
       }
     })();
 
@@ -87,26 +103,30 @@ export function TailoredResumePanel({
     setTailoredResume((prev) => (prev ? { ...prev, ...patch } : prev));
 
   const handleDownloadPdf = async () => {
-    if (!tailoredResume) return;
+    if (!tailoredResume) {
+      return;
+    }
     setIsDownloadingPdf(true);
     setPdfError(null);
     try {
       const [{ pdf }, { HarvardResumePdf }] = await Promise.all([
-        import('@react-pdf/renderer'),
-        import('@/components/account/resume-templates/HarvardResumePdf'),
+        import("@react-pdf/renderer"),
+        import("@/components/account/resume-templates/HarvardResumePdf"),
       ]);
-      const blob = await pdf(<HarvardResumePdf resume={tailoredResume} />).toBlob();
+      const blob = await pdf(
+        <HarvardResumePdf resume={tailoredResume} />
+      ).toBlob();
       const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
+      const a = document.createElement("a");
       a.href = url;
-      a.download = `${tailoredResume.fullName || 'resume'}-tailored.pdf`;
+      a.download = `${tailoredResume.fullName || "resume"}-tailored.pdf`;
       document.body.appendChild(a);
       a.click();
       a.remove();
       URL.revokeObjectURL(url);
     } catch (err) {
-      console.error('[TailoredResumePanel] PDF generation failed:', err);
-      setPdfError('Could not generate the PDF. Please try again.');
+      console.error("[TailoredResumePanel] PDF generation failed:", err);
+      setPdfError("Could not generate the PDF. Please try again.");
     } finally {
       setIsDownloadingPdf(false);
     }
@@ -115,11 +135,11 @@ export function TailoredResumePanel({
   return (
     <div
       className={cn(
-        'fixed inset-y-0 right-0 z-40 flex w-full flex-col border-l border-zinc-200 bg-background shadow-2xl transition-[width] duration-300 ease-in-out dark:border-zinc-800',
-        isExpanded ? 'lg:w-[760px]' : 'lg:w-[440px]'
+        "fixed inset-y-0 right-0 z-40 flex w-full flex-col border-zinc-200 border-l bg-background shadow-2xl transition-[width] duration-300 ease-in-out dark:border-zinc-800",
+        isExpanded ? "lg:w-[760px]" : "lg:w-[440px]"
       )}
     >
-      <div className="flex items-center justify-between border-b border-zinc-200 p-4 dark:border-zinc-800">
+      <div className="flex items-center justify-between border-zinc-200 border-b p-4 dark:border-zinc-800">
         <div className="min-w-0">
           <p className="font-semibold text-sm">Tailored resume</p>
           <p className="truncate text-xs text-zinc-500 dark:text-zinc-400">
@@ -128,12 +148,16 @@ export function TailoredResumePanel({
         </div>
         <div className="flex shrink-0 items-center gap-3">
           <button
-            aria-label={isExpanded ? 'Collapse panel' : 'Expand panel'}
-            className="hidden text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 lg:inline-flex"
+            aria-label={isExpanded ? "Collapse panel" : "Expand panel"}
+            className="hidden text-zinc-400 hover:text-zinc-600 lg:inline-flex dark:hover:text-zinc-200"
             onClick={onToggleExpand}
             type="button"
           >
-            {isExpanded ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+            {isExpanded ? (
+              <Minimize2 className="h-4 w-4" />
+            ) : (
+              <Maximize2 className="h-4 w-4" />
+            )}
           </button>
           <button
             aria-label="Close tailored resume panel"
@@ -147,11 +171,13 @@ export function TailoredResumePanel({
       </div>
 
       <div className="flex-1 space-y-4 overflow-y-auto p-4">
-        {status !== 'authenticated' && (
-          <p className="text-sm text-zinc-600 dark:text-zinc-400">Sign in to generate a tailored resume.</p>
+        {status !== "authenticated" && (
+          <p className="text-sm text-zinc-600 dark:text-zinc-400">
+            Sign in to generate a tailored resume.
+          </p>
         )}
 
-        {status === 'authenticated' && isLoading && (
+        {status === "authenticated" && isLoading && (
           <div className="flex items-center gap-2 text-sm text-zinc-600 dark:text-zinc-400">
             <Loader2 className="h-4 w-4 animate-spin" />
             Generating your tailored resume…
@@ -161,7 +187,10 @@ export function TailoredResumePanel({
         {needsResume && (
           <div className="rounded-md border border-dashed p-3 text-sm">
             <p>You haven&apos;t saved a resume yet.</p>
-            <a className="mt-1 inline-block text-primary underline" href="/account/resume">
+            <a
+              className="mt-1 inline-block text-primary underline"
+              href="/account/resume"
+            >
               Build your resume first
             </a>
           </div>
@@ -181,12 +210,21 @@ export function TailoredResumePanel({
         {tailoredResume && (
           <>
             <div className="flex items-center justify-between">
-              <p className="text-sm font-medium">Preview</p>
-              <Button disabled={isDownloadingPdf} onClick={handleDownloadPdf} size="xs" type="button">
-                {isDownloadingPdf ? 'Preparing PDF...' : 'Download as PDF'}
+              <p className="font-medium text-sm">Preview</p>
+              <Button
+                disabled={isDownloadingPdf}
+                onClick={handleDownloadPdf}
+                size="xs"
+                type="button"
+              >
+                {isDownloadingPdf ? "Preparing PDF..." : "Download as PDF"}
               </Button>
             </div>
-            {pdfError && <p className="text-xs text-red-600 dark:text-red-400">{pdfError}</p>}
+            {pdfError && (
+              <p className="text-red-600 text-xs dark:text-red-400">
+                {pdfError}
+              </p>
+            )}
             <div className="rounded-md border">
               <HarvardResumePreview resume={tailoredResume} />
             </div>
@@ -195,7 +233,7 @@ export function TailoredResumePanel({
               <ResumeAssistantWidget
                 content={tailoredResume}
                 onApplySummary={(text) => updateResume({ summary: text })}
-                targetJob={{ title: job.title, company: job.company }}
+                targetJob={{ company: job.company, title: job.title }}
                 variant="embedded"
               />
             </div>

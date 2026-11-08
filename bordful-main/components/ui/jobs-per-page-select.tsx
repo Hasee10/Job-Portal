@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import {
   Select,
@@ -6,8 +6,8 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import config from '@/config';
+} from "@/components/ui/select";
+import config from "@/config";
 import {
   DEFAULT_PER_PAGE,
   MIN_WIDTH_SELECT,
@@ -15,8 +15,8 @@ import {
   TRIGGER_HEIGHT,
   TRIGGER_WIDTH_MD,
   TRIGGER_WIDTH_SM,
-} from '@/lib/constants/defaults';
-import { usePagination } from '@/lib/hooks/usePagination';
+} from "@/lib/constants/defaults";
+import { usePagination } from "@/lib/hooks/usePagination";
 
 export function JobsPerPageSelect() {
   const { perPage, setPerPage } = usePagination();
@@ -28,7 +28,7 @@ export function JobsPerPageSelect() {
   // Get label configuration with fallbacks
   const showLabel = config.jobListings?.labels?.perPage?.show ?? true;
   const labelText =
-    config.jobListings?.labels?.perPage?.text || 'Jobs per page:';
+    config.jobListings?.labels?.perPage?.text || "Jobs per page:";
 
   // Ensure perPage is a valid option (perPage comes from the URL query
   // string as a plain number, so it won't automatically narrow to the

@@ -1,9 +1,11 @@
-import type { Job } from '@/lib/db/airtable';
+import type { Job } from "@/lib/db/jobs";
 
 const TAG_SPLIT_REGEX = /[,;\n]+/;
 
 export function splitSkills(value: string | null | undefined): string[] {
-  if (!value) return [];
+  if (!value) {
+    return [];
+  }
   return value
     .split(TAG_SPLIT_REGEX)
     .map((tag) => tag.trim())
@@ -28,17 +30,23 @@ export function matchJobsBySkills(
   const normalizedSeekerSkills = new Map(
     seekerSkills.map((skill) => [skill.trim().toLowerCase(), skill.trim()])
   );
-  if (normalizedSeekerSkills.size === 0) return [];
+  if (normalizedSeekerSkills.size === 0) {
+    return [];
+  }
 
   const scored: ResumeJobMatch[] = [];
   for (const job of jobs) {
     const jobSkills = splitSkills(job.skills);
-    if (jobSkills.length === 0) continue;
+    if (jobSkills.length === 0) {
+      continue;
+    }
 
     const matchedSkills = jobSkills.filter((skill) =>
       normalizedSeekerSkills.has(skill.trim().toLowerCase())
     );
-    if (matchedSkills.length === 0) continue;
+    if (matchedSkills.length === 0) {
+      continue;
+    }
 
     scored.push({ job, matchedSkills });
   }

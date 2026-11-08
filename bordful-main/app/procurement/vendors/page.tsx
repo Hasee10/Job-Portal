@@ -1,16 +1,17 @@
-import type { Metadata } from 'next';
-import Link from 'next/link';
-import { Building2 } from 'lucide-react';
-import { listVerifiedVendors } from '@/lib/procurement/vendor-actions';
-import { VendorCard } from '@/components/procurement/VendorCard';
-import config from '@/config';
+import { Building2 } from "lucide-react";
+import type { Metadata } from "next";
+import Link from "next/link";
+import { VendorCard } from "@/components/procurement/VendorCard";
+import config from "@/config";
+import { listVerifiedVendors } from "@/lib/procurement/vendor-actions";
 
 export const metadata: Metadata = {
+  description:
+    "Browse verified suppliers and service providers registered on Caliber.",
   title: `Registered Suppliers | ${config.title}`,
-  description: 'Browse verified suppliers and service providers registered on Caliber.',
 };
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 export default async function ProcurementVendorsPage() {
   const vendors = await listVerifiedVendors();
@@ -23,8 +24,8 @@ export default async function ProcurementVendorsPage() {
             Registered suppliers
           </h1>
           <p className="mt-2 text-zinc-600 dark:text-zinc-400">
-            Verified vendors and service providers on Caliber. To work with one, create a
-            procurement request and invite them by email.
+            Verified vendors and service providers on Caliber. To work with one,
+            create a procurement request and invite them by email.
           </p>
 
           {vendors.length === 0 ? (
@@ -48,10 +49,13 @@ export default async function ProcurementVendorsPage() {
           )}
 
           <div className="mt-10 rounded-xl border border-zinc-200 bg-muted/30 p-5 text-sm dark:border-zinc-800">
-            Are you a service provider?{' '}
-            <Link className="font-medium text-primary hover:underline" href="/procurement/vendor">
+            Are you a service provider?{" "}
+            <Link
+              className="font-medium text-primary hover:underline"
+              href="/procurement/vendor"
+            >
               Sign in as a recruiter
-            </Link>{' '}
+            </Link>{" "}
             to manage the requests you're invited to.
           </div>
         </div>

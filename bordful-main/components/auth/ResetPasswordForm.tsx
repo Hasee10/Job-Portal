@@ -1,19 +1,19 @@
-'use client';
+"use client";
 
-import { useRouter, useSearchParams } from 'next/navigation';
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
-import { PasswordInput } from '@/components/ui/password-input';
-import config from '@/config';
-import { useToast } from '@/hooks/use-toast';
-import { resolveColor } from '@/lib/utils/colors';
+import { useRouter, useSearchParams } from "next/navigation";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { PasswordInput } from "@/components/ui/password-input";
+import config from "@/config";
+import { useToast } from "@/hooks/use-toast";
+import { resolveColor } from "@/lib/utils/colors";
 
 export function ResetPasswordForm() {
   const searchParams = useSearchParams();
-  const token = searchParams.get('token') || '';
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const token = searchParams.get("token") || "";
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -24,10 +24,10 @@ export function ResetPasswordForm() {
     return (
       <div className="mx-auto w-full max-w-md rounded-lg border p-6 text-center">
         <p className="text-red-600 text-sm">
-          This reset link is missing its token. Request a new one from the{' '}
+          This reset link is missing its token. Request a new one from the{" "}
           <a className="underline" href="/forgot-password">
             forgot password
-          </a>{' '}
+          </a>{" "}
           page.
         </p>
       </div>
@@ -47,11 +47,11 @@ export function ResetPasswordForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (password.length < 8) {
-      setError('Password must be at least 8 characters.');
+      setError("Password must be at least 8 characters.");
       return;
     }
     if (confirmPassword !== password) {
-      setError('Passwords do not match.');
+      setError("Passwords do not match.");
       return;
     }
 
@@ -59,26 +59,26 @@ export function ResetPasswordForm() {
     setError(null);
 
     try {
-      const response = await fetch('/api/employers/reset-password', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token, password }),
+      const response = await fetch("/api/employers/reset-password", {
+        body: JSON.stringify({ password, token }),
+        headers: { "Content-Type": "application/json" },
+        method: "POST",
       });
       const result = await response.json();
 
       if (!response.ok) {
-        setError(result.error || 'This reset link is invalid or has expired.');
+        setError(result.error || "This reset link is invalid or has expired.");
         return;
       }
 
       setIsSuccess(true);
       toast({
-        title: 'Password reset',
-        description: 'You can now sign in with your new password.',
+        description: "You can now sign in with your new password.",
+        title: "Password reset",
       });
-      setTimeout(() => router.push('/sign-in'), 2000);
+      setTimeout(() => router.push("/sign-in"), 2000);
     } catch {
-      setError('Something went wrong. Please try again later.');
+      setError("Something went wrong. Please try again later.");
     } finally {
       setIsSubmitting(false);
     }
@@ -123,7 +123,7 @@ export function ResetPasswordForm() {
           type="submit"
           variant="primary"
         >
-          {isSubmitting ? 'Resetting...' : 'Reset password'}
+          {isSubmitting ? "Resetting..." : "Reset password"}
         </Button>
       </form>
     </div>

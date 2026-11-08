@@ -1,21 +1,31 @@
-import { Bell, Bookmark, CheckCircle2, FileText, Mail, Sparkles } from 'lucide-react';
-import type { Metadata } from 'next';
-import Link from 'next/link';
-import { redirect } from 'next/navigation';
-import { auth } from '@/auth';
-import { SavedSearchesList } from '@/components/account/SavedSearchesList';
-import { SignOutButton } from '@/components/auth/SignOutButton';
-import config from '@/config';
-import { getJobs } from '@/lib/db/airtable.server';
-import { getSavedSearchLimit } from '@/lib/entitlements';
-import { getSeekerTier } from '@/lib/jobs/entitlements-actions';
-import { listSavedSearches } from '@/lib/jobs/saved-search-actions';
-import { matchesSavedSearch } from '@/lib/jobs/saved-search-matching';
-import { getSavedJobsWithDetails, getSeekerJobState } from '@/lib/jobs/seeker-actions';
-import { getSeekerProfile } from '@/lib/jobs/seeker-profile-actions';
-import { getSeekerUnreadCount } from '@/lib/jobs/candidate-outreach-actions';
-import { getSeekerUnreadInviteCount } from '@/lib/jobs/employer-candidate-actions';
-import { generateJobSlug } from '@/lib/utils/slugify';
+import {
+  Bell,
+  Bookmark,
+  CheckCircle2,
+  FileText,
+  Mail,
+  Sparkles,
+} from "lucide-react";
+import type { Metadata } from "next";
+import Link from "next/link";
+import { redirect } from "next/navigation";
+import { auth } from "@/auth";
+import { SavedSearchesList } from "@/components/account/SavedSearchesList";
+import { SignOutButton } from "@/components/auth/SignOutButton";
+import config from "@/config";
+import { getJobs } from "@/lib/db/jobs.server";
+import { getSavedSearchLimit } from "@/lib/entitlements";
+import { getSeekerUnreadCount } from "@/lib/jobs/candidate-outreach-actions";
+import { getSeekerUnreadInviteCount } from "@/lib/jobs/employer-candidate-actions";
+import { getSeekerTier } from "@/lib/jobs/entitlements-actions";
+import { listSavedSearches } from "@/lib/jobs/saved-search-actions";
+import { matchesSavedSearch } from "@/lib/jobs/saved-search-matching";
+import {
+  getSavedJobsWithDetails,
+  getSeekerJobState,
+} from "@/lib/jobs/seeker-actions";
+import { getSeekerProfile } from "@/lib/jobs/seeker-profile-actions";
+import { generateJobSlug } from "@/lib/utils/slugify";
 
 const MAX_RECOMMENDED_JOBS = 10;
 
@@ -32,7 +42,7 @@ function StatTile({
     <div className="rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900/60">
       <div className="flex items-center gap-2 text-zinc-500 dark:text-zinc-400">
         {icon}
-        <span className="text-xs font-medium">{label}</span>
+        <span className="font-medium text-xs">{label}</span>
       </div>
       <p className="mt-1.5 font-bold text-2xl text-zinc-900 dark:text-zinc-50">
         {count}
@@ -42,19 +52,23 @@ function StatTile({
 }
 
 export const metadata: Metadata = {
+  robots: { follow: false, index: false },
   title: `My Account | ${config.title}`,
-  robots: { index: false, follow: false },
 };
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 export default async function AccountPage() {
   const session = await auth();
   if (!session?.user) {
-    redirect('/account/sign-in?callbackUrl=/account');
+    redirect("/account/sign-in?callbackUrl=/account");
   }
-  if (session.user.role === 'employer') redirect('/dashboard');
-  if (session.user.role === 'recruiter') redirect('/recruiter/dashboard');
+  if (session.user.role === "employer") {
+    redirect("/dashboard");
+  }
+  if (session.user.role === "recruiter") {
+    redirect("/recruiter/dashboard");
+  }
 
   const profile = await getSeekerProfile(session.user.id);
   // Send every seeker who hasn't finished the quiz straight there instead
@@ -62,10 +76,17 @@ export default async function AccountPage() {
   // marks onboarding complete with default filters) is the way out for
   // anyone who really doesn't want to answer it.
   if (!profile?.onboardingCompletedAt) {
-    redirect('/account/onboarding');
+    redirect("/account/onboarding");
   }
 
-  const [savedJobs, jobState, savedSearches, tier, unreadOutreach, unreadInvites] = await Promise.all([
+  const [
+    savedJobs,
+    jobState,
+    savedSearches,
+    tier,
+    unreadOutreach,
+    unreadInvites,
+  ] = await Promise.all([
     getSavedJobsWithDetails(session.user.id),
     getSeekerJobState(session.user.id),
     listSavedSearches(session.user.id),
@@ -76,16 +97,19 @@ export default async function AccountPage() {
   const unreadInbox = unreadOutreach + unreadInvites;
 
   const appliedJobs = savedJobs.filter(
-    (job) => jobState.applications[job.jobId] === 'applied'
+    (job) => jobState.applications[job.jobId] === "applied"
   );
   const applicationEntries = Object.entries(jobState.applications);
 
   const recommendedJobs = profile?.onboardingCompletedAt
     ? (await getJobs())
-        .filter((job) => matchesSavedSearch(job, profile.filters, profile.searchTerm))
+        .filter((job) =>
+          matchesSavedSearch(job, profile.filters, profile.searchTerm)
+        )
         .sort(
           (a, b) =>
-            new Date(b.posted_date).getTime() - new Date(a.posted_date).getTime()
+            new Date(b.posted_date).getTime() -
+            new Date(a.posted_date).getTime()
         )
         .slice(0, MAX_RECOMMENDED_JOBS)
     : [];
@@ -98,16 +122,16 @@ export default async function AccountPage() {
             <h1 className="font-bold text-2xl">
               Welcome, {session.user.name || session.user.email}
             </h1>
-            <span className="shrink-0 rounded-full border px-2.5 py-0.5 text-xs font-medium capitalize text-zinc-600 dark:text-zinc-400">
+            <span className="shrink-0 rounded-full border px-2.5 py-0.5 font-medium text-xs text-zinc-600 capitalize dark:text-zinc-400">
               {tier} plan
             </span>
           </div>
           <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
             Signed in as {session.user.email}.
-            {tier === 'free' && (
+            {tier === "free" && (
               <>
-                {' '}
-                Free plan includes up to {getSavedSearchLimit('free')} saved
+                {" "}
+                Free plan includes up to {getSavedSearchLimit("free")} saved
                 searches. Premium plans are coming soon.
               </>
             )}
@@ -140,7 +164,10 @@ export default async function AccountPage() {
             <div className="mt-8 rounded-lg border p-6">
               <div className="flex items-center justify-between">
                 <h2 className="flex items-center gap-2 font-semibold text-lg">
-                  <Sparkles aria-hidden="true" className="h-5 w-5 text-zinc-400" />
+                  <Sparkles
+                    aria-hidden="true"
+                    className="h-5 w-5 text-zinc-400"
+                  />
                   Recommended for you
                 </h2>
                 <Link
@@ -159,7 +186,7 @@ export default async function AccountPage() {
                     >
                       {job.title}
                       <span className="text-zinc-500 dark:text-zinc-400">
-                        {' '}
+                        {" "}
                         &middot; {job.company}
                       </span>
                     </Link>
@@ -188,17 +215,17 @@ export default async function AccountPage() {
                   >
                     <Link
                       className="min-w-0 flex-1 truncate font-medium text-sm hover:underline"
-                      href={`/jobs/${generateJobSlug(job.title, job.company ?? '')}`}
+                      href={`/jobs/${generateJobSlug(job.title, job.company ?? "")}`}
                     >
                       {job.title}
                       {job.company && (
                         <span className="text-zinc-500 dark:text-zinc-400">
-                          {' '}
+                          {" "}
                           &middot; {job.company}
                         </span>
                       )}
                     </Link>
-                    {jobState.applications[job.jobId] === 'applied' && (
+                    {jobState.applications[job.jobId] === "applied" && (
                       <span className="shrink-0 rounded-full bg-zinc-100 px-2 py-0.5 text-xs dark:bg-zinc-800">
                         Applied
                       </span>
@@ -211,7 +238,10 @@ export default async function AccountPage() {
 
           <div className="mt-6 rounded-lg border p-6">
             <h2 className="flex items-center gap-2 font-semibold text-lg">
-              <CheckCircle2 aria-hidden="true" className="h-5 w-5 text-zinc-400" />
+              <CheckCircle2
+                aria-hidden="true"
+                className="h-5 w-5 text-zinc-400"
+              />
               Applications
             </h2>
             {applicationEntries.length === 0 ? (
@@ -230,12 +260,12 @@ export default async function AccountPage() {
                   <li key={job.jobId}>
                     <Link
                       className="truncate font-medium text-sm hover:underline"
-                      href={`/jobs/${generateJobSlug(job.title, job.company ?? '')}`}
+                      href={`/jobs/${generateJobSlug(job.title, job.company ?? "")}`}
                     >
                       {job.title}
                       {job.company && (
                         <span className="text-zinc-500 dark:text-zinc-400">
-                          {' '}
+                          {" "}
                           &middot; {job.company}
                         </span>
                       )}
@@ -257,7 +287,10 @@ export default async function AccountPage() {
           <div className="mt-6 rounded-lg border p-6">
             <div className="flex items-center justify-between gap-4">
               <div className="flex items-center gap-3">
-                <FileText aria-hidden="true" className="h-5 w-5 shrink-0 text-zinc-400" />
+                <FileText
+                  aria-hidden="true"
+                  className="h-5 w-5 shrink-0 text-zinc-400"
+                />
                 <div>
                   <h2 className="font-semibold text-lg">Resume builder</h2>
                   <p className="mt-0.5 text-sm text-zinc-600 dark:text-zinc-400">
@@ -277,20 +310,23 @@ export default async function AccountPage() {
           <div className="mt-6 rounded-lg border p-6">
             <div className="flex items-center justify-between gap-4">
               <div className="flex items-center gap-3">
-                <Mail aria-hidden="true" className="h-5 w-5 shrink-0 text-zinc-400" />
+                <Mail
+                  aria-hidden="true"
+                  className="h-5 w-5 shrink-0 text-zinc-400"
+                />
                 <div>
-                  <h2 className="font-semibold text-lg flex items-center gap-2">
+                  <h2 className="flex items-center gap-2 font-semibold text-lg">
                     Inbox
                     {unreadInbox > 0 && (
-                      <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-bold">
+                      <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-primary font-bold text-primary-foreground text-xs">
                         {unreadInbox}
                       </span>
                     )}
                   </h2>
                   <p className="mt-0.5 text-sm text-zinc-600 dark:text-zinc-400">
                     {unreadInbox > 0
-                      ? `${unreadInbox} new message${unreadInbox > 1 ? 's' : ''} from recruiters and employers.`
-                      : 'Manage recruiter and employer outreach and your visibility settings.'}
+                      ? `${unreadInbox} new message${unreadInbox > 1 ? "s" : ""} from recruiters and employers.`
+                      : "Manage recruiter and employer outreach and your visibility settings."}
                   </p>
                 </div>
               </div>

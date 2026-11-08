@@ -1,17 +1,20 @@
-import type { Metadata } from 'next';
-import { redirect } from 'next/navigation';
-import { auth } from '@/auth';
-import { ResumeBuilder } from '@/components/account/ResumeBuilder';
-import config from '@/config';
-import { getJob } from '@/lib/db/airtable.server';
-import { EMPTY_RESUME_CONTENT, getSeekerResume } from '@/lib/jobs/resume-actions';
+import type { Metadata } from "next";
+import { redirect } from "next/navigation";
+import { auth } from "@/auth";
+import { ResumeBuilder } from "@/components/account/ResumeBuilder";
+import config from "@/config";
+import { getJob } from "@/lib/db/jobs.server";
+import {
+  EMPTY_RESUME_CONTENT,
+  getSeekerResume,
+} from "@/lib/jobs/resume-actions";
 
 export const metadata: Metadata = {
+  robots: { follow: false, index: false },
   title: `Resume builder | ${config.title}`,
-  robots: { index: false, follow: false },
 };
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 export default async function ResumePage({
   searchParams,
@@ -20,10 +23,10 @@ export default async function ResumePage({
 }) {
   const session = await auth();
   if (!session?.user) {
-    redirect('/account/sign-in?callbackUrl=/account/resume');
+    redirect("/account/sign-in?callbackUrl=/account/resume");
   }
-  if (session.user.role !== 'seeker') {
-    redirect('/account');
+  if (session.user.role !== "seeker") {
+    redirect("/account");
   }
 
   const { jobId } = await searchParams;
@@ -38,15 +41,18 @@ export default async function ResumePage({
         <div className="mx-auto max-w-2xl">
           <h1 className="font-bold text-2xl">Resume builder</h1>
           <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-            Build your resume once, then tailor it for individual jobs with
-            AI.
+            Build your resume once, then tailor it for individual jobs with AI.
           </p>
           <div className="mt-6">
             <ResumeBuilder
               initialContent={resume?.content ?? EMPTY_RESUME_CONTENT}
               targetJob={
                 targetJob
-                  ? { id: targetJob.id, title: targetJob.title, company: targetJob.company }
+                  ? {
+                      company: targetJob.company,
+                      id: targetJob.id,
+                      title: targetJob.title,
+                    }
                   : null
               }
             />

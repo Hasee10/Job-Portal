@@ -10,7 +10,9 @@ const YOUTUBE_ID_PATTERNS = [
 export function extractYouTubeVideoId(url: string): string | null {
   for (const pattern of YOUTUBE_ID_PATTERNS) {
     const match = url.match(pattern);
-    if (match) return match[1];
+    if (match) {
+      return match[1];
+    }
   }
   return null;
 }

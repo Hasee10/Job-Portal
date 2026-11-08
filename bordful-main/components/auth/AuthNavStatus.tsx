@@ -1,9 +1,13 @@
-'use client';
+"use client";
 
-import { ChevronDown, User } from 'lucide-react';
-import { signOut, useSession } from 'next-auth/react';
-import Link from 'next/link';
-import { useEffect, useRef, useState } from 'react';
+import { ChevronDown, User } from "lucide-react";
+import Link from "next/link";
+import { signOut, useSession } from "next-auth/react";
+import { useEffect, useRef, useState } from "react";
+import {
+  capabilitiesFor,
+  procurementWorkspaceHref,
+} from "@/lib/auth/capabilities";
 
 type AuthNavStatusProps = {
   className?: string;
@@ -12,13 +16,13 @@ type AuthNavStatusProps = {
   // doesn't show Resume Builder / name / Sign out as separate flat links.
   // "mobile" (default) keeps them stacked, which already reads fine in the
   // vertical mobile menu.
-  variant?: 'desktop' | 'mobile';
+  variant?: "desktop" | "mobile";
 };
 
 export function AuthNavStatus({
-  className = '',
+  className = "",
   onNavigate,
-  variant = 'mobile',
+  variant = "mobile",
 }: AuthNavStatusProps) {
   const { data: session, status } = useSession();
   const [isOpen, setIsOpen] = useState(false);
@@ -30,21 +34,20 @@ export function AuthNavStatus({
         setIsOpen(false);
       }
     }
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  if (status === 'loading') {
+  if (status === "loading") {
     return null;
   }
 
   if (session?.user) {
-    const accountHref =
-      session.user.role === 'seeker'
-        ? '/account'
-        : session.user.role === 'recruiter'
-        ? '/recruiter/dashboard'
-        : '/dashboard';
+    const capabilities = capabilitiesFor(session.user.role);
+    const accountHref = capabilities.workspaceHref;
+    // Buyers and suppliers have different procurement homes, and an account
+    // with no procurement capability gets no entry point at all.
+    const procurementHref = procurementWorkspaceHref(capabilities);
     const displayName = session.user.name || session.user.email;
 
     const closeAndNavigate = () => {
@@ -52,10 +55,10 @@ export function AuthNavStatus({
       onNavigate?.();
     };
 
-    if (variant === 'desktop') {
+    if (variant === "desktop") {
       return (
         <div className={`flex items-center gap-3 text-sm ${className}`}>
-          {session.user.role === 'seeker' && (
+          {session.user.role === "seeker" && (
             <Link
               className="font-medium text-amber-600 hover:text-amber-700 dark:text-amber-400 dark:hover:text-amber-300"
               href="/pricing"
@@ -78,7 +81,7 @@ export function AuthNavStatus({
             {isOpen && (
               <div className="absolute right-0 z-50 mt-1 w-48 rounded-md bg-popover shadow-lg ring-1 ring-black ring-opacity-5 dark:ring-white/10">
                 <div aria-orientation="vertical" className="py-1" role="menu">
-                  {session.user.role === 'seeker' && (
+                  {session.user.role === "seeker" && (
                     <Link
                       className="block px-4 py-2 text-sm text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
                       href="/account/resume"
@@ -86,6 +89,16 @@ export function AuthNavStatus({
                       role="menuitem"
                     >
                       Resume Builder
+                    </Link>
+                  )}
+                  {procurementHref && (
+                    <Link
+                      className="block px-4 py-2 text-sm text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
+                      href={procurementHref}
+                      onClick={closeAndNavigate}
+                      role="menuitem"
+                    >
+                      Procurement
                     </Link>
                   )}
                   <Link
@@ -100,7 +113,7 @@ export function AuthNavStatus({
                     className="block w-full px-4 py-2 text-left text-sm text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
                     onClick={() => {
                       closeAndNavigate();
-                      signOut({ callbackUrl: '/' });
+                      signOut({ callbackUrl: "/" });
                     }}
                     role="menuitem"
                     type="button"
@@ -117,10 +130,10 @@ export function AuthNavStatus({
 
     return (
       <div className={`flex flex-col items-center gap-2 text-sm ${className}`}>
-        {session.user.role === 'seeker' && (
+        {session.user.role === "seeker" && (
           <>
             <Link
-              className="text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"
+              className="text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
               href="/account/resume"
               onClick={onNavigate}
             >
@@ -135,18 +148,27 @@ export function AuthNavStatus({
             </Link>
           </>
         )}
+        {procurementHref && (
+          <Link
+            className="text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
+            href={procurementHref}
+            onClick={onNavigate}
+          >
+            Procurement
+          </Link>
+        )}
         <Link
-          className="text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"
+          className="text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
           href={accountHref}
           onClick={onNavigate}
         >
           {displayName}
         </Link>
         <button
-          className="text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"
+          className="text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
           onClick={() => {
             onNavigate?.();
-            signOut({ callbackUrl: '/' });
+            signOut({ callbackUrl: "/" });
           }}
           type="button"
         >
@@ -159,14 +181,14 @@ export function AuthNavStatus({
   return (
     <div className={`flex items-center gap-3 text-sm ${className}`}>
       <Link
-        className="text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"
+        className="text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
         href="/account/sign-in"
         onClick={onNavigate}
       >
         Sign in
       </Link>
       <Link
-        className="rounded-lg bg-zinc-900 px-3 py-1 text-xs font-medium text-white transition-colors hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
+        className="rounded-lg bg-zinc-900 px-3 py-1 font-medium text-white text-xs transition-colors hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
         href="/join"
         onClick={onNavigate}
       >

@@ -1,23 +1,23 @@
-import { Briefcase } from 'lucide-react';
-import type { Metadata } from 'next';
-import Link from 'next/link';
-import { HeroSection } from '@/components/ui/hero-section';
-import { MetadataBreadcrumb } from '@/components/ui/metadata-breadcrumb';
-import config from '@/config';
+import { Briefcase } from "lucide-react";
+import type { Metadata } from "next";
+import Link from "next/link";
+import { HeroSection } from "@/components/ui/hero-section";
+import { MetadataBreadcrumb } from "@/components/ui/metadata-breadcrumb";
+import config from "@/config";
 import {
   JOB_TYPE_DESCRIPTIONS,
   JOB_TYPE_DISPLAY_NAMES,
   type JobType,
-} from '@/lib/constants/job-types';
-import { getJobs } from '@/lib/db/airtable.server';
-import { generateMetadata } from '@/lib/utils/metadata';
+} from "@/lib/constants/job-types";
+import { getJobs } from "@/lib/db/jobs.server";
+import { generateMetadata } from "@/lib/utils/metadata";
 
 // Generate metadata for SEO
 export const metadata: Metadata = generateMetadata({
-  title: `Browse Jobs by Type | ${config.title}`,
   description:
-    'Explore tech jobs by employment type. Find full-time, part-time, or contract positions that match your preferences.',
-  path: '/jobs/types',
+    "Explore tech jobs by employment type. Find full-time, part-time, or contract positions that match your preferences.",
+  path: "/jobs/types",
+  title: `Browse Jobs by Type | ${config.title}`,
 });
 
 // Revalidate page every 5 minutes
@@ -34,18 +34,18 @@ function TypeCard({ href, title, description, count }: TypeCardProps) {
   return (
     <Link
       aria-label={`Browse ${count.toLocaleString()} ${title} ${
-        count === 1 ? 'position' : 'positions'
+        count === 1 ? "position" : "positions"
       }`}
       className="block rounded-lg border p-4 transition-all hover:border-gray-400 sm:p-5"
       href={href}
     >
       <div className="space-y-1.5 sm:space-y-2">
         <h2 className="font-medium text-sm sm:text-base">{title}</h2>
-        <p className="line-clamp-2 text-gray-500 dark:text-gray-500 text-xs sm:text-sm">
+        <p className="line-clamp-2 text-gray-500 text-xs sm:text-sm dark:text-gray-500">
           {description}
         </p>
-        <div className="text-gray-500 dark:text-gray-500 text-xs sm:text-sm">
-          {count.toLocaleString()} {count === 1 ? 'position' : 'positions'}{' '}
+        <div className="text-gray-500 text-xs sm:text-sm dark:text-gray-500">
+          {count.toLocaleString()} {count === 1 ? "position" : "positions"}{" "}
           available
         </div>
       </div>
@@ -71,10 +71,10 @@ export default async function JobTypesPage() {
   const sortedTypes = Object.entries(typeCounts)
     .sort((a, b) => b[1] - a[1])
     .map(([type, count]) => ({
-      type: type as JobType,
-      title: JOB_TYPE_DISPLAY_NAMES[type as JobType],
-      description: JOB_TYPE_DESCRIPTIONS[type as JobType],
       count,
+      description: JOB_TYPE_DESCRIPTIONS[type as JobType],
+      title: JOB_TYPE_DISPLAY_NAMES[type as JobType],
+      type: type as JobType,
     }));
 
   return (
@@ -92,9 +92,9 @@ export default async function JobTypesPage() {
           <div className="mb-6">
             <MetadataBreadcrumb
               items={[
-                { name: 'Home', url: '/' },
-                { name: 'Jobs', url: '/jobs' },
-                { name: 'Types', url: '/jobs/types' },
+                { name: "Home", url: "/" },
+                { name: "Jobs", url: "/jobs" },
+                { name: "Types", url: "/jobs/types" },
               ]}
               metadata={metadata}
               pathname="/jobs/types"

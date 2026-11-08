@@ -1,5 +1,5 @@
-import { getJobs } from '@/lib/db/airtable.server';
-import { generateJobSlug } from '@/lib/utils/slugify';
+import { getJobs } from "@/lib/db/jobs.server";
+import { generateJobSlug } from "@/lib/utils/slugify";
 
 export type MinimalJob = {
   title: string;
@@ -18,12 +18,12 @@ export async function getJobBySlugMinimal(
     const jobs = await getJobs();
 
     for (const job of jobs) {
-      if (job.status === 'active') {
+      if (job.status === "active") {
         const jobSlug = generateJobSlug(job.title, job.company);
         if (jobSlug === slug) {
           return {
-            title: job.title,
             company: job.company,
+            title: job.title,
             type: job.type,
             workplace_type: job.workplace_type,
           };
@@ -33,7 +33,7 @@ export async function getJobBySlugMinimal(
 
     return null;
   } catch (error) {
-    console.error('Error finding job by slug:', error);
+    console.error("Error finding job by slug:", error);
     return null;
   }
 }
@@ -48,8 +48,8 @@ export async function validateJobAndParams(context: {
     const params = await context.params;
     const { slug } = params;
 
-    if (!slug || typeof slug !== 'string') {
-      return new Response('Invalid slug parameter', { status: 400 });
+    if (!slug || typeof slug !== "string") {
+      return new Response("Invalid slug parameter", { status: 400 });
     }
 
     const job = await getJobBySlugMinimal(slug);
@@ -59,7 +59,7 @@ export async function validateJobAndParams(context: {
 
     return { job };
   } catch (error) {
-    console.error('Error validating job parameters:', error);
-    return new Response('Invalid request parameters', { status: 400 });
+    console.error("Error validating job parameters:", error);
+    return new Response("Invalid request parameters", { status: 400 });
   }
 }

@@ -1,4 +1,4 @@
-import { formatDistanceToNow } from 'date-fns';
+import { formatDistanceToNow } from "date-fns";
 import {
   Briefcase,
   Calendar,
@@ -12,21 +12,21 @@ import {
   Link,
   MapPin,
   Wallet,
-} from 'lucide-react';
-import { CollapsibleText } from '@/components/ui/collapsible-text';
-import { JobBadge } from '@/components/ui/job-badge';
-import config from '@/config';
+} from "lucide-react";
+import { CollapsibleText } from "@/components/ui/collapsible-text";
+import { JobBadge } from "@/components/ui/job-badge";
+import config from "@/config";
 import {
   getDisplayNameFromCode,
   type LanguageCode,
-} from '@/lib/constants/languages';
-import type { RemoteRegion, WorkplaceType } from '@/lib/constants/workplace';
+} from "@/lib/constants/languages";
+import type { RemoteRegion, WorkplaceType } from "@/lib/constants/workplace";
 import {
   type CareerLevel,
   formatSalary,
   formatUSDApproximation,
   type Salary,
-} from '@/lib/db/airtable';
+} from "@/lib/db/jobs";
 
 type JobDetailsSidebarProps = {
   title: string;
@@ -51,25 +51,25 @@ type JobDetailsSidebarProps = {
 
 function formatCareerLevel(level: CareerLevel): string {
   const formatMap: Record<CareerLevel, string> = {
-    Internship: 'Internship',
-    EntryLevel: 'Entry Level',
-    Associate: 'Associate',
-    Junior: 'Junior',
-    MidLevel: 'Mid Level',
-    Senior: 'Senior',
-    Staff: 'Staff',
-    Principal: 'Principal',
-    Lead: 'Lead',
-    Manager: 'Manager',
-    SeniorManager: 'Senior Manager',
-    Director: 'Director',
-    SeniorDirector: 'Senior Director',
-    VP: 'VP',
-    SVP: 'SVP',
-    EVP: 'EVP',
-    CLevel: 'C-Level',
-    Founder: 'Founder',
-    NotSpecified: 'Not Specified',
+    Associate: "Associate",
+    CLevel: "C-Level",
+    Director: "Director",
+    EntryLevel: "Entry Level",
+    EVP: "EVP",
+    Founder: "Founder",
+    Internship: "Internship",
+    Junior: "Junior",
+    Lead: "Lead",
+    Manager: "Manager",
+    MidLevel: "Mid Level",
+    NotSpecified: "Not Specified",
+    Principal: "Principal",
+    Senior: "Senior",
+    SeniorDirector: "Senior Director",
+    SeniorManager: "Senior Manager",
+    Staff: "Staff",
+    SVP: "SVP",
+    VP: "VP",
   };
 
   return formatMap[level] || level;
@@ -104,7 +104,7 @@ export function JobDetailsSidebar({
   // Format location
   const location = [workplace_city, workplace_country]
     .filter(Boolean)
-    .join(', ');
+    .join(", ");
 
   // Format the application deadline if available
   const formatDeadline = () => {
@@ -123,15 +123,15 @@ export function JobDetailsSidebar({
 
     // Format the date to a user-friendly string
     return {
-      fullDate: deadlineDate.toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
+      fullDate: deadlineDate.toLocaleDateString("en-US", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
       }),
+      isPastDeadline,
       relativeTime: isPastDeadline
         ? `${relativeDeadline} ago`
         : `in ${relativeDeadline}`,
-      isPastDeadline,
     };
   };
 
@@ -147,11 +147,11 @@ export function JobDetailsSidebar({
             href={`mailto:${
               config.jobReport.email
             }?subject=${encodeURIComponent(
-              config.jobReport.emailSubject.replace('[Job Title]', title)
+              config.jobReport.emailSubject.replace("[Job Title]", title)
             )}&body=${encodeURIComponent(
               config.jobReport.emailMessage
-                .replace('[Job Title]', title)
-                .replace('[Job URL]', jobUrl)
+                .replace("[Job Title]", title)
+                .replace("[Job URL]", jobUrl)
             )}`}
           >
             <Flag className="h-3 w-3" />
@@ -165,7 +165,7 @@ export function JobDetailsSidebar({
           <Calendar className="h-4 w-4 shrink-0 text-gray-500 dark:text-gray-500" />
           <h3 className="font-medium text-sm">Date Posted</h3>
         </div>
-        <p className="ml-6 text-gray-600 dark:text-gray-400 text-sm">
+        <p className="ml-6 text-gray-600 text-sm dark:text-gray-400">
           {fullDate} ({relativeTime})
         </p>
       </div>
@@ -178,7 +178,7 @@ export function JobDetailsSidebar({
             <h3 className="font-medium text-sm">Application Deadline</h3>
           </div>
           <div className="ml-6">
-            <p className="text-gray-600 dark:text-gray-400 text-sm">
+            <p className="text-gray-600 text-sm dark:text-gray-400">
               {deadline.fullDate} ({deadline.relativeTime})
             </p>
             {deadline.isPastDeadline && (
@@ -196,17 +196,17 @@ export function JobDetailsSidebar({
           <MapPin className="h-4 w-4 shrink-0 text-gray-500 dark:text-gray-500" />
           <h3 className="font-medium text-sm">Job Location</h3>
         </div>
-        {workplace_type === 'Remote' ? (
-          <span className="ml-6 text-gray-600 dark:text-gray-400 text-sm">
-            Remote ({remote_region || 'Worldwide'})
+        {workplace_type === "Remote" ? (
+          <span className="ml-6 text-gray-600 text-sm dark:text-gray-400">
+            Remote ({remote_region || "Worldwide"})
           </span>
-        ) : workplace_type === 'Hybrid' ? (
-          <span className="ml-6 text-gray-600 dark:text-gray-400 text-sm">
-            {[location, `Hybrid (${remote_region})`].filter(Boolean).join(', ')}
+        ) : workplace_type === "Hybrid" ? (
+          <span className="ml-6 text-gray-600 text-sm dark:text-gray-400">
+            {[location, `Hybrid (${remote_region})`].filter(Boolean).join(", ")}
           </span>
         ) : (
-          <p className="ml-6 text-gray-600 dark:text-gray-400 text-sm">
-            {location || 'Not specified'}
+          <p className="ml-6 text-gray-600 text-sm dark:text-gray-400">
+            {location || "Not specified"}
           </p>
         )}
       </div>
@@ -219,14 +219,14 @@ export function JobDetailsSidebar({
         <div className="ml-6">
           <JobBadge
             type={
-              workplace_type === 'Not specified'
-                ? 'not specified'
-                : workplace_type === 'On-site'
-                  ? 'onsite'
+              workplace_type === "Not specified"
+                ? "not specified"
+                : workplace_type === "On-site"
+                  ? "onsite"
                   : (workplace_type.toLowerCase() as
-                      | 'remote'
-                      | 'hybrid'
-                      | 'default')
+                      | "remote"
+                      | "hybrid"
+                      | "default")
             }
           >
             {workplace_type}
@@ -241,11 +241,13 @@ export function JobDetailsSidebar({
             <h3 className="font-medium text-sm">Salary</h3>
           </div>
           <div className="ml-6">
-            <p className="text-gray-600 dark:text-gray-400 text-sm">
+            <p className="text-gray-600 text-sm dark:text-gray-400">
               {formatSalary(salary, true)}
             </p>
             {usdApprox && (
-              <p className="mt-0.5 text-gray-500 dark:text-gray-500 text-xs">{usdApprox}</p>
+              <p className="mt-0.5 text-gray-500 text-xs dark:text-gray-500">
+                {usdApprox}
+              </p>
             )}
           </div>
         </div>
@@ -260,9 +262,9 @@ export function JobDetailsSidebar({
           {careerLevels.map((level, index) => (
             <JobBadge
               href={
-                level !== 'NotSpecified'
-                  ? `/jobs/level/${level.toLowerCase()}`
-                  : undefined
+                level === "NotSpecified"
+                  ? undefined
+                  : `/jobs/level/${level.toLowerCase()}`
               }
               key={`${level}-${index}`}
               type="career-level"
@@ -280,7 +282,7 @@ export function JobDetailsSidebar({
             <h3 className="font-medium text-sm">Job Source</h3>
           </div>
           <a
-            className="ml-6 text-sm text-zinc-900 dark:text-zinc-100 underline underline-offset-4 transition-colors hover:text-zinc-800 dark:hover:text-zinc-200"
+            className="ml-6 text-sm text-zinc-900 underline underline-offset-4 transition-colors hover:text-zinc-800 dark:text-zinc-100 dark:hover:text-zinc-200"
             href={apply_url}
             rel="noopener noreferrer"
             target="_blank"
@@ -297,7 +299,9 @@ export function JobDetailsSidebar({
             <Hash className="h-4 w-4 shrink-0 text-gray-500 dark:text-gray-500" />
             <h3 className="font-medium text-sm">Job ID</h3>
           </div>
-          <p className="ml-6 text-gray-600 dark:text-gray-400 text-sm">{job_identifier}</p>
+          <p className="ml-6 text-gray-600 text-sm dark:text-gray-400">
+            {job_identifier}
+          </p>
         </div>
       )}
 
@@ -309,11 +313,11 @@ export function JobDetailsSidebar({
         <div className="ml-6">
           <JobBadge
             type={
-              visa_sponsorship === 'Yes'
-                ? 'visa-yes'
-                : visa_sponsorship === 'No'
-                  ? 'visa-no'
-                  : 'visa-not-specified'
+              visa_sponsorship === "Yes"
+                ? "visa-yes"
+                : visa_sponsorship === "No"
+                  ? "visa-no"
+                  : "visa-not-specified"
             }
           >
             {visa_sponsorship}
@@ -326,8 +330,8 @@ export function JobDetailsSidebar({
           <Clock className="h-4 w-4 shrink-0 text-gray-500 dark:text-gray-500" />
           <h3 className="font-medium text-sm">Job Timezones</h3>
         </div>
-        <p className="ml-6 text-gray-600 dark:text-gray-400 text-sm">
-          {timezone_requirements || 'Not specified'}
+        <p className="ml-6 text-gray-600 text-sm dark:text-gray-400">
+          {timezone_requirements || "Not specified"}
         </p>
       </div>
 

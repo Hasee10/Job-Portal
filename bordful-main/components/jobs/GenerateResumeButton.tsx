@@ -1,17 +1,17 @@
-'use client';
+"use client";
 
-import { Sparkles } from 'lucide-react';
-import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
-import { useResumePanel } from '@/components/jobs/ResumePanelProvider';
+import { Sparkles } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
+import { useResumePanel } from "@/components/jobs/ResumePanelProvider";
+import { Button } from "@/components/ui/button";
 
 export function GenerateResumeButton({
   jobId,
   jobSlug,
   jobTitle,
   jobCompany,
-  className = '',
+  className = "",
 }: {
   jobId: string;
   jobSlug: string;
@@ -24,11 +24,13 @@ export function GenerateResumeButton({
   const { open } = useResumePanel();
 
   const handleClick = () => {
-    if (status !== 'authenticated') {
-      router.push(`/account/sign-in?callbackUrl=${encodeURIComponent(`/jobs/${jobSlug}`)}`);
+    if (status !== "authenticated") {
+      router.push(
+        `/account/sign-in?callbackUrl=${encodeURIComponent(`/jobs/${jobSlug}`)}`
+      );
       return;
     }
-    open({ id: jobId, title: jobTitle, company: jobCompany });
+    open({ company: jobCompany, id: jobId, title: jobTitle });
   };
 
   return (

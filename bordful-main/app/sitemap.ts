@@ -1,6 +1,6 @@
-import type { MetadataRoute } from 'next';
-import { getJobs } from '@/lib/db/airtable.server';
-import { generateJobSlug } from '@/lib/utils/slugify';
+import type { MetadataRoute } from "next";
+import { getJobs } from "@/lib/db/jobs.server";
+import { generateJobSlug } from "@/lib/utils/slugify";
 
 /**
  * Generate the sitemap for the website
@@ -8,57 +8,57 @@ import { generateJobSlug } from '@/lib/utils/slugify';
  */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Get the base URL from environment variable or default to localhost
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
   // Define your static routes
   const staticRoutes = [
     {
-      url: baseUrl,
+      changeFrequency: "daily",
       lastModified: new Date(),
-      changeFrequency: 'daily',
       priority: 1,
+      url: baseUrl,
     },
     {
+      changeFrequency: "weekly",
+      lastModified: new Date(),
+      priority: 0.8,
       url: `${baseUrl}/about`,
-      lastModified: new Date(),
-      changeFrequency: 'weekly',
-      priority: 0.8,
     },
     {
+      changeFrequency: "daily",
+      lastModified: new Date(),
+      priority: 0.8,
       url: `${baseUrl}/jobs`,
-      lastModified: new Date(),
-      changeFrequency: 'daily',
-      priority: 0.8,
     },
     {
+      changeFrequency: "monthly",
+      lastModified: new Date(),
+      priority: 0.5,
       url: `${baseUrl}/privacy`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.5,
     },
     {
+      changeFrequency: "monthly",
+      lastModified: new Date(),
+      priority: 0.5,
       url: `${baseUrl}/terms`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.5,
     },
     {
+      changeFrequency: "monthly",
+      lastModified: new Date(),
+      priority: 0.5,
       url: `${baseUrl}/cookies`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.5,
     },
     {
-      url: `${baseUrl}/changelog`,
+      changeFrequency: "weekly",
       lastModified: new Date(),
-      changeFrequency: 'weekly',
       priority: 0.6,
+      url: `${baseUrl}/changelog`,
     },
     {
-      url: `${baseUrl}/faq`,
+      changeFrequency: "weekly",
       lastModified: new Date(),
-      changeFrequency: 'weekly',
       priority: 0.7,
+      url: `${baseUrl}/faq`,
     },
   ] as MetadataRoute.Sitemap;
 
@@ -73,10 +73,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
           job.posted_date && !Number.isNaN(new Date(job.posted_date).getTime())
       )
       .map((job) => ({
-        url: `${baseUrl}/jobs/${generateJobSlug(job.title, job.company)}`,
+        changeFrequency: "daily" as const,
         lastModified: new Date(job.posted_date),
-        changeFrequency: 'daily' as const,
         priority: job.featured ? 0.9 : 0.7,
+        url: `${baseUrl}/jobs/${generateJobSlug(job.title, job.company)}`,
       }));
 
     // Create sitemap entries for job category pages
@@ -84,10 +84,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       ...new Set(jobs.map((job) => job.type).filter(Boolean)),
     ];
     const typeRoutes = uniqueTypes.map((type) => ({
-      url: `${baseUrl}/jobs/type/${type.toLowerCase().replace(/\s+/g, '-')}`,
+      changeFrequency: "daily" as const,
       lastModified: new Date(),
-      changeFrequency: 'daily' as const,
       priority: 0.6,
+      url: `${baseUrl}/jobs/type/${type.toLowerCase().replace(/\s+/g, "-")}`,
     }));
 
     // Create sitemap entries for career level pages
@@ -95,16 +95,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       ...new Set(jobs.flatMap((job) => job.career_level).filter(Boolean)),
     ];
     const levelRoutes = uniqueLevels.map((level) => ({
-      url: `${baseUrl}/jobs/level/${level.toLowerCase()}`,
+      changeFrequency: "daily" as const,
       lastModified: new Date(),
-      changeFrequency: 'daily' as const,
       priority: 0.6,
+      url: `${baseUrl}/jobs/level/${level.toLowerCase()}`,
     }));
 
     // Create sitemap entries for location pages
     const locations = jobs.reduce((acc, job) => {
-      if (job.workplace_type === 'Remote' && !acc.includes('remote')) {
-        acc.push('remote');
+      if (job.workplace_type === "Remote" && !acc.includes("remote")) {
+        acc.push("remote");
       }
       if (job.workplace_country && !acc.includes(job.workplace_country)) {
         acc.push(job.workplace_country);
@@ -113,12 +113,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }, [] as string[]);
 
     const locationRoutes = locations.map((location) => ({
+      changeFrequency: "daily" as const,
+      lastModified: new Date(),
+      priority: 0.6,
       url: `${baseUrl}/jobs/location/${location
         .toLowerCase()
-        .replace(/\s+/g, '-')}`,
-      lastModified: new Date(),
-      changeFrequency: 'daily' as const,
-      priority: 0.6,
+        .replace(/\s+/g, "-")}`,
     }));
 
     // Combine all routes

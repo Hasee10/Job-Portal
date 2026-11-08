@@ -1,4 +1,4 @@
-import Image from 'next/image';
+import Image from "next/image";
 
 type CompanyLogo = {
   name: string;
@@ -14,8 +14,14 @@ const MIN_LOGOS_TO_SHOW = 6;
 // rush with many.
 const SECONDS_PER_LOGO = 2.5;
 
-export function CompanyLogoMarquee({ companies }: { companies: CompanyLogo[] }) {
-  if (companies.length < MIN_LOGOS_TO_SHOW) return null;
+export function CompanyLogoMarquee({
+  companies,
+}: {
+  companies: CompanyLogo[];
+}) {
+  if (companies.length < MIN_LOGOS_TO_SHOW) {
+    return null;
+  }
 
   // Duplicated so the strip can loop seamlessly: animating the combined
   // track exactly -50% lines the second copy up perfectly where the first
@@ -28,13 +34,13 @@ export function CompanyLogoMarquee({ companies }: { companies: CompanyLogo[] }) 
       className="relative mx-auto mt-8 max-w-4xl overflow-hidden"
       style={{
         maskImage:
-          'linear-gradient(to right, transparent, black 8%, black 92%, transparent)',
+          "linear-gradient(to right, transparent, black 8%, black 92%, transparent)",
         WebkitMaskImage:
-          'linear-gradient(to right, transparent, black 8%, black 92%, transparent)',
+          "linear-gradient(to right, transparent, black 8%, black 92%, transparent)",
       }}
     >
       <div
-        className="flex w-max animate-marquee items-center gap-10 hover:[animation-play-state:paused] motion-reduce:animate-none"
+        className="flex w-max animate-marquee items-center gap-10 motion-reduce:animate-none hover:[animation-play-state:paused]"
         style={{ animationDuration: `${durationSeconds}s` }}
       >
         {track.map((company, index) => (

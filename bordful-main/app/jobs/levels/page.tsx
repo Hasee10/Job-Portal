@@ -1,20 +1,20 @@
-import { GraduationCap } from 'lucide-react';
-import type { Metadata } from 'next';
-import Link from 'next/link';
-import { HeroSection } from '@/components/ui/hero-section';
-import { MetadataBreadcrumb } from '@/components/ui/metadata-breadcrumb';
-import config from '@/config';
-import { CAREER_LEVEL_DISPLAY_NAMES } from '@/lib/constants/career-levels';
-import type { CareerLevel } from '@/lib/db/airtable';
-import { getJobs } from '@/lib/db/airtable.server';
-import { generateMetadata } from '@/lib/utils/metadata';
+import { GraduationCap } from "lucide-react";
+import type { Metadata } from "next";
+import Link from "next/link";
+import { HeroSection } from "@/components/ui/hero-section";
+import { MetadataBreadcrumb } from "@/components/ui/metadata-breadcrumb";
+import config from "@/config";
+import { CAREER_LEVEL_DISPLAY_NAMES } from "@/lib/constants/career-levels";
+import type { CareerLevel } from "@/lib/db/jobs";
+import { getJobs } from "@/lib/db/jobs.server";
+import { generateMetadata } from "@/lib/utils/metadata";
 
 // Generate metadata for SEO
 export const metadata: Metadata = generateMetadata({
-  title: `Browse Jobs by Career Level | ${config.title}`,
   description:
-    'Explore tech jobs by experience level. Find positions that match your career stage, from internships to executive roles.',
-  path: '/jobs/levels',
+    "Explore tech jobs by experience level. Find positions that match your career stage, from internships to executive roles.",
+  path: "/jobs/levels",
+  title: `Browse Jobs by Career Level | ${config.title}`,
 });
 
 // Revalidate page every 5 minutes
@@ -30,15 +30,15 @@ function LevelCard({ href, title, count }: LevelCardProps) {
   return (
     <Link
       aria-label={`Browse ${count.toLocaleString()} ${title} ${
-        count === 1 ? 'position' : 'positions'
+        count === 1 ? "position" : "positions"
       }`}
       className="block rounded-lg border p-4 transition-all hover:border-gray-400 sm:p-5"
       href={href}
     >
       <div className="space-y-1.5 sm:space-y-2">
         <h2 className="font-medium text-sm sm:text-base">{title}</h2>
-        <div className="text-gray-500 dark:text-gray-500 text-xs sm:text-sm">
-          {count.toLocaleString()} {count === 1 ? 'position' : 'positions'}{' '}
+        <div className="text-gray-500 text-xs sm:text-sm dark:text-gray-500">
+          {count.toLocaleString()} {count === 1 ? "position" : "positions"}{" "}
           available
         </div>
       </div>
@@ -53,7 +53,7 @@ export default async function CareerLevelsPage() {
   const levelCounts = jobs.reduce<Partial<Record<CareerLevel, number>>>(
     (acc, job) => {
       for (const level of job.career_level) {
-        if (level !== 'NotSpecified') {
+        if (level !== "NotSpecified") {
           acc[level] = (acc[level] || 0) + 1;
         }
       }
@@ -66,30 +66,30 @@ export default async function CareerLevelsPage() {
   const sortedLevels = Object.entries(levelCounts)
     .sort((a, b) => b[1] - a[1])
     .map(([level, count]) => ({
+      count,
       level: level as CareerLevel,
       title: CAREER_LEVEL_DISPLAY_NAMES[level as CareerLevel],
-      count,
     }));
 
   // Group levels by category
   const entryLevels = sortedLevels.filter((item) =>
-    ['Internship', 'EntryLevel', 'Associate', 'Junior'].includes(item.level)
+    ["Internship", "EntryLevel", "Associate", "Junior"].includes(item.level)
   );
   const midLevels = sortedLevels.filter((item) =>
-    ['MidLevel', 'Senior', 'Staff', 'Principal'].includes(item.level)
+    ["MidLevel", "Senior", "Staff", "Principal"].includes(item.level)
   );
   const leadershipLevels = sortedLevels.filter((item) =>
     [
-      'Lead',
-      'Manager',
-      'SeniorManager',
-      'Director',
-      'SeniorDirector',
-      'VP',
-      'SVP',
-      'EVP',
-      'CLevel',
-      'Founder',
+      "Lead",
+      "Manager",
+      "SeniorManager",
+      "Director",
+      "SeniorDirector",
+      "VP",
+      "SVP",
+      "EVP",
+      "CLevel",
+      "Founder",
     ].includes(item.level)
   );
 
@@ -108,9 +108,9 @@ export default async function CareerLevelsPage() {
           <div className="mb-6">
             <MetadataBreadcrumb
               items={[
-                { name: 'Home', url: '/' },
-                { name: 'Jobs', url: '/jobs' },
-                { name: 'Career Levels', url: '/jobs/levels' },
+                { name: "Home", url: "/" },
+                { name: "Jobs", url: "/jobs" },
+                { name: "Career Levels", url: "/jobs/levels" },
               ]}
               metadata={metadata}
               pathname="/jobs/levels"

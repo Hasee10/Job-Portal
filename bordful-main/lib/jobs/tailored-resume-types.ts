@@ -27,13 +27,17 @@ export type TailoredResumeContent = {
   skills: string[];
 };
 
-export function isTailoredResumeContent(value: unknown): value is TailoredResumeContent {
-  if (!value || typeof value !== 'object') return false;
+export function isTailoredResumeContent(
+  value: unknown
+): value is TailoredResumeContent {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
   const v = value as Record<string, unknown>;
   return (
-    typeof v.fullName === 'string' &&
-    typeof v.headline === 'string' &&
-    typeof v.summary === 'string' &&
+    typeof v.fullName === "string" &&
+    typeof v.headline === "string" &&
+    typeof v.summary === "string" &&
     Array.isArray(v.experience) &&
     Array.isArray(v.education) &&
     Array.isArray(v.skills)

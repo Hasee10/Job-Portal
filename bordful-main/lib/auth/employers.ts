@@ -1,9 +1,9 @@
-import 'server-only';
+import "server-only";
 
-import { randomBytes, createHash } from 'node:crypto';
-import bcrypt from 'bcryptjs';
-import { createClient } from '@supabase/supabase-js';
-import { deriveLogoUrl } from '@/lib/utils/website-logo';
+import { createHash, randomBytes } from "node:crypto";
+import { createClient } from "@supabase/supabase-js";
+import bcrypt from "bcryptjs";
+import { deriveLogoUrl } from "@/lib/utils/website-logo";
 
 const BCRYPT_COST_FACTOR = 12;
 const MIN_PASSWORD_LENGTH = 8;
@@ -22,49 +22,60 @@ export type Employer = {
 };
 
 const PROFILE_COLUMNS =
-  'id, email, company_name, website, logo_url, industry, company_size, location, description';
+  "id, email, company_name, website, logo_url, industry, company_size, location, description";
 
 function rowToEmployer(row: Record<string, unknown>): Employer {
   return {
-    id: row.id as string,
-    email: row.email as string,
     companyName: (row.company_name as string) || null,
-    website: (row.website as string) || null,
-    logoUrl: (row.logo_url as string) || null,
-    industry: (row.industry as string) || null,
     companySize: (row.company_size as string) || null,
-    location: (row.location as string) || null,
     description: (row.description as string) || null,
+    email: row.email as string,
+    id: row.id as string,
+    industry: (row.industry as string) || null,
+    location: (row.location as string) || null,
+    logoUrl: (row.logo_url as string) || null,
+    website: (row.website as string) || null,
   };
 }
-
 
 export class EmployerAuthError extends Error {
   constructor(
     message: string,
-    public code: 'invalid_email' | 'weak_password' | 'email_taken' | 'invalid_credentials' | 'db_unavailable'
+    public code:
+      | "invalid_email"
+      | "weak_password"
+      | "email_taken"
+      | "invalid_credentials"
+      | "db_unavailable"
   ) {
     super(message);
-    this.name = 'EmployerAuthError';
+    this.name = "EmployerAuthError";
   }
 }
 
 const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+// RFC 5321's own address-length limit - without this, EMAIL_REGEX's
+// unbounded `+` quantifiers accept an arbitrarily long string, which
+// nodemailer's addressparser has had multiple quadratic-time DoS advisories
+// against (GHSA-2x7j-588g-ccc2, GHSA-v53p-9fqp-m79j) for exactly that input
+// shape - every signed-up account's email ends up back through there on
+// every notification email sent to it.
+const MAX_EMAIL_LENGTH = 254;
 
 function getAdminClient() {
   const url = process.env.SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key) {
+  if (!(url && key)) {
     throw new EmployerAuthError(
-      'Database is not configured on this deployment.',
-      'db_unavailable'
+      "Database is not configured on this deployment.",
+      "db_unavailable"
     );
   }
   return createClient(url, key, { auth: { persistSession: false } });
 }
 
 function hashToken(token: string): string {
-  return createHash('sha256').update(token).digest('hex');
+  return createHash("sha256").update(token).digest("hex");
 }
 
 export async function createEmployer(
@@ -74,13 +85,19 @@ export async function createEmployer(
 ): Promise<Employer> {
   const normalizedEmail = email.trim().toLowerCase();
 
-  if (!EMAIL_REGEX.test(normalizedEmail)) {
-    throw new EmployerAuthError('Enter a valid email address.', 'invalid_email');
+  if (
+    normalizedEmail.length > MAX_EMAIL_LENGTH ||
+    !EMAIL_REGEX.test(normalizedEmail)
+  ) {
+    throw new EmployerAuthError(
+      "Enter a valid email address.",
+      "invalid_email"
+    );
   }
   if (password.length < MIN_PASSWORD_LENGTH) {
     throw new EmployerAuthError(
       `Password must be at least ${MIN_PASSWORD_LENGTH} characters.`,
-      'weak_password'
+      "weak_password"
     );
   }
 
@@ -88,20 +105,20 @@ export async function createEmployer(
   const passwordHash = await bcrypt.hash(password, BCRYPT_COST_FACTOR);
 
   const { data, error } = await supabase
-    .from('employers')
+    .from("employers")
     .insert({
+      company_name: companyName?.trim() || null,
       email: normalizedEmail,
       password_hash: passwordHash,
-      company_name: companyName?.trim() || null,
     })
     .select(PROFILE_COLUMNS)
     .single();
 
   if (error) {
-    if (error.code === '23505') {
+    if (error.code === "23505") {
       throw new EmployerAuthError(
-        'An account with this email already exists.',
-        'email_taken'
+        "An account with this email already exists.",
+        "email_taken"
       );
     }
     throw error;
@@ -118,19 +135,21 @@ export async function verifyEmployerCredentials(
   const normalizedEmail = email.trim().toLowerCase();
 
   const { data } = await supabase
-    .from('employers')
+    .from("employers")
     .select(`${PROFILE_COLUMNS}, password_hash`)
-    .eq('email', normalizedEmail)
+    .eq("email", normalizedEmail)
     .maybeSingle();
 
   if (!data) {
     // Constant-time dummy compare so timing can't reveal "email not found"
-    await bcrypt.compare(password, '$2a$12$' + 'a'.repeat(53));
+    await bcrypt.compare(password, "$2a$12$" + "a".repeat(53));
     return null;
   }
 
   const valid = await bcrypt.compare(password, data.password_hash as string);
-  if (!valid) return null;
+  if (!valid) {
+    return null;
+  }
 
   return rowToEmployer(data);
 }
@@ -138,12 +157,14 @@ export async function verifyEmployerCredentials(
 export async function getEmployerById(id: string): Promise<Employer | null> {
   const supabase = getAdminClient();
   const { data, error } = await supabase
-    .from('employers')
+    .from("employers")
     .select(PROFILE_COLUMNS)
-    .eq('id', id)
+    .eq("id", id)
     .maybeSingle();
 
-  if (error) throw error;
+  if (error) {
+    throw error;
+  }
   return data ? rowToEmployer(data) : null;
 }
 
@@ -160,13 +181,27 @@ export async function updateEmployerProfile(
   }
 ): Promise<Employer> {
   const supabase = getAdminClient();
-  const patch: Record<string, unknown> = { updated_at: new Date().toISOString() };
-  if (input.companyName !== undefined) patch.company_name = input.companyName.trim();
-  if (input.website !== undefined) patch.website = input.website?.trim() || null;
-  if (input.industry !== undefined) patch.industry = input.industry?.trim() || null;
-  if (input.companySize !== undefined) patch.company_size = input.companySize?.trim() || null;
-  if (input.location !== undefined) patch.location = input.location?.trim() || null;
-  if (input.description !== undefined) patch.description = input.description?.trim().slice(0, 1000) || null;
+  const patch: Record<string, unknown> = {
+    updated_at: new Date().toISOString(),
+  };
+  if (input.companyName !== undefined) {
+    patch.company_name = input.companyName.trim();
+  }
+  if (input.website !== undefined) {
+    patch.website = input.website?.trim() || null;
+  }
+  if (input.industry !== undefined) {
+    patch.industry = input.industry?.trim() || null;
+  }
+  if (input.companySize !== undefined) {
+    patch.company_size = input.companySize?.trim() || null;
+  }
+  if (input.location !== undefined) {
+    patch.location = input.location?.trim() || null;
+  }
+  if (input.description !== undefined) {
+    patch.description = input.description?.trim().slice(0, 1000) || null;
+  }
   // Auto-derive the logo from the website unless the caller explicitly overrides it.
   if (input.logoUrl !== undefined) {
     patch.logo_url = input.logoUrl?.trim() || null;
@@ -175,13 +210,15 @@ export async function updateEmployerProfile(
   }
 
   const { data, error } = await supabase
-    .from('employers')
+    .from("employers")
     .update(patch)
-    .eq('id', id)
+    .eq("id", id)
     .select(PROFILE_COLUMNS)
     .single();
 
-  if (error) throw error;
+  if (error) {
+    throw error;
+  }
   return rowToEmployer(data);
 }
 
@@ -191,19 +228,19 @@ export async function createPasswordResetToken(
   const supabase = getAdminClient();
   const normalizedEmail = email.trim().toLowerCase();
 
-  const rawToken = randomBytes(32).toString('hex');
+  const rawToken = randomBytes(32).toString("hex");
   const tokenHash = hashToken(rawToken);
   const expiresAt = new Date(Date.now() + RESET_TOKEN_TTL_MS).toISOString();
 
   const { data } = await supabase
-    .from('employers')
+    .from("employers")
     .update({
-      reset_token_hash: tokenHash,
       reset_token_expires_at: expiresAt,
+      reset_token_hash: tokenHash,
       updated_at: new Date().toISOString(),
     })
-    .eq('email', normalizedEmail)
-    .select('id');
+    .eq("email", normalizedEmail)
+    .select("id");
 
   return data && data.length > 0 ? rawToken : null;
 }
@@ -215,7 +252,7 @@ export async function resetPasswordWithToken(
   if (newPassword.length < MIN_PASSWORD_LENGTH) {
     throw new EmployerAuthError(
       `Password must be at least ${MIN_PASSWORD_LENGTH} characters.`,
-      'weak_password'
+      "weak_password"
     );
   }
 
@@ -225,16 +262,16 @@ export async function resetPasswordWithToken(
   const now = new Date().toISOString();
 
   const { data } = await supabase
-    .from('employers')
+    .from("employers")
     .update({
       password_hash: passwordHash,
-      reset_token_hash: null,
       reset_token_expires_at: null,
+      reset_token_hash: null,
       updated_at: now,
     })
-    .eq('reset_token_hash', tokenHash)
-    .gt('reset_token_expires_at', now)
-    .select('id');
+    .eq("reset_token_hash", tokenHash)
+    .gt("reset_token_expires_at", now)
+    .select("id");
 
   return Boolean(data && data.length > 0);
 }

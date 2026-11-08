@@ -1,4 +1,10 @@
-import { EMAIL_BRAND_COLOR, emailFooter, emailHeader, h, wrapEmailBody } from './shared';
+import {
+  EMAIL_BRAND_COLOR,
+  emailFooter,
+  emailHeader,
+  h,
+  wrapEmailBody,
+} from "./shared";
 
 export type EmployerInviteEmailData = {
   companyName: string;
@@ -49,7 +55,7 @@ export function renderEmployerInviteEmail({
   `);
 
   return {
-    subject: `${companyName} invited you to apply for ${jobTitle}`,
     html,
+    subject: `${companyName} invited you to apply for ${jobTitle}`,
   };
 }

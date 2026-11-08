@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { Check, X } from 'lucide-react';
-import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
-import { useSeekerJobState } from '@/components/jobs/SeekerJobStateContext';
-import { Button } from '@/components/ui/button';
+import { Check, X } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
+import { useSeekerJobState } from "@/components/jobs/SeekerJobStateContext";
+import { Button } from "@/components/ui/button";
 
 export function JobApplicationActions({ jobId }: { jobId: string }) {
   const { data: session, status } = useSession();
@@ -17,12 +17,16 @@ export function JobApplicationActions({ jobId }: { jobId: string }) {
   // /api/seeker/applications 401s for any other role, so a signed-in
   // employer/recruiter would otherwise see these buttons flip state and
   // silently revert with no explanation.
-  if (status === 'authenticated' && session?.user?.role && session.user.role !== 'seeker') {
+  if (
+    status === "authenticated" &&
+    session?.user?.role &&
+    session.user.role !== "seeker"
+  ) {
     return null;
   }
 
-  const handle = (target: 'applied' | 'not_interested') => {
-    if (status !== 'authenticated') {
+  const handle = (target: "applied" | "not_interested") => {
+    if (status !== "authenticated") {
       router.push(
         `/account/sign-in?callbackUrl=${encodeURIComponent(
           window.location.pathname
@@ -41,23 +45,23 @@ export function JobApplicationActions({ jobId }: { jobId: string }) {
   return (
     <div className="flex gap-2">
       <Button
-        aria-pressed={current === 'applied'}
+        aria-pressed={current === "applied"}
         className="gap-1.5 text-xs"
-        onClick={() => handle('applied')}
+        onClick={() => handle("applied")}
         size="xs"
         type="button"
-        variant={current === 'applied' ? 'default' : 'outline'}
+        variant={current === "applied" ? "default" : "outline"}
       >
         <Check aria-hidden="true" className="h-3.5 w-3.5" />
-        {current === 'applied' ? 'Applied' : 'Mark as applied'}
+        {current === "applied" ? "Applied" : "Mark as applied"}
       </Button>
       <Button
-        aria-pressed={current === 'not_interested'}
+        aria-pressed={current === "not_interested"}
         className="gap-1.5 text-xs"
-        onClick={() => handle('not_interested')}
+        onClick={() => handle("not_interested")}
         size="xs"
         type="button"
-        variant={current === 'not_interested' ? 'default' : 'outline'}
+        variant={current === "not_interested" ? "default" : "outline"}
       >
         <X aria-hidden="true" className="h-3.5 w-3.5" />
         Not interested

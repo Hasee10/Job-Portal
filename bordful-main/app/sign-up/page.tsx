@@ -1,15 +1,15 @@
-import type { Metadata } from 'next';
-import Link from 'next/link';
-import { SignUpForm } from '@/components/auth/SignUpForm';
-import config from '@/config';
+import type { Metadata } from "next";
+import Link from "next/link";
+import { SignUpForm } from "@/components/auth/SignUpForm";
+import config from "@/config";
 
 export const metadata: Metadata = {
+  description: "Create an employer account to post and feature jobs.",
+  robots: { follow: false, index: false },
   title: `Sign Up | ${config.title}`,
-  description: 'Create an employer account to post and feature jobs.',
-  robots: { index: false, follow: false },
 };
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 export default function SignUpPage() {
   return (
@@ -23,20 +23,26 @@ export default function SignUpPage() {
         </div>
         <SignUpForm />
         <p className="mt-6 text-center text-sm text-zinc-600 dark:text-zinc-400">
-          Already have an account?{' '}
+          Already have an account?{" "}
           <Link className="underline hover:no-underline" href="/sign-in">
             Sign in
           </Link>
         </p>
         <p className="mt-2 text-center text-sm text-zinc-600 dark:text-zinc-400">
-          Looking for a job?{' '}
-          <Link className="underline hover:no-underline" href="/account/sign-in">
+          Looking for a job?{" "}
+          <Link
+            className="underline hover:no-underline"
+            href="/account/sign-in"
+          >
             Job seeker sign in
           </Link>
         </p>
         <p className="mt-2 text-center text-sm text-zinc-600 dark:text-zinc-400">
-          Are you a recruiter?{' '}
-          <Link className="underline hover:no-underline" href="/recruiter/sign-up">
+          Are you a recruiter?{" "}
+          <Link
+            className="underline hover:no-underline"
+            href="/recruiter/sign-up"
+          >
             Recruiter sign up
           </Link>
         </p>

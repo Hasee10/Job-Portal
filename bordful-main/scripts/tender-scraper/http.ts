@@ -17,17 +17,28 @@ export async function fetchWithRetry(
     try {
       res = await fetch(url, init);
     } catch (e) {
-      if (attempt === maxRetries) throw e;
-      console.warn(`[${opts.label}] network error (attempt ${attempt + 1}/${maxRetries + 1}):`, (e as Error).message);
+      if (attempt === maxRetries) {
+        throw e;
+      }
+      console.warn(
+        `[${opts.label}] network error (attempt ${attempt + 1}/${maxRetries + 1}):`,
+        (e as Error).message
+      );
       await sleep(delay + jitter());
       delay = Math.min(delay * 2, 10_000);
       continue;
     }
 
-    if (res.status !== 429 && res.status < 500) return res;
-    if (attempt === maxRetries) return res;
+    if (res.status !== 429 && res.status < 500) {
+      return res;
+    }
+    if (attempt === maxRetries) {
+      return res;
+    }
 
-    console.warn(`[${opts.label}] HTTP ${res.status} (attempt ${attempt + 1}/${maxRetries + 1}), retrying…`);
+    console.warn(
+      `[${opts.label}] HTTP ${res.status} (attempt ${attempt + 1}/${maxRetries + 1}), retrying…`
+    );
     await sleep(delay + jitter());
     delay = Math.min(delay * 2, 10_000);
   }

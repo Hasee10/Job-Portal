@@ -1,27 +1,27 @@
-import { NextResponse } from 'next/server';
-import { auth } from '@/auth';
+import { NextResponse } from "next/server";
+import { auth } from "@/auth";
 import {
   type ApplicationStatus,
   clearApplicationStatus,
   setApplicationStatus,
-} from '@/lib/jobs/seeker-actions';
+} from "@/lib/jobs/seeker-actions";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
-const VALID_STATUSES: ApplicationStatus[] = ['applied', 'not_interested'];
+const VALID_STATUSES: ApplicationStatus[] = ["applied", "not_interested"];
 
 export async function POST(request: Request) {
   const session = await auth();
-  if (!session?.user || session.user.role !== 'seeker') {
-    return NextResponse.json({ error: 'Not signed in.' }, { status: 401 });
+  if (!session?.user || session.user.role !== "seeker") {
+    return NextResponse.json({ error: "Not signed in." }, { status: 401 });
   }
 
   const body = await request.json();
-  const jobId = typeof body.jobId === 'string' ? body.jobId : '';
+  const jobId = typeof body.jobId === "string" ? body.jobId : "";
   const status = body.status as ApplicationStatus;
-  if (!jobId || !VALID_STATUSES.includes(status)) {
+  if (!(jobId && VALID_STATUSES.includes(status))) {
     return NextResponse.json(
-      { error: 'jobId and a valid status are required.' },
+      { error: "jobId and a valid status are required." },
       { status: 400 }
     );
   }
@@ -32,13 +32,13 @@ export async function POST(request: Request) {
 
 export async function DELETE(request: Request) {
   const session = await auth();
-  if (!session?.user || session.user.role !== 'seeker') {
-    return NextResponse.json({ error: 'Not signed in.' }, { status: 401 });
+  if (!session?.user || session.user.role !== "seeker") {
+    return NextResponse.json({ error: "Not signed in." }, { status: 401 });
   }
 
-  const jobId = new URL(request.url).searchParams.get('jobId');
+  const jobId = new URL(request.url).searchParams.get("jobId");
   if (!jobId) {
-    return NextResponse.json({ error: 'jobId is required.' }, { status: 400 });
+    return NextResponse.json({ error: "jobId is required." }, { status: 400 });
   }
 
   await clearApplicationStatus(session.user.id, jobId);

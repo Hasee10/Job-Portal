@@ -1,4 +1,4 @@
-import { type RefObject, useEffect } from 'react';
+import { type RefObject, useEffect } from "react";
 
 export function useOnClickOutside(
   ref: RefObject<HTMLElement | null>,
@@ -11,7 +11,7 @@ export function useOnClickOutside(
       }
       handler();
     }
-    document.addEventListener('mousedown', onClick);
-    return () => document.removeEventListener('mousedown', onClick);
+    document.addEventListener("mousedown", onClick);
+    return () => document.removeEventListener("mousedown", onClick);
   }, [ref, handler]);
 }

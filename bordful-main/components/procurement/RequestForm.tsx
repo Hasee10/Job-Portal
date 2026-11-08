@@ -1,43 +1,60 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { useToast } from '@/hooks/use-toast';
-import type { ProcurementType, ProcurementVisibility } from '@/lib/procurement/request-actions';
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/hooks/use-toast";
+import type {
+  ProcurementType,
+  ProcurementVisibility,
+} from "@/lib/procurement/request-actions";
 
 const TYPES: { value: ProcurementType; label: string; hint: string }[] = [
-  { value: 'rfi', label: 'RFI', hint: 'Request for Information — lightweight, no pricing required' },
-  { value: 'rfq', label: 'RFQ', hint: 'Request for Quote — pricing required' },
-  { value: 'rfp', label: 'RFP', hint: 'Request for Proposal — pricing + methodology required' },
-  { value: 'tender', label: 'Tender', hint: 'Full formal tender — document upload required, usually sealed' },
+  {
+    hint: "Request for Information — lightweight, no pricing required",
+    label: "RFI",
+    value: "rfi",
+  },
+  { hint: "Request for Quote — pricing required", label: "RFQ", value: "rfq" },
+  {
+    hint: "Request for Proposal — pricing + methodology required",
+    label: "RFP",
+    value: "rfp",
+  },
+  {
+    hint: "Full formal tender — document upload required, usually sealed",
+    label: "Tender",
+    value: "tender",
+  },
 ];
 
 const selectClass =
-  'flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2';
+  "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2";
 
 export function RequestForm() {
   const router = useRouter();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const [type, setType] = useState<ProcurementType>('rfp');
-  const [category, setCategory] = useState('staffing');
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [visibility, setVisibility] = useState<ProcurementVisibility>('invite_only');
+  const [type, setType] = useState<ProcurementType>("rfp");
+  const [category, setCategory] = useState("staffing");
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [visibility, setVisibility] =
+    useState<ProcurementVisibility>("invite_only");
   const [sealedBids, setSealedBids] = useState(false);
-  const [requiresPrequalification, setRequiresPrequalification] = useState(false);
-  const [responseDeadline, setResponseDeadline] = useState('');
+  const [requiresPrequalification, setRequiresPrequalification] =
+    useState(false);
+  const [responseDeadline, setResponseDeadline] = useState("");
 
   const handleTypeChange = (next: ProcurementType) => {
     setType(next);
     // Tender is the strictness ceiling of this engine (proc.md §3) - default
     // its two compliance-critical toggles on, but leave them editable so a
     // buyer running a lightweight tender-labeled process isn't forced into it.
-    if (next === 'tender') {
+    if (next === "tender") {
       setSealedBids(true);
       setRequiresPrequalification(true);
     }
@@ -45,35 +62,42 @@ export function RequestForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title.trim() || !description.trim() || !category.trim()) return;
+    if (!(title.trim() && description.trim() && category.trim())) {
+      return;
+    }
 
     setIsSubmitting(true);
     try {
-      const res = await fetch('/api/procurement/requests', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch("/api/procurement/requests", {
         body: JSON.stringify({
-          type,
           category: category.trim(),
-          title: title.trim(),
           description: description.trim(),
-          specFields: [],
-          visibility,
-          sealedBids,
           requiresPrequalification,
-          responseDeadline: responseDeadline ? new Date(responseDeadline).toISOString() : null,
+          responseDeadline: responseDeadline
+            ? new Date(responseDeadline).toISOString()
+            : null,
+          sealedBids,
+          specFields: [],
+          title: title.trim(),
+          type,
+          visibility,
         }),
+        headers: { "Content-Type": "application/json" },
+        method: "POST",
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Failed to create request.');
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to create request.");
+      }
 
       router.push(`/procurement/requests/${data.request.id}`);
     } catch (error) {
       toast({
-        title: 'Could not create request',
-        description: error instanceof Error ? error.message : 'Something went wrong.',
-        variant: 'destructive',
-        className: 'bg-destructive border border-red-600 shadow-md',
+        className: "bg-destructive border border-red-600 shadow-md",
+        description:
+          error instanceof Error ? error.message : "Something went wrong.",
+        title: "Could not create request",
+        variant: "destructive",
       });
     } finally {
       setIsSubmitting(false);
@@ -83,7 +107,10 @@ export function RequestForm() {
   return (
     <form className="space-y-6" onSubmit={handleSubmit}>
       <div>
-        <label className="mb-2 block font-medium text-sm" htmlFor="request-type">
+        <label
+          className="mb-2 block font-medium text-sm"
+          htmlFor="request-type"
+        >
           Type
         </label>
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
@@ -91,8 +118,8 @@ export function RequestForm() {
             <button
               className={`rounded-md border px-3 py-2 text-left text-sm transition-colors ${
                 type === t.value
-                  ? 'border-primary bg-primary/5 text-primary'
-                  : 'border-input text-zinc-600 hover:border-zinc-400 dark:text-zinc-400'
+                  ? "border-primary bg-primary/5 text-primary"
+                  : "border-input text-zinc-600 hover:border-zinc-400 dark:text-zinc-400"
               }`}
               key={t.value}
               onClick={() => handleTypeChange(t.value)}
@@ -109,7 +136,10 @@ export function RequestForm() {
       </div>
 
       <div>
-        <label className="mb-1.5 block font-medium text-sm" htmlFor="request-category">
+        <label
+          className="mb-1.5 block font-medium text-sm"
+          htmlFor="request-category"
+        >
           Category
         </label>
         <Input
@@ -122,7 +152,10 @@ export function RequestForm() {
       </div>
 
       <div>
-        <label className="mb-1.5 block font-medium text-sm" htmlFor="request-title">
+        <label
+          className="mb-1.5 block font-medium text-sm"
+          htmlFor="request-title"
+        >
           Title
         </label>
         <Input
@@ -135,7 +168,10 @@ export function RequestForm() {
       </div>
 
       <div>
-        <label className="mb-1.5 block font-medium text-sm" htmlFor="request-description">
+        <label
+          className="mb-1.5 block font-medium text-sm"
+          htmlFor="request-description"
+        >
           Description
         </label>
         <Textarea
@@ -150,13 +186,18 @@ export function RequestForm() {
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
-          <label className="mb-1.5 block font-medium text-sm" htmlFor="request-visibility">
+          <label
+            className="mb-1.5 block font-medium text-sm"
+            htmlFor="request-visibility"
+          >
             Visibility
           </label>
           <select
             className={selectClass}
             id="request-visibility"
-            onChange={(e) => setVisibility(e.target.value as ProcurementVisibility)}
+            onChange={(e) =>
+              setVisibility(e.target.value as ProcurementVisibility)
+            }
             value={visibility}
           >
             <option value="invite_only">Invite only</option>
@@ -164,7 +205,10 @@ export function RequestForm() {
           </select>
         </div>
         <div>
-          <label className="mb-1.5 block font-medium text-sm" htmlFor="request-deadline">
+          <label
+            className="mb-1.5 block font-medium text-sm"
+            htmlFor="request-deadline"
+          >
             Response deadline
           </label>
           <Input
@@ -188,7 +232,8 @@ export function RequestForm() {
           <span>
             <span className="font-medium">Sealed bids</span>
             <span className="block text-muted-foreground text-xs">
-              Responses are hidden from you too until you open them after the deadline.
+              Responses are hidden from you too until you open them after the
+              deadline.
             </span>
           </span>
         </label>
@@ -208,8 +253,12 @@ export function RequestForm() {
         </label>
       </div>
 
-      <Button className="w-full sm:w-auto" disabled={isSubmitting} type="submit">
-        {isSubmitting ? 'Creating…' : 'Create request'}
+      <Button
+        className="w-full sm:w-auto"
+        disabled={isSubmitting}
+        type="submit"
+      >
+        {isSubmitting ? "Creating…" : "Create request"}
       </Button>
     </form>
   );

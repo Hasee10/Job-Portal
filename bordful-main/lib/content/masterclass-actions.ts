@@ -1,6 +1,6 @@
-import 'server-only';
+import "server-only";
 
-import { createClient } from '@supabase/supabase-js';
+import { createClient } from "@supabase/supabase-js";
 
 export type Masterclass = {
   id: string;
@@ -17,23 +17,23 @@ export type Masterclass = {
 function getAdminClient() {
   const url = process.env.SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key) {
-    throw new Error('Database is not configured on this deployment.');
+  if (!(url && key)) {
+    throw new Error("Database is not configured on this deployment.");
   }
   return createClient(url, key, { auth: { persistSession: false } });
 }
 
 function rowToMasterclass(row: Record<string, unknown>): Masterclass {
   return {
-    id: row.id as string,
-    title: row.title as string,
+    category: (row.category as string) || null,
     description: (row.description as string) || null,
+    durationMinutes: (row.duration_minutes as number) || null,
+    id: row.id as string,
     instructorName: (row.instructor_name as string) || null,
     instructorTitle: (row.instructor_title as string) || null,
-    videoUrl: (row.video_url as string) || null,
-    durationMinutes: (row.duration_minutes as number) || null,
-    category: (row.category as string) || null,
     publishedAt: (row.published_at as string) || null,
+    title: row.title as string,
+    videoUrl: (row.video_url as string) || null,
   };
 }
 
@@ -42,12 +42,14 @@ function rowToMasterclass(row: Record<string, unknown>): Masterclass {
 export async function listPublishedMasterclasses(): Promise<Masterclass[]> {
   const supabase = getAdminClient();
   const { data, error } = await supabase
-    .from('masterclasses')
-    .select('*')
-    .eq('is_published', true)
-    .order('published_at', { ascending: false });
+    .from("masterclasses")
+    .select("*")
+    .eq("is_published", true)
+    .order("published_at", { ascending: false });
 
-  if (error) throw error;
+  if (error) {
+    throw error;
+  }
   return (data ?? []).map(rowToMasterclass);
 }
 
@@ -56,8 +58,12 @@ export async function listPublishedMasterclasses(): Promise<Masterclass[]> {
 // library, whether live or still an unreviewed draft.
 export async function listAllMasterclassVideoUrls(): Promise<Set<string>> {
   const supabase = getAdminClient();
-  const { data, error } = await supabase.from('masterclasses').select('video_url');
-  if (error) throw error;
+  const { data, error } = await supabase
+    .from("masterclasses")
+    .select("video_url");
+  if (error) {
+    throw error;
+  }
   return new Set(
     (data ?? [])
       .map((row) => row.video_url as string | null)
@@ -82,20 +88,22 @@ export async function insertDraftMasterclass(
 ): Promise<Masterclass> {
   const supabase = getAdminClient();
   const { data, error } = await supabase
-    .from('masterclasses')
+    .from("masterclasses")
     .insert({
-      title: input.title,
+      category: input.category,
       description: input.description,
+      duration_minutes: input.durationMinutes,
       instructor_name: input.instructorName,
       instructor_title: input.instructorTitle,
-      video_url: input.videoUrl,
-      duration_minutes: input.durationMinutes,
-      category: input.category,
       is_published: false,
+      title: input.title,
+      video_url: input.videoUrl,
     })
-    .select('*')
+    .select("*")
     .single();
 
-  if (error) throw error;
+  if (error) {
+    throw error;
+  }
   return rowToMasterclass(data);
 }

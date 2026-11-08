@@ -1,13 +1,13 @@
-'use client';
+"use client";
 
-import { Bell, Loader2 } from 'lucide-react';
-import { useRef, useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { useToast } from '@/hooks/use-toast';
-import type { SavedSearchFilters } from '@/lib/jobs/saved-search-matching';
-import { useOnClickOutside } from '@/lib/hooks/useOnClickOutside';
+import { Bell, Loader2 } from "lucide-react";
+import { useRef, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useToast } from "@/hooks/use-toast";
+import { useOnClickOutside } from "@/lib/hooks/useOnClickOutside";
+import type { SavedSearchFilters } from "@/lib/jobs/saved-search-matching";
 
 type SaveSearchButtonProps = {
   filters: SavedSearchFilters;
@@ -21,8 +21,8 @@ export function SaveSearchButton({
   isSeeker,
 }: SaveSearchButtonProps) {
   const [open, setOpen] = useState(false);
-  const [name, setName] = useState('');
-  const [frequency, setFrequency] = useState<'daily' | 'weekly'>('daily');
+  const [name, setName] = useState("");
+  const [frequency, setFrequency] = useState<"daily" | "weekly">("daily");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
@@ -35,37 +35,40 @@ export function SaveSearchButton({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim()) return;
+    if (!name.trim()) {
+      return;
+    }
 
     setIsSubmitting(true);
     try {
-      const response = await fetch('/api/seeker/saved-searches', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/seeker/saved-searches", {
         body: JSON.stringify({
-          name: name.trim(),
-          searchTerm: searchTerm || null,
           filters,
           frequency,
+          name: name.trim(),
+          searchTerm: searchTerm || null,
         }),
+        headers: { "Content-Type": "application/json" },
+        method: "POST",
       });
       const result = await response.json();
 
       if (!response.ok) {
-        throw new Error(result.error || 'Failed to save search.');
+        throw new Error(result.error || "Failed to save search.");
       }
 
       toast({
-        title: 'Search saved',
         description: "We'll email you when new matching jobs are posted.",
+        title: "Search saved",
       });
-      setName('');
+      setName("");
       setOpen(false);
     } catch (error) {
       toast({
-        title: 'Could not save search',
-        description: error instanceof Error ? error.message : 'Please try again.',
-        variant: 'destructive',
+        description:
+          error instanceof Error ? error.message : "Please try again.",
+        title: "Could not save search",
+        variant: "destructive",
       });
     } finally {
       setIsSubmitting(false);
@@ -109,7 +112,7 @@ export function SaveSearchButton({
                 className="h-8 w-full rounded-md border border-input bg-background px-2 text-xs"
                 id="saved-search-frequency"
                 onChange={(e) =>
-                  setFrequency(e.target.value as 'daily' | 'weekly')
+                  setFrequency(e.target.value as "daily" | "weekly")
                 }
                 value={frequency}
               >

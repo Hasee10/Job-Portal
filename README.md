@@ -136,7 +136,7 @@ All of the above are accessed exclusively server-side using the Supabase `servic
 | `LOGODEV_PUBLISHABLE_KEY` / `LOGODEV_SECRET_KEY` | Logo.dev — company logos | No |
 | `YOUTUBE_API_KEY` | Masterclass video discovery | No |
 
-> This list is derived from actual `process.env.*` references in the code, not from `.env.example` (which was missing most of these). `bordful-main/.env.example` only documents the Supabase + job-alert-provider variables inherited from the original open-source template; several of those (`EMAIL_PROVIDER`, `ENCHARGE_WRITE_KEY`, `AIRTABLE_*`) are template leftovers with no live code path — the app's actual email sending goes through `GMAIL_USER`/`GMAIL_APP_PASSWORD` above.
+> This list is derived from actual `process.env.*` references in the code and kept in sync with `bordful-main/.env.example`, which documents the same variables with safe placeholder values plus which are required/optional and server-only. Earlier, `.env.example` only listed the Supabase + job-alert-provider variables inherited from the original open-source template (`EMAIL_PROVIDER`, `ENCHARGE_WRITE_KEY`, `AIRTABLE_*`), none of which have a live code path — those have been dropped from `.env.example` rather than carried forward, since the app's actual email sending goes through `GMAIL_USER`/`GMAIL_APP_PASSWORD` above.
 
 ### Python Scraper — `job-scraper/.env`
 
@@ -151,6 +151,7 @@ All of the above are accessed exclusively server-side using the Supabase `servic
 | `SKIP_SOURCES` | Comma-separated sources to skip, e.g. `upwork,rozee` | No |
 | `RETENTION_DAYS` | Days before discontinued jobs are hard-deleted (default: `90`) | No |
 | `ATS_EXTRA_BOARDS` | Extra Greenhouse/Lever/Ashby board tokens beyond `companies.json` | No |
+| `ENABLE_DESCRIPTION_ENRICHMENT` | Set to `false` to skip the full-description fetch pass (default: on) | No |
 
 ### GitHub Actions Secrets
 

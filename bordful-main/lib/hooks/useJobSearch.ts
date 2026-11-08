@@ -1,11 +1,11 @@
-import { parseAsString, useQueryState } from 'nuqs';
-import { useCallback, useEffect, useRef, useState } from 'react';
-import config from '@/config';
+import { parseAsString, useQueryState } from "nuqs";
+import { useCallback, useEffect, useRef, useState } from "react";
+import config from "@/config";
 
 export function useJobSearch() {
   const [searchTerm, setSearchTermState] = useQueryState(
-    'q',
-    parseAsString.withDefault('')
+    "q",
+    parseAsString.withDefault("")
   );
   const [isSearching, setIsSearching] = useState(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
@@ -14,13 +14,14 @@ export function useJobSearch() {
   const debounceMs = config.search?.debounceMs || 500;
 
   // Clear timeout on unmount
-  useEffect(() => {
-    return () => {
+  useEffect(
+    () => () => {
       if (timerRef.current) {
         clearTimeout(timerRef.current);
       }
-    };
-  }, []);
+    },
+    []
+  );
 
   // Handle search with debounce
   const handleSearch = useCallback(
@@ -57,9 +58,9 @@ export function useJobSearch() {
   }, [setSearchTermState]);
 
   return {
-    searchTerm,
-    isSearching,
-    handleSearch,
     clearSearch,
+    handleSearch,
+    isSearching,
+    searchTerm,
   };
 }

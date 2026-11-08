@@ -1,34 +1,37 @@
-import Image from 'next/image';
-import Link from 'next/link';
-import { ArrowRight, Briefcase, Search, Users } from 'lucide-react';
+import { ArrowRight, Briefcase, Search, Users } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
 
 const SIGN_IN_PATHS = [
-  { label: 'Job seeker sign in', href: '/account/sign-in' },
-  { label: 'Recruiter sign in', href: '/recruiter/sign-in' },
-  { label: 'Employer sign in', href: '/sign-in' },
+  { href: "/account/sign-in", label: "Job seeker sign in" },
+  { href: "/recruiter/sign-in", label: "Recruiter sign in" },
+  { href: "/sign-in", label: "Employer sign in" },
 ] as const;
 
 const JOB_PATHS = [
   {
+    cta: "Continue as a job seeker",
+    description:
+      "Save jobs, track applications, build a resume, and get matched with recruiters and employers.",
+    href: "/account/sign-in?intent=signup",
     icon: Search,
     title: "I'm looking for a job",
-    description: 'Save jobs, track applications, build a resume, and get matched with recruiters and employers.',
-    cta: 'Continue as a job seeker',
-    href: '/account/sign-in?intent=signup',
   },
   {
+    cta: "Continue as a recruiter",
+    description:
+      "Search candidates who are open to opportunities and reach out directly.",
+    href: "/recruiter/sign-up",
     icon: Users,
     title: "I'm a recruiter",
-    description: 'Search candidates who are open to opportunities and reach out directly.',
-    cta: 'Continue as a recruiter',
-    href: '/recruiter/sign-up',
   },
   {
+    cta: "Continue as an employer",
+    description:
+      "Post jobs, review applications, and find candidates for your open roles.",
+    href: "/sign-up",
     icon: Briefcase,
     title: "I'm hiring",
-    description: 'Post jobs, review applications, and find candidates for your open roles.',
-    cta: 'Continue as an employer',
-    href: '/sign-up',
   },
 ] as const;
 
@@ -52,11 +55,12 @@ export function JoinChooser({ siteTitle }: { siteTitle: string }) {
           src="/caliber-bowtie-light.svg"
           width={80}
         />
-        <h1 className="font-bold text-3xl tracking-tight text-zinc-900 dark:text-zinc-50">
+        <h1 className="font-bold text-3xl text-zinc-900 tracking-tight dark:text-zinc-50">
           How will you use {siteTitle}?
         </h1>
         <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-          Pick one - you can always come back and create a different type of account later.
+          Pick one - you can always come back and create a different type of
+          account later.
         </p>
       </div>
 
@@ -70,18 +74,27 @@ export function JoinChooser({ siteTitle }: { siteTitle: string }) {
             <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary text-primary-foreground">
               <Icon aria-hidden="true" className="h-6 w-6" />
             </span>
-            <h2 className="mt-4 font-semibold text-base text-zinc-900 dark:text-zinc-50">{title}</h2>
-            <p className="mt-1.5 flex-1 text-sm text-zinc-600 dark:text-zinc-400">{description}</p>
-            <span className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-primary">
+            <h2 className="mt-4 font-semibold text-base text-zinc-900 dark:text-zinc-50">
+              {title}
+            </h2>
+            <p className="mt-1.5 flex-1 text-sm text-zinc-600 dark:text-zinc-400">
+              {description}
+            </p>
+            <span className="mt-4 inline-flex items-center gap-1 font-medium text-primary text-sm">
               {cta}
-              <ArrowRight aria-hidden="true" className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+              <ArrowRight
+                aria-hidden="true"
+                className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5"
+              />
             </span>
           </Link>
         ))}
       </div>
 
       <div className="mx-auto mt-10 max-w-md space-y-2 border-zinc-200 border-t pt-6 text-center dark:border-zinc-800">
-        <p className="text-sm text-zinc-600 dark:text-zinc-400">Already have an account?</p>
+        <p className="text-sm text-zinc-600 dark:text-zinc-400">
+          Already have an account?
+        </p>
         <p className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-sm">
           {SIGN_IN_PATHS.map(({ label, href }) => (
             <Link

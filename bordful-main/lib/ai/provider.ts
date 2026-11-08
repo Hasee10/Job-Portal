@@ -1,15 +1,15 @@
-import axios from 'axios';
-import { AIProviderError } from './types';
+import axios from "axios";
+import { AIProviderError } from "./types";
 
 // Mistral's OpenAI-compatible chat completions endpoint.
-const MISTRAL_API_URL = 'https://api.mistral.ai/v1/chat/completions';
-const DEFAULT_MISTRAL_MODEL = 'mistral-large-latest';
+const MISTRAL_API_URL = "https://api.mistral.ai/v1/chat/completions";
+const DEFAULT_MISTRAL_MODEL = "mistral-large-latest";
 
 // OpenRouter as a last-resort fallback if all Mistral keys are exhausted.
-const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
-const DEFAULT_OPENROUTER_MODEL = 'nvidia/nemotron-3-ultra-550b-a55b:free';
+const OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions";
+const DEFAULT_OPENROUTER_MODEL = "nvidia/nemotron-3-ultra-550b-a55b:free";
 
-type ChatMessage = { role: 'system' | 'user' | 'assistant'; content: string };
+type ChatMessage = { role: "system" | "user" | "assistant"; content: string };
 type ChatOptions = { temperature?: number; maxTokens?: number };
 
 // Mistral's free tier has a fairly low per-key rate limit, same reasoning
@@ -50,23 +50,23 @@ async function callMistral(
   const response = await axios.post(
     MISTRAL_API_URL,
     {
-      model: process.env.MISTRAL_MODEL || DEFAULT_MISTRAL_MODEL,
-      messages,
-      temperature: options.temperature ?? 0.5,
       max_tokens: options.maxTokens ?? 2000,
+      messages,
+      model: process.env.MISTRAL_MODEL || DEFAULT_MISTRAL_MODEL,
+      temperature: options.temperature ?? 0.5,
     },
     {
       headers: {
         Authorization: `Bearer ${key}`,
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       timeout: 30_000,
     }
   );
 
   const content = response.data?.choices?.[0]?.message?.content;
-  if (typeof content !== 'string' || !content.trim()) {
-    throw new Error('Mistral returned an empty response');
+  if (typeof content !== "string" || !content.trim()) {
+    throw new Error("Mistral returned an empty response");
   }
   return content;
 }
@@ -76,29 +76,29 @@ async function callOpenRouter(
   messages: ChatMessage[],
   options: ChatOptions
 ): Promise<string> {
-  const siteUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://caliber.app';
+  const siteUrl = process.env.NEXT_PUBLIC_APP_URL || "https://caliber.app";
   const response = await axios.post(
     OPENROUTER_API_URL,
     {
-      model: process.env.OPENROUTER_MODEL || DEFAULT_OPENROUTER_MODEL,
-      messages,
-      temperature: options.temperature ?? 0.5,
       max_tokens: options.maxTokens ?? 2000,
+      messages,
+      model: process.env.OPENROUTER_MODEL || DEFAULT_OPENROUTER_MODEL,
+      temperature: options.temperature ?? 0.5,
     },
     {
       headers: {
         Authorization: `Bearer ${key}`,
-        'HTTP-Referer': siteUrl,
-        'X-Title': 'Caliber',
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
+        "HTTP-Referer": siteUrl,
+        "X-Title": "Caliber",
       },
       timeout: 30_000,
     }
   );
 
   const content = response.data?.choices?.[0]?.message?.content;
-  if (typeof content !== 'string' || !content.trim()) {
-    throw new Error('OpenRouter returned an empty response');
+  if (typeof content !== "string" || !content.trim()) {
+    throw new Error("OpenRouter returned an empty response");
   }
   return content;
 }
@@ -114,16 +114,16 @@ export async function aiChatCompletion(
 
   if (mistralKeys.length === 0 && !openRouterKey) {
     throw new AIProviderError(
-      'No AI provider is configured on this deployment. Set MISTRAL_API_KEY_1 ' +
-        '(and optionally _2/_3 for rate-limit fallback) or OPENROUTER_API_KEY ' +
-        'to enable AI features.',
-      'mistral',
+      "No AI provider is configured on this deployment. Set MISTRAL_API_KEY_1 " +
+        "(and optionally _2/_3 for rate-limit fallback) or OPENROUTER_API_KEY " +
+        "to enable AI features.",
+      "mistral",
       true
     );
   }
 
   let lastError: unknown;
-  let lastProvider = 'mistral';
+  let lastProvider = "mistral";
 
   for (const key of mistralKeys) {
     try {
@@ -145,10 +145,10 @@ export async function aiChatCompletion(
       return await callOpenRouter(openRouterKey, messages, options);
     } catch (error) {
       lastError = error;
-      lastProvider = 'openrouter';
+      lastProvider = "openrouter";
     }
   }
 
-  const message = extractErrorMessage(lastError, 'Failed to reach AI provider');
+  const message = extractErrorMessage(lastError, "Failed to reach AI provider");
   throw new AIProviderError(`AI request failed: ${message}`, lastProvider);
 }
