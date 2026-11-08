@@ -16,3 +16,11 @@ n8n-workflows/workflows/*.json
 # Per-run scraper output, regenerated every run - not meant to be tracked.
 job-scraper/run_summary.json
 job-scraper/logs/
+
+# Local-only credential migration checklist. Names and steps only, never key
+# values - but keep it out of git regardless.
+cred.txt
+
+# Local Supabase env files (generated dev credentials, never production).
+bordful-main/.env.local
+bordful-main/.env.development.local
