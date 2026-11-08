@@ -64,3 +64,71 @@ create table if not exists public.employer_candidate_invites (
   id uuid primary key default gen_random_uuid(),
   created_at timestamptz not null default now()
 );
+
+-- Content tables the homepage reads. Without them the hosted PostgREST
+-- equivalent answers PGRST205 ("Could not find the table in the schema
+-- cache") and / returns 500, so nothing in the application can be opened in
+-- a browser - including the procurement pages, which are reached through it.
+--
+-- Every column below is taken from the data-access code, not from guesswork
+-- about the hosted schema: lib/content/testimonial-actions.ts,
+-- guide-actions.ts and masterclass-actions.ts are the only contract this
+-- repository has for these tables. Each name appears in a row mapper, a
+-- filter, an order or an insert in those files. Columns the application
+-- never touches are deliberately absent rather than invented, so this is the
+-- minimum that makes the pages render, not a reconstruction of production.
+create table if not exists public.testimonials (
+  id uuid primary key default gen_random_uuid(),
+  quote text not null,
+  author_name text not null,
+  author_title text,
+  author_company text,
+  avatar_url text,
+  -- Both read as filter and sort key: .eq("is_published", true) then
+  -- .order("display_order", { ascending: true }).
+  is_published boolean not null default false,
+  display_order integer
+);
+
+create table if not exists public.career_guides (
+  id uuid primary key default gen_random_uuid(),
+  -- Looked up by slug on the guide route, and listGuideSlugs() collects them
+  -- into a Set to detect duplicates, so one row per slug.
+  slug text not null unique,
+  title text not null,
+  summary text,
+  content text,
+  category text,
+  is_published boolean not null default false,
+  published_at timestamptz,
+  -- Set by the archive path, which also flips is_published back to false.
+  archived_at timestamptz
+);
+
+create table if not exists public.masterclasses (
+  id uuid primary key default gen_random_uuid(),
+  title text not null,
+  description text,
+  instructor_name text,
+  instructor_title text,
+  video_url text,
+  duration_minutes integer,
+  category text,
+  is_published boolean not null default false,
+  published_at timestamptz
+);
+
+-- The RLS pattern the migrations establish repo-wide: RLS on, zero policies,
+-- no grants to anon or authenticated. These are read only by the server-side
+-- service_role client, which bypasses RLS, so this denies direct PostgREST
+-- access without changing how the application reads them. Without it the
+-- local stack would expose unpublished drafts to an unauthenticated caller
+-- the moment anon were granted anything.
+alter table public.testimonials   enable row level security;
+alter table public.career_guides  enable row level security;
+alter table public.masterclasses  enable row level security;
+
+revoke all on public.testimonials,
+             public.career_guides,
+             public.masterclasses
+  from anon, authenticated;

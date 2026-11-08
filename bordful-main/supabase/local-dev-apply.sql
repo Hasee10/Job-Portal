@@ -8,8 +8,12 @@
 --   20260815_enable_rls_public_write_tables - also alters market_intel_waitlist,
 --       a table dropped from the hosted project when Market Intel was spun
 --       out, so this migration no longer applies cleanly anywhere
---   20260816_scraped_tenders + publication index - tender ingestion, unrelated
 --   n8n-workflows/migrations/*            - the jobs table, unrelated
+--
+-- The tender migrations below were skipped while only the database mattered.
+-- They are applied now because /procurement/tenders is part of the procurement
+-- frontend and returns 500 without them; both carry their own tracked DDL, so
+-- applying them is exact rather than reconstructed.
 --
 -- Everything here is idempotent, so re-running is safe.
 
@@ -20,6 +24,8 @@
 \ir migrations/20260816_procurement_schema.sql
 \ir migrations/20261108_organization_identity.sql
 \ir migrations/20261108_organization_marketplace_discovery.sql
+\ir migrations/20260816_scraped_tenders.sql
+\ir migrations/20261107_scraped_tenders_publication_order_idx.sql
 
 -- Objects are created by the superuser running this script; hand usage to the
 -- unprivileged development role so the application can work as joblo_local.
