@@ -32,7 +32,6 @@ interface Ref {
 }
 
 const NOT_FOUND = /not found/i;
-const RANGE_NOT_SATISFIABLE = /range not satisfiable/i;
 
 describeLocal("local HTTP integration: organizations and marketplace", () => {
   const admin = createClient(url, serviceKey, {
@@ -354,37 +353,45 @@ describeLocal("local HTTP integration: organizations and marketplace", () => {
     expect([...names].sort()).toEqual(names);
   });
 
-  // DEFECT, found by this test and not yet fixed: a page past the last one
-  // throws instead of coming back empty.
+  // Regression test for the defect this suite found: a page past the last
+  // one used to throw. listPublicOrganizations() asks for
+  // range(from, from + 11) and PostgREST answers 416 PGRST103 once the offset
+  // exceeds the row count, while parseDirectoryFilters takes any page > 0
+  // straight from the query string.
   //
-  // listPublicOrganizations() asks for range(from, from + 11) and PostgREST
-  // answers 416 PGRST103 ("An offset of 24 was requested, but there are only
-  // 3 rows") whenever the offset exceeds the row count. parseDirectoryFilters
-  // accepts any page > 0 straight from the query string, so /marketplace?page=2
-  // on a directory with fewer than 13 listed organizations is enough to
-  // trigger it. Hosted Supabase runs the same PostgREST behind Kong, so this
-  // is production behaviour too, not a local-stack artifact.
-  //
-  // A mocked client cannot catch this: it returns {data: [], error: null} for
+  // A mocked client cannot cover this: it returns {data: [], error: null} for
   // an out-of-range offset, because the Range semantics live in PostgREST.
+  // Only a real request reaches the behaviour, which is why it lives here.
   //
-  // The fix belongs in the M2 branch under review in PR #95, not on this
-  // local-development branch, so this test pins the current behaviour rather
-  // than asserting the behaviour we want. Change it to expect an empty page
-  // when that fix lands.
-  it("throws on a page past the last one (unfixed M2 defect)", async () => {
+  // The total still has to be right on that path - it comes from a separate
+  // head request, so asserting only "empty" would miss it coming back zero.
+  it("returns an empty page, with the real total, past the last page", async () => {
     const { listPublicOrganizations } = await import(
       "@/lib/procurement/directory-actions"
     );
-    await expect(
-      listPublicOrganizations({
-        capability: "all",
-        category: "",
-        page: 2,
-        q: RUN,
-        region: "",
-      })
-    ).rejects.toThrow(RANGE_NOT_SATISFIABLE);
+    const beyond = await listPublicOrganizations({
+      capability: "all",
+      category: "",
+      page: 2,
+      q: RUN,
+      region: "",
+    });
+    expect(beyond.organizations).toHaveLength(0);
+    expect(beyond.total).toBe(3);
+    expect(beyond.pageCount).toBe(1);
+    expect(beyond.page).toBe(2);
+
+    // Far past the end, and with a filter applied, so the head request is
+    // proven to carry the same predicates as the page query.
+    const farBeyond = await listPublicOrganizations({
+      capability: "buyer",
+      category: "",
+      page: 99,
+      q: RUN,
+      region: "",
+    });
+    expect(farBeyond.organizations).toHaveLength(0);
+    expect(farBeyond.total).toBe(2);
   });
 
   // The whole authorization model rests on anon having no reach, so prove it
