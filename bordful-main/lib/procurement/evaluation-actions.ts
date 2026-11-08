@@ -3,6 +3,7 @@ import "server-only";
 import { createClient } from "@supabase/supabase-js";
 import { logAudit } from "./audit-actions";
 import { getRequestForBuyer } from "./request-actions";
+import { canStartEvaluation } from "./response-actions";
 
 export type ProcurementEvaluation = {
   id: string;
@@ -54,8 +55,9 @@ export async function startEvaluation(
   if (!request) {
     throw new Error("Request not found.");
   }
-  if (!["closed_for_responses", "bids_opened"].includes(request.status)) {
-    throw new Error("This request is not ready for evaluation yet.");
+  const gate = canStartEvaluation(request.sealedBids, request.status);
+  if (!gate.allowed) {
+    throw new Error(gate.reason);
   }
 
   const supabase = getAdminClient();

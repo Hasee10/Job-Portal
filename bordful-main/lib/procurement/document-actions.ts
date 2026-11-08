@@ -2,7 +2,7 @@ import "server-only";
 
 import { createClient } from "@supabase/supabase-js";
 import { getRequestForBuyer } from "./request-actions";
-import { isSealedFromBuyer } from "./response-actions";
+import { assertVendorMaySubmit, isSealedFromBuyer } from "./response-actions";
 
 const BUCKET = "procurement-documents";
 export const MAX_PROPOSAL_DOCUMENT_BYTES = 10 * 1024 * 1024; // matches the bucket's file_size_limit
@@ -35,6 +35,13 @@ export async function uploadProposalDocument(
   requestId: string,
   file: File
 ): Promise<string> {
+  // Authorize before touching storage, not after: the caller only proves it
+  // is *some* vendor, so without this any signed-in vendor could write
+  // objects under any requestId prefix - including requests they were never
+  // invited to, and ones already closed. Checking first is also what keeps
+  // rejected attempts from leaving orphaned objects in the bucket.
+  await assertVendorMaySubmit(vendorId, requestId);
+
   if (file.size > MAX_PROPOSAL_DOCUMENT_BYTES) {
     throw new Error("File is too large. Maximum size is 10MB.");
   }
