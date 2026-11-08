@@ -16,15 +16,23 @@ export interface OrganizationMemberRef {
 }
 
 export interface Organization {
+  categories: string[];
   companySize: string | null;
   createdAt: string;
   description: string | null;
   id: string;
   industry: string | null;
   isBuyer: boolean;
+  // Consent to appear in the public marketplace directory. Never inferred
+  // from any other field - an organization is unlisted until an owner or
+  // admin deliberately turns this on.
+  isPublic: boolean;
   isSupplier: boolean;
   location: string | null;
   name: string;
+  operatingRegions: string[];
+  productsServices: string | null;
+  publicContactEmail: string | null;
   updatedAt: string;
   website: string | null;
 }
@@ -43,15 +51,35 @@ export interface OrganizationMember {
 }
 
 export interface OrganizationProfileInput {
+  categories: string[];
   companySize: string | null;
   description: string | null;
   industry: string | null;
   isBuyer: boolean;
+  isPublic: boolean;
   isSupplier: boolean;
   location: string | null;
   name: string;
+  operatingRegions: string[];
+  productsServices: string | null;
+  publicContactEmail: string | null;
   website: string | null;
 }
+
+// Creation deliberately takes the narrower set: a new organization is
+// identity and capabilities only, and is never public on day one. Listing
+// it is a separate, explicit edit.
+export type OrganizationCreateInput = Pick<
+  OrganizationProfileInput,
+  | "companySize"
+  | "description"
+  | "industry"
+  | "isBuyer"
+  | "isSupplier"
+  | "location"
+  | "name"
+  | "website"
+>;
 
 function getAdminClient() {
   const url = process.env.SUPABASE_URL;
@@ -72,15 +100,20 @@ function toError(error: unknown, fallback: string): Error {
 
 function rowToOrganization(row: Record<string, unknown>): Organization {
   return {
+    categories: (row.categories as string[] | null) ?? [],
     companySize: (row.company_size as string) || null,
     createdAt: row.created_at as string,
     description: (row.description as string) || null,
     id: row.id as string,
     industry: (row.industry as string) || null,
     isBuyer: Boolean(row.is_buyer),
+    isPublic: Boolean(row.is_public),
     isSupplier: Boolean(row.is_supplier),
     location: (row.location as string) || null,
     name: row.name as string,
+    operatingRegions: (row.operating_regions as string[] | null) ?? [],
+    productsServices: (row.products_services as string) || null,
+    publicContactEmail: (row.public_contact_email as string) || null,
     updatedAt: row.updated_at as string,
     website: (row.website as string) || null,
   };
@@ -156,7 +189,7 @@ export async function getMemberRole(
 
 export async function createOrganization(
   member: OrganizationMemberRef,
-  input: OrganizationProfileInput
+  input: OrganizationCreateInput
 ): Promise<Organization> {
   const name = input.name.trim();
   if (!name) {
@@ -278,13 +311,18 @@ export async function updateOrganizationProfile(
   const { data, error } = await supabase
     .from("organizations")
     .update({
+      categories: input.categories,
       company_size: input.companySize,
       description: input.description,
       industry: input.industry,
       is_buyer: input.isBuyer,
+      is_public: input.isPublic,
       is_supplier: input.isSupplier,
       location: input.location,
       name,
+      operating_regions: input.operatingRegions,
+      products_services: input.productsServices,
+      public_contact_email: input.publicContactEmail,
       updated_at: new Date().toISOString(),
       website: input.website,
     })

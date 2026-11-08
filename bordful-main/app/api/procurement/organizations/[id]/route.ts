@@ -47,16 +47,36 @@ export async function PATCH(
     const text = typeof value === "string" ? value.trim() : "";
     return text || null;
   };
+  const asTags = (value: unknown): string[] => {
+    if (!Array.isArray(value)) {
+      return [];
+    }
+    return [
+      ...new Set(
+        value
+          .filter((entry): entry is string => typeof entry === "string")
+          .map((entry) => entry.trim())
+          .filter(Boolean)
+      ),
+    ];
+  };
 
   try {
     const organization = await updateOrganizationProfile(member, id, {
+      categories: asTags(body.categories),
       companySize: asText(body.companySize),
       description: asText(body.description),
       industry: asText(body.industry),
       isBuyer: body.isBuyer === true,
+      // Opting into the public directory is an explicit true, never a
+      // truthy value carried in from somewhere else.
+      isPublic: body.isPublic === true,
       isSupplier: body.isSupplier === true,
       location: asText(body.location),
       name: typeof body.name === "string" ? body.name : "",
+      operatingRegions: asTags(body.operatingRegions),
+      productsServices: asText(body.productsServices),
+      publicContactEmail: asText(body.publicContactEmail),
       website: asText(body.website),
     });
     return NextResponse.json({ organization });
