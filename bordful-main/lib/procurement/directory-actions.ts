@@ -114,19 +114,25 @@ export function parseDirectoryFilters(
   };
 }
 
-// Every predicate is applied in the database, including the keyword match
-// and both facets, and the page is cut with range() - the tender listing's
-// earlier bug was fetching a fixed window first and filtering it in JS,
-// which silently hid results past the window.
-export async function listPublicOrganizations(
-  filters: DirectoryFilters
-): Promise<DirectoryPage> {
-  const supabase = getAdminClient();
-  const from = (filters.page - 1) * DIRECTORY_PAGE_SIZE;
+// PostgREST's code for a Range whose offset is past the last row. It answers
+// 416 rather than an empty body, and `page` comes straight off the query
+// string, so /procurement/directory?page=99 would otherwise be a 500.
+const OFFSET_PAST_END = "PGRST103";
 
+// Shared by the page query and the count-only retry below so the two can
+// never drift: a filter added to one is applied by both.
+// Generic in the column list so supabase-js still infers the row shape from
+// the literal: taking it as a plain `string` widens `data` to
+// GenericStringError and loses the typing at every call site.
+function filteredOrganizations<TColumns extends string>(
+  supabase: ReturnType<typeof getAdminClient>,
+  filters: DirectoryFilters,
+  columns: TColumns,
+  options: { count: "exact"; head?: boolean }
+) {
   let query = supabase
     .from("organizations")
-    .select(PUBLIC_COLUMNS, { count: "exact" })
+    .select(columns, options)
     .eq("is_public", true);
 
   if (filters.capability === "buyer") {
@@ -145,16 +151,46 @@ export async function listPublicOrganizations(
       `name.ilike.%${filters.q}%,description.ilike.%${filters.q}%,products_services.ilike.%${filters.q}%`
     );
   }
+  return query;
+}
+
+// Every predicate is applied in the database, including the keyword match
+// and both facets, and the page is cut with range() - the tender listing's
+// earlier bug was fetching a fixed window first and filtering it in JS,
+// which silently hid results past the window.
+export async function listPublicOrganizations(
+  filters: DirectoryFilters
+): Promise<DirectoryPage> {
+  const supabase = getAdminClient();
+  const from = (filters.page - 1) * DIRECTORY_PAGE_SIZE;
 
   // name then id: name alone is not unique, and an unstable sort makes rows
   // reappear or vanish across pages.
-  const { data, count, error } = await query
+  const { data, count, error } = await filteredOrganizations(
+    supabase,
+    filters,
+    PUBLIC_COLUMNS,
+    { count: "exact" }
+  )
     .order("name", { ascending: true })
     .order("id", { ascending: true })
     .range(from, from + DIRECTORY_PAGE_SIZE - 1);
 
   if (error) {
-    throw new Error(error.message || "Failed to load the directory.");
+    if (error.code !== OFFSET_PAST_END) {
+      throw new Error(error.message || "Failed to load the directory.");
+    }
+    // A page past the last one is an empty page, not a failure. The 416
+    // carries no count, so the total is fetched with a head request - an
+    // extra round trip only on this rare path, which keeps the common one
+    // a single query.
+    const { count: total } = await filteredOrganizations(
+      supabase,
+      filters,
+      "id",
+      { count: "exact", head: true }
+    );
+    return emptyPage(filters.page, total ?? 0);
   }
 
   const total = count ?? 0;
@@ -163,6 +199,15 @@ export async function listPublicOrganizations(
       rowToPublicOrganization(row as Record<string, unknown>)
     ),
     page: filters.page,
+    pageCount: Math.max(1, Math.ceil(total / DIRECTORY_PAGE_SIZE)),
+    total,
+  };
+}
+
+function emptyPage(page: number, total: number): DirectoryPage {
+  return {
+    organizations: [],
+    page,
     pageCount: Math.max(1, Math.ceil(total / DIRECTORY_PAGE_SIZE)),
     total,
   };
