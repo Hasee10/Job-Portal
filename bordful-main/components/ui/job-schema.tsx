@@ -9,7 +9,7 @@ import type {
   WithContext,
 } from "schema-dts";
 import config from "@/config";
-import type { Job, Salary } from "@/lib/db/airtable";
+import type { Job, Salary } from "@/lib/db/jobs";
 import { safeJsonLdStringify } from "@/lib/utils/json-ld";
 
 // Utility functions for schema formatting

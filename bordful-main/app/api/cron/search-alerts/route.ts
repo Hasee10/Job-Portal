@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import config from "@/config";
-import type { Job } from "@/lib/db/airtable";
-import { getJobs } from "@/lib/db/airtable.server";
+import type { Job } from "@/lib/db/jobs";
+import { getJobs } from "@/lib/db/jobs.server";
 import { sendEmail } from "@/lib/email/smtp";
 import {
   type JobMatchDigestRow,

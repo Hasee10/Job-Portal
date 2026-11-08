@@ -5,7 +5,7 @@ import { SaveJobButton } from "@/components/jobs/SaveJobButton";
 import { Button } from "@/components/ui/button";
 import { JobBadge } from "@/components/ui/job-badge";
 import config from "@/config";
-import { formatSalary, type Job } from "@/lib/db/airtable";
+import { formatSalary, type Job } from "@/lib/db/jobs";
 import { resolveColor } from "@/lib/utils/colors";
 import { formatDate } from "@/lib/utils/formatDate";
 import { generateJobSlug } from "@/lib/utils/slugify";

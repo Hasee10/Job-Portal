@@ -1,7 +1,7 @@
 import { Feed } from "feed";
 import config from "@/config";
-import { formatSalary } from "@/lib/db/airtable";
-import { getJob, getJobs } from "@/lib/db/airtable.server";
+import { formatSalary } from "@/lib/db/jobs";
+import { getJob, getJobs } from "@/lib/db/jobs.server";
 import { generateJobSlug } from "@/lib/utils/slugify";
 
 // Feeds are meant to be a "what's new" digest, not a full database dump -

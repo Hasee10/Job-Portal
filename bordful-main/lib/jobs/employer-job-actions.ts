@@ -3,7 +3,7 @@ import "server-only";
 import { createClient } from "@supabase/supabase-js";
 import config from "@/config";
 import type { CurrencyCode } from "@/lib/constants/currencies";
-import type { CareerLevel, Job, SalaryUnit } from "@/lib/db/airtable";
+import type { CareerLevel, Job, SalaryUnit } from "@/lib/db/jobs";
 import { generateJobSlug } from "@/lib/utils/slugify";
 
 // A job posting is owned by exactly one of an employer or a recruiter -

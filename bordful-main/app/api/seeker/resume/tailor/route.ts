@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { aiChatCompletion } from "@/lib/ai/provider";
 import { AIProviderError } from "@/lib/ai/types";
-import { getJob } from "@/lib/db/airtable.server";
+import { getJob } from "@/lib/db/jobs.server";
 import { checkAndIncrementResumeTailorUsage } from "@/lib/jobs/entitlements-actions";
 import type { ResumeContent } from "@/lib/jobs/resume-actions";
 import {

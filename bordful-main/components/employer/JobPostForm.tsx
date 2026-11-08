@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import type { CareerLevel, Job } from "@/lib/db/airtable";
+import type { CareerLevel, Job } from "@/lib/db/jobs";
 import type { PostedJob } from "@/lib/jobs/employer-job-actions";
 
 const JOB_TYPES: Job["type"][] = [

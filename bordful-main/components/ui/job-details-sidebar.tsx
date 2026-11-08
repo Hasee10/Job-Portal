@@ -26,7 +26,7 @@ import {
   formatSalary,
   formatUSDApproximation,
   type Salary,
-} from "@/lib/db/airtable";
+} from "@/lib/db/jobs";
 
 type JobDetailsSidebarProps = {
   title: string;

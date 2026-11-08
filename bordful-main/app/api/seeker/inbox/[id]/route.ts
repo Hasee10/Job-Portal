@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { getRecruiterAccountById } from "@/lib/auth/recruiter-accounts";
-import { getJob } from "@/lib/db/airtable.server";
+import { getJob } from "@/lib/db/jobs.server";
 import { sendEmail } from "@/lib/email/smtp";
 import { renderOutreachResponseEmail } from "@/lib/email/templates/outreach-response";
 import {

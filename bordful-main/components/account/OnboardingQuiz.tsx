@@ -12,7 +12,7 @@ import {
   JOB_TYPE_DISPLAY_NAMES,
   type JobType,
 } from "@/lib/constants/job-types";
-import type { CareerLevel } from "@/lib/db/airtable";
+import type { CareerLevel } from "@/lib/db/jobs";
 import type { SavedSearchFilters } from "@/lib/jobs/saved-search-matching";
 
 // A focused subset of the full 19-value CareerLevel enum - enough to express

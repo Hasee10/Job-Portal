@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { JobBadge } from "@/components/ui/job-badge";
-import { formatSalary, type Job } from "@/lib/db/airtable";
+import { formatSalary, type Job } from "@/lib/db/jobs";
 import { formatDate } from "@/lib/utils/formatDate";
 import { generateJobSlug } from "@/lib/utils/slugify";
 

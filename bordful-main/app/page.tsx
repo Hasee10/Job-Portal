@@ -6,7 +6,7 @@ import { TrustSection } from "@/components/home/TrustSection";
 import config from "@/config";
 import { HOMEPAGE_JOBS_LIMIT } from "@/lib/constants/defaults";
 import { listPublishedTestimonials } from "@/lib/content/testimonial-actions";
-import { getActiveJobsCount, getJobs } from "@/lib/db/airtable.server";
+import { getActiveJobsCount, getJobs } from "@/lib/db/jobs.server";
 import { generateMetadata } from "@/lib/utils/metadata";
 
 // Add metadata for SEO

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
-import { getJob } from "@/lib/db/airtable.server";
+import { getJob } from "@/lib/db/jobs.server";
 import { diffSkills, scoreJobMatch } from "@/lib/jobs/match-scoring";
 import { getSeekerResume } from "@/lib/jobs/resume-actions";
 import { splitSkills } from "@/lib/jobs/resume-matching";

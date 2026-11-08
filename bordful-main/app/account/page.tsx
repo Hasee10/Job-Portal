@@ -13,7 +13,7 @@ import { auth } from "@/auth";
 import { SavedSearchesList } from "@/components/account/SavedSearchesList";
 import { SignOutButton } from "@/components/auth/SignOutButton";
 import config from "@/config";
-import { getJobs } from "@/lib/db/airtable.server";
+import { getJobs } from "@/lib/db/jobs.server";
 import { getSavedSearchLimit } from "@/lib/entitlements";
 import { getSeekerUnreadCount } from "@/lib/jobs/candidate-outreach-actions";
 import { getSeekerUnreadInviteCount } from "@/lib/jobs/employer-candidate-actions";

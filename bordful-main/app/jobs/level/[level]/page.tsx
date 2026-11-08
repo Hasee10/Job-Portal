@@ -5,8 +5,8 @@ import { HeroSection } from "@/components/ui/hero-section";
 import { JobSearchInput } from "@/components/ui/job-search-input";
 import config from "@/config";
 import { CAREER_LEVEL_DISPLAY_NAMES } from "@/lib/constants/career-levels";
-import type { CareerLevel } from "@/lib/db/airtable";
-import { getJobs } from "@/lib/db/airtable.server";
+import type { CareerLevel } from "@/lib/db/jobs";
+import { getJobs } from "@/lib/db/jobs.server";
 import { generateMetadata as createMetadata } from "@/lib/utils/metadata";
 
 // Revalidate page every 5 minutes

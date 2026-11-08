@@ -12,7 +12,7 @@ import {
   type LanguageCode,
 } from "@/lib/constants/languages";
 import type { RemoteRegion, WorkplaceType } from "@/lib/constants/workplace";
-import type { CareerLevel, Job, SalaryUnit } from "@/lib/db/airtable";
+import type { CareerLevel, Job, SalaryUnit } from "@/lib/db/jobs";
 import { getSupabaseClient } from "@/lib/db/supabase-client";
 import { normalizeMarkdown } from "@/lib/utils/markdown";
 

@@ -1,4 +1,4 @@
-import type { CareerLevel } from "@/lib/db/airtable";
+import type { CareerLevel } from "@/lib/db/jobs";
 
 export const CAREER_LEVEL_DISPLAY_NAMES: Record<CareerLevel, string> = {
   Associate: "Associate",

@@ -19,7 +19,7 @@ import {
   type CareerLevel,
   type Job,
   normalizeAnnualSalary,
-} from "@/lib/db/airtable";
+} from "@/lib/db/jobs";
 import { useJobSearch } from "@/lib/hooks/useJobSearch";
 import { usePagination } from "@/lib/hooks/usePagination";
 import { useSortOrder } from "@/lib/hooks/useSortOrder";

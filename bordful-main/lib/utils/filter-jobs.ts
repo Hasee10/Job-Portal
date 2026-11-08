@@ -1,4 +1,4 @@
-import type { Job } from "@/lib/db/airtable";
+import type { Job } from "@/lib/db/jobs";
 
 export function filterJobsBySearch(jobs: Job[], searchTerm: string): Job[] {
   if (!searchTerm) {

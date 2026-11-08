@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { ResumeBuilder } from "@/components/account/ResumeBuilder";
 import config from "@/config";
-import { getJob } from "@/lib/db/airtable.server";
+import { getJob } from "@/lib/db/jobs.server";
 import {
   EMPTY_RESUME_CONTENT,
   getSeekerResume,

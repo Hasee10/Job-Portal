@@ -1,6 +1,6 @@
 import type { LanguageCode } from "@/lib/constants/languages";
-import type { CareerLevel, Job } from "@/lib/db/airtable";
-import { normalizeAnnualSalary } from "@/lib/db/airtable";
+import type { CareerLevel, Job } from "@/lib/db/jobs";
+import { normalizeAnnualSalary } from "@/lib/db/jobs";
 import { filterJobsBySearch } from "@/lib/utils/filter-jobs";
 
 // Mirrors SALARY_SLIDER_MIN/MAX in components/ui/job-filters.tsx - kept as a

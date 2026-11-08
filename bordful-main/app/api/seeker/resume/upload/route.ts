@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import config from "@/config";
 import { AIProviderError } from "@/lib/ai/types";
-import { getJobs } from "@/lib/db/airtable.server";
+import { getJobs } from "@/lib/db/jobs.server";
 import { sendEmail } from "@/lib/email/smtp";
 import {
   markSeekerResumeMatched,

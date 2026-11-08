@@ -19,8 +19,8 @@ import {
   PARENTHESIS_CONTENT_REGEX,
   STATIC_JOB_PAGES_LIMIT,
 } from "@/lib/constants/defaults";
-import { formatSalary } from "@/lib/db/airtable";
-import { getJob, getJobs } from "@/lib/db/airtable.server";
+import { formatSalary } from "@/lib/db/jobs";
+import { getJob, getJobs } from "@/lib/db/jobs.server";
 import { formatDate } from "@/lib/utils/formatDate";
 import { generateMetadata as createMetadata } from "@/lib/utils/metadata";
 import { generateJobSlug } from "@/lib/utils/slugify";

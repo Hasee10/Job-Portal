@@ -24,7 +24,7 @@ import {
   type CareerLevel,
   type Job,
   normalizeAnnualSalary,
-} from "@/lib/db/airtable";
+} from "@/lib/db/jobs";
 
 // Salary range slider bounds - annual, in USD-equivalent terms (jobs already
 // go through normalizeAnnualSalary before comparison).

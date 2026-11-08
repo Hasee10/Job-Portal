@@ -24,8 +24,8 @@ import {
   createLocationSlug,
   formatLocationTitle,
 } from "@/lib/constants/locations";
-import type { CareerLevel } from "@/lib/db/airtable";
-import { getJobs } from "@/lib/db/airtable.server";
+import type { CareerLevel } from "@/lib/db/jobs";
+import { getJobs } from "@/lib/db/jobs.server";
 import { resolveColor } from "@/lib/utils/colors";
 import { safeJsonLdStringify } from "@/lib/utils/json-ld";
 import { generateMetadata } from "@/lib/utils/metadata";

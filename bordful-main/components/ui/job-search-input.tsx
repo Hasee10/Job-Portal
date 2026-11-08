@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Input } from "@/components/ui/input";
 import config from "@/config";
-import type { Job } from "@/lib/db/airtable";
+import type { Job } from "@/lib/db/jobs";
 import { useJobSearch } from "@/lib/hooks/useJobSearch";
 import { cn } from "@/lib/utils";
 
