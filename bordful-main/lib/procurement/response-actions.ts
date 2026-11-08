@@ -73,6 +73,7 @@ const RESPONDABLE_INVITATION_STATUSES = [
   "prequalification_approved",
 ];
 const OPEN_RESPONSE_STATUSES = ["bids_opened", "evaluating", "awarded"];
+const EVALUATABLE_STATUSES = ["bids_opened", "closed_for_responses"];
 
 // Pure, DB-free predicates - pulled out of submitResponse/listResponsesForRequest
 // so the two compliance-critical rules (who can submit, when a buyer can see
@@ -118,23 +119,75 @@ export function isSealedFromBuyer(
   return sealedBids && !OPEN_RESPONSE_STATUSES.includes(status);
 }
 
-export async function submitResponse(
+// The window during which a vendor may change what they have on the table -
+// submitting, uploading a proposal document, or withdrawing. All three share
+// one definition so a document can never be attached to, or a bid pulled
+// from, a request that is no longer open.
+export function isSubmissionWindowOpen(
+  status: string,
+  responseDeadline: string | null,
+  now: Date = new Date()
+): { open: true } | { open: false; reason: string } {
+  if (status !== "published") {
+    return {
+      open: false,
+      reason: "This request is not currently accepting responses.",
+    };
+  }
+  if (responseDeadline && now > new Date(responseDeadline)) {
+    return {
+      open: false,
+      reason: "The response deadline for this request has passed.",
+    };
+  }
+  return { open: true };
+}
+
+// A sealed request must pass through openBids() before evaluation. Without
+// this, moving straight from closed_for_responses to evaluating would make
+// every bid readable (evaluating is in OPEN_RESPONSE_STATUSES) while
+// skipping the deadline check and the bids_opened audit entry that openBids
+// exists to produce.
+export function canStartEvaluation(
+  sealedBids: boolean,
+  status: string
+): { allowed: true } | { allowed: false; reason: string } {
+  if (!EVALUATABLE_STATUSES.includes(status)) {
+    return {
+      allowed: false,
+      reason: "This request is not ready for evaluation yet.",
+    };
+  }
+  if (sealedBids && status !== "bids_opened") {
+    return {
+      allowed: false,
+      reason: "Sealed bids must be opened before evaluation can start.",
+    };
+  }
+  return { allowed: true };
+}
+
+// Shared gate for everything a vendor does against an open request, so the
+// upload endpoint cannot be reached by a vendor that submitResponse would
+// have rejected. Returns the invitation too, since submitResponse records it.
+export async function assertVendorMaySubmit(
   vendorId: string,
-  requestId: string,
-  input: SubmitResponseInput
-): Promise<ProcurementResponse> {
+  requestId: string
+): Promise<{
+  request: Awaited<ReturnType<typeof getRequestById>>;
+  invitation: Awaited<ReturnType<typeof getVendorInvitation>>;
+}> {
   const request = await getRequestById(requestId);
   if (!request) {
     throw new Error("Request not found.");
   }
-  if (request.status !== "published") {
-    throw new Error("This request is not currently accepting responses.");
-  }
-  if (
-    request.responseDeadline &&
-    new Date() > new Date(request.responseDeadline)
-  ) {
-    throw new Error("The response deadline for this request has passed.");
+
+  const window = isSubmissionWindowOpen(
+    request.status,
+    request.responseDeadline
+  );
+  if (!window.open) {
+    throw new Error(window.reason);
   }
 
   const invitation = await getVendorInvitation(vendorId, requestId);
@@ -145,6 +198,16 @@ export async function submitResponse(
   if (!eligibility.allowed) {
     throw new Error(eligibility.reason);
   }
+
+  return { invitation, request };
+}
+
+export async function submitResponse(
+  vendorId: string,
+  requestId: string,
+  input: SubmitResponseInput
+): Promise<ProcurementResponse> {
+  const { invitation } = await assertVendorMaySubmit(vendorId, requestId);
 
   const supabase = getAdminClient();
   const { data, error } = await supabase
@@ -179,10 +242,26 @@ export async function submitResponse(
   return response;
 }
 
+// Withdrawal is bounded by the same window as submission. Once a request
+// closes, its bids are part of the pool the buyer evaluates and awards from,
+// so pulling one out afterwards would let a vendor retract a bid during (or
+// after) evaluation - including one that had already been awarded.
 export async function withdrawResponse(
   vendorId: string,
   requestId: string
 ): Promise<void> {
+  const request = await getRequestById(requestId);
+  if (!request) {
+    throw new Error("Request not found.");
+  }
+  const window = isSubmissionWindowOpen(
+    request.status,
+    request.responseDeadline
+  );
+  if (!window.open) {
+    throw new Error(window.reason);
+  }
+
   const supabase = getAdminClient();
   const { data, error } = await supabase
     .from("procurement_responses")
