@@ -77,6 +77,24 @@ export default async function OrganizationDetailPage({
               : " Only an owner or admin can change the profile below."}
           </p>
 
+          {/* Both surfaces are membership-scoped on the server; a business
+              that is not a buyer simply finds nothing to issue, and one that
+              has not been invited finds no opportunities. */}
+          <nav className="mt-6 flex flex-wrap gap-3 text-sm">
+            <Link
+              className="rounded-lg border border-zinc-200 px-4 py-2 font-medium transition-colors hover:border-zinc-300 dark:border-zinc-800 dark:hover:border-zinc-700"
+              href={`/procurement/organizations/${id}/requests`}
+            >
+              Procurement requests
+            </Link>
+            <Link
+              className="rounded-lg border border-zinc-200 px-4 py-2 font-medium transition-colors hover:border-zinc-300 dark:border-zinc-800 dark:hover:border-zinc-700"
+              href={`/procurement/organizations/${id}/opportunities`}
+            >
+              Opportunities
+            </Link>
+          </nav>
+
           <section className="mt-8 rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900/60">
             <OrganizationForm canEdit={canEdit} organization={organization} />
           </section>
