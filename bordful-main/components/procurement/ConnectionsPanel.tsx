@@ -49,10 +49,12 @@ export function ConnectionsPanel({
   connections,
   approvedSuppliers,
   canManage,
+  organizationId,
 }: {
   approvedSuppliers: OrganizationSummary[];
   canManage: boolean;
   connections: ConnectionLists;
+  organizationId: string;
 }) {
   const router = useRouter();
   const { toast } = useToast();
@@ -201,8 +203,18 @@ export function ConnectionsPanel({
               key={connection.id}
             >
               <Counterpart connection={connection} />
-              <span className="text-xs text-zinc-500 dark:text-zinc-400">
-                {connection.isBuyer ? "You buy" : "You supply"}
+              <span className="flex items-center gap-3">
+                <span className="text-xs text-zinc-500 dark:text-zinc-400">
+                  {connection.isBuyer ? "You buy" : "You supply"}
+                </span>
+                {/* Only rendered for accepted connections - a pending or
+                    rejected request offers no messaging action at all. */}
+                <Link
+                  className="font-medium text-primary text-xs hover:underline"
+                  href={`/procurement/organizations/${organizationId}/connections/${connection.id}`}
+                >
+                  Messages
+                </Link>
               </span>
             </li>
           ))}
