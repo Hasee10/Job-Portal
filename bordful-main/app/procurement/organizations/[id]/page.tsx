@@ -94,6 +94,7 @@ export default async function OrganizationDetailPage({
             approvedSuppliers={approvedSuppliers}
             canManage={canEdit}
             connections={connections}
+            organizationId={id}
           />
         </div>
       </div>
