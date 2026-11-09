@@ -199,9 +199,13 @@ export function AuthNavStatus({
 
   return (
     <div className={`flex items-center gap-3 text-sm ${className}`}>
+      {/* /join already lists all three sign-in paths (job seeker, recruiter,
+          employer); a signed-out visitor here has not said which they are,
+          so this must not assume job seeker the way a bare /account/sign-in
+          link would. */}
       <Link
         className="text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
-        href="/account/sign-in"
+        href="/join"
         onClick={onNavigate}
       >
         Sign in
