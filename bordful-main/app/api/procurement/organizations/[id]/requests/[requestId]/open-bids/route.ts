@@ -5,6 +5,7 @@ import {
   OrganizationResponseError,
   openOrganizationBids,
 } from "@/lib/procurement/organization-response-actions";
+import { OrganizationRfqError } from "@/lib/procurement/organization-rfq-actions";
 
 export const dynamic = "force-dynamic";
 
@@ -22,7 +23,14 @@ export async function POST(
     await openOrganizationBids(member, id, requestId);
     return NextResponse.json({ success: true });
   } catch (error) {
-    if (error instanceof OrganizationResponseError) {
+    // assertCanIssueRfq/getOrganizationRequest throw OrganizationRfqError,
+    // not OrganizationResponseError - both carry the same {message, code}
+    // shape, so an unauthorized or not-found buyer gets 404/400 either way
+    // instead of falling through to a generic 500.
+    if (
+      error instanceof OrganizationResponseError ||
+      error instanceof OrganizationRfqError
+    ) {
       return NextResponse.json(
         { error: error.message },
         { status: error.code === "not_found" ? 404 : 400 }
