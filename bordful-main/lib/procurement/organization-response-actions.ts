@@ -2,6 +2,10 @@ import "server-only";
 import { createClient } from "@supabase/supabase-js";
 import { logAudit } from "./audit-actions";
 import {
+  type ProcurementEvaluation,
+  rowToEvaluation,
+} from "./evaluation-actions";
+import {
   canManageOrganization,
   getMemberRole,
   type OrganizationMemberRef,
@@ -463,5 +467,177 @@ export async function startOrganizationEvaluation(
   }
   await logAudit(requestId, member.memberId, member.memberType, "evaluating", {
     buyerOrgId: organizationId,
+  });
+}
+
+// The organization equivalent of scoreResponse() in evaluation-actions.ts.
+// evaluator_id is stored as the opaque member id, same convention as
+// procurement_audit_log.actor_id - the evaluations table's FK to
+// employers(id) was dropped for exactly this (see the M4B2-B migration),
+// since an owner/admin can be recruiter- or seeker-typed too.
+export async function scoreOrganizationResponse(
+  member: OrganizationMemberRef,
+  organizationId: string,
+  requestId: string,
+  responseId: string,
+  score: number | null,
+  notes: string | null
+): Promise<ProcurementEvaluation> {
+  await assertCanIssueRfq(member, organizationId);
+  const request = await getOrganizationRequest(
+    member,
+    organizationId,
+    requestId
+  );
+
+  if (request.status !== "evaluating") {
+    throw new OrganizationResponseError(
+      "This request is not currently in evaluation.",
+      "invalid_state"
+    );
+  }
+
+  const supabase = getAdminClient();
+  const { data: response } = await supabase
+    .from("procurement_responses")
+    .select("id")
+    .eq("id", responseId)
+    .eq("request_id", requestId)
+    .maybeSingle();
+  if (!response) {
+    throw new OrganizationResponseError(
+      "Response not found for this request.",
+      "not_found"
+    );
+  }
+
+  const { data, error } = await supabase
+    .from("procurement_evaluations")
+    .insert({
+      evaluator_id: member.memberId,
+      notes,
+      request_id: requestId,
+      response_id: responseId,
+      score,
+    })
+    .select("*")
+    .single();
+
+  if (error) {
+    throw new OrganizationResponseError(
+      error.message || "Failed to record evaluation.",
+      "insert_failed"
+    );
+  }
+
+  const evaluation = rowToEvaluation(data);
+  await logAudit(requestId, member.memberId, member.memberType, "evaluated", {
+    buyerOrgId: organizationId,
+    responseId,
+    score,
+  });
+  return evaluation;
+}
+
+export async function listOrganizationEvaluations(
+  member: OrganizationMemberRef,
+  organizationId: string,
+  requestId: string
+): Promise<ProcurementEvaluation[]> {
+  await getOrganizationRequest(member, organizationId, requestId);
+
+  const supabase = getAdminClient();
+  const { data, error } = await supabase
+    .from("procurement_evaluations")
+    .select("*")
+    .eq("request_id", requestId)
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    throw new OrganizationResponseError(
+      error.message || "Failed to load evaluations.",
+      "query_failed"
+    );
+  }
+  return (data ?? []).map(rowToEvaluation);
+}
+
+// The organization equivalent of awardRequest() in evaluation-actions.ts.
+// Same atomic transition: the update's WHERE clause requires
+// status = 'evaluating', so two concurrent award attempts can only ever
+// have one succeed - the second gets zero rows back and is reported as
+// "already awarded" rather than silently no-op'ing. awarded_response_id
+// is the queryable record of the winner (see the M4B2-B migration); the
+// audit log entry remains the human-readable trail, not the source of truth.
+export async function awardOrganizationRequest(
+  member: OrganizationMemberRef,
+  organizationId: string,
+  requestId: string,
+  responseId: string
+): Promise<void> {
+  await assertCanIssueRfq(member, organizationId);
+  const request = await getOrganizationRequest(
+    member,
+    organizationId,
+    requestId
+  );
+
+  if (request.status !== "evaluating") {
+    throw new OrganizationResponseError(
+      "This request must be in evaluation before it can be awarded.",
+      "invalid_state"
+    );
+  }
+
+  const supabase = getAdminClient();
+  const { data: response } = await supabase
+    .from("procurement_responses")
+    .select("id, supplier_org_id, vendor_id, is_withdrawn")
+    .eq("id", responseId)
+    .eq("request_id", requestId)
+    .maybeSingle();
+  if (!response) {
+    throw new OrganizationResponseError(
+      "Response not found for this request.",
+      "not_found"
+    );
+  }
+  if (response.is_withdrawn) {
+    throw new OrganizationResponseError(
+      "Cannot award a withdrawn response.",
+      "invalid_state"
+    );
+  }
+
+  const { data: awarded, error } = await supabase
+    .from("procurement_requests")
+    .update({
+      awarded_at: new Date().toISOString(),
+      awarded_response_id: responseId,
+      status: "awarded",
+    })
+    .eq("id", requestId)
+    .eq("buyer_org_id", organizationId)
+    .eq("status", "evaluating")
+    .select("id")
+    .maybeSingle();
+
+  if (error) {
+    throw new OrganizationResponseError(
+      error.message || "Failed to award request.",
+      "update_failed"
+    );
+  }
+  if (!awarded) {
+    throw new OrganizationResponseError(
+      "This request has already been awarded or is no longer in evaluation.",
+      "invalid_state"
+    );
+  }
+  await logAudit(requestId, member.memberId, member.memberType, "awarded", {
+    buyerOrgId: organizationId,
+    responseId,
+    supplierOrgId: response.supplier_org_id,
+    vendorId: response.vendor_id,
   });
 }
