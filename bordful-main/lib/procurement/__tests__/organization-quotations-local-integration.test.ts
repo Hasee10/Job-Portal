@@ -17,6 +17,8 @@ import type { OrganizationMemberRef } from "../organization-actions";
 import {
   getMyOrganizationResponse,
   listOrganizationResponsesForRequest,
+  openOrganizationBids,
+  startOrganizationEvaluation,
   submitOrganizationResponse,
   withdrawOrganizationResponse,
 } from "../organization-response-actions";
@@ -38,18 +40,23 @@ const DEADLINE_PASSED = /deadline.*passed/i;
 const OWNER_ONLY = /owner or admin/i;
 const CANNOT_SUBMIT = /cannot submit/i;
 const NOT_FOUND = /not found/i;
+const MUST_BE_CLOSED = /closed for responses/i;
 
 function member(): OrganizationMemberRef {
   return { memberId: crypto.randomUUID(), memberType: "employer" };
 }
 
-function rfqInput(title: string, deadline: Date): ProcurementRequestInput {
+function rfqInput(
+  title: string,
+  deadline: Date,
+  sealedBids = false
+): ProcurementRequestInput {
   return {
     category: "office furniture",
     description: "20 height-adjustable office desks.",
     requiresPrequalification: false,
     responseDeadline: deadline.toISOString(),
-    sealedBids: false,
+    sealedBids,
     specFields: [],
     title,
     type: "rfq",
@@ -71,6 +78,7 @@ describeLocal("local integration: organization quotations", () => {
   let supplierOrg = "";
   let outsiderOrg = "";
   let publishedRequestId = "";
+  let sealedRequestId = "";
   let legacyVendorId = "";
   let legacyRequestId = "";
   let legacyResponseId = "";
@@ -130,6 +138,35 @@ describeLocal("local integration: organization quotations", () => {
     await publishOrganizationRequest(buyerOwner, buyerOrg, request.id);
     publishedRequestId = request.id;
 
+    // A sealed, organization-owned request for the M4B2-A lifecycle: invited,
+    // published, a response submitted, then force-closed for responses
+    // (there is no org-aware "close" action yet - out of this milestone's
+    // scope) so it sits exactly where openOrganizationBids expects it.
+    const sealedRequest = await createOrganizationRequest(
+      buyerOwner,
+      buyerOrg,
+      rfqInput(`${RUN} Sealed desks`, future, true)
+    );
+    await inviteSupplierOrganizations(buyerOwner, buyerOrg, sealedRequest.id, [
+      supplierOrg,
+    ]);
+    await publishOrganizationRequest(buyerOwner, buyerOrg, sealedRequest.id);
+    await submitOrganizationResponse(
+      supplierOwner,
+      supplierOrg,
+      sealedRequest.id,
+      {
+        pricing: { amount: "9000", currency: "USD" },
+        proposalDocumentPath: null,
+        proposalText: "Sealed quote - must stay hidden until opened.",
+      }
+    );
+    await admin
+      .from("procurement_requests")
+      .update({ status: "closed_for_responses" })
+      .eq("id", sealedRequest.id);
+    sealedRequestId = sealedRequest.id;
+
     // A legacy vendor_account and a legacy response, to prove the XOR
     // constraint and the unmodified vendor_id path still work.
     const { data: vendor, error: vendorError } = await admin
@@ -181,7 +218,11 @@ describeLocal("local integration: organization quotations", () => {
   });
 
   afterAll(async () => {
-    const requestIds = [publishedRequestId, legacyRequestId].filter(Boolean);
+    const requestIds = [
+      publishedRequestId,
+      sealedRequestId,
+      legacyRequestId,
+    ].filter(Boolean);
     if (requestIds.length) {
       await admin
         .from("procurement_responses")
@@ -443,5 +484,79 @@ describeLocal("local integration: organization quotations", () => {
       request_id: legacyRequestId,
     });
     expect(neither.error).not.toBeNull();
+  });
+
+  // M4B2-A: one representative sealed-RFQ lifecycle on the fixture set up
+  // above - sealed, closed_for_responses, with a supplier response already
+  // on the table that must stay hidden until an authorized opening.
+  it("refuses an unrelated organization opening sealed bids", async () => {
+    await expect(
+      openOrganizationBids(outsiderOwner, outsiderOrg, sealedRequestId)
+    ).rejects.toThrow(NOT_FOUND);
+  });
+
+  it("hides sealed content from the buyer before opening", async () => {
+    const before = await listOrganizationResponsesForRequest(
+      buyerOwner,
+      buyerOrg,
+      sealedRequestId
+    );
+    expect(before.sealed).toBe(true);
+    if (before.sealed) {
+      expect(before.count).toBe(1);
+    }
+  });
+
+  it("opens sealed bids for the authorized buyer and records the audit event", async () => {
+    await openOrganizationBids(buyerOwner, buyerOrg, sealedRequestId);
+
+    const { data: request } = await admin
+      .from("procurement_requests")
+      .select("status")
+      .eq("id", sealedRequestId)
+      .single();
+    expect(request?.status).toBe("bids_opened");
+
+    const { data: audit } = await admin
+      .from("procurement_audit_log")
+      .select("action")
+      .eq("request_id", sealedRequestId)
+      .eq("action", "bids_opened")
+      .maybeSingle();
+    expect(audit).not.toBeNull();
+  });
+
+  it("reveals the response to the buyer once opened", async () => {
+    const after = await listOrganizationResponsesForRequest(
+      buyerOwner,
+      buyerOrg,
+      sealedRequestId
+    );
+    expect(after.sealed).toBe(false);
+    if (!after.sealed) {
+      expect(after.responses[0]?.proposalText).toBe(
+        "Sealed quote - must stay hidden until opened."
+      );
+    }
+  });
+
+  it("refuses opening a second time", async () => {
+    await expect(
+      openOrganizationBids(buyerOwner, buyerOrg, sealedRequestId)
+    ).rejects.toThrow(MUST_BE_CLOSED);
+  });
+
+  it("moves to evaluation only after opening, and refuses the outsider", async () => {
+    await expect(
+      startOrganizationEvaluation(outsiderOwner, outsiderOrg, sealedRequestId)
+    ).rejects.toThrow(NOT_FOUND);
+
+    await startOrganizationEvaluation(buyerOwner, buyerOrg, sealedRequestId);
+    const { data: request } = await admin
+      .from("procurement_requests")
+      .select("status")
+      .eq("id", sealedRequestId)
+      .single();
+    expect(request?.status).toBe("evaluating");
   });
 });
