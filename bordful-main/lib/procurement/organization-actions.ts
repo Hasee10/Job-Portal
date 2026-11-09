@@ -263,6 +263,68 @@ export async function listOrganizationsForMember(
   });
 }
 
+export interface OrganizationAttention {
+  openInvitations: number;
+  pendingConnections: number;
+  pendingQuotations: number;
+}
+
+// The minimum useful in-app notification surface: counts, not a new
+// messaging system. Reuses the three tables that already carry this state
+// (organization_connections, procurement_invitations, procurement_responses)
+// instead of adding a notifications table. Not membership-checked on its
+// own - callers only ever have an organizationId here because
+// listOrganizationsForMember already proved membership for it, same trust
+// boundary as the page that renders this.
+export async function getOrganizationAttention(
+  organizationId: string,
+  isBuyer: boolean,
+  isSupplier: boolean
+): Promise<OrganizationAttention> {
+  const supabase = getAdminClient();
+
+  const [connections, invitations, openRequests] = await Promise.all([
+    supabase
+      .from("organization_connections")
+      .select("id", { count: "exact", head: true })
+      .eq("recipient_org_id", organizationId)
+      .eq("status", "pending"),
+    isSupplier
+      ? supabase
+          .from("procurement_invitations")
+          .select("id", { count: "exact", head: true })
+          .eq("supplier_org_id", organizationId)
+          .eq("status", "invited")
+      : Promise.resolve({ count: 0 }),
+    isBuyer
+      ? supabase
+          .from("procurement_requests")
+          .select("id")
+          .eq("buyer_org_id", organizationId)
+          .in("status", ["published", "closed_for_responses", "bids_opened"])
+      : Promise.resolve({ data: [] as { id: string }[] }),
+  ]);
+
+  let pendingQuotations = 0;
+  const openRequestIds = (
+    ("data" in openRequests ? openRequests.data : []) ?? []
+  ).map((r) => r.id);
+  if (openRequestIds.length > 0) {
+    const { count } = await supabase
+      .from("procurement_responses")
+      .select("id", { count: "exact", head: true })
+      .in("request_id", openRequestIds)
+      .eq("is_withdrawn", false);
+    pendingQuotations = count ?? 0;
+  }
+
+  return {
+    openInvitations: invitations.count ?? 0,
+    pendingConnections: connections.count ?? 0,
+    pendingQuotations,
+  };
+}
+
 // Membership-scoped read: a non-member gets null rather than the record,
 // so an organization id is not itself a capability.
 export async function getOrganizationForMember(
