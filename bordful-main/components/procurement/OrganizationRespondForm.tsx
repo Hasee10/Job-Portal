@@ -14,6 +14,7 @@ import type { OrganizationResponse } from "@/lib/procurement/organization-respon
 // an edit flow.
 
 export function OrganizationRespondForm({
+  awardOutcome,
   blockedReason,
   canSubmitNew,
   canWithdraw,
@@ -21,6 +22,7 @@ export function OrganizationRespondForm({
   organizationId,
   requestId,
 }: {
+  awardOutcome: "won" | "lost" | null;
   blockedReason: string | null;
   canSubmitNew: boolean;
   canWithdraw: boolean;
@@ -105,6 +107,16 @@ export function OrganizationRespondForm({
         <h2 className="font-semibold text-sm text-zinc-900 dark:text-zinc-50">
           Your submission
         </h2>
+        {awardOutcome === "won" ? (
+          <p className="mt-2 rounded-lg border border-emerald-200 bg-emerald-50 p-3 font-medium text-emerald-800 text-sm dark:border-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-300">
+            You won this request.
+          </p>
+        ) : null}
+        {awardOutcome === "lost" ? (
+          <p className="mt-2 rounded-lg border border-zinc-200 bg-zinc-50 p-3 text-sm text-zinc-600 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400">
+            This request was awarded to another business.
+          </p>
+        ) : null}
         <p className="mt-2 whitespace-pre-line text-sm text-zinc-700 dark:text-zinc-300">
           {existingResponse.proposalText}
         </p>

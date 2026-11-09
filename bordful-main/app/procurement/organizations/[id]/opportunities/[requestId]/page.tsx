@@ -75,6 +75,17 @@ export default async function SupplierOpportunityPage({
   // directly rather than through this page's own logic.
   const canSubmitNew = window.open && eligibility.allowed;
   const canWithdraw = window.open;
+  // Award outcome for THIS supplier's own response only - awardedResponseId
+  // is already on the request row (same privacy boundary as before: it
+  // names which response won, never the competing responses themselves).
+  const awardOutcome: "won" | "lost" | null = (() => {
+    if (opportunity.request.status !== "awarded" || !existingResponse) {
+      return null;
+    }
+    return existingResponse.id === opportunity.request.awardedResponseId
+      ? "won"
+      : "lost";
+  })();
   const blockedReason = (() => {
     if (!window.open) {
       return window.reason;
@@ -113,6 +124,7 @@ export default async function SupplierOpportunityPage({
           </section>
 
           <OrganizationRespondForm
+            awardOutcome={awardOutcome}
             blockedReason={blockedReason}
             canSubmitNew={canSubmitNew}
             canWithdraw={canWithdraw}
