@@ -26,6 +26,7 @@
 \ir migrations/20261108_organization_marketplace_discovery.sql
 \ir migrations/20260816_scraped_tenders.sql
 \ir migrations/20261107_scraped_tenders_publication_order_idx.sql
+\ir migrations/20261109_organization_network.sql
 
 -- Objects are created by the superuser running this script; hand usage to the
 -- unprivileged development role so the application can work as joblo_local.
