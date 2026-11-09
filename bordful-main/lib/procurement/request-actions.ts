@@ -68,7 +68,7 @@ function toError(error: unknown, fallback: string): Error {
   return new Error(message || fallback);
 }
 
-function specFieldsToJson(fields: SpecField[]): Record<string, unknown>[] {
+export function specFieldsToJson(fields: SpecField[]): Record<string, unknown>[] {
   return fields.map((f) => ({
     field_type: f.fieldType ?? null,
     label: f.label,
@@ -87,7 +87,7 @@ function jsonToSpecFields(value: unknown): SpecField[] {
   }));
 }
 
-function rowToRequest(row: Record<string, unknown>): ProcurementRequest {
+export function rowToRequest(row: Record<string, unknown>): ProcurementRequest {
   return {
     awardedAt: (row.awarded_at as string) || null,
     buyerId: row.buyer_id as string,
