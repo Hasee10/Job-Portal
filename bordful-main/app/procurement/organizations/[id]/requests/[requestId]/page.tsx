@@ -12,7 +12,10 @@ import {
   getOrganizationForMember,
   resolveOrganizationMember,
 } from "@/lib/procurement/organization-actions";
-import { listOrganizationResponsesForRequest } from "@/lib/procurement/organization-response-actions";
+import {
+  listOrganizationEvaluations,
+  listOrganizationResponsesForRequest,
+} from "@/lib/procurement/organization-response-actions";
 import {
   getOrganizationRequest,
   listRequestSupplierInvitations,
@@ -57,11 +60,16 @@ export default async function OrganizationRequestPage({
     throw error;
   }
 
-  const [invitations, approvedSuppliers, responsesView] = await Promise.all([
-    listRequestSupplierInvitations(member, id, requestId),
-    listApprovedSuppliers(member, id),
-    listOrganizationResponsesForRequest(member, id, requestId),
-  ]);
+  const canManage = canManageOrganization(organization.role);
+  const [invitations, approvedSuppliers, responsesView, evaluations] =
+    await Promise.all([
+      listRequestSupplierInvitations(member, id, requestId),
+      listApprovedSuppliers(member, id),
+      listOrganizationResponsesForRequest(member, id, requestId),
+      canManage
+        ? listOrganizationEvaluations(member, id, requestId)
+        : Promise.resolve([]),
+    ]);
 
   return (
     <main className="min-h-[60vh] bg-background py-16">
@@ -95,22 +103,30 @@ export default async function OrganizationRequestPage({
 
           <InviteSuppliersPanel
             approvedSuppliers={approvedSuppliers}
-            canManage={canManageOrganization(organization.role)}
+            canManage={canManage}
             invitations={invitations}
             isDraft={request.status === "draft"}
             organizationId={id}
             requestId={requestId}
           />
 
-          {request.sealedBids && canManageOrganization(organization.role) && (
+          {request.sealedBids && canManage ? (
             <OrganizationSealedBidControls
               organizationId={id}
               requestId={requestId}
               status={request.status}
             />
-          )}
+          ) : null}
 
-          <OrganizationResponsesPanel view={responsesView} />
+          <OrganizationResponsesPanel
+            awardedResponseId={request.awardedResponseId}
+            canManage={canManage}
+            evaluations={evaluations}
+            organizationId={id}
+            requestId={requestId}
+            status={request.status}
+            view={responsesView}
+          />
         </div>
       </div>
     </main>

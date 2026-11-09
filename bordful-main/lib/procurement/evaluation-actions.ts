@@ -32,7 +32,9 @@ function toError(error: unknown, fallback: string): Error {
   return new Error(message || fallback);
 }
 
-function rowToEvaluation(row: Record<string, unknown>): ProcurementEvaluation {
+export function rowToEvaluation(
+  row: Record<string, unknown>
+): ProcurementEvaluation {
   return {
     createdAt: row.created_at as string,
     evaluatorId: row.evaluator_id as string,
@@ -176,15 +178,32 @@ export async function awardRequest(
     throw new Error("Cannot award a withdrawn response.");
   }
 
-  const { error } = await supabase
+  // The status filter below is the atomicity guard: only a row still
+  // 'evaluating' can transition, so two concurrent awardRequest calls can
+  // never both succeed. Supabase returns success with zero rows for an
+  // update that matches nothing, so the row must be checked explicitly -
+  // otherwise a second, racing or stale call would silently no-op instead
+  // of reporting that the request was already awarded.
+  const { data: awarded, error } = await supabase
     .from("procurement_requests")
-    .update({ awarded_at: new Date().toISOString(), status: "awarded" })
+    .update({
+      awarded_at: new Date().toISOString(),
+      awarded_response_id: responseId,
+      status: "awarded",
+    })
     .eq("id", requestId)
     .eq("buyer_id", buyerId)
-    .eq("status", "evaluating");
+    .eq("status", "evaluating")
+    .select("id")
+    .maybeSingle();
 
   if (error) {
     throw toError(error, "Failed to award request.");
+  }
+  if (!awarded) {
+    throw new Error(
+      "This request has already been awarded or is no longer in evaluation."
+    );
   }
   await logAudit(requestId, buyerId, "employer", "awarded", {
     responseId,

@@ -15,9 +15,12 @@ import { createClient } from "@supabase/supabase-js";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { OrganizationMemberRef } from "../organization-actions";
 import {
+  awardOrganizationRequest,
   getMyOrganizationResponse,
+  listOrganizationEvaluations,
   listOrganizationResponsesForRequest,
   openOrganizationBids,
+  scoreOrganizationResponse,
   startOrganizationEvaluation,
   submitOrganizationResponse,
   withdrawOrganizationResponse,
@@ -41,6 +44,8 @@ const OWNER_ONLY = /owner or admin/i;
 const CANNOT_SUBMIT = /cannot submit/i;
 const NOT_FOUND = /not found/i;
 const MUST_BE_CLOSED = /closed for responses/i;
+const MUST_BE_EVALUATING = /must be in evaluation/i;
+const WITHDRAWN = /withdrawn/i;
 
 function member(): OrganizationMemberRef {
   return { memberId: crypto.randomUUID(), memberType: "employer" };
@@ -558,5 +563,163 @@ describeLocal("local integration: organization quotations", () => {
       .eq("id", sealedRequestId)
       .single();
     expect(request?.status).toBe("evaluating");
+  });
+
+  // M4B2-B: evaluation and award, continuing directly from the sealedRequestId
+  // fixture above - it is already "evaluating" with one real supplier
+  // response on the table, which is exactly the state these actions require.
+  describe("evaluation and award", () => {
+    let sealedResponseId = "";
+    let withdrawnResponseId = "";
+
+    beforeAll(async () => {
+      const { data: response, error } = await admin
+        .from("procurement_responses")
+        .select("id")
+        .eq("request_id", sealedRequestId)
+        .eq("supplier_org_id", supplierOrg)
+        .single();
+      if (error || !response) {
+        throw new Error(`sealed response lookup: ${error?.message}`);
+      }
+      sealedResponseId = response.id as string;
+
+      // A second, withdrawn response on the same request, inserted directly
+      // (not through submitOrganizationResponse, which the invitation
+      // eligibility gate would refuse for an uninvited organization) purely
+      // to exercise the "cannot award a withdrawn response" rejection.
+      const { data: withdrawn, error: withdrawnError } = await admin
+        .from("procurement_responses")
+        .insert({
+          is_withdrawn: true,
+          proposal_text: "withdrawn before evaluation",
+          request_id: sealedRequestId,
+          supplier_org_id: outsiderOrg,
+        })
+        .select("id")
+        .single();
+      if (withdrawnError || !withdrawn) {
+        throw new Error(
+          `withdrawn response insert: ${withdrawnError?.message}`
+        );
+      }
+      withdrawnResponseId = withdrawn.id as string;
+    });
+
+    it("refuses an unrelated organization scoring a response", async () => {
+      await expect(
+        scoreOrganizationResponse(
+          outsiderOwner,
+          outsiderOrg,
+          sealedRequestId,
+          sealedResponseId,
+          90,
+          null
+        )
+      ).rejects.toThrow(NOT_FOUND);
+    });
+
+    it("refuses scoring a response that does not belong to the request", async () => {
+      await expect(
+        scoreOrganizationResponse(
+          buyerOwner,
+          buyerOrg,
+          sealedRequestId,
+          crypto.randomUUID(),
+          50,
+          null
+        )
+      ).rejects.toThrow(NOT_FOUND);
+    });
+
+    it("records a score and notes for the authorized buyer", async () => {
+      const evaluation = await scoreOrganizationResponse(
+        buyerOwner,
+        buyerOrg,
+        sealedRequestId,
+        sealedResponseId,
+        85,
+        "Best value for the spec."
+      );
+      expect(evaluation.score).toBe(85);
+      expect(evaluation.responseId).toBe(sealedResponseId);
+      expect(evaluation.evaluatorId).toBe(buyerOwner.memberId);
+
+      const list = await listOrganizationEvaluations(
+        buyerOwner,
+        buyerOrg,
+        sealedRequestId
+      );
+      expect(list.some((e) => e.id === evaluation.id)).toBe(true);
+    });
+
+    it("refuses awarding a request that is not in evaluation", async () => {
+      await expect(
+        awardOrganizationRequest(
+          buyerOwner,
+          buyerOrg,
+          publishedRequestId,
+          sealedResponseId
+        )
+      ).rejects.toThrow(MUST_BE_EVALUATING);
+    });
+
+    it("refuses awarding a withdrawn response", async () => {
+      await expect(
+        awardOrganizationRequest(
+          buyerOwner,
+          buyerOrg,
+          sealedRequestId,
+          withdrawnResponseId
+        )
+      ).rejects.toThrow(WITHDRAWN);
+    });
+
+    it("refuses an unrelated organization awarding the request", async () => {
+      await expect(
+        awardOrganizationRequest(
+          outsiderOwner,
+          outsiderOrg,
+          sealedRequestId,
+          sealedResponseId
+        )
+      ).rejects.toThrow(NOT_FOUND);
+    });
+
+    it("awards the request to the chosen response, recording a reliable winner", async () => {
+      await awardOrganizationRequest(
+        buyerOwner,
+        buyerOrg,
+        sealedRequestId,
+        sealedResponseId
+      );
+
+      const { data: request } = await admin
+        .from("procurement_requests")
+        .select("status, awarded_response_id")
+        .eq("id", sealedRequestId)
+        .single();
+      expect(request?.status).toBe("awarded");
+      expect(request?.awarded_response_id).toBe(sealedResponseId);
+
+      const { data: audit } = await admin
+        .from("procurement_audit_log")
+        .select("action")
+        .eq("request_id", sealedRequestId)
+        .eq("action", "awarded")
+        .maybeSingle();
+      expect(audit).not.toBeNull();
+    });
+
+    it("refuses a duplicate award of an already-awarded request", async () => {
+      await expect(
+        awardOrganizationRequest(
+          buyerOwner,
+          buyerOrg,
+          sealedRequestId,
+          sealedResponseId
+        )
+      ).rejects.toThrow(MUST_BE_EVALUATING);
+    });
   });
 });
