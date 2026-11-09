@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { InviteSuppliersPanel } from "@/components/procurement/InviteSuppliersPanel";
+import { OrganizationResponsesPanel } from "@/components/procurement/OrganizationResponsesPanel";
 import config from "@/config";
 import { listApprovedSuppliers } from "@/lib/procurement/connection-actions";
 import {
@@ -10,6 +11,7 @@ import {
   getOrganizationForMember,
   resolveOrganizationMember,
 } from "@/lib/procurement/organization-actions";
+import { listOrganizationResponsesForRequest } from "@/lib/procurement/organization-response-actions";
 import {
   getOrganizationRequest,
   listRequestSupplierInvitations,
@@ -54,9 +56,10 @@ export default async function OrganizationRequestPage({
     throw error;
   }
 
-  const [invitations, approvedSuppliers] = await Promise.all([
+  const [invitations, approvedSuppliers, responsesView] = await Promise.all([
     listRequestSupplierInvitations(member, id, requestId),
     listApprovedSuppliers(member, id),
+    listOrganizationResponsesForRequest(member, id, requestId),
   ]);
 
   return (
@@ -97,6 +100,8 @@ export default async function OrganizationRequestPage({
             organizationId={id}
             requestId={requestId}
           />
+
+          <OrganizationResponsesPanel view={responsesView} />
         </div>
       </div>
     </main>
