@@ -6,9 +6,13 @@ import {
   getMemberRole,
   type OrganizationMemberRef,
 } from "./organization-actions";
-import { getOrganizationRequest } from "./organization-rfq-actions";
+import {
+  assertCanIssueRfq,
+  getOrganizationRequest,
+} from "./organization-rfq-actions";
 import { getRequestById, type ProcurementRequest } from "./request-actions";
 import {
+  canStartEvaluation,
   canVendorSubmitResponse,
   isSealedFromBuyer,
   isSubmissionWindowOpen,
@@ -304,14 +308,6 @@ export async function getMyOrganizationResponse(
 // another organization is "not found", matching every other M4A entry
 // point - then the identical sealed-bid branch: a sealed, unopened request
 // returns a count only, and the response rows are never selected.
-//
-// This milestone does not add an organization-aware openBids(): opening
-// sealed bids is an evaluation-stage action, and M4A/M4B1 only create and
-// close the submission window, never evaluate. The existing employer-scoped
-// openBids() cannot move an organization-owned request's status (it filters
-// by buyer_id, which is null there), so a sealed organization-owned request
-// currently has no path past closed_for_responses. That gap is explicitly
-// left for M4B2, not improvised here.
 export async function listOrganizationResponsesForRequest(
   member: OrganizationMemberRef,
   organizationId: string,
@@ -376,4 +372,96 @@ export async function listOrganizationResponsesForRequest(
     }),
     sealed: false,
   };
+}
+
+// M4B2-A: the organization equivalent of openBids() in response-actions.ts.
+// Mirrors it exactly - same gate (sealed, closed_for_responses), same
+// race-condition guard in the WHERE clause, same bids_opened audit event -
+// substituting buyer_org_id for buyer_id, since the legacy function filters
+// by buyer_id, which is null on an organization-owned request and so can
+// never match one. Without this, a sealed organization-owned request had no
+// authorized path past closed_for_responses - exactly the gap flagged when
+// listOrganizationResponsesForRequest was added in M4B1.
+export async function openOrganizationBids(
+  member: OrganizationMemberRef,
+  organizationId: string,
+  requestId: string
+): Promise<void> {
+  await assertCanIssueRfq(member, organizationId);
+  const request = await getOrganizationRequest(
+    member,
+    organizationId,
+    requestId
+  );
+
+  if (!request.sealedBids) {
+    throw new OrganizationResponseError(
+      "This request does not use sealed bidding.",
+      "invalid_state"
+    );
+  }
+  if (request.status !== "closed_for_responses") {
+    throw new OrganizationResponseError(
+      "This request must be closed for responses before bids can be opened.",
+      "invalid_state"
+    );
+  }
+
+  const supabase = getAdminClient();
+  const { error } = await supabase
+    .from("procurement_requests")
+    .update({ status: "bids_opened" })
+    .eq("id", requestId)
+    .eq("buyer_org_id", organizationId)
+    .eq("status", "closed_for_responses");
+
+  if (error) {
+    throw new OrganizationResponseError(
+      error.message || "Failed to open bids.",
+      "update_failed"
+    );
+  }
+  await logAudit(requestId, member.memberId, member.memberType, "bids_opened", {
+    buyerOrgId: organizationId,
+  });
+}
+
+// The organization equivalent of startEvaluation() in evaluation-actions.ts.
+// canStartEvaluation is the same gate the legacy function uses: for a
+// sealed request it requires status === 'bids_opened', so evaluation can
+// only begin after openOrganizationBids has run - there is no way to reach
+// "evaluating" that skips opening.
+export async function startOrganizationEvaluation(
+  member: OrganizationMemberRef,
+  organizationId: string,
+  requestId: string
+): Promise<void> {
+  await assertCanIssueRfq(member, organizationId);
+  const request = await getOrganizationRequest(
+    member,
+    organizationId,
+    requestId
+  );
+
+  const gate = canStartEvaluation(request.sealedBids, request.status);
+  if (!gate.allowed) {
+    throw new OrganizationResponseError(gate.reason, "invalid_state");
+  }
+
+  const supabase = getAdminClient();
+  const { error } = await supabase
+    .from("procurement_requests")
+    .update({ status: "evaluating" })
+    .eq("id", requestId)
+    .eq("buyer_org_id", organizationId);
+
+  if (error) {
+    throw new OrganizationResponseError(
+      error.message || "Failed to start evaluation.",
+      "update_failed"
+    );
+  }
+  await logAudit(requestId, member.memberId, member.memberType, "evaluating", {
+    buyerOrgId: organizationId,
+  });
 }

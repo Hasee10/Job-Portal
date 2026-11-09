@@ -4,6 +4,7 @@ import { notFound, redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { InviteSuppliersPanel } from "@/components/procurement/InviteSuppliersPanel";
 import { OrganizationResponsesPanel } from "@/components/procurement/OrganizationResponsesPanel";
+import { OrganizationSealedBidControls } from "@/components/procurement/OrganizationSealedBidControls";
 import config from "@/config";
 import { listApprovedSuppliers } from "@/lib/procurement/connection-actions";
 import {
@@ -100,6 +101,14 @@ export default async function OrganizationRequestPage({
             organizationId={id}
             requestId={requestId}
           />
+
+          {request.sealedBids && canManageOrganization(organization.role) && (
+            <OrganizationSealedBidControls
+              organizationId={id}
+              requestId={requestId}
+              status={request.status}
+            />
+          )}
 
           <OrganizationResponsesPanel view={responsesView} />
         </div>
