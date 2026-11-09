@@ -378,6 +378,60 @@ export async function listOrganizationResponsesForRequest(
   };
 }
 
+// The organization equivalent of closeForResponses() in request-actions.ts.
+// Missing until now: the only UI/API path from "published" toward
+// evaluation for an organization-owned request was this transition, and
+// without it start-evaluation's own gate (closed_for_responses/bids_opened)
+// was unreachable - every organization RFQ created through the standard
+// form (which has no sealed-bid toggle) was permanently stuck at
+// "published" with no way to award it. Same sealed-deadline guard as the
+// legacy function, substituting buyer_org_id for buyer_id.
+export async function closeOrganizationRequestForResponses(
+  member: OrganizationMemberRef,
+  organizationId: string,
+  requestId: string
+): Promise<void> {
+  await assertCanIssueRfq(member, organizationId);
+  const request = await getOrganizationRequest(
+    member,
+    organizationId,
+    requestId
+  );
+
+  if (
+    request.sealedBids &&
+    request.responseDeadline &&
+    new Date() < new Date(request.responseDeadline)
+  ) {
+    throw new OrganizationResponseError(
+      "Cannot close a sealed-bid request before its response deadline.",
+      "invalid_state"
+    );
+  }
+
+  const supabase = getAdminClient();
+  const { error } = await supabase
+    .from("procurement_requests")
+    .update({ status: "closed_for_responses" })
+    .eq("id", requestId)
+    .eq("buyer_org_id", organizationId)
+    .eq("status", "published");
+
+  if (error) {
+    throw new OrganizationResponseError(
+      error.message || "Failed to close request for responses.",
+      "update_failed"
+    );
+  }
+  await logAudit(
+    requestId,
+    member.memberId,
+    member.memberType,
+    "closed_for_responses",
+    { buyerOrgId: organizationId }
+  );
+}
+
 // M4B2-A: the organization equivalent of openBids() in response-actions.ts.
 // Mirrors it exactly - same gate (sealed, closed_for_responses), same
 // race-condition guard in the WHERE clause, same bids_opened audit event -

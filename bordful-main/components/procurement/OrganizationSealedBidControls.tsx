@@ -5,20 +5,25 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 
-// Mirrors the two buttons in RequestDetail.tsx (legacy employer-owned
-// requests) exactly - same visibility conditions, same two actions. Only
-// rendered for a sealed request; an unsealed one already reaches
-// "evaluating" directly from closed_for_responses with no separate opening
-// step, same as the legacy path.
+// Mirrors the three buttons in RequestDetail.tsx (legacy employer-owned
+// requests) exactly - same visibility conditions, same actions: "Open bids"
+// is sealed-only, "Close for responses" and "Start evaluation" are not.
+// Previously rendered only when request.sealedBids was true, which meant an
+// unsealed organization RFQ (the default - the creation form has no sealed
+// toggle) had no path off "published" at all, since close-for-responses is
+// what start-evaluation's own gate (closed_for_responses/bids_opened)
+// depends on.
 
 export function OrganizationSealedBidControls({
   organizationId,
   requestId,
   status,
+  sealedBids,
 }: {
   organizationId: string;
   requestId: string;
   status: string;
+  sealedBids: boolean;
 }) {
   const router = useRouter();
   const { toast } = useToast();
@@ -47,7 +52,17 @@ export function OrganizationSealedBidControls({
 
   return (
     <div className="mt-4 flex flex-wrap gap-2">
-      {status === "closed_for_responses" && (
+      {status === "published" && (
+        <Button
+          disabled={busy}
+          onClick={() => run("close for responses", "close-for-responses")}
+          size="sm"
+          variant="outline"
+        >
+          Close for responses
+        </Button>
+      )}
+      {status === "closed_for_responses" && sealedBids && (
         <Button
           disabled={busy}
           onClick={() => run("open bids", "open-bids")}

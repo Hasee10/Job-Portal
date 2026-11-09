@@ -110,10 +110,11 @@ export default async function OrganizationRequestPage({
             requestId={requestId}
           />
 
-          {request.sealedBids && canManage ? (
+          {canManage ? (
             <OrganizationSealedBidControls
               organizationId={id}
               requestId={requestId}
+              sealedBids={request.sealedBids}
               status={request.status}
             />
           ) : null}
