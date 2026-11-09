@@ -70,28 +70,30 @@ export default async function SupplierOpportunitiesPage({
           ) : (
             <ul className="mt-8 space-y-3">
               {opportunities.map((opportunity) => (
-                <li
-                  className="rounded-xl border border-zinc-200 p-5 dark:border-zinc-800"
-                  key={opportunity.request.id}
-                >
-                  <div className="flex flex-wrap items-baseline justify-between gap-2">
-                    <h2 className="font-semibold text-zinc-900 dark:text-zinc-50">
-                      {opportunity.request.title}
-                    </h2>
-                    <span className="text-xs text-zinc-500 dark:text-zinc-400">
-                      {opportunity.request.type.toUpperCase()} &middot;{" "}
-                      {opportunity.invitationStatus}
-                    </span>
-                  </div>
-                  <p className="mt-2 whitespace-pre-line text-sm text-zinc-700 dark:text-zinc-300">
-                    {opportunity.request.description}
-                  </p>
-                  <p className="mt-3 text-xs text-zinc-500 dark:text-zinc-400">
-                    {opportunity.request.category}
-                    {opportunity.request.responseDeadline
-                      ? ` · responses by ${new Date(opportunity.request.responseDeadline).toLocaleDateString()}`
-                      : ""}
-                  </p>
+                <li key={opportunity.request.id}>
+                  <Link
+                    className="block rounded-xl border border-zinc-200 p-5 transition-colors hover:border-zinc-300 dark:border-zinc-800 dark:hover:border-zinc-700"
+                    href={`/procurement/organizations/${id}/opportunities/${opportunity.request.id}`}
+                  >
+                    <div className="flex flex-wrap items-baseline justify-between gap-2">
+                      <h2 className="font-semibold text-zinc-900 dark:text-zinc-50">
+                        {opportunity.request.title}
+                      </h2>
+                      <span className="text-xs text-zinc-500 dark:text-zinc-400">
+                        {opportunity.request.type.toUpperCase()} &middot;{" "}
+                        {opportunity.invitationStatus}
+                      </span>
+                    </div>
+                    <p className="mt-2 whitespace-pre-line text-sm text-zinc-700 dark:text-zinc-300">
+                      {opportunity.request.description}
+                    </p>
+                    <p className="mt-3 text-xs text-zinc-500 dark:text-zinc-400">
+                      {opportunity.request.category}
+                      {opportunity.request.responseDeadline
+                        ? ` · responses by ${new Date(opportunity.request.responseDeadline).toLocaleDateString()}`
+                        : ""}
+                    </p>
+                  </Link>
                 </li>
               ))}
             </ul>
