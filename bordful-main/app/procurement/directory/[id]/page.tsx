@@ -1,8 +1,15 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { auth } from "@/auth";
+import { ConnectRequestForm } from "@/components/procurement/ConnectRequestForm";
 import config from "@/config";
 import { getPublicOrganization } from "@/lib/procurement/directory-actions";
+import {
+  canManageOrganization,
+  listOrganizationsForMember,
+  resolveOrganizationMember,
+} from "@/lib/procurement/organization-actions";
 
 export const dynamic = "force-dynamic";
 
@@ -48,6 +55,25 @@ export default async function PublicOrganizationPage({
   if (!organization) {
     notFound();
   }
+
+  // The businesses this visitor could connect *as*. Only ones they manage,
+  // and never this one - a business cannot connect to itself. An anonymous
+  // visitor gets an empty list and is invited to create a business instead.
+  const session = await auth();
+  const viewer = resolveOrganizationMember(session);
+  const connectableOrganizations = viewer
+    ? (await listOrganizationsForMember(viewer))
+        .filter(
+          (entry) =>
+            entry.id !== organization.id && canManageOrganization(entry.role)
+        )
+        .map((entry) => ({
+          id: entry.id,
+          isBuyer: entry.isBuyer,
+          isSupplier: entry.isSupplier,
+          name: entry.name,
+        }))
+    : [];
 
   const capabilities = [
     organization.isBuyer ? "Buyer" : null,
@@ -124,6 +150,16 @@ export default async function PublicOrganizationPage({
               ))}
             </dl>
           </section>
+
+          <ConnectRequestForm
+            organizations={connectableOrganizations}
+            target={{
+              id: organization.id,
+              isBuyer: organization.isBuyer,
+              isSupplier: organization.isSupplier,
+              name: organization.name,
+            }}
+          />
 
           <p className="mt-6 text-xs text-zinc-500 dark:text-zinc-400">
             This information is self-declared by the business and has not been
