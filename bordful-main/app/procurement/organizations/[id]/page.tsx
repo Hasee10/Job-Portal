@@ -2,14 +2,21 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { auth } from "@/auth";
+import { ConnectionsPanel } from "@/components/procurement/ConnectionsPanel";
+import { MembersPanel } from "@/components/procurement/MembersPanel";
 import { OrganizationForm } from "@/components/procurement/OrganizationForm";
 import config from "@/config";
+import {
+  listApprovedSuppliers,
+  listConnections,
+} from "@/lib/procurement/connection-actions";
 import {
   canManageOrganization,
   getOrganizationForMember,
   listOrganizationMembers,
   resolveOrganizationMember,
 } from "@/lib/procurement/organization-actions";
+import { listInvitations } from "@/lib/procurement/organization-invitation-actions";
 
 export const metadata: Metadata = {
   description: "Manage your organization's profile and capabilities.",
@@ -40,6 +47,16 @@ export default async function OrganizationDetailPage({
   const members = await listOrganizationMembers(member, id);
   const canEdit = canManageOrganization(organization.role);
 
+  // Invitations are management-only, so an ordinary member simply gets an
+  // empty list rather than a failed page.
+  const [invitations, connections, approvedSuppliers] = await Promise.all([
+    canEdit ? listInvitations(member, id) : Promise.resolve([]),
+    listConnections(member, id),
+    organization.isBuyer
+      ? listApprovedSuppliers(member, id)
+      : Promise.resolve([]),
+  ]);
+
   return (
     <main className="min-h-[60vh] bg-background py-16">
       <div className="container mx-auto px-4">
@@ -60,34 +77,43 @@ export default async function OrganizationDetailPage({
               : " Only an owner or admin can change the profile below."}
           </p>
 
+          {/* Both surfaces are membership-scoped on the server; a business
+              that is not a buyer simply finds nothing to issue, and one that
+              has not been invited finds no opportunities. */}
+          <nav className="mt-6 flex flex-wrap gap-3 text-sm">
+            <Link
+              className="rounded-lg border border-zinc-200 px-4 py-2 font-medium transition-colors hover:border-zinc-300 dark:border-zinc-800 dark:hover:border-zinc-700"
+              href={`/procurement/organizations/${id}/requests`}
+            >
+              Procurement requests
+            </Link>
+            <Link
+              className="rounded-lg border border-zinc-200 px-4 py-2 font-medium transition-colors hover:border-zinc-300 dark:border-zinc-800 dark:hover:border-zinc-700"
+              href={`/procurement/organizations/${id}/opportunities`}
+            >
+              Opportunities
+            </Link>
+          </nav>
+
           <section className="mt-8 rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900/60">
             <OrganizationForm canEdit={canEdit} organization={organization} />
           </section>
 
-          <section className="mt-8">
-            <h2 className="font-semibold text-lg text-zinc-900 dark:text-zinc-50">
-              Members
-            </h2>
-            <ul className="mt-3 space-y-2">
-              {members.map((entry) => (
-                <li
-                  className="flex items-center justify-between rounded-lg border border-zinc-200 px-4 py-2.5 text-sm dark:border-zinc-800"
-                  key={entry.id}
-                >
-                  <span className="text-zinc-600 dark:text-zinc-400">
-                    {entry.memberType} account
-                    {entry.memberId === member.memberId &&
-                    entry.memberType === member.memberType
-                      ? " (you)"
-                      : ""}
-                  </span>
-                  <span className="font-medium text-zinc-900 dark:text-zinc-50">
-                    {entry.role}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </section>
+          <MembersPanel
+            canManage={canEdit}
+            invitations={invitations}
+            isOwner={organization.role === "owner"}
+            members={members}
+            organizationId={id}
+            viewerMemberId={member.memberId}
+          />
+
+          <ConnectionsPanel
+            approvedSuppliers={approvedSuppliers}
+            canManage={canEdit}
+            connections={connections}
+            organizationId={id}
+          />
         </div>
       </div>
     </main>

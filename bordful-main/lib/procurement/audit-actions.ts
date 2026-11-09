@@ -2,7 +2,15 @@ import "server-only";
 
 import { createClient } from "@supabase/supabase-js";
 
-export type ProcurementActorRole = "employer" | "recruiter" | "vendor";
+// 'seeker' joined these in M4A: organization membership is wider than the
+// legacy recruitment roles, and an organization owner whose account type is
+// 'seeker' can issue requests on behalf of a buyer business. Matches the
+// widened CHECK in 20261111_organization_owned_rfqs.sql.
+export type ProcurementActorRole =
+  | "employer"
+  | "recruiter"
+  | "seeker"
+  | "vendor";
 
 function getAdminClient() {
   const url = process.env.SUPABASE_URL;

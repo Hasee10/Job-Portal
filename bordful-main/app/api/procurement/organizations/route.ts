@@ -11,7 +11,10 @@ export const dynamic = "force-dynamic";
 
 const isRateLimited = createRateLimiter(10);
 
-function readProfile(body: Record<string, unknown>) {
+// Creation accepts identity and capabilities only - a new organization is
+// never public, and the discovery fields are set later through an explicit
+// profile edit.
+function readCreateInput(body: Record<string, unknown>) {
   const asText = (value: unknown): string | null => {
     const text = typeof value === "string" ? value.trim() : "";
     return text || null;
@@ -64,7 +67,10 @@ export async function POST(request: Request) {
   try {
     // The owner is taken from the session, never from the request body -
     // membership cannot be self-granted by posting someone else's id.
-    const organization = await createOrganization(member, readProfile(body));
+    const organization = await createOrganization(
+      member,
+      readCreateInput(body)
+    );
     return NextResponse.json({ organization });
   } catch (error) {
     const msg =

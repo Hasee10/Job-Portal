@@ -34,6 +34,28 @@ export function OrganizationForm({
   const [isSupplier, setIsSupplier] = useState(
     organization?.isSupplier ?? false
   );
+  const [productsServices, setProductsServices] = useState(
+    organization?.productsServices ?? ""
+  );
+  const [categories, setCategories] = useState(
+    (organization?.categories ?? []).join(", ")
+  );
+  const [operatingRegions, setOperatingRegions] = useState(
+    (organization?.operatingRegions ?? []).join(", ")
+  );
+  const [publicContactEmail, setPublicContactEmail] = useState(
+    organization?.publicContactEmail ?? ""
+  );
+  const [isPublic, setIsPublic] = useState(organization?.isPublic ?? false);
+
+  const toTags = (value: string): string[] => [
+    ...new Set(
+      value
+        .split(",")
+        .map((entry) => entry.trim())
+        .filter(Boolean)
+    ),
+  ];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,16 +73,34 @@ export function OrganizationForm({
 
     setIsSubmitting(true);
     try {
-      const payload = {
-        companySize,
-        description,
-        industry,
-        isBuyer,
-        isSupplier,
-        location,
-        name,
-        website,
-      };
+      // The discovery fields only exist on an edit: creation is identity and
+      // capabilities, and a new organization is never public.
+      const payload = organization
+        ? {
+            categories: toTags(categories),
+            companySize,
+            description,
+            industry,
+            isBuyer,
+            isPublic,
+            isSupplier,
+            location,
+            name,
+            operatingRegions: toTags(operatingRegions),
+            productsServices,
+            publicContactEmail,
+            website,
+          }
+        : {
+            companySize,
+            description,
+            industry,
+            isBuyer,
+            isSupplier,
+            location,
+            name,
+            website,
+          };
       const res = await fetch(
         organization
           ? `/api/procurement/organizations/${organization.id}`
@@ -199,11 +239,105 @@ export function OrganizationForm({
         </div>
       </div>
 
-      {canEdit && (
+      {organization ? (
+        <section className="space-y-5 border-zinc-200 border-t pt-6 dark:border-zinc-800">
+          <div>
+            <h3 className="font-semibold text-zinc-900 dark:text-zinc-50">
+              Marketplace listing
+            </h3>
+            <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+              Everything here is shown exactly as you write it. We do not verify
+              these details, so treat them as self-declared.
+            </p>
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="font-medium text-sm" htmlFor="org-products">
+              Products and services
+            </label>
+            <Textarea
+              disabled={!canEdit}
+              id="org-products"
+              onChange={(e) => setProductsServices(e.target.value)}
+              placeholder="What does this business actually provide?"
+              rows={3}
+              value={productsServices}
+            />
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-1.5">
+              <label className="font-medium text-sm" htmlFor="org-categories">
+                Categories
+              </label>
+              <Input
+                disabled={!canEdit}
+                id="org-categories"
+                onChange={(e) => setCategories(e.target.value)}
+                placeholder="staffing, IT hardware"
+                value={categories}
+              />
+              <p className="text-xs text-zinc-500">Separate with commas.</p>
+            </div>
+            <div className="space-y-1.5">
+              <label className="font-medium text-sm" htmlFor="org-regions">
+                Operating countries or regions
+              </label>
+              <Input
+                disabled={!canEdit}
+                id="org-regions"
+                onChange={(e) => setOperatingRegions(e.target.value)}
+                placeholder="Pakistan, UAE"
+                value={operatingRegions}
+              />
+              <p className="text-xs text-zinc-500">Separate with commas.</p>
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="font-medium text-sm" htmlFor="org-contact">
+              Public contact email
+            </label>
+            <Input
+              disabled={!canEdit}
+              id="org-contact"
+              onChange={(e) => setPublicContactEmail(e.target.value)}
+              type="email"
+              value={publicContactEmail}
+            />
+          </div>
+
+          <label
+            className="flex items-start gap-2.5 rounded-lg border border-zinc-200 p-4 text-sm dark:border-zinc-800"
+            htmlFor="org-public"
+          >
+            <input
+              checked={isPublic}
+              className="mt-0.5"
+              disabled={!canEdit}
+              id="org-public"
+              onChange={(e) => setIsPublic(e.target.checked)}
+              type="checkbox"
+            />
+            <span>
+              <span className="block font-medium text-zinc-900 dark:text-zinc-50">
+                List this business in the public marketplace directory
+              </span>
+              <span className="mt-0.5 block text-zinc-600 dark:text-zinc-400">
+                Anyone can then find the details above, including people who are
+                not signed in. Your members, requests and quotations stay
+                private either way. Off by default.
+              </span>
+            </span>
+          </label>
+        </section>
+      ) : null}
+
+      {canEdit ? (
         <Button disabled={isSubmitting} type="submit">
           {organization ? "Save changes" : "Create organization"}
         </Button>
-      )}
+      ) : null}
     </form>
   );
 }

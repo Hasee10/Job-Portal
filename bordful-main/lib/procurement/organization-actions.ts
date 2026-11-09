@@ -16,15 +16,23 @@ export interface OrganizationMemberRef {
 }
 
 export interface Organization {
+  categories: string[];
   companySize: string | null;
   createdAt: string;
   description: string | null;
   id: string;
   industry: string | null;
   isBuyer: boolean;
+  // Consent to appear in the public marketplace directory. Never inferred
+  // from any other field - an organization is unlisted until an owner or
+  // admin deliberately turns this on.
+  isPublic: boolean;
   isSupplier: boolean;
   location: string | null;
   name: string;
+  operatingRegions: string[];
+  productsServices: string | null;
+  publicContactEmail: string | null;
   updatedAt: string;
   website: string | null;
 }
@@ -43,15 +51,35 @@ export interface OrganizationMember {
 }
 
 export interface OrganizationProfileInput {
+  categories: string[];
   companySize: string | null;
   description: string | null;
   industry: string | null;
   isBuyer: boolean;
+  isPublic: boolean;
   isSupplier: boolean;
   location: string | null;
   name: string;
+  operatingRegions: string[];
+  productsServices: string | null;
+  publicContactEmail: string | null;
   website: string | null;
 }
+
+// Creation deliberately takes the narrower set: a new organization is
+// identity and capabilities only, and is never public on day one. Listing
+// it is a separate, explicit edit.
+export type OrganizationCreateInput = Pick<
+  OrganizationProfileInput,
+  | "companySize"
+  | "description"
+  | "industry"
+  | "isBuyer"
+  | "isSupplier"
+  | "location"
+  | "name"
+  | "website"
+>;
 
 function getAdminClient() {
   const url = process.env.SUPABASE_URL;
@@ -72,15 +100,20 @@ function toError(error: unknown, fallback: string): Error {
 
 function rowToOrganization(row: Record<string, unknown>): Organization {
   return {
+    categories: (row.categories as string[] | null) ?? [],
     companySize: (row.company_size as string) || null,
     createdAt: row.created_at as string,
     description: (row.description as string) || null,
     id: row.id as string,
     industry: (row.industry as string) || null,
     isBuyer: Boolean(row.is_buyer),
+    isPublic: Boolean(row.is_public),
     isSupplier: Boolean(row.is_supplier),
     location: (row.location as string) || null,
     name: row.name as string,
+    operatingRegions: (row.operating_regions as string[] | null) ?? [],
+    productsServices: (row.products_services as string) || null,
+    publicContactEmail: (row.public_contact_email as string) || null,
     updatedAt: row.updated_at as string,
     website: (row.website as string) || null,
   };
@@ -156,7 +189,7 @@ export async function getMemberRole(
 
 export async function createOrganization(
   member: OrganizationMemberRef,
-  input: OrganizationProfileInput
+  input: OrganizationCreateInput
 ): Promise<Organization> {
   const name = input.name.trim();
   if (!name) {
@@ -230,6 +263,68 @@ export async function listOrganizationsForMember(
   });
 }
 
+export interface OrganizationAttention {
+  openInvitations: number;
+  pendingConnections: number;
+  pendingQuotations: number;
+}
+
+// The minimum useful in-app notification surface: counts, not a new
+// messaging system. Reuses the three tables that already carry this state
+// (organization_connections, procurement_invitations, procurement_responses)
+// instead of adding a notifications table. Not membership-checked on its
+// own - callers only ever have an organizationId here because
+// listOrganizationsForMember already proved membership for it, same trust
+// boundary as the page that renders this.
+export async function getOrganizationAttention(
+  organizationId: string,
+  isBuyer: boolean,
+  isSupplier: boolean
+): Promise<OrganizationAttention> {
+  const supabase = getAdminClient();
+
+  const [connections, invitations, openRequests] = await Promise.all([
+    supabase
+      .from("organization_connections")
+      .select("id", { count: "exact", head: true })
+      .eq("recipient_org_id", organizationId)
+      .eq("status", "pending"),
+    isSupplier
+      ? supabase
+          .from("procurement_invitations")
+          .select("id", { count: "exact", head: true })
+          .eq("supplier_org_id", organizationId)
+          .eq("status", "invited")
+      : Promise.resolve({ count: 0 }),
+    isBuyer
+      ? supabase
+          .from("procurement_requests")
+          .select("id")
+          .eq("buyer_org_id", organizationId)
+          .in("status", ["published", "closed_for_responses", "bids_opened"])
+      : Promise.resolve({ data: [] as { id: string }[] }),
+  ]);
+
+  let pendingQuotations = 0;
+  const openRequestIds = (
+    ("data" in openRequests ? openRequests.data : []) ?? []
+  ).map((r) => r.id);
+  if (openRequestIds.length > 0) {
+    const { count } = await supabase
+      .from("procurement_responses")
+      .select("id", { count: "exact", head: true })
+      .in("request_id", openRequestIds)
+      .eq("is_withdrawn", false);
+    pendingQuotations = count ?? 0;
+  }
+
+  return {
+    openInvitations: invitations.count ?? 0,
+    pendingConnections: connections.count ?? 0,
+    pendingQuotations,
+  };
+}
+
 // Membership-scoped read: a non-member gets null rather than the record,
 // so an organization id is not itself a capability.
 export async function getOrganizationForMember(
@@ -278,13 +373,18 @@ export async function updateOrganizationProfile(
   const { data, error } = await supabase
     .from("organizations")
     .update({
+      categories: input.categories,
       company_size: input.companySize,
       description: input.description,
       industry: input.industry,
       is_buyer: input.isBuyer,
+      is_public: input.isPublic,
       is_supplier: input.isSupplier,
       location: input.location,
       name,
+      operating_regions: input.operatingRegions,
+      products_services: input.productsServices,
+      public_contact_email: input.publicContactEmail,
       updated_at: new Date().toISOString(),
       website: input.website,
     })

@@ -6,6 +6,7 @@ import { auth } from "@/auth";
 import { OrganizationForm } from "@/components/procurement/OrganizationForm";
 import config from "@/config";
 import {
+  getOrganizationAttention,
   listOrganizationsForMember,
   resolveOrganizationMember,
 } from "@/lib/procurement/organization-actions";
@@ -33,6 +34,15 @@ export default async function OrganizationsPage() {
   }
 
   const organizations = await listOrganizationsForMember(member);
+  const attention = await Promise.all(
+    organizations.map((organization) =>
+      getOrganizationAttention(
+        organization.id,
+        organization.isBuyer,
+        organization.isSupplier
+      )
+    )
+  );
 
   return (
     <main className="min-h-[60vh] bg-background py-16">
@@ -48,31 +58,44 @@ export default async function OrganizationsPage() {
 
           {organizations.length > 0 && (
             <ul className="mt-8 space-y-3">
-              {organizations.map((organization) => (
-                <li key={organization.id}>
-                  <Link
-                    className="flex items-center justify-between rounded-xl border border-zinc-200 bg-white p-4 transition-colors hover:border-zinc-300 dark:border-zinc-800 dark:bg-zinc-900/60 dark:hover:border-zinc-700"
-                    href={`/procurement/organizations/${organization.id}`}
-                  >
-                    <span>
-                      <span className="block font-semibold text-zinc-900 dark:text-zinc-50">
-                        {organization.name}
+              {organizations.map((organization, index) => {
+                const needsAttention =
+                  attention[index].pendingConnections +
+                  attention[index].openInvitations +
+                  attention[index].pendingQuotations;
+                return (
+                  <li key={organization.id}>
+                    <Link
+                      className="flex items-center justify-between rounded-xl border border-zinc-200 bg-white p-4 transition-colors hover:border-zinc-300 dark:border-zinc-800 dark:bg-zinc-900/60 dark:hover:border-zinc-700"
+                      href={`/procurement/organizations/${organization.id}`}
+                    >
+                      <span>
+                        <span className="block font-semibold text-zinc-900 dark:text-zinc-50">
+                          {organization.name}
+                        </span>
+                        <span className="mt-0.5 block text-sm text-zinc-600 dark:text-zinc-400">
+                          {capabilityLabel(
+                            organization.isBuyer,
+                            organization.isSupplier
+                          )}{" "}
+                          &middot; you are {organization.role}
+                        </span>
                       </span>
-                      <span className="mt-0.5 block text-sm text-zinc-600 dark:text-zinc-400">
-                        {capabilityLabel(
-                          organization.isBuyer,
-                          organization.isSupplier
-                        )}{" "}
-                        &middot; you are {organization.role}
+                      <span className="flex items-center gap-3">
+                        {needsAttention > 0 && (
+                          <span className="rounded-full bg-amber-100 px-2.5 py-0.5 font-medium text-amber-800 text-xs dark:bg-amber-950/60 dark:text-amber-300">
+                            {needsAttention} needs attention
+                          </span>
+                        )}
+                        <Building2
+                          aria-hidden="true"
+                          className="h-5 w-5 text-zinc-400"
+                        />
                       </span>
-                    </span>
-                    <Building2
-                      aria-hidden="true"
-                      className="h-5 w-5 text-zinc-400"
-                    />
-                  </Link>
-                </li>
-              ))}
+                    </Link>
+                  </li>
+                );
+              })}
             </ul>
           )}
 

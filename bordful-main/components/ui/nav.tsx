@@ -23,7 +23,7 @@ import { AuthNavStatus } from "@/components/auth/AuthNavStatus";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import config from "@/config";
-import { capabilitiesFor, hasProcurementAccess } from "@/lib/auth/capabilities";
+import { capabilitiesFor } from "@/lib/auth/capabilities";
 import { resolveColor } from "@/lib/utils/colors";
 
 // Brand icon component that uses the configured icon name or falls back to BriefcaseBusiness
@@ -315,21 +315,22 @@ export function Nav() {
   const { openDropdowns, registerDropdownRef, toggleDropdown } =
     useDropdownMenu();
 
-  // JobLo ships two products on one account system (recruitment and the
-  // procurement marketplace). Guests see both - each is a public marketing
-  // surface - but once signed in, the nav drops the product this account has
-  // no capability for, so a job seeker isn't shown procurement controls and a
-  // standalone vendor isn't shown the job board. This is presentation only:
-  // every protected page and server action enforces access on its own, since
-  // a hidden link is not authorization.
+  // The procurement entries are the public marketplace: an overview, the
+  // business directory and the tender feed. They stay visible to everyone,
+  // because whether someone can do business here is now decided by the
+  // organizations they belong to, not by the recruitment role their account
+  // happens to carry - a job seeker may well own a supplier business. The
+  // private workspaces are reached from the account menu instead, and every
+  // one of them enforces membership server-side.
+  //
+  // The job board is still dropped for an account with no recruitment
+  // capability. This is presentation only; a hidden link is not
+  // authorization.
   const { data: session } = useSession();
   const capabilities = capabilitiesFor(session?.user?.role);
   const menuItems = (config.nav.menu || []).filter((item) => {
     if (!session?.user) {
       return true;
-    }
-    if (item.link.startsWith("/procurement")) {
-      return hasProcurementAccess(capabilities);
     }
     if (item.link.startsWith("/jobs") || item.link === "/job-alerts") {
       return capabilities.recruitment;
