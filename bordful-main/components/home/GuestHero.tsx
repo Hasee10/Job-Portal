@@ -1,6 +1,6 @@
 import { ArrowRight, ArrowUpRight } from "lucide-react";
 import Link from "next/link";
-import { ProductPreview } from "./ProductPreview";
+import Image from "next/image";
 import styles from "./marketing.module.css";
 export function GuestHero() {
   return (
@@ -35,11 +35,21 @@ export function GuestHero() {
           </div>
         </div>
         <div className={styles.heroVisual}>
-          <ProductPreview />
-          <div className={styles.visualCaption}>
-            <span>Less searching in circles.</span>
-            <strong>More moving forward.</strong>
-          </div>
+          <figure>
+            <Image
+              src="/illustrations/caliber-next-chapter.webp"
+              alt="Two sculptural pathways converge at an open doorway, with a portfolio and interlocking rings representing careers and business connections."
+              width={1448}
+              height={1086}
+              sizes="(max-width: 900px) 100vw, 55vw"
+              priority
+              className="h-auto w-full rounded-2xl"
+            />
+            <figcaption className={styles.visualCaption}>
+              <span>CAREERS × CONNECTIONS</span>
+              <strong>Your next chapter, open.</strong>
+            </figcaption>
+          </figure>
         </div>
       </div>
     </section>
