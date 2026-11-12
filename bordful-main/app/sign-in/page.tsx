@@ -1,7 +1,5 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { redirect } from "next/navigation";
-import { localBusinessPreviewHref } from "@/lib/dev/business-preview";
 import { Suspense } from "react";
 import { SignInForm } from "@/components/auth/SignInForm";
 import config from "@/config";
@@ -14,14 +12,7 @@ export const metadata: Metadata = {
 
 export const dynamic = "force-dynamic";
 
-export default async function SignInPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ callbackUrl?: string }>;
-}) {
-  const { callbackUrl } = await searchParams;
-  const preview = await localBusinessPreviewHref(callbackUrl);
-  if (preview) redirect(preview);
+export default function SignInPage() {
   return (
     <main className="min-h-[60vh] bg-background py-16">
       <div className="container mx-auto px-4">

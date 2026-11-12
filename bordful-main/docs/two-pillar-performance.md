@@ -121,3 +121,9 @@ The public landing alone replaces its dashboard visual with original generated a
 Validation: 22 focused tests passed; four landing tests rerun after the artwork replacement passed; standalone typecheck passed. Browser checks confirmed FAQ search, answer expansion, no-result clearing, topic anchors and Contact link; no overflow on sampled phone layouts. Updated landing artwork loaded at 1366/1177/390/320px, with zero axe A/AA violations. Shared theme checks and representative light/dark scans passed after targeted contrast corrections. No auth, backend, schema, hosted-data or credential changes.
 
 Final production build passed with existing middleware/Edge deprecation warnings; localhost restarted after the build.
+
+## Authentication restored — November 12, 2026
+
+At the user’s request, removed both localhost preview bypass helpers and their obsolete enablement tests. Jobs middleware now requires a session in every environment, including localhost and loopback IPs. Seeker sign-in always renders the real OAuth buttons. Business sign-in/signup no longer redirect to the fictional preview, and organizations again redirects anonymous users to business sign-in. The retired preview URL redirects to the normal organizations route, which enforces authentication. Credentials, providers, backend role checks, membership isolation and API authorization are unchanged. Existing demo listings remain separate from authentication.
+
+Nine focused authentication/navigation tests and standalone typecheck passed. Browser-verified anonymous redirects: Jobs to seeker sign-in; organizations and preview to business sign-in; recruiter dashboard to recruiter sign-in; employer dashboard to business sign-in. Business signup renders its real form. Both seeker OAuth buttons render; successful provider authentication is not claimed or verified. No full build repeated for this removal of development shortcuts.

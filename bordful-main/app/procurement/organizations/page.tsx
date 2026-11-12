@@ -5,7 +5,6 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { OrganizationForm } from "@/components/procurement/OrganizationForm";
 import config from "@/config";
-import { localBusinessPreviewHref } from "@/lib/dev/business-preview";
 import {
   listOrganizationsWithAttention,
   resolveOrganizationMember,
@@ -30,8 +29,6 @@ export default async function OrganizationsPage() {
   const session = await auth();
   const member = resolveOrganizationMember(session);
   if (!member) {
-    const preview = await localBusinessPreviewHref();
-    if (preview) redirect(preview);
     redirect("/sign-in?callbackUrl=/procurement/organizations");
   }
 

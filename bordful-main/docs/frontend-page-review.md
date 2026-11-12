@@ -1,5 +1,7 @@
 # Caliber page consistency review
 
+**Authentication follow-up:** Localhost preview shortcuts have since been removed. Jobs requires sign-in, anonymous organizations requests go to business sign-in, and the retired preview URL redirects through organizations. The coverage table below records the earlier visual review conditions.
+
 Reviewed all 72 page templates in source for shared header, palette and component usage. Browser coverage includes all 50 non-parameter paths, plus representative Jobs filters/details, a guide article and a business profile. These checks used local fictional data and no authenticated production session.
 
 ## What changed
