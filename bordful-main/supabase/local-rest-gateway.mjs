@@ -17,6 +17,15 @@
 // Then point the app at it: SUPABASE_URL=http://127.0.0.1:3002
 
 import { createServer, request as httpRequest } from "node:http";
+import { readFileSync } from "node:fs";
+import { config } from "dotenv";
+import { demoJobsEnabled, queryDemoJobs } from "./local-demo-jobs.mjs";
+config({ path: new URL("../.env.local", import.meta.url), quiet: true });
+let demoJobs = null;
+if (demoJobsEnabled(process.env)) {
+  try { demoJobs = JSON.parse(readFileSync(new URL("./.temp/demo-jobs.json", import.meta.url), "utf8")); }
+  catch { throw new Error("Run node scripts/dev/seed-demo-data.mjs before enabling local demo jobs."); }
+}
 
 const LISTEN_PORT = Number(process.env.LOCAL_REST_GATEWAY_PORT ?? 3002);
 const TARGET_PORT = Number(process.env.LOCAL_POSTGREST_PORT ?? 3001);
@@ -37,6 +46,18 @@ const server = createServer((req, res) => {
     : req.url === PREFIX
       ? "/"
       : req.url;
+
+  const parsed = new URL(path, `http://${HOST}:${LISTEN_PORT}`);
+  if (demoJobs && parsed.pathname === "/jobs") {
+    if (req.method !== "GET" && req.method !== "HEAD") {
+      res.writeHead(405, { "content-type": "application/json" }).end(JSON.stringify({message:"Demo jobs are read-only."}));
+      return;
+    }
+    const {data,total,offset} = queryDemoJobs(demoJobs,parsed);
+    res.writeHead(200, { "content-type": "application/json", "content-range": `${data.length ? `${offset}-${offset+data.length-1}` : "*"}/${total}` });
+    res.end(req.method === "HEAD" ? undefined : JSON.stringify(data));
+    return;
+  }
 
   const upstream = httpRequest(
     { host: HOST, port: TARGET_PORT, method: req.method, path, headers: { ...req.headers, host: `${HOST}:${TARGET_PORT}` } },

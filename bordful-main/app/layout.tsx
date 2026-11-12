@@ -115,6 +115,13 @@ export default async function RootLayout({
               <ResumePanelProvider>
                 <div className="flex min-h-screen flex-col">
                   <Nav />
+                  {process.env.NODE_ENV === "development" &&
+                    process.env.LOCAL_DEMO_DATA === "true" && (
+                      <p className="border-b bg-amber-50 px-4 py-2 text-center text-amber-950 text-xs dark:bg-amber-950 dark:text-amber-100">
+                        Local demo data: fictional jobs, tenders and businesses
+                        for layout testing.
+                      </p>
+                    )}
                   <div className="flex-1" id="page-content" tabIndex={-1}>
                     <NuqsAdapter>{children}</NuqsAdapter>
                   </div>
