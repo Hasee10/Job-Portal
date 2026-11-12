@@ -30,7 +30,8 @@ export function MasterclassCard({
 
   return (
     <button
-      className="group block w-full overflow-hidden rounded-xl border border-zinc-200 bg-white text-left transition-all hover:-translate-y-0.5 hover:border-zinc-300 hover:shadow-lg dark:border-zinc-800 dark:bg-zinc-900/60 dark:hover:border-zinc-700 dark:hover:shadow-[0_0_0_1px_rgba(56,189,248,0.15),0_8px_30px_rgba(0,0,0,0.4)]"
+      className="group block w-full overflow-hidden rounded-2xl border border-zinc-200 bg-white text-left transition-all hover:-translate-y-0.5 hover:border-zinc-300 hover:shadow-lg dark:border-zinc-800 dark:bg-zinc-900/60 dark:hover:border-zinc-700 dark:hover:shadow-[0_0_0_1px_rgba(56,189,248,0.15),0_8px_30px_rgba(0,0,0,0.4)]"
+      disabled={!masterclass.videoUrl}
       onClick={onPlay}
       type="button"
     >
@@ -44,13 +45,19 @@ export function MasterclassCard({
           />
         )}
         <div className="absolute inset-0 flex items-center justify-center bg-black/0 transition-colors group-hover:bg-black/20">
-          <div className="flex h-11 w-11 items-center justify-center rounded-full bg-white/90 text-zinc-900 shadow-md transition-transform group-hover:scale-110 dark:bg-zinc-950/90 dark:text-zinc-50">
-            <Play
-              aria-hidden="true"
-              className="ml-0.5 h-4 w-4"
-              fill="currentColor"
-            />
-          </div>
+          {masterclass.videoUrl ? (
+            <div className="flex h-11 w-11 items-center justify-center rounded-full bg-white/90 text-zinc-900 shadow-md transition-transform group-hover:scale-110 dark:bg-zinc-950/90 dark:text-zinc-50">
+              <Play
+                aria-hidden="true"
+                className="ml-0.5 h-4 w-4"
+                fill="currentColor"
+              />
+            </div>
+          ) : (
+            <span className="rounded-lg bg-background px-3 py-2 text-muted-foreground text-xs">
+              Video unavailable
+            </span>
+          )}
         </div>
         {duration && (
           <span className="absolute right-2 bottom-2 rounded bg-black/80 px-1.5 py-0.5 font-medium text-white text-xs">
@@ -59,7 +66,7 @@ export function MasterclassCard({
         )}
       </div>
 
-      <div className="p-4">
+      <div className="p-6">
         {masterclass.category && (
           <span
             className={`inline-block rounded-full border px-2.5 py-0.5 font-medium text-xs ${getGuideCategoryStyle(masterclass.category)}`}
@@ -78,14 +85,14 @@ export function MasterclassCard({
           </p>
         )}
         {masterclass.description && (
-          <p className="mt-2 line-clamp-2 text-xs text-zinc-500 dark:text-zinc-500">
+          <p className="mt-2 line-clamp-2 text-xs text-zinc-500 dark:text-zinc-400">
             {masterclass.description}
           </p>
         )}
         {!thumbnail && (
-          <span className="mt-2 flex items-center gap-1 text-xs text-zinc-500 dark:text-zinc-500">
+          <span className="mt-2 flex items-center gap-1 text-xs text-zinc-500 dark:text-zinc-400">
             <Clock aria-hidden="true" className="h-3 w-3" />
-            Watch
+            {masterclass.videoUrl ? "Watch session" : "No recording available"}
           </span>
         )}
       </div>

@@ -1,7 +1,7 @@
 "use client";
 
 import { X } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { MasterclassCard } from "@/components/content/MasterclassCard";
 import type { Masterclass } from "@/lib/content/masterclass-actions";
 import { getYouTubeEmbedUrl } from "@/lib/content/masterclass-video";
@@ -27,6 +27,19 @@ export function MasterclassGrid({
     ? masterclasses.filter((mc) => mc.category === activeCategory)
     : masterclasses;
 
+  const dialog = useRef<HTMLDialogElement>(null);
+  useEffect(() => {
+    if (!playing || !dialog.current) return;
+    const element = dialog.current;
+    const overflow = document.body.style.overflow;
+    element.showModal();
+    document.body.style.overflow = "hidden";
+    return () => {
+      element.close();
+      document.body.style.overflow = overflow;
+    };
+  }, [playing]);
+
   const embedUrl = playing?.videoUrl
     ? getYouTubeEmbedUrl(playing.videoUrl)
     : null;
@@ -41,6 +54,7 @@ export function MasterclassGrid({
                 ? "border-zinc-900 bg-zinc-900 text-white dark:border-zinc-100 dark:bg-zinc-100 dark:text-zinc-900"
                 : "border-zinc-200 text-zinc-600 hover:border-zinc-400 dark:border-zinc-700 dark:text-zinc-400 dark:hover:border-zinc-500"
             }`}
+            aria-pressed={activeCategory === null}
             onClick={() => setActiveCategory(null)}
             type="button"
           >
@@ -53,6 +67,7 @@ export function MasterclassGrid({
                   ? "border-zinc-900 bg-zinc-900 text-white dark:border-zinc-100 dark:bg-zinc-100 dark:text-zinc-900"
                   : "border-zinc-200 text-zinc-600 hover:border-zinc-400 dark:border-zinc-700 dark:text-zinc-400 dark:hover:border-zinc-500"
               }`}
+              aria-pressed={activeCategory === category}
               key={category}
               onClick={() => setActiveCategory(category)}
               type="button"
@@ -74,55 +89,52 @@ export function MasterclassGrid({
       </div>
 
       {playing && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
-          onClick={() => setPlaying(null)}
+        <dialog
+          ref={dialog}
+          onCancel={() => setPlaying(null)}
+          aria-label={playing.title}
+          className="m-auto w-[calc(100%_-_2rem)] max-w-4xl rounded-2xl border bg-[#082c39] p-5 backdrop:bg-black/75"
         >
-          <div
-            className="w-full max-w-3xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between pb-2">
-              <p className="line-clamp-1 pr-4 font-medium text-sm text-white">
-                {playing.title}
-              </p>
-              <button
-                aria-label="Close"
-                className="shrink-0 rounded-full p-1.5 text-white hover:bg-white/10"
-                onClick={() => setPlaying(null)}
-                type="button"
-              >
-                <X aria-hidden="true" className="h-5 w-5" />
-              </button>
-            </div>
-            <div className="aspect-video w-full overflow-hidden rounded-lg bg-black">
-              {embedUrl ? (
-                <iframe
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                  className="h-full w-full"
-                  src={embedUrl}
-                  title={playing.title}
-                />
-              ) : (
-                <div className="flex h-full items-center justify-center p-6 text-center text-sm text-zinc-400">
-                  {playing.videoUrl ? (
-                    <a
-                      className="underline"
-                      href={playing.videoUrl}
-                      rel="noopener noreferrer"
-                      target="_blank"
-                    >
-                      Watch on the original source
-                    </a>
-                  ) : (
-                    "No video available for this session."
-                  )}
-                </div>
-              )}
-            </div>
+          <div className="flex items-center justify-between pb-2">
+            <p className="line-clamp-1 pr-4 font-medium text-sm text-white">
+              {playing.title}
+            </p>
+            <button
+              aria-label="Close"
+              className="shrink-0 rounded-full p-1.5 text-white hover:bg-white/10"
+              onClick={() => setPlaying(null)}
+              type="button"
+            >
+              <X aria-hidden="true" className="h-5 w-5" />
+            </button>
           </div>
-        </div>
+          <div className="aspect-video w-full overflow-hidden rounded-lg bg-black">
+            {embedUrl ? (
+              <iframe
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                className="h-full w-full"
+                src={embedUrl}
+                title={playing.title}
+              />
+            ) : (
+              <div className="flex h-full items-center justify-center p-6 text-center text-sm text-zinc-400">
+                {playing.videoUrl ? (
+                  <a
+                    className="underline"
+                    href={playing.videoUrl}
+                    rel="noopener noreferrer"
+                    target="_blank"
+                  >
+                    Watch on the original source
+                  </a>
+                ) : (
+                  "No video available for this session."
+                )}
+              </div>
+            )}
+          </div>
+        </dialog>
       )}
     </div>
   );
