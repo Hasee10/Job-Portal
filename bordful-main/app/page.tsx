@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { auth } from "@/auth";
 import { HomePage } from "@/components/home/HomePage";
 import { HowItWorksSection } from "@/components/home/HowItWorksSection";
@@ -6,7 +7,11 @@ import { TrustSection } from "@/components/home/TrustSection";
 import config from "@/config";
 import { HOMEPAGE_JOBS_LIMIT } from "@/lib/constants/defaults";
 import { listPublishedTestimonials } from "@/lib/content/testimonial-actions";
-import { getActiveJobsCount, getHomepageJobStats, getJobs } from "@/lib/db/jobs.server";
+import {
+  getActiveJobsCount,
+  getHomepageJobStats,
+  getJobs,
+} from "@/lib/db/jobs.server";
 import { generateMetadata } from "@/lib/utils/metadata";
 
 // Add metadata for SEO
@@ -47,6 +52,25 @@ export default async function Home() {
     getHomepageJobStats(),
     listPublishedTestimonials(),
   ]);
+  if (allJobs === null) {
+    return (
+      <main className="container mx-auto space-y-6 px-4 py-20">
+        <h1 className="font-bold text-4xl">Jobs and Procurement</h1>
+        <p>Find your next opportunity or connect with businesses.</p>
+        <div className="flex gap-6">
+          <Link className="underline" href="/jobs">
+            Explore Jobs
+          </Link>
+          <Link className="underline" href="/procurement">
+            Explore Procurement
+          </Link>
+        </div>
+        <p className="text-muted-foreground">
+          Job listings and statistics are currently unavailable.
+        </p>
+      </main>
+    );
+  }
   const companiesHiringCount = new Set(allJobs.map((job) => job.company)).size;
   // Companies with the most open roles right now - real data, not a
   // fabricated logo strip of brands that don't actually post here.

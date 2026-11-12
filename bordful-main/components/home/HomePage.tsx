@@ -1,6 +1,6 @@
 "use client";
 
-import { formatDistanceToNow, isToday } from "date-fns";
+import { formatDistanceToNow } from "date-fns";
 import { ArrowRight, Briefcase, Search } from "lucide-react";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -437,25 +437,11 @@ function HomePageContent({
     return mostRecentDate; // Return the timestamp
   }, [initialJobs]);
 
-  // Calculate jobs added today
-  const jobsAddedToday = useMemo(
-    () =>
-      initialJobs.filter((job) => isToday(new Date(job.posted_date))).length,
-    [initialJobs]
-  );
-
-  // Activity stats
-  const jobsThisWeek = useMemo(() => {
-    const weekAgo = new Date();
-    weekAgo.setDate(weekAgo.getDate() - 7);
-    return initialJobs.filter((job) => new Date(job.posted_date) > weekAgo)
-      .length;
-  }, [initialJobs]);
-
-  const companiesHiringCount = useMemo(
-    () => new Set(initialJobs.map((job) => job.company)).size,
-    [initialJobs]
-  );
+  // Global figures come from complete server-side statistics, never the
+  // bounded preview of jobs delivered to this client.
+  const jobsAddedToday = jobsAddedTodayProp;
+  const jobsThisWeek = jobsThisWeekProp;
+  const companiesHiringCount = companiesHiringCountProp;
 
   // Guests don't get the job feed at all - no search, no stats tied to job
   // data, no listings, no filters. Just the hero copy and a sign-in/sign-up
@@ -597,11 +583,11 @@ function HomePageContent({
                   <Briefcase aria-hidden="true" className="h-4 w-4" />
                 </span>
                 <h3 className="mt-4 font-semibold text-base text-zinc-900 dark:text-zinc-50">
-                  Employers &amp; recruiters
+                  Business / Procurement
                 </h3>
                 <p className="mt-1.5 text-muted-foreground text-sm">
-                  Post a role or search candidates who are open to hearing from
-                  you.
+                  Create a business profile, discover buyers and suppliers, and
+                  manage procurement.
                 </p>
                 <a
                   className="mt-4 inline-flex items-center gap-1 font-medium text-primary text-sm hover:underline"

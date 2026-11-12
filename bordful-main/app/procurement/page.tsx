@@ -14,12 +14,7 @@ import Link from "next/link";
 import { auth } from "@/auth";
 import { HeroSection } from "@/components/ui/hero-section";
 import config from "@/config";
-import {
-  capabilitiesFor,
-  procurementWorkspaceHref,
-} from "@/lib/auth/capabilities";
-import { getTenderFacets } from "@/lib/procurement/scraped-tender-actions";
-import { listVerifiedVendors } from "@/lib/procurement/vendor-actions";
+import { getActiveTenderCount } from "@/lib/procurement/scraped-tender-actions";
 
 export const metadata: Metadata = {
   description:
@@ -87,19 +82,14 @@ const HOW_IT_WORKS = [
 ];
 
 export default async function ProcurementLandingPage() {
-  const [session, facets, vendors] = await Promise.all([
+  const [session, totalOpenTenders] = await Promise.all([
     auth(),
-    getTenderFacets().catch(() => null),
-    listVerifiedVendors().catch(() => []),
+    getActiveTenderCount().catch(() => null),
   ]);
   // The landing page stays public (it's the marketing surface for the
-  // marketplace), but a signed-in account gets the one workspace it can
-  // actually reach instead of both buyer and supplier calls to action - the
-  // other one would only bounce off that workspace's own role guard.
-  const capabilities = capabilitiesFor(session?.user?.role);
-  const workspaceHref = procurementWorkspaceHref(capabilities);
-  const totalOpenTenders =
-    facets?.sources.reduce((sum, s) => sum + s.count, 0) ?? null;
+  // marketplace). Every signed-in account reaches its membership-scoped
+  // organizations here, independently of legacy recruitment roles.
+  const workspaceHref = "/procurement/organizations";
 
   return (
     <main className="bg-background">
@@ -120,24 +110,22 @@ export default async function ProcurementLandingPage() {
                 className="inline-flex items-center justify-center rounded-md bg-white px-5 py-2.5 font-medium text-primary text-sm hover:opacity-90"
                 href={workspaceHref}
               >
-                {capabilities.procurementBuyer
-                  ? "Go to my requests"
-                  : "Go to my vendor workspace"}
+                Your business workspace
               </Link>
             )
           ) : (
             <>
               <Link
                 className="inline-flex items-center justify-center rounded-md bg-white px-5 py-2.5 font-medium text-primary text-sm hover:opacity-90"
-                href="/procurement/requests"
+                href={session?.user ? workspaceHref : "/sign-up?callbackUrl=/procurement/organizations"}
               >
-                Go to my requests
+                Your business workspace
               </Link>
               <Link
                 className="inline-flex items-center justify-center rounded-md border border-white/40 px-5 py-2.5 font-medium text-sm text-white hover:bg-white/10"
-                href="/procurement/vendor"
+                href={session?.user ? workspaceHref : "/sign-in?callbackUrl=/procurement/organizations"}
               >
-                I'm a vendor
+                Business sign in
               </Link>
             </>
           )}
@@ -171,7 +159,7 @@ export default async function ProcurementLandingPage() {
 
       {/* Live numbers - same "bold stats band" treatment as the homepage's
           guest stats grid, using real counts instead of placeholder copy. */}
-      {(totalOpenTenders !== null || vendors.length > 0) && (
+      {totalOpenTenders !== null && (
         <div className="border-b bg-muted/20 py-10">
           <div className="container mx-auto px-4">
             <div className="mx-auto grid max-w-2xl grid-cols-2 gap-6 text-center">
@@ -184,11 +172,14 @@ export default async function ProcurementLandingPage() {
                 </p>
               </div>
               <div>
-                <p className="font-bold text-2xl text-zinc-900 tracking-tight sm:text-3xl dark:text-zinc-50">
-                  {vendors.length.toLocaleString()}
-                </p>
+                <Link
+                  className="font-semibold underline"
+                  href="/procurement/directory"
+                >
+                  Discover businesses
+                </Link>
                 <p className="mt-1 text-muted-foreground text-xs">
-                  Verified registered vendors
+                  Find buyers and suppliers
                 </p>
               </div>
             </div>
@@ -272,9 +263,9 @@ export default async function ProcurementLandingPage() {
               </p>
               <Link
                 className="mt-4 inline-flex items-center gap-1 font-medium text-primary text-sm hover:underline"
-                href="/procurement/requests"
+                href={session?.user ? workspaceHref : "/sign-up?callbackUrl=/procurement/organizations"}
               >
-                Go to my requests
+                Your business workspace
                 <ArrowRight aria-hidden="true" className="h-3.5 w-3.5" />
               </Link>
             </div>
@@ -292,9 +283,9 @@ export default async function ProcurementLandingPage() {
               </p>
               <Link
                 className="mt-4 inline-flex items-center gap-1 font-medium text-primary text-sm hover:underline"
-                href="/procurement/vendor"
+                href={session?.user ? workspaceHref : "/sign-in?callbackUrl=/procurement/organizations"}
               >
-                I'm a vendor
+                Business sign in
                 <ArrowRight aria-hidden="true" className="h-3.5 w-3.5" />
               </Link>
             </div>

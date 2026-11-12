@@ -5,9 +5,13 @@
 // created is removed in afterAll, including when an expectation fails.
 
 import { createClient } from "@supabase/supabase-js";
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import type { OrganizationMemberRef } from "../organization-actions";
-import { getOrganizationAttention } from "../organization-actions";
+import {
+  getOrganizationAttention,
+  listOrganizationsForMember,
+  listOrganizationsWithAttention,
+} from "../organization-actions";
 import { submitOrganizationResponse } from "../organization-response-actions";
 import {
   createOrganizationRequest,
@@ -36,6 +40,7 @@ describeLocal("local integration: organization attention counts", () => {
 
   let buyerOrg = "";
   let supplierOrg = "";
+  let secondBuyerOrg = "";
   let requestId = "";
 
   async function createOrg(name: string, owner: OrganizationMemberRef) {
@@ -52,7 +57,33 @@ describeLocal("local integration: organization attention counts", () => {
     return (Array.isArray(data) ? data[0] : data).id as string;
   }
 
+  it("batches member attention with parity and excludes another owner's organizations", async () => {
+    const spy = vi.spyOn(globalThis, "fetch");
+    const legacyOrganizations = await listOrganizationsForMember(buyerOwner);
+    const legacyAttention = await Promise.all(
+      legacyOrganizations.map((org) =>
+        getOrganizationAttention(org.id, org.isBuyer, org.isSupplier)
+      )
+    );
+    const beforeRequests = spy.mock.calls.length;
+    spy.mockClear();
+    const organizations = await listOrganizationsWithAttention(buyerOwner);
+    const afterRequests = spy.mock.calls.length;
+    spy.mockRestore();
+    expect(beforeRequests).toBe(8);
+    expect(afterRequests).toBe(5);
+    expect(organizations.map((org) => org.attention)).toEqual(legacyAttention);
+    expect(organizations.map((org) => org.id)).toContain(buyerOrg);
+    expect(organizations.map((org) => org.id)).not.toContain(supplierOrg);
+    const suppliers = await listOrganizationsWithAttention(supplierOwner);
+    const supplier = suppliers.find((org) => org.id === supplierOrg);
+    expect(supplier?.attention).toEqual(
+      await getOrganizationAttention(supplierOrg, true, true)
+    );
+  });
+
   beforeAll(async () => {
+    secondBuyerOrg = await createOrg(`${RUN} Other buyer`, buyerOwner);
     buyerOrg = await createOrg(`${RUN} Buyer`, buyerOwner);
     supplierOrg = await createOrg(`${RUN} Supplier`, supplierOwner);
 
@@ -131,7 +162,7 @@ describeLocal("local integration: organization attention counts", () => {
         .eq("request_id", requestId);
       await admin.from("procurement_requests").delete().eq("id", requestId);
     }
-    const orgIds = [buyerOrg, supplierOrg].filter(Boolean);
+    const orgIds = [buyerOrg, supplierOrg, secondBuyerOrg].filter(Boolean);
     if (orgIds.length) {
       await admin
         .from("organization_connections")

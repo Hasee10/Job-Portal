@@ -439,18 +439,24 @@ export async function testConnection(): Promise<boolean> {
 // Explicit paging avoids treating PostgREST's response cap as the full dataset.
 export const getHomepageJobStats = cache(async () => {
   const client = getSupabaseClient();
-  if (!client) return [];
+  if (!client) return null;
   const rows: { company: string; posted_date: string; title: string }[] = [];
   for (let offset = 0; ; offset += 1000) {
-    const { data, error } = await client.from("jobs")
-      .select("company,posted_at,title").eq("is_active", true)
-      .order("id").range(offset, offset + 999);
+    const { data, error } = await client
+      .from("jobs")
+      .select("company,posted_at,title")
+      .eq("is_active", true)
+      .order("id")
+      .range(offset, offset + 999);
     if (error) {
-      console.error("Homepage statistics unavailable", error.code);
-      return [];
+      return null;
     }
     for (const row of data ?? []) {
-      rows.push({ company: row.company, posted_date: row.posted_at, title: row.title });
+      rows.push({
+        company: row.company,
+        posted_date: row.posted_at,
+        title: row.title,
+      });
     }
     if (!data || data.length < 1000) break;
   }

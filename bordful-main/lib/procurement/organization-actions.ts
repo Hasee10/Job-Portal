@@ -325,6 +325,113 @@ export async function getOrganizationAttention(
   };
 }
 
+// Membership is resolved inside this operation; callers cannot supply arbitrary
+// organization IDs. No shared cache contains these private counts.
+export async function listOrganizationsWithAttention(
+  member: OrganizationMemberRef
+) {
+  const organizations = await listOrganizationsForMember(member);
+  const client = getAdminClient();
+  const attention = new Map(
+    organizations.map((org) => [
+      org.id,
+      {
+        openInvitations: 0,
+        pendingConnections: 0,
+        pendingQuotations: 0,
+      },
+    ])
+  );
+  for (let start = 0; start < organizations.length; start += 100) {
+    const group = organizations.slice(start, start + 100);
+    const ids = group.map((org) => org.id);
+    const suppliers = group
+      .filter((org) => org.isSupplier)
+      .map((org) => org.id);
+    const buyers = group.filter((org) => org.isBuyer).map((org) => org.id);
+    // Page every relation explicitly so API row caps cannot undercount.
+    for (let offset = 0; ; offset += 1000) {
+      const { data, error } = await client
+        .from("organization_connections")
+        .select("id,recipient_org_id")
+        .in("recipient_org_id", ids)
+        .eq("status", "pending")
+        .order("id")
+        .range(offset, offset + 999);
+      if (error) throw error;
+      for (const row of data ?? []) {
+        const counts = attention.get(row.recipient_org_id);
+        if (counts) counts.pendingConnections += 1;
+      }
+      if (!data || data.length < 1000) break;
+    }
+    if (suppliers.length) {
+      for (let offset = 0; ; offset += 1000) {
+        const { data, error } = await client
+          .from("procurement_invitations")
+          .select("id,supplier_org_id")
+          .in("supplier_org_id", suppliers)
+          .eq("status", "invited")
+          .order("id")
+          .range(offset, offset + 999);
+        if (error) throw error;
+        for (const row of data ?? []) {
+          const counts = attention.get(row.supplier_org_id);
+          if (counts) counts.openInvitations += 1;
+        }
+        if (!data || data.length < 1000) break;
+      }
+    }
+    const requestOwners = new Map<string, string>();
+    if (buyers.length) {
+      for (let offset = 0; ; offset += 1000) {
+        const { data, error } = await client
+          .from("procurement_requests")
+          .select("id,buyer_org_id")
+          .in("buyer_org_id", buyers)
+          .in("status", ["published", "closed_for_responses", "bids_opened"])
+          .order("id")
+          .range(offset, offset + 999);
+        if (error) throw error;
+        for (const row of data ?? [])
+          requestOwners.set(row.id, row.buyer_org_id);
+        if (!data || data.length < 1000) break;
+      }
+    }
+    const requestIds = [...requestOwners.keys()];
+    for (
+      let requestStart = 0;
+      requestStart < requestIds.length;
+      requestStart += 100
+    ) {
+      for (let offset = 0; ; offset += 1000) {
+        const { data, error } = await client
+          .from("procurement_responses")
+          .select("id,request_id")
+          .in("request_id", requestIds.slice(requestStart, requestStart + 100))
+          .eq("is_withdrawn", false)
+          .order("id")
+          .range(offset, offset + 999);
+        if (error) throw error;
+        for (const row of data ?? []) {
+          const owner = requestOwners.get(row.request_id);
+          const counts = owner ? attention.get(owner) : undefined;
+          if (counts) counts.pendingQuotations += 1;
+        }
+        if (!data || data.length < 1000) break;
+      }
+    }
+  }
+  return organizations.map((org) => ({
+    ...org,
+    attention: attention.get(org.id) ?? {
+      openInvitations: 0,
+      pendingConnections: 0,
+      pendingQuotations: 0,
+    },
+  }));
+}
+
 // Membership-scoped read: a non-member gets null rather than the record,
 // so an organization id is not itself a capability.
 export async function getOrganizationForMember(
