@@ -328,7 +328,7 @@ export default async function JobPostPage({
             <section className="rounded-2xl border bg-card p-6 sm:p-8">
               <h2 className="font-semibold text-xl">About this role</h2>
               <div className="prose prose-sm prose-gray mt-5 max-w-none dark:prose-invert">
-                <div className="markdown-content [&_a:hover]:text-zinc-800 [&_a]:text-zinc-900 [&_a]:underline [&_a]:underline-offset-4 [&_a]:transition-colors dark:[&_a]:text-cyan-200">
+                <div className="markdown-content [&_a:hover]:text-zinc-800 [&_a]:text-zinc-900 [&_a]:underline [&_a]:underline-offset-4 [&_a]:transition-colors dark:[&_a]:text-primary">
                   {!job.description && (
                     <p className="text-red-500">No description available</p>
                   )}
@@ -339,14 +339,14 @@ export default async function JobPostPage({
                       a: ({ href, ...props }) =>
                         href ? (
                           <a
-                            className="text-blue-600 hover:text-blue-800"
+                            className="text-primary hover:text-primary/80"
                             href={href}
                             rel="noopener noreferrer"
                             target="_blank"
                             {...props}
                           />
                         ) : (
-                          <span className="text-blue-600" {...props} />
+                          <span className="text-primary" {...props} />
                         ),
                       // Style blockquotes (for Airtable quote blocks)
                       blockquote: ({ ...props }) => (
@@ -486,7 +486,7 @@ export default async function JobPostPage({
                         {job.job_source_name || "an external source"} and only
                         includes a partial description.{" "}
                         <a
-                          className="text-blue-600 hover:text-blue-800"
+                          className="text-primary hover:text-primary/80"
                           href={job.apply_url}
                           rel="noopener noreferrer"
                           target="_blank"

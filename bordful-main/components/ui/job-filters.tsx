@@ -129,7 +129,7 @@ function SwitchItem({
       <div className="flex items-center space-x-2">
         <Switch checked={checked} id={id} onCheckedChange={onCheckedChange} />
         <Label
-          className="font-normal text-gray-500 text-sm dark:text-gray-500"
+          className="font-normal text-gray-500 text-sm dark:text-muted-foreground"
           htmlFor={id}
         >
           {checked ? "Yes" : "No"}
@@ -645,7 +645,7 @@ export function JobFilters({
               value={salaryRange}
             />
           </div>
-          <div className="flex items-center justify-between text-gray-500 text-xs dark:text-gray-500">
+          <div className="flex items-center justify-between text-gray-500 text-xs dark:text-muted-foreground">
             <span>{formatSalaryBound(salaryRange[0])}/year</span>
             <span>{formatSalaryBound(salaryRange[1])}/year</span>
           </div>

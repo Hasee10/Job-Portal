@@ -32,7 +32,7 @@ export default async function MasterclassesPage() {
         ) : (
           <>
             <section className="grid overflow-hidden rounded-2xl border bg-card md:grid-cols-[1fr_1.4fr]">
-              <div className="flex min-h-48 flex-col items-center justify-center gap-4 bg-[#e5f2f4] px-6 py-10 text-[#086b85] dark:bg-[#123e4b] dark:text-cyan-200">
+              <div className="flex min-h-48 flex-col items-center justify-center gap-4 bg-[#e5f2f4] px-6 py-10 text-[hsl(var(--primary))] dark:bg-[var(--brand-panel)] dark:text-lime-200">
                 <span className="flex h-16 w-16 items-center justify-center rounded-full border border-current">
                   <Video size={28} aria-hidden="true" />
                 </span>
@@ -53,7 +53,7 @@ export default async function MasterclassesPage() {
                   shape.
                 </p>
                 <Link
-                  className="mt-6 inline-flex items-center gap-2 rounded-lg bg-[#086b85] px-4 py-3 font-medium text-white text-sm"
+                  className="mt-6 inline-flex items-center gap-2 rounded-lg bg-[hsl(var(--primary))] px-4 py-3 font-medium text-primary-foreground text-sm"
                   href="/guides"
                 >
                   Explore career guides
@@ -77,7 +77,7 @@ export default async function MasterclassesPage() {
                   >
                     <BookOpen
                       size={23}
-                      className="text-[#086b85] dark:text-cyan-200"
+                      className="text-[hsl(var(--primary))] dark:text-lime-200"
                       aria-hidden="true"
                     />
                     <p className="mt-5 text-muted-foreground text-xs uppercase tracking-widest">

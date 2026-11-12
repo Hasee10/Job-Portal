@@ -39,7 +39,7 @@ export function ApplyButton({
         asChild
         className={fullWidth ? "w-full gap-1.5" : "w-full gap-1.5 sm:w-auto"}
         size={size}
-        style={{ backgroundColor: "#086b85" }}
+        style={{ backgroundColor: "hsl(var(--primary))" }}
         variant="primary"
       >
         <a href={applyUrl} rel="noopener noreferrer" target="_blank">
@@ -56,7 +56,7 @@ export function ApplyButton({
         className={fullWidth ? "w-full gap-1.5" : "w-full gap-1.5 sm:w-auto"}
         onClick={() => setShowModal(true)}
         size={size}
-        style={{ backgroundColor: "#086b85" }}
+        style={{ backgroundColor: "hsl(var(--primary))" }}
         variant="primary"
       >
         Apply Now

@@ -211,7 +211,7 @@ export function JobsLayout({ filteredJobs }: JobsLayoutProps) {
               <h1 className="flex flex-wrap items-center gap-2 font-semibold text-xl tracking-tight lg:text-2xl">
                 Latest Jobs
                 {page > 1 && (
-                  <span className="font-normal text-gray-500 dark:text-gray-500">
+                  <span className="font-normal text-gray-500 dark:text-muted-foreground">
                     Page {page}
                   </span>
                 )}

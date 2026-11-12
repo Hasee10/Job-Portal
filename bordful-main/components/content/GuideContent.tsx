@@ -33,7 +33,7 @@ export function GuideContent({ content }: { content: string }) {
         a: ({ href, ...props }) =>
           href ? (
             <a
-              className="text-cyan-700 underline decoration-cyan-700/30 underline-offset-2 hover:decoration-cyan-700 dark:text-cyan-400 dark:decoration-cyan-400/30 dark:hover:decoration-cyan-400"
+              className="text-primary underline decoration-primary/30 underline-offset-2 hover:decoration-primary dark:text-primary dark:decoration-primary/30 dark:hover:decoration-primary"
               href={href}
               rel="noopener noreferrer"
               target="_blank"

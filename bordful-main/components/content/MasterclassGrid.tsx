@@ -93,7 +93,7 @@ export function MasterclassGrid({
           ref={dialog}
           onCancel={() => setPlaying(null)}
           aria-label={playing.title}
-          className="m-auto w-[calc(100%_-_2rem)] max-w-4xl rounded-2xl border bg-[#082c39] p-5 backdrop:bg-black/75"
+          className="m-auto w-[calc(100%_-_2rem)] max-w-4xl rounded-2xl border bg-[var(--brand-panel)] p-5 backdrop:bg-black/75"
         >
           <div className="flex items-center justify-between pb-2">
             <p className="line-clamp-1 pr-4 font-medium text-sm text-white">

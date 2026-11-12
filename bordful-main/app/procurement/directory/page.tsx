@@ -82,7 +82,7 @@ export default async function DirectoryPage({
           </Link>
           <div className="mt-5 flex flex-wrap items-end justify-between gap-6">
             <div>
-              <p className="font-semibold text-[#086b85] text-xs uppercase tracking-widest dark:text-cyan-200">
+              <p className="font-semibold text-[hsl(var(--primary))] text-xs uppercase tracking-widest dark:text-lime-200">
                 DISCOVER YOUR NEXT BUSINESS PARTNER
               </p>
               <h1 className="mt-3 font-semibold text-3xl tracking-tight sm:text-4xl">
@@ -133,7 +133,7 @@ export default async function DirectoryPage({
               </div>
             </div>
             <Button
-              className="h-11 self-end bg-[#086b85] text-white hover:bg-[#07576d] max-sm:w-full"
+              className="h-11 self-end bg-[hsl(var(--primary))] text-primary-foreground hover:bg-[#285c49] max-sm:w-full"
               type="submit"
             >
               <Search size={16} className="mr-2" aria-hidden="true" />

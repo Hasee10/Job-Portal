@@ -84,7 +84,7 @@ export function JoinChooser({ siteTitle }: { siteTitle: string }) {
               <p className="mt-1.5 flex-1 text-sm text-zinc-600 dark:text-zinc-400">
                 {description}
               </p>
-              <span className="mt-4 inline-flex items-center gap-1 font-medium text-[#086b85] text-sm dark:text-cyan-300">
+              <span className="mt-4 inline-flex items-center gap-1 font-medium text-[hsl(var(--primary))] text-sm dark:text-lime-200">
                 {cta}
                 <ArrowRight
                   aria-hidden="true"
@@ -103,7 +103,7 @@ export function JoinChooser({ siteTitle }: { siteTitle: string }) {
         <p className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-sm">
           {SIGN_IN_PATHS.map(({ label, href }) => (
             <Link
-              className="font-medium text-[#086b85] underline dark:text-cyan-300 hover:no-underline"
+              className="font-medium text-[hsl(var(--primary))] underline dark:text-lime-200 hover:no-underline"
               href={href}
               key={href}
             >

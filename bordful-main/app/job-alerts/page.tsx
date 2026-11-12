@@ -87,7 +87,7 @@ export default async function JobAlertsPage() {
             <h2 className="mb-4 font-semibold text-xl">Get job alerts</h2>
             {isSeeker ? (
               <div className="rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900/60">
-                <div className="flex h-11 w-11 items-center justify-center rounded-full bg-cyan-50 text-cyan-700 dark:bg-cyan-500/10 dark:text-cyan-400">
+                <div className="flex h-11 w-11 items-center justify-center rounded-full bg-accent text-primary dark:bg-accent dark:text-primary">
                   <Bell aria-hidden="true" className="h-5 w-5" />
                 </div>
                 <p className="mt-4 font-semibold text-zinc-900 dark:text-zinc-50">
@@ -121,7 +121,7 @@ export default async function JobAlertsPage() {
               </div>
             ) : (
               <div className="rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900/60">
-                <div className="flex h-11 w-11 items-center justify-center rounded-full bg-cyan-50 text-cyan-700 dark:bg-cyan-500/10 dark:text-cyan-400">
+                <div className="flex h-11 w-11 items-center justify-center rounded-full bg-accent text-primary dark:bg-accent dark:text-primary">
                   <LogIn aria-hidden="true" className="h-5 w-5" />
                 </div>
                 <p className="mt-4 font-semibold text-zinc-900 dark:text-zinc-50">

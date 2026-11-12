@@ -732,7 +732,7 @@ function HomePageContent({
                   {JOB_VIEW_TABS.find((t) => t.value === activeView)?.label ??
                     "Latest Opportunities"}
                   {page > 1 && (
-                    <span className="font-normal text-gray-500 dark:text-gray-500">
+                    <span className="font-normal text-gray-500 dark:text-muted-foreground">
                       Page {page}
                     </span>
                   )}

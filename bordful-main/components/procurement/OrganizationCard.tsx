@@ -19,7 +19,7 @@ export function OrganizationAvatar({
   return (
     <span
       aria-hidden="true"
-      className={`flex shrink-0 items-center justify-center rounded-2xl border border-primary/15 bg-primary/5 font-semibold text-[#086b85] dark:text-cyan-200 ${large ? "h-20 w-20 text-2xl" : "h-12 w-12 text-base"}`}
+      className={`flex shrink-0 items-center justify-center rounded-2xl border border-primary/15 bg-primary/5 font-semibold text-[hsl(var(--primary))] dark:text-lime-200 ${large ? "h-20 w-20 text-2xl" : "h-12 w-12 text-base"}`}
     >
       {initials}
     </span>
@@ -89,7 +89,7 @@ export function OrganizationCard({
         )}
       </div>
       <div className="mt-auto flex items-center justify-between border-t pt-4 text-sm">
-        <span className="mt-4 font-medium text-[#086b85] dark:text-cyan-200">
+        <span className="mt-4 font-medium text-[hsl(var(--primary))] dark:text-lime-200">
           View business profile
         </span>
         <ArrowUpRight

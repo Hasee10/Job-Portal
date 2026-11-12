@@ -1,7 +1,6 @@
 "use client";
 
-import { ArrowRight, Link as LinkIcon, Search, X } from "lucide-react";
-import Link from "next/link";
+import { Link as LinkIcon, Search, X } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
@@ -110,9 +109,7 @@ export function FAQContent({ categories }: FAQContentProps) {
   // Uses applySearch (no URL write) to avoid a write-then-read render loop.
   useEffect(() => {
     const query = searchParams.get("q");
-    if (query) {
-      applySearch(query);
-    }
+    applySearch(query || "");
 
     // Check for hash in URL for anchor links
     const hash = window.location.hash;
@@ -174,16 +171,6 @@ export function FAQContent({ categories }: FAQContentProps) {
     return safeJsonLdStringify(faqSchema);
   };
 
-  // Scroll to category - keeping this for potential future use
-  // biome-ignore lint/correctness/noUnusedVariables: Function kept for future use
-  const _scrollToCategory = (categoryId: string) => {
-    const element = document.getElementById(categoryId);
-    if (element) {
-      element.scrollIntoView({ behavior: "smooth" });
-      window.history.pushState(null, "", `#${categoryId}`);
-    }
-  };
-
   // Filter categories based on search term
   const filteredCategories = searchTerm.trim()
     ? categories
@@ -212,15 +199,16 @@ export function FAQContent({ categories }: FAQContentProps) {
           <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             aria-label="Search FAQs"
-            className="h-10 pl-9"
+            className="h-12 rounded-xl bg-card pl-10 pr-10"
             onChange={(e) => handleSearch(e.target.value)}
             onKeyDown={handleSearchKeyDown}
-            placeholder="Search FAQs..."
+            placeholder="Search questions, accounts, tenders…"
             type="text"
             value={searchTerm}
           />
           {searchTerm && (
             <button
+              type="button"
               aria-label="Clear search"
               className="absolute top-1/2 right-3 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:text-gray-600 dark:hover:text-gray-400"
               onClick={() => {
@@ -255,13 +243,13 @@ export function FAQContent({ categories }: FAQContentProps) {
             </Button>
           </div>
         ) : (
-          filteredCategories.map((category, categoryIndex) => {
+          filteredCategories.map((category) => {
             const categoryId = slugify(category.title);
             return (
               <div
-                className="space-y-4"
+                className="scroll-mt-28 space-y-5"
                 id={categoryId}
-                key={categoryIndex}
+                key={category.title}
                 ref={(el) => {
                   categoryRefs.current[categoryId] = el;
                 }}
@@ -271,8 +259,9 @@ export function FAQContent({ categories }: FAQContentProps) {
                     {category.title}
                   </h2>
                   <button
+                    type="button"
                     aria-label={`Copy link to ${category.title} section`}
-                    className="text-zinc-400 transition-colors hover:text-zinc-600 dark:text-zinc-600 dark:hover:text-zinc-400"
+                    className="text-muted-foreground transition-colors hover:text-primary"
                     onClick={() => {
                       navigator.clipboard.writeText(
                         `${window.location.origin}/faq#${categoryId}`
@@ -285,17 +274,17 @@ export function FAQContent({ categories }: FAQContentProps) {
                   </button>
                 </div>
                 <Accordion
-                  className="space-y-2"
+                  className="space-y-0 rounded-xl border bg-card px-5"
                   onValueChange={setExpandedItems}
                   type="multiple"
                   value={expandedItems}
                 >
-                  {category.items.map((item, itemIndex) => {
+                  {category.items.map((item) => {
                     const itemId = getItemId(category.title, item.question);
                     return (
                       <AccordionItem
-                        className="overflow-hidden rounded-lg border border-zinc-200 px-4"
-                        key={itemIndex}
+                        className="overflow-hidden border-b border-border last:border-0"
+                        key={itemId}
                         value={itemId}
                       >
                         <AccordionTrigger className="py-4 font-medium text-sm text-zinc-800 hover:no-underline dark:text-zinc-200">
@@ -336,29 +325,6 @@ export function FAQContent({ categories }: FAQContentProps) {
             );
           })
         )}
-
-        {/* Contact Section */}
-        <div className="mt-12 border-zinc-200 border-t pt-8 text-center">
-          <h2 className="mb-2 font-semibold text-lg text-zinc-900 dark:text-zinc-100">
-            Still have questions?
-          </h2>
-          <p className="mb-6 text-sm text-zinc-600 dark:text-zinc-400">
-            If you couldn&apos;t find the answer to your question, feel free to
-            contact us.
-          </p>
-          <Button
-            asChild
-            className="gap-1.5 text-xs"
-            size="xs"
-            style={{ backgroundColor: resolveColor(config.ui.primaryColor) }}
-            variant="primary"
-          >
-            <Link href="/about">
-              Contact
-              <ArrowRight aria-hidden="true" className="ml-1 h-3.5 w-3.5" />
-            </Link>
-          </Button>
-        </div>
       </div>
     </>
   );

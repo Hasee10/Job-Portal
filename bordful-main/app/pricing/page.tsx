@@ -108,7 +108,7 @@ export default function PricingPage() {
                       {plan.price === 0 ? "Free" : `$${plan.price}`}
                     </span>
                     {plan.price > 0 && (
-                      <span className="ml-1 text-gray-500 text-sm dark:text-gray-500">
+                      <span className="ml-1 text-gray-500 text-sm dark:text-muted-foreground">
                         {formatPricingBillingTerm(plan.billingTerm)}
                       </span>
                     )}
@@ -179,7 +179,7 @@ export default function PricingPage() {
         {/* Payment Processing Information */}
         {config.pricing.paymentProcessingText && (
           <div className="mx-auto mt-12 max-w-sm text-center">
-            <p className="text-balance text-gray-500 text-xs dark:text-gray-500">
+            <p className="text-balance text-gray-500 text-xs dark:text-muted-foreground">
               {config.pricing.paymentProcessingText}
             </p>
 

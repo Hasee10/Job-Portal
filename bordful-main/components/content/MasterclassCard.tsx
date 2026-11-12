@@ -74,7 +74,7 @@ export function MasterclassCard({
             {masterclass.category}
           </span>
         )}
-        <h2 className="mt-2 font-semibold text-base text-zinc-900 leading-snug transition-colors group-hover:text-cyan-700 dark:text-zinc-50 dark:group-hover:text-cyan-400">
+        <h2 className="mt-2 font-semibold text-base text-zinc-900 leading-snug transition-colors group-hover:text-primary dark:text-zinc-50 dark:group-hover:text-primary">
           {masterclass.title}
         </h2>
         {(masterclass.instructorName || masterclass.instructorTitle) && (

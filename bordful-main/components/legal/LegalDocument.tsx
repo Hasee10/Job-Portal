@@ -23,7 +23,7 @@ export function LegalDocument({
             CALIBER / LEGAL & TRUST
           </p>
           <div className="mt-5 flex items-start gap-5">
-            <span className="hidden rounded-2xl border bg-primary/5 p-4 text-[#086b85] dark:text-cyan-200 sm:block">
+            <span className="hidden rounded-2xl border bg-primary/5 p-4 text-[hsl(var(--primary))] dark:text-lime-200 sm:block">
               <Icon size={28} aria-hidden="true" />
             </span>
             <div>

@@ -2,7 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import type { Metadata } from "next";
 import ReactMarkdown from "react-markdown";
-import { MetadataBreadcrumb } from "@/components/ui/metadata-breadcrumb";
+import { HeroSection } from "@/components/ui/hero-section";
 import config from "@/config";
 
 // Add metadata for SEO
@@ -47,13 +47,14 @@ export default function ChangelogPage() {
   const content = getChangelogContent();
 
   return (
-    <main className="container py-8">
-      <div className="max-w-[700px]">
-        <div className="mb-6">
-          <MetadataBreadcrumb metadata={metadata} pathname="/changelog" />
-        </div>
-
-        <div className="prose prose-sm prose-gray max-w-none">
+    <main>
+      <HeroSection
+        badge="Product updates"
+        title="Always moving forward."
+        description="Follow the changes, improvements and fixes recorded in Caliber’s release notes."
+      />
+      <div className="container mx-auto max-w-4xl px-5 py-12 sm:px-8">
+        <div className="markdown-content rounded-2xl border bg-card p-6 sm:p-10">
           <ReactMarkdown>{content}</ReactMarkdown>
         </div>
       </div>

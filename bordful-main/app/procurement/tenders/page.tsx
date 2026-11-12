@@ -108,13 +108,13 @@ export default async function ProcurementTendersPage({
               >
                 Find your next business opportunity.
               </h1>
-              <p className="mt-4 max-w-xl text-sm leading-7 text-[#52665c]">
+              <p className="mt-4 max-w-xl text-sm leading-7 text-[var(--hero-muted)]">
                 Explore public notices from TED and PPRA. Search by requirement,
                 refine your market, and view the details at the original source.
               </p>
             </div>
-            <p className="text-sm text-[#52665c]">
-              <strong className="mr-2 text-3xl font-medium tracking-tight text-[#16352e]">
+            <p className="text-sm text-[var(--hero-muted)]">
+              <strong className="mr-2 text-3xl font-medium tracking-tight text-[var(--hero-ink)]">
                 {totalActive.toLocaleString()}
               </strong>
               open tenders
@@ -172,7 +172,7 @@ export default async function ProcurementTendersPage({
 
             {tenders.length === 0 ? (
               <div className="rounded-lg border border-dashed p-10 text-center">
-                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-cyan-50 text-cyan-700 dark:bg-cyan-500/10 dark:text-cyan-400">
+                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-accent text-primary dark:bg-accent dark:text-primary">
                   <FileSearch aria-hidden="true" className="h-5 w-5" />
                 </div>
                 <p className="mt-4 font-semibold">No tenders found</p>

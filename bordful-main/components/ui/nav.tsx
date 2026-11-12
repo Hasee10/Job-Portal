@@ -48,7 +48,7 @@ export function Nav() {
               key={link.href}
               aria-current={active(link.href) ? "page" : undefined}
               href={link.href}
-              className={`rounded-full px-3.5 py-2 text-[13px] transition-colors ${active(link.href) ? "bg-background font-semibold text-[#102f40] shadow-sm dark:text-cyan-200" : "text-muted-foreground hover:bg-muted hover:text-foreground"}`}
+              className={`rounded-full px-3.5 py-2 text-[13px] transition-colors ${active(link.href) ? "bg-background font-semibold text-[var(--brand-ink)] shadow-sm dark:text-lime-200" : "text-muted-foreground hover:bg-muted hover:text-foreground"}`}
             >
               {link.label}
             </Link>

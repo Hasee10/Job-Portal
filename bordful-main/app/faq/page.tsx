@@ -3,7 +3,8 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { FAQContent } from "@/components/ui/faq-content";
 import { HeroSection } from "@/components/ui/hero-section";
-import { MetadataBreadcrumb } from "@/components/ui/metadata-breadcrumb";
+import { ArrowUpRight, LifeBuoy } from "lucide-react";
+import { slugify } from "@/lib/utils/slugify";
 import config from "@/config";
 
 // Add metadata for SEO
@@ -64,16 +65,47 @@ export default function FAQPage() {
         badge={config.faq.badge || "FAQ"}
         description={config.faq.description}
         heroImage={config.faq.heroImage}
-        title={config.faq.title}
+        title="A little help. A clear next step."
       />
 
-      {/* FAQ Content */}
-      <div className="container mx-auto px-4 py-10">
-        <div className="mx-auto max-w-3xl">
-          <div className="mb-6">
-            <MetadataBreadcrumb metadata={metadata} pathname="/faq" />
+      <div className="container mx-auto grid max-w-7xl gap-10 px-5 py-10 sm:px-8 sm:py-14 lg:grid-cols-[240px_1fr]">
+        <aside>
+          <div className="space-y-8 lg:sticky lg:top-28">
+            <nav aria-label="Help topics">
+              <p className="mb-5 text-[10px] font-semibold uppercase tracking-[.16em] text-muted-foreground">
+                FIND YOUR TOPIC
+              </p>
+              <ul className="flex flex-wrap gap-2 lg:flex-col">
+                {config.faq.categories.map((category) => (
+                  <li key={category.title}>
+                    <a
+                      href={`#${slugify(category.title)}`}
+                      className="block rounded-lg border border-transparent px-3 py-3 text-sm hover:border-border hover:bg-accent"
+                    >
+                      {category.title}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+            <div className="rounded-xl border bg-muted/50 p-5">
+              <LifeBuoy size={24} className="text-primary" aria-hidden="true" />
+              <h2 className="mt-4 font-medium">Need a hand?</h2>
+              <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                Tell us what you’re trying to do. We’ll point you in the right
+                direction.
+              </p>
+              <Link
+                href="/contact"
+                className="mt-5 inline-flex items-center gap-3 text-sm font-medium text-primary"
+              >
+                Contact Caliber
+                <ArrowUpRight size={16} aria-hidden="true" />
+              </Link>
+            </div>
           </div>
-
+        </aside>
+        <div className="min-w-0">
           <FAQContent categories={config.faq.categories} />
         </div>
       </div>

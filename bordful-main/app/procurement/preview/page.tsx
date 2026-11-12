@@ -197,7 +197,7 @@ export default async function BusinessPreview({
             </p>
           </div>
           <Link
-            className="inline-flex items-center gap-2 rounded-lg bg-[#086b85] px-4 py-3 font-medium text-white text-sm hover:bg-[#07576d]"
+            className="inline-flex items-center gap-2 rounded-lg bg-[hsl(var(--primary))] px-4 py-3 font-medium text-primary-foreground text-sm hover:bg-[#285c49]"
             href="/procurement/directory"
           >
             Explore business partners
@@ -210,19 +210,19 @@ export default async function BusinessPreview({
           are fictional.
         </p>
         <div className="grid items-start gap-6 lg:grid-cols-[240px_minmax(0,1fr)]">
-          <aside className="rounded-2xl bg-[#0a3342] p-4 text-white lg:sticky lg:top-24">
+          <aside className="rounded-2xl bg-[var(--brand-panel)] p-4 text-white lg:sticky lg:top-24">
             <details className="rounded-xl border border-white/20 bg-white/5">
               <summary className="flex cursor-pointer list-none items-center gap-3 p-3">
                 <Building2
                   size={20}
-                  className="shrink-0 text-[#A7E8D3]"
+                  className="shrink-0 text-[var(--brand-highlight)]"
                   aria-hidden="true"
                 />
                 <span className="min-w-0 flex-1">
                   <span className="block truncate font-medium text-sm">
                     {workspace.name.replace("Demo ", "")}
                   </span>
-                  <span className="mt-1 block text-[#bdd0d7] text-xs">
+                  <span className="mt-1 block text-[var(--brand-soft-text)] text-xs">
                     {workspace.role}
                   </span>
                 </span>
@@ -236,14 +236,14 @@ export default async function BusinessPreview({
                     href={href("Overview", entry.id)}
                   >
                     {entry.name.replace("Demo ", "")}
-                    <span className="mt-1 block text-[#bdd0d7] text-xs">
+                    <span className="mt-1 block text-[var(--brand-soft-text)] text-xs">
                       {entry.role}
                     </span>
                   </Link>
                 ))}
               </div>
             </details>
-            <p className="mb-3 mt-6 px-3 text-[#bdd0d7] text-[10px] uppercase tracking-widest">
+            <p className="mb-3 mt-6 px-3 text-[var(--brand-soft-text)] text-[10px] uppercase tracking-widest">
               WORKSPACE
             </p>
             <nav
@@ -257,7 +257,7 @@ export default async function BusinessPreview({
                     key={label}
                     href={href(label)}
                     aria-current={label === view ? "page" : undefined}
-                    className={`flex items-center gap-3 rounded-lg px-3 py-3 text-sm ${label === view ? "bg-[#B3EDDA] font-medium text-[#103d40]" : "text-[#d1e0e6] hover:bg-white/10"}`}
+                    className={`flex items-center gap-3 rounded-lg px-3 py-3 text-sm ${label === view ? "bg-[var(--brand-highlight)] font-medium text-[var(--brand-ink)]" : "text-[var(--brand-soft-text)] hover:bg-white/10"}`}
                   >
                     <Icon size={17} aria-hidden="true" />
                     {viewLabel(label)}
@@ -266,9 +266,9 @@ export default async function BusinessPreview({
               })}
             </nav>
             <div className="mt-7 hidden border-t border-white/15 px-3 pt-5 lg:block">
-              <p className="text-[#bdd0d7] text-xs">Acting as</p>
+              <p className="text-[var(--brand-soft-text)] text-xs">Acting as</p>
               <p className="mt-2 font-medium text-sm">{workspace.role}</p>
-              <p className="mt-1 text-[#bdd0d7] text-xs">
+              <p className="mt-1 text-[var(--brand-soft-text)] text-xs">
                 {workspace.location}
               </p>
             </div>
@@ -286,7 +286,7 @@ export default async function BusinessPreview({
                       <div className="flex items-center justify-between">
                         <stat.icon
                           size={19}
-                          className="text-[#086b85] dark:text-cyan-200"
+                          className="text-[hsl(var(--primary))] dark:text-lime-200"
                           aria-hidden="true"
                         />
                         <ArrowUpRight
@@ -326,11 +326,13 @@ export default async function BusinessPreview({
                       className="mt-6 flex h-3 overflow-hidden rounded-full"
                       aria-hidden="true"
                     >
-                      {["bg-slate-400", "bg-[#086b85]", "bg-amber-400"].map(
-                        (color) => (
-                          <span key={color} className={`w-1/3 ${color}`} />
-                        )
-                      )}
+                      {[
+                        "bg-slate-400",
+                        "bg-[hsl(var(--primary))]",
+                        "bg-amber-400",
+                      ].map((color) => (
+                        <span key={color} className={`w-1/3 ${color}`} />
+                      ))}
                     </div>
                     <div className="mt-5 grid grid-cols-3 gap-3 text-xs">
                       {["Draft", "Published", "Evaluating"].map((status) => (
@@ -426,7 +428,7 @@ export default async function BusinessPreview({
                       >
                         <CheckCircle2
                           size={17}
-                          className="mt-0.5 shrink-0 text-[#086b85] dark:text-cyan-200"
+                          className="mt-0.5 shrink-0 text-[hsl(var(--primary))] dark:text-lime-200"
                           aria-hidden="true"
                         />
                         {activity}
@@ -462,7 +464,7 @@ export default async function BusinessPreview({
                         key={row.title}
                         className="flex flex-col gap-4 p-5 sm:flex-row sm:items-start sm:p-6"
                       >
-                        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/5 text-[#086b85] dark:text-cyan-200">
+                        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/5 text-[hsl(var(--primary))] dark:text-lime-200">
                           <Icon size={18} aria-hidden="true" />
                         </span>
                         <div className="min-w-0 flex-1">

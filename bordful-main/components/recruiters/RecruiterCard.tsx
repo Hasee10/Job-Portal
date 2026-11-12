@@ -52,7 +52,7 @@ export function RecruiterCard({
         <div className="mt-3 flex flex-wrap gap-1.5">
           {recruiter.specialties.map((specialty) => (
             <span
-              className="rounded-full border border-cyan-200 bg-cyan-50 px-2.5 py-0.5 font-medium text-cyan-700 text-xs dark:border-cyan-500/20 dark:bg-cyan-500/10 dark:text-cyan-400"
+              className="rounded-full border border-border bg-accent px-2.5 py-0.5 font-medium text-primary text-xs dark:border-border dark:bg-accent dark:text-primary"
               key={specialty}
             >
               {specialty}

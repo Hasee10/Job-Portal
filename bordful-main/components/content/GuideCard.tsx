@@ -15,7 +15,7 @@ export function GuideCard({ guide }: { guide: CareerGuide }) {
       <div className="flex items-center justify-between border-b bg-primary/5 px-6 py-7">
         <BookOpen
           size={28}
-          className="text-[#086b85] dark:text-cyan-200"
+          className="text-[hsl(var(--primary))] dark:text-lime-200"
           aria-hidden="true"
         />
         <span className="font-mono text-muted-foreground text-xs">
@@ -37,7 +37,7 @@ export function GuideCard({ guide }: { guide: CareerGuide }) {
           </span>
         </div>
 
-        <h2 className="mt-3 font-semibold text-lg text-zinc-900 leading-snug transition-colors group-hover:text-cyan-700 dark:text-zinc-50 dark:group-hover:text-cyan-400">
+        <h2 className="mt-3 font-semibold text-lg text-zinc-900 leading-snug transition-colors group-hover:text-primary dark:text-zinc-50 dark:group-hover:text-primary">
           {guide.title}
         </h2>
 
@@ -47,7 +47,7 @@ export function GuideCard({ guide }: { guide: CareerGuide }) {
           </p>
         )}
 
-        <span className="mt-auto inline-flex pt-5 items-center gap-1 font-medium text-cyan-700 text-sm dark:text-cyan-400">
+        <span className="mt-auto inline-flex pt-5 items-center gap-1 font-medium text-primary text-sm dark:text-primary">
           Read guide
           <ArrowRight aria-hidden="true" className="h-3.5 w-3.5" />
         </span>

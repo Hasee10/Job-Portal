@@ -1,36 +1,13 @@
 import Image from "next/image";
-import { Badge } from "@/components/ui/badge";
-import config from "@/config";
-import { cn } from "@/lib/utils";
-
-type HeroImageConfig = {
-  enabled?: boolean;
-  src?: string;
-  alt?: string;
-};
-
-type HeroBackgroundImageOverlay = {
-  enabled?: boolean;
-  color?: string;
-  opacity?: number;
-};
-
-type HeroBackgroundImageConfig = {
-  enabled?: boolean;
-  src?: string;
-  position?: string;
-  size?: string;
-  overlay?: HeroBackgroundImageOverlay;
-};
-
+type HeroImageConfig = { enabled?: boolean; src?: string; alt?: string };
 type HeroSectionProps = {
   badge: string;
   title: string;
   description: string;
   children?: React.ReactNode;
-  heroImage?: HeroImageConfig; // Add per-page hero image configuration
+  heroImage?: HeroImageConfig;
 };
-
+/** Shared page introduction; every route uses the Caliber surface and ink tokens. */
 export function HeroSection({
   badge,
   title,
@@ -38,136 +15,37 @@ export function HeroSection({
   children,
   heroImage,
 }: HeroSectionProps) {
-  // Get the hero background color from config if available
-  const heroBackgroundColor = config?.ui?.heroBackgroundColor || "";
-  const heroTitleColor = config?.ui?.heroTitleColor || "";
-  const heroSubtitleColor = config?.ui?.heroSubtitleColor || "";
-  const heroBadgeVariant = config?.ui?.heroBadgeVariant || "outline";
-  const heroBadgeBgColor = config?.ui?.heroBadgeBgColor || "";
-  const heroBadgeTextColor = config?.ui?.heroBadgeTextColor || "";
-  const heroBadgeBorderColor = config?.ui?.heroBadgeBorderColor || "";
-  const heroGradient = config?.ui?.heroGradient;
-  const heroBackgroundImage = config?.ui
-    ?.heroBackgroundImage as HeroBackgroundImageConfig;
-
-  // Use page-specific hero image config if provided, otherwise fall back to global config
-  const heroImageConfig = heroImage || config?.ui?.heroImage;
-
-  // Create background style based on image, gradient, or solid color (in order of precedence)
-  let heroStyle: React.CSSProperties = {};
-  let overlayStyle: React.CSSProperties = {};
-  let hasOverlay = false;
-
-  // Image background takes precedence over gradient and solid color
-  if (heroBackgroundImage?.enabled && heroBackgroundImage.src) {
-    heroStyle = {
-      backgroundImage: `url(${heroBackgroundImage.src})`,
-      backgroundPosition: heroBackgroundImage.position || "center",
-      backgroundRepeat: "no-repeat",
-      backgroundSize: heroBackgroundImage.size || "cover",
-      position: "relative", // Required for overlay positioning
-    };
-
-    // Add overlay if enabled
-    if (
-      heroBackgroundImage.overlay?.enabled &&
-      heroBackgroundImage.overlay.color
-    ) {
-      hasOverlay = true;
-      overlayStyle = {
-        backgroundColor: heroBackgroundImage.overlay.color,
-        opacity:
-          heroBackgroundImage.overlay.opacity === undefined
-            ? 0.7
-            : heroBackgroundImage.overlay.opacity,
-      };
-    }
-  }
-  // Gradient takes precedence over solid color if image is not enabled
-  else if (heroGradient?.enabled && heroGradient.colors?.length) {
-    const { type, direction, colors, stops } = heroGradient;
-    const colorStops = colors
-      .map((color, index) => {
-        const stop = stops?.[index] ? ` ${stops[index]}` : "";
-        return `${color}${stop}`;
-      })
-      .join(", ");
-
-    if (type === "linear") {
-      heroStyle = {
-        background: `linear-gradient(${
-          direction || "to right"
-        }, ${colorStops})`,
-      };
-    } else if (type === "radial") {
-      heroStyle = {
-        background: `radial-gradient(${direction || "circle"}, ${colorStops})`,
-      };
-    }
-  } else if (heroBackgroundColor) {
-    // Apply solid background color if neither image nor gradient is enabled
-    heroStyle = { backgroundColor: heroBackgroundColor };
-  }
-
   return (
-    <div className="relative overflow-hidden border-b" style={heroStyle}>
-      {/* Overlay for background image if needed */}
-      {hasOverlay && (
+    <section className="border-b bg-[var(--hero-surface)] text-[var(--hero-ink)]">
+      <div className="container mx-auto max-w-7xl px-5 py-12 sm:px-8 sm:py-16">
         <div
-          aria-hidden="true"
-          className="absolute inset-0 z-0"
-          style={overlayStyle}
-        />
-      )}
-      <div className="container relative z-10 mx-auto px-0 py-6 sm:px-4 sm:py-8 md:px-6 md:py-12">
-        <div className="flex flex-col items-center gap-4 md:flex-row md:gap-8 lg:gap-12">
-          <div className="w-full space-y-3 px-4 sm:space-y-4 sm:px-0 md:w-1/2">
-            <div className="space-y-2 sm:space-y-3">
-              {badge && (
-                <Badge
-                  className="mb-1"
-                  style={{
-                    backgroundColor: heroBadgeBgColor || undefined,
-                    borderColor: heroBadgeBorderColor || undefined,
-                    color: heroBadgeTextColor || undefined,
-                  }}
-                  variant={heroBadgeVariant}
-                >
-                  {badge}
-                </Badge>
-              )}
-              <h1
-                className={cn(
-                  "font-bold text-2xl tracking-tight sm:text-3xl md:text-4xl"
-                )}
-                style={{ color: heroTitleColor || undefined }}
-              >
-                {title}
-              </h1>
-              <p
-                className={cn("text-muted-foreground text-sm md:text-base")}
-                style={{ color: heroSubtitleColor || undefined }}
-              >
-                {description}
+          className={`grid items-center gap-10 ${heroImage?.enabled && heroImage.src ? "md:grid-cols-[1.25fr_1fr]" : ""}`}
+        >
+          <div className="space-y-5">
+            {badge && (
+              <p className="text-[10px] font-semibold uppercase tracking-[.16em] text-[var(--hero-muted)]">
+                CALIBER / {badge}
               </p>
-            </div>
-            {children}
+            )}
+            <h1 className="max-w-3xl text-3xl font-medium leading-[1.12] tracking-[-.04em] sm:text-5xl">
+              {title}
+            </h1>
+            <p className="max-w-2xl text-sm leading-7 text-[var(--hero-muted)] sm:text-base">
+              {description}
+            </p>
+            {children && <div className="pt-2">{children}</div>}
           </div>
-
-          {heroImageConfig?.enabled && heroImageConfig.src && (
-            <div className="w-full px-4 sm:px-0 md:block md:w-1/2">
-              <Image
-                alt={heroImageConfig.alt || "Hero image"}
-                className="w-full rounded-lg object-cover md:w-auto"
-                height={350}
-                priority
-                src={heroImageConfig.src}
-                width={500}
-              />
-            </div>
+          {heroImage?.enabled && heroImage.src && (
+            <Image
+              alt={heroImage.alt || ""}
+              src={heroImage.src}
+              width={500}
+              height={350}
+              className="hidden w-full rounded-2xl object-cover md:block"
+            />
           )}
         </div>
       </div>
-    </div>
+    </section>
   );
 }

@@ -51,7 +51,7 @@ export function Footer() {
     },
   ];
   return (
-    <footer className="bg-[#082c39] text-white">
+    <footer className="bg-[var(--brand-panel)] text-white">
       <div className="container mx-auto max-w-7xl px-4 sm:px-6">
         <div className="flex flex-col justify-between gap-6 border-b border-white/15 py-10 sm:flex-row sm:items-center">
           <div>
@@ -63,7 +63,7 @@ export function Footer() {
             </h2>
           </div>
           <Link
-            className="inline-flex w-fit items-center gap-3 rounded-lg bg-[#B3EDDA] px-5 py-3 font-semibold text-[#103d40] text-sm hover:bg-[#D0F7EA]"
+            className="inline-flex w-fit items-center gap-3 rounded-lg bg-[var(--brand-highlight)] px-5 py-3 font-semibold text-[var(--brand-ink)] text-sm hover:bg-[#D0F7EA]"
             href={href}
           >
             {cta}
@@ -73,7 +73,7 @@ export function Footer() {
         <div className="grid gap-10 py-12 lg:grid-cols-[1.5fr_2fr]">
           <div>
             <Brand inverted />
-            <p className="mt-5 max-w-xs text-[#bdd0d7] text-sm leading-6">
+            <p className="mt-5 max-w-xs text-[var(--brand-soft-text)] text-sm leading-6">
               {context === "procurement"
                 ? "A clearer way to discover partners, build relationships and manage sourcing."
                 : context === "jobs"
@@ -89,7 +89,7 @@ export function Footer() {
                   {group.links.map((link) => (
                     <li key={link.href}>
                       <Link
-                        className="text-[#bdd0d7] text-sm hover:text-white hover:underline underline-offset-4"
+                        className="text-[var(--brand-soft-text)] text-sm hover:text-white hover:underline underline-offset-4"
                         href={link.href}
                       >
                         {link.label}
@@ -101,7 +101,7 @@ export function Footer() {
             ))}
           </div>
         </div>
-        <div className="flex flex-wrap justify-between gap-3 border-t border-white/15 py-6 text-[#bdd0d7] text-xs">
+        <div className="flex flex-wrap justify-between gap-3 border-t border-white/15 py-6 text-[var(--brand-soft-text)] text-xs">
           <span>
             © {new Date().getFullYear()} Caliber. All rights reserved.
           </span>

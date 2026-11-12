@@ -67,7 +67,7 @@ export default function ContactPage() {
           </div>
           <div className="self-center rounded-2xl border bg-card p-7">
             <Mail
-              className="text-[#086b85] dark:text-cyan-200"
+              className="text-[hsl(var(--primary))] dark:text-lime-200"
               size={24}
               aria-hidden="true"
             />
@@ -99,7 +99,7 @@ export default function ContactPage() {
             >
               <route.icon
                 size={25}
-                className="text-[#086b85] dark:text-cyan-200"
+                className="text-[hsl(var(--primary))] dark:text-lime-200"
                 aria-hidden="true"
               />
               <h3 className="mt-5 font-semibold text-lg">{route.title}</h3>
@@ -128,7 +128,7 @@ export default function ContactPage() {
                 <li key={item} className="flex items-start gap-3">
                   <Check
                     size={16}
-                    className="mt-0.5 shrink-0 text-[#086b85] dark:text-cyan-200"
+                    className="mt-0.5 shrink-0 text-[hsl(var(--primary))] dark:text-lime-200"
                     aria-hidden="true"
                   />
                   {item}
@@ -140,7 +140,7 @@ export default function ContactPage() {
               documents by email.
             </p>
           </section>
-          <section className="rounded-2xl border bg-[#0a3342] p-7 text-white">
+          <section className="rounded-2xl border bg-[var(--brand-panel)] p-7 text-white">
             <CircleHelp
               size={25}
               className="text-[#b3e4d7]"
@@ -149,13 +149,13 @@ export default function ContactPage() {
             <h2 className="mt-5 font-semibold text-xl">
               Looking for a quick answer?
             </h2>
-            <p className="mt-3 text-[#c8dbe2] text-sm leading-7">
+            <p className="mt-3 text-[var(--brand-soft-text)] text-sm leading-7">
               Explore the help pages for common questions, or read our policies
               before getting in touch.
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
               <Link
-                className="rounded-lg bg-[#b3e4d7] px-4 py-2.5 font-medium text-[#103d40] text-sm"
+                className="rounded-lg bg-[#b3e4d7] px-4 py-2.5 font-medium text-[var(--brand-ink)] text-sm"
                 href="/faq"
               >
                 Browse FAQs

@@ -98,7 +98,7 @@ export function ConnectRequestForm({
         </p>
         <Button
           asChild
-          className="mt-5 h-10 w-full bg-[#086b85] text-white hover:bg-[#07576d]"
+          className="mt-5 h-10 w-full bg-[hsl(var(--primary))] text-primary-foreground hover:bg-[#285c49]"
         >
           <Link href="/procurement/organizations">Open business workspace</Link>
         </Button>

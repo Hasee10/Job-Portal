@@ -33,7 +33,8 @@ const buttonVariants = cva(
         // prop for its color - several call sites across the app never did,
         // rendering as an invisible white-on-white button). An inline style
         // still overrides this via normal CSS specificity where one's set.
-        primary: "bg-primary text-white hover:opacity-90 hover:shadow-sm",
+        primary:
+          "bg-primary text-primary-foreground hover:opacity-90 hover:shadow-sm",
         secondary:
           "bg-secondary text-secondary-foreground hover:bg-secondary/80 hover:shadow-sm",
       },

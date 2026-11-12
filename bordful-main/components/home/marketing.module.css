@@ -2,9 +2,9 @@
   overflow: clip;
 }
 .hero {
-  background: #f3f5ef;
-  color: #16352e;
-  border-bottom: 1px solid #dce3d8;
+  background: var(--hero-surface);
+  color: var(--hero-ink);
+  border-bottom: 1px solid hsl(var(--border));
 }
 .heroGrid {
   max-width: 1320px;
@@ -24,7 +24,7 @@
 }
 .heroCopy h1 em {
   font-style: normal;
-  color: #457565;
+  color: var(--hero-accent);
 }
 .eyebrow {
   display: flex;
@@ -44,7 +44,7 @@
 }
 .heroDescription {
   max-width: 440px;
-  color: #52665c;
+  color: var(--hero-muted);
   font-size: 17px;
   line-height: 1.8;
 }
@@ -69,20 +69,20 @@
     transform 0.2s;
 }
 .primary {
-  background: #173d33;
-  color: white;
+  background: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
 }
 .primary:hover {
-  background: #285c49;
+  background: hsl(var(--primary) / .9);
   transform: translateY(-2px);
 }
 .secondary {
-  border: 1px solid #b9c9b9;
-  color: #234d3d;
-  background: #ffffff50;
+  border: 1px solid hsl(var(--input));
+  color: var(--hero-ink);
+  background: hsl(var(--background) / .5);
 }
 .secondary:hover {
-  background: #fff;
+  background: hsl(var(--accent));
 }
 .page a:focus-visible,
 .hero a:focus-visible {
@@ -95,10 +95,10 @@
   gap: 18px;
   margin-top: 35px;
   padding-top: 22px;
-  border-top: 1px solid #cfd9ca;
+  border-top: 1px solid hsl(var(--border));
   font-size: 8px;
   letter-spacing: 0.12em;
-  color: #53675a;
+  color: var(--hero-muted);
 }
 .heroVisual {
   min-width: 0;
@@ -281,7 +281,7 @@
   gap: 12px;
   padding: 17px 4px 0;
   font-size: 10px;
-  color: #526c59;
+  color: var(--hero-muted);
 }
 .visualCaption strong {
   font-weight: 550;
