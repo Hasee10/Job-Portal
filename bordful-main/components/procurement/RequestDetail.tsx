@@ -126,7 +126,7 @@ export function RequestDetail({
       );
       if (data.notFound?.length) {
         toast({
-          description: `No JobLo recruiter account for: ${data.notFound.join(", ")}`,
+          description: `No Caliber recruiter account for: ${data.notFound.join(", ")}`,
           title: "Some emails were not found",
         });
       }

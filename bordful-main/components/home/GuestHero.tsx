@@ -1,11 +1,4 @@
-import {
-  ArrowRight,
-  BriefcaseBusiness,
-  Building2,
-  Check,
-  FileText,
-  Network,
-} from "lucide-react";
+import { ArrowRight, Building2, Check, FileText, Network } from "lucide-react";
 
 import Link from "next/link";
 
@@ -58,53 +51,80 @@ export function GuestHero() {
             </span>
           </div>
           <div className={styles.network}>
-            <div className={`${styles.flowCard} ${styles.profile}`}>
-              <span className={styles.icon}>
-                <FileText size={21} aria-hidden="true" />
-              </span>
-              <div>
-                <strong>Your experience</strong>
-                <small>Skills · Resume · Ambitions</small>
-              </div>
-            </div>
-            <div className={`${styles.flowCard} ${styles.business}`}>
-              <span className={styles.icon}>
-                <Building2 size={21} aria-hidden="true" />
-              </span>
-              <div>
-                <strong>Your business</strong>
-                <small>Profile · Capabilities · Team</small>
-              </div>
-            </div>
-            <div className={styles.connector} aria-hidden="true" />
-            <div className={styles.hub}>
-              <Network size={27} aria-hidden="true" />
-              <span>Connect</span>
-            </div>
-            <div className={`${styles.flowCard} ${styles.jobs}`}>
-              <BriefcaseBusiness size={19} aria-hidden="true" />
-              <div>
-                <strong>Find your next role</strong>
-                <small>Discover. Save. Apply.</small>
-              </div>
-              <Check
-                size={15}
-                className="ml-auto text-emerald-600"
-                aria-hidden="true"
-              />
-            </div>
-            <div className={`${styles.flowCard} ${styles.procurement}`}>
-              <Building2 size={19} aria-hidden="true" />
-              <div>
-                <strong>Build your next partnership</strong>
-                <small>Discover. Connect. Source.</small>
-              </div>
-              <Check
-                size={15}
-                className="ml-auto text-emerald-600"
-                aria-hidden="true"
-              />
-            </div>
+            {[
+              {
+                title: "YOUR CAREER",
+                icon: FileText,
+                steps: [
+                  {
+                    title: "Your experience",
+                    detail: "Skills, resume and ambitions",
+                  },
+                  {
+                    title: "Discover relevant roles",
+                    detail: "Search, filter and shortlist",
+                  },
+                  {
+                    title: "Take the next step",
+                    detail: "Apply and track your progress",
+                  },
+                ],
+              },
+              {
+                title: "YOUR BUSINESS",
+                icon: Building2,
+                steps: [
+                  {
+                    title: "Your business profile",
+                    detail: "Capabilities, services and team",
+                  },
+                  {
+                    title: "Find the right partners",
+                    detail: "Discover, connect and discuss",
+                  },
+                  {
+                    title: "Source with confidence",
+                    detail: "Request, compare and award",
+                  },
+                ],
+              },
+            ].map((lane, laneIndex) => {
+              const Icon = lane.icon;
+              return (
+                <div className={styles.lane} key={lane.title}>
+                  <p className={styles.laneLabel}>{lane.title}</p>
+                  {lane.steps.map((step, index) => (
+                    <div className={styles.flowStep} key={step.title}>
+                      <div
+                        className={styles.flowCard}
+                        style={{
+                          animationDelay: `${0.15 + index * 0.35 + laneIndex * 0.12}s`,
+                        }}
+                      >
+                        <span className={styles.icon}>
+                          {index === 0 ? (
+                            <Icon size={18} aria-hidden="true" />
+                          ) : index === 1 ? (
+                            <Network size={18} aria-hidden="true" />
+                          ) : (
+                            <Check size={18} aria-hidden="true" />
+                          )}
+                        </span>
+                        <div>
+                          <strong>{step.title}</strong>
+                          <small>{step.detail}</small>
+                        </div>
+                      </div>
+                      {index < 2 && (
+                        <div className={styles.flowArrow} aria-hidden="true">
+                          ↓
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              );
+            })}
           </div>
           <div className={styles.previewBottom}>
             <span>JOBS</span>

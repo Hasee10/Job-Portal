@@ -3,35 +3,36 @@ export function Brand({ inverted = false }: { inverted?: boolean }) {
   return (
     <Link
       href="/"
-      aria-label="JobLo home"
-      className={`inline-flex shrink-0 items-center gap-2.5 ${inverted ? "text-white" : "text-foreground"}`}
+      aria-label="Caliber home"
+      className={`inline-flex shrink-0 items-center gap-2 ${inverted ? "text-white" : "text-[#102f40] dark:text-white"}`}
     >
       <svg
-        width="36"
-        height="36"
-        viewBox="0 0 36 36"
+        width="38"
+        height="38"
+        viewBox="0 0 40 40"
         fill="none"
         aria-hidden="true"
       >
-        <rect width="36" height="36" rx="11" fill="#086B85" />
+        <title>Caliber symbol</title>
         <path
-          d="M12 12h13v12M25 12l-9 9c-4 4-9 1-7-3"
-          stroke="#fff"
-          strokeWidth="2.8"
+          d="M27 10a12 12 0 1 0 0 20"
+          stroke={inverted ? "#B3E4D7" : "#086B85"}
+          strokeWidth="4"
           strokeLinecap="round"
-          strokeLinejoin="round"
         />
-        <circle cx="11" cy="27" r="2" fill="#A7E8D3" />
+        <rect
+          x="29"
+          y="17"
+          width="6"
+          height="6"
+          rx="1.5"
+          transform="rotate(45 32 20)"
+          fill={inverted ? "#fff" : "#102f40"}
+        />
       </svg>
-      <span className="font-semibold text-2xl tracking-[-.06em]">
-        Job
-        <span
-          className={
-            inverted ? "text-[#A7E8D3]" : "text-[#086b85] dark:text-cyan-200"
-          }
-        >
-          Lo
-        </span>
+      <span className="font-semibold text-[27px] leading-none tracking-[-.055em]">
+        Caliber
+        <span className="ml-0.5 text-[#086b85] dark:text-[#B3E4D7]">.</span>
       </span>
     </Link>
   );

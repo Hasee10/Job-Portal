@@ -35,22 +35,20 @@ export function Nav() {
         }
       }}
     >
-      <div className="container mx-auto flex h-[76px] max-w-7xl items-center justify-between gap-6 px-4 sm:px-6">
+      <div className="container mx-auto flex h-[80px] max-w-7xl items-center justify-between gap-6 px-4 sm:px-6">
         <div className="flex items-center gap-4">
           <Brand />
-          {context !== "home" && (
-            <span className="hidden border-l pl-4 font-medium text-muted-foreground text-xs xl:block">
-              {context === "jobs" ? "CAREERS" : "PROCUREMENT"}
-            </span>
-          )}
         </div>
-        <nav aria-label="Primary" className="hidden items-center gap-1 lg:flex">
+        <nav
+          aria-label="Primary"
+          className="hidden items-center gap-0.5 rounded-full border bg-muted/25 p-1 lg:flex"
+        >
           {links.map((link) => (
             <Link
               key={link.href}
               aria-current={active(link.href) ? "page" : undefined}
               href={link.href}
-              className={`rounded-lg px-3 py-2 text-sm transition-colors ${active(link.href) ? "bg-primary/5 font-medium text-[#086b85] dark:text-cyan-200" : "text-muted-foreground hover:bg-muted hover:text-foreground"}`}
+              className={`rounded-full px-3.5 py-2 text-[13px] transition-colors ${active(link.href) ? "bg-background font-semibold text-[#102f40] shadow-sm dark:text-cyan-200" : "text-muted-foreground hover:bg-muted hover:text-foreground"}`}
             >
               {link.label}
             </Link>
@@ -107,7 +105,7 @@ export function Nav() {
                 className="flex items-center gap-2 px-3 py-3 text-muted-foreground text-xs"
               >
                 <ArrowLeft size={14} aria-hidden="true" />
-                JobLo home
+                Caliber home
               </Link>
             )}
             <div className="border-t pt-4 lg:hidden">

@@ -20,7 +20,7 @@ import { localBusinessPreviewHref } from "@/lib/dev/business-preview";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
-  title: "Workspace preview | JobLo",
+  title: "Workspace preview | Caliber",
   robots: { index: false, follow: false },
 };
 const WORKSPACES = [

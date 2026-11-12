@@ -158,7 +158,7 @@ export function AuthNavStatus({
       <Link
         href={signup}
         onClick={onNavigate}
-        className="rounded-lg bg-[#086b85] px-4 py-2.5 font-medium text-white hover:bg-[#07576d]"
+        className="rounded-full bg-[#102f40] px-4 py-2.5 font-medium text-white hover:bg-[#18485b]"
       >
         Get started
       </Link>

@@ -19,7 +19,7 @@ export function GuideCard({ guide }: { guide: CareerGuide }) {
           aria-hidden="true"
         />
         <span className="font-mono text-muted-foreground text-xs">
-          JOBLO / FIELD NOTES
+          CALIBER / FIELD NOTES
         </span>
       </div>
       <div className="flex flex-1 flex-col p-6">

@@ -89,7 +89,7 @@ export function SignUpForm() {
 
       toast({
         description: "Your business account is ready.",
-        title: "Welcome to JobLo",
+        title: "Welcome to Caliber",
       });
       router.push(
         new URLSearchParams(window.location.search).get("callbackUrl") ===

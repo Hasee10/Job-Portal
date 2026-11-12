@@ -35,7 +35,7 @@ export function Footer() {
       links: SITE_LINKS[context],
     },
     {
-      title: "JobLo",
+      title: "Caliber",
       links: [
         { label: "About us", href: "/about" },
         { label: "Contact", href: "/contact" },
@@ -78,7 +78,7 @@ export function Footer() {
                 ? "A clearer way to discover partners, build relationships and manage sourcing."
                 : context === "jobs"
                   ? "Find relevant roles, build your confidence and take the next step in your career."
-                  : "One platform for your career and your business. Move forward with JobLo."}
+                  : "One platform for your career and your business. Move forward with Caliber."}
             </p>
           </div>
           <div className="grid grid-cols-2 gap-8 sm:grid-cols-3">
@@ -102,7 +102,9 @@ export function Footer() {
           </div>
         </div>
         <div className="flex flex-wrap justify-between gap-3 border-t border-white/15 py-6 text-[#bdd0d7] text-xs">
-          <span>© {new Date().getFullYear()} JobLo. All rights reserved.</span>
+          <span>
+            © {new Date().getFullYear()} Caliber. All rights reserved.
+          </span>
           <span>Careers. Connections. Possibilities.</span>
         </div>
       </div>

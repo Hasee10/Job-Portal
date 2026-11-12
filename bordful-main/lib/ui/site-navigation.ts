@@ -22,7 +22,7 @@ export const SITE_LINKS = {
     { label: "Jobs", href: "/jobs" },
     { label: "Procurement", href: "/procurement" },
     { label: "Career guides", href: "/guides" },
-    { label: "About JobLo", href: "/about" },
+    { label: "Contact", href: "/contact" },
   ],
   jobs: [
     { label: "Find jobs", href: "/jobs" },

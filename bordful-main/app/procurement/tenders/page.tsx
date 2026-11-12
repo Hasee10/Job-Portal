@@ -98,7 +98,7 @@ export default async function ProcurementTendersPage({
         badge="Global tenders"
         description={`Aggregated daily from TED (EU Tenders Electronic Daily) and PPRA (Pakistan). ${totalActive.toLocaleString()} tenders currently open.`}
         heroImage={{
-          alt: "JobLo’s AI matching engine scoring verified vendors against open tenders",
+          alt: "Caliber’s AI matching engine scoring verified vendors against open tenders",
           enabled: true,
           src: "/procurement-hero.png",
         }}

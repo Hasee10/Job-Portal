@@ -246,7 +246,7 @@ export function ConnectionsPanel({
           </ul>
           {/* Said plainly, because "approved" invites the other reading. */}
           <p className="mt-3 text-xs text-zinc-500 dark:text-zinc-400">
-            Approved by you, for your own purchasing. JobLo has not verified
+            Approved by you, for your own purchasing. Caliber has not verified
             these businesses, their certificates or their finances.
           </p>
         </div>
