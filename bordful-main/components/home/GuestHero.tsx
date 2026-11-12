@@ -41,16 +41,16 @@ export function GuestHero() {
           </p>
         </div>
         <div
-          className={styles.preview}
+          className={styles.workflowPanel}
           aria-label="Illustrative Jobs and Procurement workflow"
         >
-          <div className={styles.previewTop}>
+          <div className={styles.workflowHeader}>
             <span className={styles.dot} /> THE OPPORTUNITY NETWORK{" "}
             <span className="ml-auto text-[10px] normal-case tracking-normal">
               Illustration
             </span>
           </div>
-          <div className={styles.network}>
+          <div className={styles.workflowGrid}>
             {[
               {
                 title: "YOUR CAREER",
@@ -91,12 +91,12 @@ export function GuestHero() {
             ].map((lane, laneIndex) => {
               const Icon = lane.icon;
               return (
-                <div className={styles.lane} key={lane.title}>
-                  <p className={styles.laneLabel}>{lane.title}</p>
+                <div className={styles.workflowLane} key={lane.title}>
+                  <p className={styles.workflowLabel}>{lane.title}</p>
                   {lane.steps.map((step, index) => (
-                    <div className={styles.flowStep} key={step.title}>
+                    <div key={step.title}>
                       <div
-                        className={styles.flowCard}
+                        className={styles.workflowCard}
                         style={{
                           animationDelay: `${0.15 + index * 0.35 + laneIndex * 0.12}s`,
                         }}
@@ -116,7 +116,7 @@ export function GuestHero() {
                         </div>
                       </div>
                       {index < 2 && (
-                        <div className={styles.flowArrow} aria-hidden="true">
+                        <div className={styles.workflowArrow} aria-hidden="true">
                           ↓
                         </div>
                       )}
@@ -126,7 +126,7 @@ export function GuestHero() {
               );
             })}
           </div>
-          <div className={styles.previewBottom}>
+          <div className={styles.workflowFooter}>
             <span>JOBS</span>
             <span className="h-px flex-1 bg-white/15" />
             <span>PROCUREMENT</span>
