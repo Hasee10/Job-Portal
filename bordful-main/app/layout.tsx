@@ -103,15 +103,21 @@ export default async function RootLayout({
             {...script.attributes}
           />
         ))}
+        <a
+          href="#page-content"
+          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-background focus:px-4 focus:py-3 focus:text-foreground focus:shadow-lg"
+        >
+          Skip to content
+        </a>
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
           <AuthSessionProvider session={session}>
             <SeekerJobStateProvider>
               <ResumePanelProvider>
                 <div className="flex min-h-screen flex-col">
                   <Nav />
-                  <main className="flex-1">
+                  <div className="flex-1" id="page-content" tabIndex={-1}>
                     <NuqsAdapter>{children}</NuqsAdapter>
-                  </main>
+                  </div>
                   <Footer />
                 </div>
               </ResumePanelProvider>

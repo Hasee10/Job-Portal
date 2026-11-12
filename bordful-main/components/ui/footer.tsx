@@ -3,6 +3,7 @@
 import { ArrowUpRight, Briefcase, Rss } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { type CSSProperties, type ReactNode, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import config from "@/config";
@@ -49,6 +50,11 @@ type FooterColumn = {
 };
 
 export function Footer() {
+  const pathname = usePathname();
+  const showHiringAction =
+    pathname.startsWith("/jobs") ||
+    pathname.startsWith("/dashboard") ||
+    pathname.startsWith("/recruiter");
   // Initialize with empty string to avoid hydration mismatch
   const [copyrightYears, setCopyrightYears] = useState("");
 
@@ -442,7 +448,7 @@ export function Footer() {
     <footer className="mt-8 border-t" style={footerStyle}>
       <div className="container mx-auto px-4">
         {/* Post Job Banner - Moved to the top and redesigned */}
-        {config.footer.postJob.show && (
+        {config.footer.postJob.show && showHiringAction && (
           <div className="border-zinc-800 border-b py-12">
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
               <div className="mb-6 space-y-2 lg:mb-0">
@@ -533,7 +539,7 @@ export function Footer() {
 
                   {/* Other columns stack in remaining space */}
                   <div className="md:col-span-7 min-[960px]:col-span-9">
-                    <div className="grid grid-cols-1 gap-x-4 gap-y-8 md:grid-cols-3 min-[300px]:grid-cols-2">
+                    <div className="grid grid-cols-1 gap-x-4 gap-y-8 md:grid-cols-4 min-[300px]:grid-cols-2">
                       {sortedColumns.slice(1).map((column) => (
                         <div key={column.id}>{column.content}</div>
                       ))}
@@ -542,7 +548,7 @@ export function Footer() {
                 </div>
               ) : (
                 /* Fallback to regular grid if brand isn't first */
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-3 min-[300px]:grid-cols-2">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-4 min-[300px]:grid-cols-2">
                   {sortedColumns.map((column) => (
                     <div key={column.id}>{column.content}</div>
                   ))}

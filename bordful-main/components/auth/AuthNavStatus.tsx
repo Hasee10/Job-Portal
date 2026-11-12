@@ -2,9 +2,8 @@
 
 import { ChevronDown, User } from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { capabilitiesFor } from "@/lib/auth/capabilities";
 
 type AuthNavStatusProps = {
@@ -23,7 +22,7 @@ export function AuthNavStatus({
   variant = "mobile",
 }: AuthNavStatusProps) {
   const { data: session, status } = useSession();
-  const pathname = usePathname();
+  const menuId = useId();
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
 
@@ -43,12 +42,13 @@ export function AuthNavStatus({
 
   if (session?.user) {
     const capabilities = capabilitiesFor(session.user.role);
-    const accountHref = pathname.startsWith("/procurement")
-      ? "/procurement/organizations"
-      : capabilities.workspaceHref;
-    // Buyers and suppliers have different procurement homes, and an account
-    // with no procurement capability gets no entry point at all.
-    const procurementHref = "/procurement/organizations";
+    const accountHref = capabilities.workspaceHref;
+    const accountLabel =
+      session.user.role === "seeker"
+        ? "Job account"
+        : session.user.role === "recruiter"
+          ? "Recruiter workspace"
+          : "Hiring workspace";
     const displayName = session.user.name || session.user.email;
 
     const closeAndNavigate = () => {
@@ -67,8 +67,22 @@ export function AuthNavStatus({
               Go Premium
             </Link>
           )}
-          <div className="relative" ref={menuRef}>
+          <div
+            className="relative"
+            ref={menuRef}
+            onKeyDown={(event) => {
+              if (event.key === "Escape") {
+                setIsOpen(false);
+                menuRef.current?.querySelector("button")?.focus();
+              }
+            }}
+            onBlur={(event) => {
+              if (!event.currentTarget.contains(event.relatedTarget))
+                setIsOpen(false);
+            }}
+          >
             <button
+              aria-controls={isOpen ? menuId : undefined}
               aria-expanded={isOpen}
               className="flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-zinc-600 transition-colors hover:bg-zinc-50 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
               onClick={() => setIsOpen((prev) => !prev)}
@@ -81,25 +95,14 @@ export function AuthNavStatus({
 
             {isOpen && (
               <div className="absolute right-0 z-50 mt-1 w-48 rounded-md bg-popover shadow-lg ring-1 ring-black ring-opacity-5 dark:ring-white/10">
-                <div aria-orientation="vertical" className="py-1" role="menu">
+                <div className="py-1" id={menuId}>
                   {session.user.role === "seeker" && (
                     <Link
                       className="block px-4 py-2 text-sm text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
                       href="/account/resume"
                       onClick={closeAndNavigate}
-                      role="menuitem"
                     >
                       Resume Builder
-                    </Link>
-                  )}
-                  {procurementHref && (
-                    <Link
-                      className="block px-4 py-2 text-sm text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
-                      href={procurementHref}
-                      onClick={closeAndNavigate}
-                      role="menuitem"
-                    >
-                      Procurement
                     </Link>
                   )}
                   {/* Every signed-in account can own a business, whatever
@@ -110,17 +113,15 @@ export function AuthNavStatus({
                     className="block px-4 py-2 text-sm text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
                     href="/procurement/organizations"
                     onClick={closeAndNavigate}
-                    role="menuitem"
                   >
-                    Organizations
+                    Business workspace
                   </Link>
                   <Link
                     className="block px-4 py-2 text-sm text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
                     href={accountHref}
                     onClick={closeAndNavigate}
-                    role="menuitem"
                   >
-                    My Account
+                    {accountLabel}
                   </Link>
                   <button
                     className="block w-full px-4 py-2 text-left text-sm text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
@@ -128,7 +129,6 @@ export function AuthNavStatus({
                       closeAndNavigate();
                       signOut({ callbackUrl: "/" });
                     }}
-                    role="menuitem"
                     type="button"
                   >
                     Sign out
@@ -161,28 +161,19 @@ export function AuthNavStatus({
             </Link>
           </>
         )}
-        {procurementHref && (
-          <Link
-            className="text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
-            href={procurementHref}
-            onClick={onNavigate}
-          >
-            Procurement
-          </Link>
-        )}
         <Link
           className="text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
           href="/procurement/organizations"
           onClick={onNavigate}
         >
-          Organizations
+          Business workspace
         </Link>
         <Link
           className="text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
           href={accountHref}
           onClick={onNavigate}
         >
-          {displayName}
+          {accountLabel}
         </Link>
         <button
           className="text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"

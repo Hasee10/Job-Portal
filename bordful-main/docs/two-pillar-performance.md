@@ -41,3 +41,24 @@ These are smoke measurements, not comparable before/after route benchmarks. No b
 
 ## Verification
 Changed-area tests: 16 passed across tender retrieval, organization attention and role capabilities. The expanded two-organization integration test additionally passed with measured query counts; final tender regression rerun passed 4 tests after typing cleanup. Standalone typecheck passed. Production build passed after the server retrieval and navigation changes; later edits were copy, CTA destination expressions and removal of recruiter promotional markup. Existing middleware/Edge runtime deprecation notices remain. No full suite, schema migration, deployment or merge was performed.
+
+
+## Frontend follow-up: landing, motion and assets
+
+The public homepage now renders a dedicated server-rendered `PublicLanding` before any Jobs/statistics/testimonial reads. Jobs and Procurement have equal hero entry points, dedicated feature cards and separate three-step journeys. Missing Jobs data cannot remove public marketing content. The old guest implementation was removed from the interactive job board rather than retained as a competing page.
+
+`GuestHero` contains the illustrative HTML workflow. Its scoped CSS entrance sequence completes in about 2.1 seconds, uses opacity/transform, and disables animation and transitions for reduced motion. No animation dependency, background video, fabricated live counters or example AI match scores are used.
+
+Original editable artwork lives in `public/illustrations/`: `jobs-pathway.svg` (2.3 KB) and `business-network.svg` (2.0 KB), with matching 960x540 PNG exports (32 KB and 39 KB). The illustrations were authored as SVG geometry and rasterized with the existing Sharp dependency. SVGs appear on the landing; PNGs appear on join and procurement. Existing logos and unrelated artwork are preserved.
+
+Account navigation has one Business workspace destination plus the distinct Job account, Hiring workspace or Recruiter workspace destination. Desktop disclosures support Escape, focus return and closing when focus leaves. Mobile navigation supports Escape and focus return. Job-posting promotions are scoped to Jobs/hiring screens. Footer links now cover Procurement as well as Jobs. A skip link and one-main-landmark structure improve keyboard navigation.
+
+Procurement now has a route loading state and an error boundary with the installed Next.js version's `retry` callback. They do not expose database errors or alter permissions. The primary business directory is promoted instead of the legacy vendor directory; self-declared businesses are not advertised as verified suppliers.
+
+### Verification
+
+- Seven focused regression tests cover public render without any Jobs queries (guest, employer and recruiter), full landing during a Jobs outage, and distinct workspace destinations for seeker/employer/recruiter.
+- Headless Edge checks: one main landmark and no horizontal overflow at 320, 390, 768 and 1440 pixels; mobile menu; desktop and mobile Escape/focus return; all four hero animation names become `none` under reduced motion; no page JavaScript errors in initial route checks.
+- Automated axe WCAG A/AA scans found and prompted fixes for light-mode text/button contrast. Follow-up scans returned zero violations on the landing and join in light/dark mode, and procurement in light/dark mode. These automated checks do not replace a complete manual accessibility audit.
+- Network inspection found that the initial server-rendered split still shipped the job-board chunk. A small `SeekerHome` client dynamic boundary now keeps that chunk out of the public landing's requested scripts. Development script text length decreased from 5,952,048 to 4,708,899 characters in the same local setup; this is diagnostic evidence, not a production transfer-size or latency benchmark.
+- Local screenshots were reviewed for desktop, mobile, dark mode, join and procurement. No production credentials, schema, role permissions or RFQ/award rules changed.

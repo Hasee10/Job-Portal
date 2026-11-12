@@ -69,7 +69,7 @@ const HOW_IT_WORKS = [
   },
   {
     description:
-      "Invite Caliber-verified vendors. Sealed bids stay hidden — even from you — until the deadline closes.",
+      "Invite suppliers to respond. Sealed bids stay hidden — even from you — until the deadline closes.",
     step: "2",
     title: "Invite vendors, collect bids",
   },
@@ -94,20 +94,20 @@ export default async function ProcurementLandingPage() {
   return (
     <main className="bg-background">
       <HeroSection
-        badge="Matchmaking for procurement"
+        badge="FOR BUYERS AND SUPPLIERS"
         description="One engine for RFIs, RFQs, RFPs, and full tender-grade sourcing — invite vendors, collect sealed bids, evaluate side by side, and award, with every step logged to an audit trail."
         heroImage={{
-          alt: "Caliber’s AI matching engine scoring verified vendors against a tender, with sealed bids and an audit trail",
+          alt: "Illustration of buyers and suppliers connected through a business workspace",
           enabled: true,
-          src: "/procurement-hero.png",
+          src: "/illustrations/business-network.png",
         }}
-        title="The same matchmaking engine, built for sourcing vendors"
+        title="Better connections. More confident sourcing."
       >
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
           {session?.user ? (
             workspaceHref && (
               <Link
-                className="inline-flex items-center justify-center rounded-md bg-white px-5 py-2.5 font-medium text-primary text-sm hover:opacity-90"
+                className="inline-flex items-center justify-center rounded-md bg-white px-5 py-2.5 font-medium text-[#07576d] text-sm hover:opacity-90"
                 href={workspaceHref}
               >
                 Your business workspace
@@ -116,14 +116,22 @@ export default async function ProcurementLandingPage() {
           ) : (
             <>
               <Link
-                className="inline-flex items-center justify-center rounded-md bg-white px-5 py-2.5 font-medium text-primary text-sm hover:opacity-90"
-                href={session?.user ? workspaceHref : "/sign-up?callbackUrl=/procurement/organizations"}
+                className="inline-flex items-center justify-center rounded-md bg-white px-5 py-2.5 font-medium text-[#07576d] text-sm hover:opacity-90"
+                href={
+                  session?.user
+                    ? workspaceHref
+                    : "/sign-up?callbackUrl=/procurement/organizations"
+                }
               >
-                Your business workspace
+                Create a business profile
               </Link>
               <Link
                 className="inline-flex items-center justify-center rounded-md border border-white/40 px-5 py-2.5 font-medium text-sm text-white hover:bg-white/10"
-                href={session?.user ? workspaceHref : "/sign-in?callbackUrl=/procurement/organizations"}
+                href={
+                  session?.user
+                    ? workspaceHref
+                    : "/sign-in?callbackUrl=/procurement/organizations"
+                }
               >
                 Business sign in
               </Link>
@@ -133,9 +141,9 @@ export default async function ProcurementLandingPage() {
         <p className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-white/80">
           <Link
             className="text-white underline underline-offset-4 hover:opacity-80"
-            href="/procurement/vendors"
+            href="/procurement/directory"
           >
-            Browse registered suppliers &rarr;
+            Browse buyers and suppliers &rarr;
           </Link>
           <Link
             className="text-white underline underline-offset-4 hover:opacity-80"
@@ -191,7 +199,7 @@ export default async function ProcurementLandingPage() {
           "four formats" in the abstract; this is what that actually means. */}
       <div className="border-b bg-background py-14">
         <div className="container mx-auto px-4">
-          <p className="text-center font-semibold text-primary text-xs uppercase tracking-wider">
+          <p className="text-center font-semibold text-[#086b85] dark:text-cyan-300 text-xs uppercase tracking-wider">
             One engine, four formats
           </p>
           <h2 className="mt-2 text-center font-bold text-2xl text-zinc-900 tracking-tight sm:text-3xl dark:text-zinc-50">
@@ -203,10 +211,10 @@ export default async function ProcurementLandingPage() {
                 className="rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900"
                 key={name}
               >
-                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
+                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-[#086b85] dark:text-cyan-300">
                   <Icon aria-hidden="true" className="h-4 w-4" />
                 </span>
-                <p className="mt-4 font-semibold text-primary text-xs uppercase tracking-wider">
+                <p className="mt-4 font-semibold text-[#086b85] dark:text-cyan-300 text-xs uppercase tracking-wider">
                   {name}
                 </p>
                 <h3 className="mt-1 font-semibold text-base text-zinc-900 dark:text-zinc-50">
@@ -251,19 +259,23 @@ export default async function ProcurementLandingPage() {
         <div className="container mx-auto px-4">
           <div className="mx-auto grid max-w-4xl gap-5 sm:grid-cols-2">
             <div className="rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
-              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
+              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-[#086b85] dark:text-cyan-300">
                 <ClipboardCheck aria-hidden="true" className="h-4 w-4" />
               </span>
               <h3 className="mt-4 font-semibold text-base text-zinc-900 dark:text-zinc-50">
                 Buyers
               </h3>
               <p className="mt-1.5 text-muted-foreground text-sm">
-                Create a request, invite verified vendors, and award with a
-                defensible audit trail.
+                Create a request, invite suppliers, and award with a defensible
+                audit trail.
               </p>
               <Link
-                className="mt-4 inline-flex items-center gap-1 font-medium text-primary text-sm hover:underline"
-                href={session?.user ? workspaceHref : "/sign-up?callbackUrl=/procurement/organizations"}
+                className="mt-4 inline-flex items-center gap-1 font-medium text-[#086b85] dark:text-cyan-300 text-sm hover:underline"
+                href={
+                  session?.user
+                    ? workspaceHref
+                    : "/sign-up?callbackUrl=/procurement/organizations"
+                }
               >
                 Your business workspace
                 <ArrowRight aria-hidden="true" className="h-3.5 w-3.5" />
@@ -271,7 +283,7 @@ export default async function ProcurementLandingPage() {
             </div>
 
             <div className="rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
-              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
+              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-[#086b85] dark:text-cyan-300">
                 <Store aria-hidden="true" className="h-4 w-4" />
               </span>
               <h3 className="mt-4 font-semibold text-base text-zinc-900 dark:text-zinc-50">
@@ -282,8 +294,12 @@ export default async function ProcurementLandingPage() {
                 directly — no cold outreach.
               </p>
               <Link
-                className="mt-4 inline-flex items-center gap-1 font-medium text-primary text-sm hover:underline"
-                href={session?.user ? workspaceHref : "/sign-in?callbackUrl=/procurement/organizations"}
+                className="mt-4 inline-flex items-center gap-1 font-medium text-[#086b85] dark:text-cyan-300 text-sm hover:underline"
+                href={
+                  session?.user
+                    ? workspaceHref
+                    : "/sign-in?callbackUrl=/procurement/organizations"
+                }
               >
                 Business sign in
                 <ArrowRight aria-hidden="true" className="h-3.5 w-3.5" />

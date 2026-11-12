@@ -156,7 +156,7 @@ function DropdownItem({
   }`;
 
   return (
-    <Link className={itemClasses} href={href} onClick={onClick} role="menuitem">
+    <Link className={itemClasses} href={href} onClick={onClick}>
       {children}
     </Link>
   );
@@ -296,6 +296,7 @@ function useDropdownMenu() {
 
 export function Nav() {
   const [isOpen, setIsOpen] = useState(false);
+  const mobileMenuButton = useRef<HTMLButtonElement>(null);
   const pathname = usePathname();
 
   // Swap to the white-stroke logo variant in dark mode - the default
@@ -328,6 +329,10 @@ export function Nav() {
   // authorization.
   const { data: session } = useSession();
   const capabilities = capabilitiesFor(session?.user?.role);
+  const showHiringAction =
+    pathname.startsWith("/jobs") ||
+    pathname.startsWith("/dashboard") ||
+    pathname.startsWith("/recruiter");
   const menuItems = (config.nav.menu || []).filter((item) => {
     if (!session?.user) {
       return true;
@@ -416,8 +421,22 @@ export function Nav() {
             className="relative"
             key={item.link}
             ref={registerDropdownRef(item.label)}
+            onKeyDown={(event) => {
+              if (event.key === "Escape" && isDropdownOpen) {
+                toggleDropdown(item.label);
+                event.currentTarget.querySelector("button")?.focus();
+              }
+            }}
+            onBlur={(event) => {
+              if (
+                isDropdownOpen &&
+                !event.currentTarget.contains(event.relatedTarget)
+              )
+                toggleDropdown(item.label);
+            }}
           >
             <button
+              type="button"
               aria-expanded={isDropdownOpen}
               className={`flex items-center rounded-lg px-2.5 py-1 text-sm ${
                 pathname.startsWith(item.link)
@@ -432,7 +451,7 @@ export function Nav() {
 
             {isDropdownOpen && (
               <div className="absolute left-0 z-50 mt-1 w-40 rounded-md bg-popover shadow-lg ring-1 ring-black ring-opacity-5 dark:ring-white/10">
-                <div aria-orientation="vertical" className="py-1" role="menu">
+                <div className="py-1">
                   {item.items.map((subItem) => (
                     <DropdownItem
                       href={subItem.link}
@@ -470,7 +489,15 @@ export function Nav() {
   const renderMobileNavItems = () => renderNavItems(true);
 
   return (
-    <header className="relative z-40 border-border border-b bg-background">
+    <header
+      className="relative z-40 border-border border-b bg-background"
+      onKeyDown={(event) => {
+        if (event.key === "Escape" && isOpen) {
+          setIsOpen(false);
+          mobileMenuButton.current?.focus();
+        }
+      }}
+    >
       {/* Utility bar - desktop only. Carries the stuff visitors aren't here
           for by default (audience routing, social, theme, account) so the
           main bar below can stay purely wayfinding: logo, destinations, one
@@ -481,7 +508,7 @@ export function Nav() {
             <div className="flex items-center gap-4">
               <Link
                 className="text-zinc-500 transition-colors hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
-                href="/sign-up"
+                href="/sign-up?callbackUrl=/procurement/organizations"
               >
                 For businesses
               </Link>
@@ -531,32 +558,31 @@ export function Nav() {
           {/* Mobile Actions */}
           <div className="flex items-center space-x-2 lg:hidden">
             {/* Mobile Post Job Button - Smaller version */}
-            {config.nav.postJob.show &&
-              !pathname.startsWith("/procurement") && (
-                <Button
-                  asChild
-                  className="gap-1 px-2 py-1 text-xs"
-                  size="xs"
-                  style={
-                    config.nav.postJob.variant === "primary"
-                      ? {
-                          backgroundColor: resolveColor(config.ui.primaryColor),
-                        }
-                      : undefined
-                  }
-                  variant={config.nav.postJob.variant || "default"}
+            {config.nav.postJob.show && showHiringAction && (
+              <Button
+                asChild
+                className="gap-1 px-2 py-1 text-xs"
+                size="xs"
+                style={
+                  config.nav.postJob.variant === "primary"
+                    ? {
+                        backgroundColor: resolveColor(config.ui.primaryColor),
+                      }
+                    : undefined
+                }
+                variant={config.nav.postJob.variant || "default"}
+              >
+                <Link
+                  href={config.nav.postJob.link}
+                  {...(config.nav.postJob.external
+                    ? { rel: "noopener noreferrer", target: "_blank" }
+                    : {})}
                 >
-                  <Link
-                    href={config.nav.postJob.link}
-                    {...(config.nav.postJob.external
-                      ? { rel: "noopener noreferrer", target: "_blank" }
-                      : {})}
-                  >
-                    {config.nav.postJob.label}
-                    <Briefcase aria-hidden="true" className="ml-1 h-3 w-3" />
-                  </Link>
-                </Button>
-              )}
+                  {config.nav.postJob.label}
+                  <Briefcase aria-hidden="true" className="ml-1 h-3 w-3" />
+                </Link>
+              </Button>
+            )}
 
             <ThemeToggle />
 
@@ -564,6 +590,9 @@ export function Nav() {
             <button
               aria-expanded={isOpen}
               aria-label="Toggle menu"
+              aria-controls={isOpen ? "mobile-navigation" : undefined}
+              ref={mobileMenuButton}
+              type="button"
               className="p-2 text-zinc-600 transition-colors hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
               onClick={() => setIsOpen(!isOpen)}
             >
@@ -585,35 +614,31 @@ export function Nav() {
               {renderDesktopNavItems()}
             </nav>
 
-            {config.nav.postJob.show &&
-              !pathname.startsWith("/procurement") && (
-                <Button
-                  asChild
-                  className="gap-1.5 whitespace-nowrap text-xs"
-                  size="sm"
-                  style={
-                    config.nav.postJob.variant === "primary"
-                      ? {
-                          backgroundColor: resolveColor(config.ui.primaryColor),
-                        }
-                      : undefined
-                  }
-                  variant={config.nav.postJob.variant || "default"}
+            {config.nav.postJob.show && showHiringAction && (
+              <Button
+                asChild
+                className="gap-1.5 whitespace-nowrap text-xs"
+                size="sm"
+                style={
+                  config.nav.postJob.variant === "primary"
+                    ? {
+                        backgroundColor: resolveColor(config.ui.primaryColor),
+                      }
+                    : undefined
+                }
+                variant={config.nav.postJob.variant || "default"}
+              >
+                <Link
+                  href={config.nav.postJob.link}
+                  {...(config.nav.postJob.external
+                    ? { rel: "noopener noreferrer", target: "_blank" }
+                    : {})}
                 >
-                  <Link
-                    href={config.nav.postJob.link}
-                    {...(config.nav.postJob.external
-                      ? { rel: "noopener noreferrer", target: "_blank" }
-                      : {})}
-                  >
-                    {config.nav.postJob.label}
-                    <Briefcase
-                      aria-hidden="true"
-                      className="ml-1 h-3.5 w-3.5"
-                    />
-                  </Link>
-                </Button>
-              )}
+                  {config.nav.postJob.label}
+                  <Briefcase aria-hidden="true" className="ml-1 h-3.5 w-3.5" />
+                </Link>
+              </Button>
+            )}
           </div>
         </nav>
 
@@ -621,13 +646,14 @@ export function Nav() {
           <div className="border-zinc-200 border-t lg:hidden">
             <nav
               aria-label="Mobile navigation"
+              id="mobile-navigation"
               className="flex flex-col px-4 py-4"
             >
               {/* Audience routing (mirrors the desktop utility bar) */}
               <div className="mb-2 flex items-center gap-4 px-4 pb-3">
                 <Link
                   className="text-sm text-zinc-500 dark:text-zinc-400"
-                  href="/sign-up"
+                  href="/sign-up?callbackUrl=/procurement/organizations"
                   onClick={() => setIsOpen(false)}
                 >
                   For businesses
@@ -649,41 +675,40 @@ export function Nav() {
               </div>
 
               {/* Post Job Action */}
-              {config.nav.postJob.show &&
-                !pathname.startsWith("/procurement") && (
-                  <div className="px-4 pt-2 lg:hidden">
-                    <Button
-                      asChild
-                      className={"w-full gap-1.5 text-xs"}
-                      size="xs"
-                      style={
-                        config.nav.postJob.variant === "primary"
-                          ? {
-                              backgroundColor: resolveColor(
-                                config.ui.primaryColor
-                              ),
-                            }
-                          : undefined
-                      }
-                      variant={config.nav.postJob.variant || "default"}
+              {config.nav.postJob.show && showHiringAction && (
+                <div className="px-4 pt-2 lg:hidden">
+                  <Button
+                    asChild
+                    className={"w-full gap-1.5 text-xs"}
+                    size="xs"
+                    style={
+                      config.nav.postJob.variant === "primary"
+                        ? {
+                            backgroundColor: resolveColor(
+                              config.ui.primaryColor
+                            ),
+                          }
+                        : undefined
+                    }
+                    variant={config.nav.postJob.variant || "default"}
+                  >
+                    <Link
+                      href={config.nav.postJob.link}
+                      {...(config.nav.postJob.external
+                        ? { rel: "noopener noreferrer", target: "_blank" }
+                        : {})}
+                      className="flex items-center justify-center"
+                      onClick={() => setIsOpen(false)}
                     >
-                      <Link
-                        href={config.nav.postJob.link}
-                        {...(config.nav.postJob.external
-                          ? { rel: "noopener noreferrer", target: "_blank" }
-                          : {})}
-                        className="flex items-center justify-center"
-                        onClick={() => setIsOpen(false)}
-                      >
-                        {config.nav.postJob.label}
-                        <Briefcase
-                          aria-hidden="true"
-                          className="ml-1 h-3.5 w-3.5"
-                        />
-                      </Link>
-                    </Button>
-                  </div>
-                )}
+                      {config.nav.postJob.label}
+                      <Briefcase
+                        aria-hidden="true"
+                        className="ml-1 h-3.5 w-3.5"
+                      />
+                    </Link>
+                  </Button>
+                </div>
+              )}
             </nav>
           </div>
         )}

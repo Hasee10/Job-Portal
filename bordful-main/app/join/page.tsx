@@ -12,7 +12,7 @@ export default function JoinPage() {
   return (
     <main className="min-h-[60vh] bg-gradient-to-b from-zinc-50 to-white py-16 dark:from-zinc-950 dark:to-background">
       <div className="container mx-auto px-4">
-        <JoinChooser siteTitle={config.title} />
+        <JoinChooser siteTitle={config.nav.title} />
       </div>
     </main>
   );

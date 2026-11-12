@@ -456,7 +456,7 @@ export const config = {
     // Brand section (reuses nav social links)
     brand: {
       description:
-        "Browse curated opportunities from leading companies. Updated daily with the latest positions.",
+        "Find your next role. Connect with buyers and suppliers. Two clear paths for your career and your business.",
       // Optional logo configuration specifically for the footer
       logo: {
         alt: "Caliber",
@@ -512,6 +512,18 @@ export const config = {
         order: 3,
         show: true,
         title: "Jobs",
+      },
+      {
+        id: "procurement",
+        links: [
+          { label: "Overview", link: "/procurement" },
+          { label: "Business directory", link: "/procurement/directory" },
+          { label: "Public tenders", link: "/procurement/tenders" },
+          { label: "Business workspace", link: "/procurement/organizations" },
+        ],
+        order: 4,
+        show: true,
+        title: "Procurement",
       },
       {
         id: "legal",
@@ -873,6 +885,7 @@ export const config = {
           { label: "Job Levels", link: "/jobs/levels" },
           { label: "Job Languages", link: "/jobs/languages" },
           { label: "Job Alerts", link: "/job-alerts" },
+          { label: "Post a job", link: "/pricing" },
         ],
         label: "Jobs",
         link: "/jobs",
