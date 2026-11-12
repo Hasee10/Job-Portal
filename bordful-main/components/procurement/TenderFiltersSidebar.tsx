@@ -42,7 +42,7 @@ function FilterRow({
         className={`rounded-full px-2 py-0.5 text-xs ${
           checked
             ? "bg-zinc-900 text-zinc-50 dark:bg-zinc-100 dark:text-zinc-900"
-            : "bg-zinc-100 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400"
+            : "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400"
         }`}
       >
         {count.toLocaleString()}
@@ -115,7 +115,7 @@ export function TenderFiltersSidebar({ facets }: { facets: TenderFacets }) {
         <span className="font-semibold text-sm">Filters</span>
         {hasActiveFilters && (
           <button
-            className="text-primary text-xs hover:underline"
+            className="text-[#075d47] dark:text-emerald-200 text-xs hover:underline"
             onClick={clearAll}
             type="button"
           >
@@ -178,7 +178,7 @@ export function TenderFiltersSidebar({ facets }: { facets: TenderFacets }) {
           {facets.countries.length > COUNTRY_PREVIEW_COUNT &&
             !showAllCountries && (
               <button
-                className="text-primary text-xs hover:underline"
+                className="text-[#075d47] dark:text-emerald-200 text-xs hover:underline"
                 onClick={() => setShowAllCountries(true)}
                 type="button"
               >

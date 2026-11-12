@@ -101,3 +101,13 @@ Validation: 19 focused navigation/auth/landing tests passed; standalone typechec
 
 ### Localhost hero style mismatch follow-up
 The user observed updated six-card markup with legacy overlapping-card CSS in an existing browser session. A fresh session rendered the grid correctly. Renamed the replacement workflow CSS classes to avoid reuse of legacy selectors, removed an undefined wrapper class, and restarted the local development server. Browser rectangle checks verified six non-overlapping cards and no page overflow at 1177, 1440, 390 and 320px; screenshot at 1177px reviewed. Four landing regression tests and typecheck passed. No additional production build for this selector-only fix.
+
+## Product-led landing and Procurement redesign — November 12, 2026
+
+Supersedes the six-box hero flowchart and repeated numbered journey/CTA blocks. References reviewed: https://linear.app/features for product-led presentation and differentiated feature sections; https://ramp.com/procurement for benefit-led sourcing narrative. Original implementation and copy; no copied brand assets, fabricated customers, performance statistics or testimonials.
+
+The public landing now uses a sage/ink palette, a labelled HTML product composition, alternating career/business editorial sections, a benefits band and useful guide/directory entry points. A short entrance animation respects reduced motion. The sourcing variant shares the same visual system; all records are fictional and explicitly marked as illustrative, without reading private organization data.
+
+Procurement overview now progresses from discovery to workspace benefits, request-format selection, process and buyer/supplier entry points. Counts still come from the existing exact-count request with a graceful unavailable state. Removed broad compliance claims. Tender search has a compact consistent header in place of an oversized AI/verified-vendor illustration; original filters, pagination, external links and retrieval behavior remain intact. Contrast adjusted on tender filter counts/reset and pagination links. Removed the unused previous landing CSS module rather than layering over it.
+
+Validation: 19 focused landing/navigation/account tests passed, standalone typecheck passed, production build passed with existing middleware/Edge deprecation warnings. Browser checks across /, /procurement and /procurement/tenders: zero axe WCAG A/AA violations in both light/dark modes, no runtime errors and no horizontal overflow at 1177/390/320px. Desktop/mobile screenshots reviewed; keyword search submission verified. Production build ran with development server stopped, followed by a fresh localhost restart. No schema, authentication, membership, hosted-data or credential changes.

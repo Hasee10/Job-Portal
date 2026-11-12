@@ -1,313 +1,332 @@
 import {
   ArrowRight,
-  ClipboardCheck,
-  FileCheck2,
+  ArrowUpRight,
   FileSearch,
-  Gavel,
-  MessageSquareText,
-  ScrollText,
   ShieldCheck,
-  Store,
+  Users,
+  MessagesSquare,
 } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { auth } from "@/auth";
-import { HeroSection } from "@/components/ui/hero-section";
 import config from "@/config";
+import { ProductPreview } from "@/components/home/ProductPreview";
+import styles from "@/components/home/marketing.module.css";
 import { getActiveTenderCount } from "@/lib/procurement/scraped-tender-actions";
-
 export const metadata: Metadata = {
-  description:
-    "Run RFIs, RFQs, RFPs, and full tender-grade sourcing processes — request, invite, respond, compare, and award, with a built-in audit trail.",
   title: `Procurement | ${config.title}`,
+  description:
+    "Discover business partners and public tenders. Bring requests, supplier responses and sourcing decisions into one workspace.",
 };
-
 export const dynamic = "force-dynamic";
-
-const FEATURE_POINTS = [
-  { icon: ClipboardCheck, label: "One engine, four formats" },
-  { icon: ShieldCheck, label: "Sealed bids, done properly" },
-  { icon: FileCheck2, label: "Full audit trail" },
-];
-
-const REQUEST_TYPES = [
+const FORMATS = [
   {
-    description:
-      "Scope the market before you commit — gather capabilities, not prices.",
-    icon: MessageSquareText,
     name: "RFI",
-    title: "Request for Information",
+    label: "Explore the market",
+    description:
+      "Understand supplier capabilities before you commit to a specification.",
   },
   {
-    description: "Get comparable pricing fast on a well-defined spec.",
-    icon: FileSearch,
     name: "RFQ",
-    title: "Request for Quotation",
+    label: "Compare pricing",
+    description:
+      "Ask for comparable quotations against a well-defined requirement.",
   },
   {
-    description:
-      "Invite full proposals when approach matters as much as price.",
-    icon: ScrollText,
     name: "RFP",
-    title: "Request for Proposal",
+    label: "Evaluate the approach",
+    description:
+      "Invite proposals when the solution matters as much as the price.",
   },
   {
-    description:
-      "Full compliance: sealed bids, prequalification, and an audited award.",
-    icon: Gavel,
     name: "Tender",
-    title: "Formal Tender",
+    label: "Structure the process",
+    description: "Set formal requirements, deadlines and evaluation criteria.",
   },
 ];
-
-const HOW_IT_WORKS = [
-  {
-    description:
-      "Pick a format — RFI, RFQ, RFP, or tender — and set the spec, deadline, and evaluation criteria.",
-    step: "1",
-    title: "Create your request",
-  },
-  {
-    description:
-      "Invite suppliers to respond. Sealed bids stay hidden — even from you — until the deadline closes.",
-    step: "2",
-    title: "Invite vendors, collect bids",
-  },
-  {
-    description:
-      "Compare responses side by side, score them, and award — every step logged to an audit trail.",
-    step: "3",
-    title: "Evaluate and award",
-  },
-];
-
 export default async function ProcurementLandingPage() {
   const [session, totalOpenTenders] = await Promise.all([
     auth(),
     getActiveTenderCount().catch(() => null),
   ]);
-  // The landing page stays public (it's the marketing surface for the
-  // marketplace). Every signed-in account reaches its membership-scoped
-  // organizations here, independently of legacy recruitment roles.
   const workspaceHref = "/procurement/organizations";
-
+  const startHref = session?.user
+    ? workspaceHref
+    : "/sign-up?callbackUrl=/procurement/organizations";
   return (
-    <main className="bg-background">
-      <HeroSection
-        badge="FOR BUYERS AND SUPPLIERS"
-        description="One engine for RFIs, RFQs, RFPs, and full tender-grade sourcing — invite vendors, collect sealed bids, evaluate side by side, and award, with every step logged to an audit trail."
-        heroImage={{
-          alt: "Illustration of buyers and suppliers connected through a business workspace",
-          enabled: true,
-          src: "/illustrations/business-network.png",
-        }}
-        title="Better connections. More confident sourcing."
-      >
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-          {session?.user ? (
-            workspaceHref && (
-              <Link
-                className="inline-flex items-center justify-center rounded-md bg-white px-5 py-2.5 font-medium text-[#07576d] text-sm hover:opacity-90"
-                href={workspaceHref}
-              >
-                Your business workspace
+    <main className={styles.page}>
+      <section className={styles.hero} aria-labelledby="procurement-title">
+        <div className={styles.heroGrid}>
+          <div className={styles.heroCopy}>
+            <p className={styles.eyebrow}>
+              <span />
+              CALIBER / PROCUREMENT
+            </p>
+            <h1 id="procurement-title">
+              Good business.
+              <br />
+              <em>Better connected.</em>
+            </h1>
+            <p className={styles.heroDescription}>
+              Find the right partners. Bring clarity to sourcing. Move from the
+              first conversation to your next business decision, in one place.
+            </p>
+            <div className={styles.actions}>
+              <Link className={styles.primary} href={startHref}>
+                {session?.user
+                  ? "Open your workspace"
+                  : "Create a business profile"}
+                <ArrowUpRight size={18} aria-hidden="true" />
               </Link>
-            )
-          ) : (
-            <>
-              <Link
-                className="inline-flex items-center justify-center rounded-md bg-white px-5 py-2.5 font-medium text-[#07576d] text-sm hover:opacity-90"
-                href={
-                  session?.user
-                    ? workspaceHref
-                    : "/sign-up?callbackUrl=/procurement/organizations"
-                }
-              >
-                Create a business profile
+              <Link className={styles.secondary} href="/procurement/directory">
+                Explore businesses
+                <ArrowRight size={17} aria-hidden="true" />
               </Link>
-              <Link
-                className="inline-flex items-center justify-center rounded-md border border-white/40 px-5 py-2.5 font-medium text-sm text-white hover:bg-white/10"
-                href={
-                  session?.user
-                    ? workspaceHref
-                    : "/sign-in?callbackUrl=/procurement/organizations"
-                }
-              >
-                Business sign in
-              </Link>
-            </>
-          )}
+            </div>
+            <div className={styles.heroNote}>
+              <span>FOR BUYERS</span>
+              <span>FOR SUPPLIERS</span>
+              <span>FOR WHAT’S NEXT</span>
+            </div>
+          </div>
+          <div className={styles.heroVisual}>
+            <ProductPreview sourcing />
+            <div className={styles.visualCaption}>
+              <span>From requirements to responses.</span>
+              <strong>Keep the bigger picture.</strong>
+            </div>
+          </div>
         </div>
-        <p className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-white/80">
-          <Link
-            className="text-white underline underline-offset-4 hover:opacity-80"
-            href="/procurement/directory"
-          >
-            Browse buyers and suppliers &rarr;
-          </Link>
-          <Link
-            className="text-white underline underline-offset-4 hover:opacity-80"
-            href="/procurement/tenders"
-          >
-            Browse global tenders &rarr;
-          </Link>
-        </p>
-        <div className="flex flex-wrap items-center gap-x-5 gap-y-2 border-white/20 border-t pt-4 text-xs">
-          {FEATURE_POINTS.map(({ icon: Icon, label }) => (
-            <span
-              className="flex items-center gap-1.5 text-white/80"
-              key={label}
+      </section>
+      <section className={styles.section} aria-labelledby="discovery-title">
+        <div className={styles.sectionHeading}>
+          <div>
+            <p className={styles.kicker}>OPEN THE RIGHT DOORS</p>
+            <h2 id="discovery-title">
+              Your next opportunity
+              <br />
+              could start here.
+            </h2>
+          </div>
+          <p className={styles.intro}>
+            Explore the public marketplace before you start sourcing. No
+            business workspace required to browse.
+          </p>
+        </div>
+        <div className={styles.discovery}>
+          <div>
+            <FileSearch size={26} aria-hidden="true" />
+            {totalOpenTenders !== null ? (
+              <>
+                <div className={styles.tenderCount}>
+                  {totalOpenTenders.toLocaleString()}
+                </div>
+                <h3>Open tenders to explore.</h3>
+              </>
+            ) : (
+              <h3 className="mt-6">
+                Public opportunities.
+                <br />A wider perspective.
+              </h3>
+            )}
+            <p>
+              Browse aggregated public notices from TED and PPRA.
+              <small>
+                Check the original source for current requirements and
+                deadlines.
+              </small>
+            </p>
+            <Link className={styles.textLink} href="/procurement/tenders">
+              Browse public tenders
+              <ArrowUpRight size={17} aria-hidden="true" />
+            </Link>
+          </div>
+          <div>
+            <Users size={26} aria-hidden="true" />
+            <h3 className="mt-6">
+              Find a business.
+              <br />
+              Start a relationship.
+            </h3>
+            <p>
+              Discover buyers and suppliers by category, location and
+              capabilities. Get a clearer picture of who you could work with.
+            </p>
+            <p className="text-xs text-muted-foreground">
+              Business information is self-declared, not independently verified.
+            </p>
+            <Link className={styles.textLink} href="/procurement/directory">
+              Explore the directory
+              <ArrowUpRight size={17} aria-hidden="true" />
+            </Link>
+          </div>
+        </div>
+      </section>
+      <section className={styles.band} aria-labelledby="workspace-title">
+        <div className={styles.bandInner}>
+          <div>
+            <p className={styles.kicker}>WORK TOGETHER. WITH CONTEXT.</p>
+            <h2 id="workspace-title">
+              A workspace for the
+              <br />
+              whole conversation.
+            </h2>
+            <p>
+              Move beyond scattered messages and documents. Give each business
+              relationship a place to develop.
+            </p>
+            <Link
+              className="mt-6 inline-flex items-center gap-3 border-b border-white/40 pb-2 text-sm"
+              href={workspaceHref}
             >
-              <Icon aria-hidden="true" className="h-3.5 w-3.5 text-white" />
-              {label}
-            </span>
+              Explore your workspace
+              <ArrowUpRight size={17} aria-hidden="true" />
+            </Link>
+          </div>
+          <div className={styles.benefitGrid}>
+            {[
+              {
+                icon: Users,
+                title: "Business connections",
+                text: "Build a network around your organization, not a disconnected contact list.",
+              },
+              {
+                icon: MessagesSquare,
+                title: "Shared context",
+                text: "Keep conversations tied to the businesses you work with.",
+              },
+              {
+                icon: FileSearch,
+                title: "Structured requests",
+                text: "Bring requirements and supplier responses into a clear sourcing process.",
+              },
+              {
+                icon: ShieldCheck,
+                title: "Membership-based access",
+                text: "Your organization’s workspace stays scoped to its members and permissions.",
+              },
+            ].map(({ icon: Icon, title, text }) => (
+              <div key={title}>
+                <Icon size={22} aria-hidden="true" />
+                <h3>{title}</h3>
+                <p>{text}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+      <section className={styles.section} aria-labelledby="formats-title">
+        <div className={styles.sectionHeading}>
+          <div>
+            <p className={styles.kicker}>THE RIGHT STARTING POINT</p>
+            <h2 id="formats-title">
+              Different needs.
+              <br />A more considered process.
+            </h2>
+          </div>
+          <p className={styles.intro}>
+            Choose the request format around the decision you need to make.
+          </p>
+        </div>
+        <div className={styles.formats}>
+          {FORMATS.map((f, i) => (
+            <article className={styles.format} key={f.name}>
+              <small>
+                0{i + 1} / {f.label.toUpperCase()}
+              </small>
+              <h3>{f.name}</h3>
+              <p>{f.description}</p>
+            </article>
           ))}
         </div>
-      </HeroSection>
-
-      {/* Live numbers - same "bold stats band" treatment as the homepage's
-          guest stats grid, using real counts instead of placeholder copy. */}
-      {totalOpenTenders !== null && (
-        <div className="border-b bg-muted/20 py-10">
-          <div className="container mx-auto px-4">
-            <div className="mx-auto grid max-w-2xl grid-cols-2 gap-6 text-center">
-              <div>
-                <p className="font-bold text-2xl text-zinc-900 tracking-tight sm:text-3xl dark:text-zinc-50">
-                  {(totalOpenTenders ?? 0).toLocaleString()}
-                </p>
-                <p className="mt-1 text-muted-foreground text-xs">
-                  Open tenders worldwide
-                </p>
-              </div>
-              <div>
-                <Link
-                  className="font-semibold underline"
-                  href="/procurement/directory"
-                >
-                  Discover businesses
-                </Link>
-                <p className="mt-1 text-muted-foreground text-xs">
-                  Find buyers and suppliers
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Four request formats - the FEATURE_POINTS chips in the hero name
-          "four formats" in the abstract; this is what that actually means. */}
-      <div className="border-b bg-background py-14">
-        <div className="container mx-auto px-4">
-          <p className="text-center font-semibold text-[#086b85] dark:text-cyan-300 text-xs uppercase tracking-wider">
-            One engine, four formats
-          </p>
-          <h2 className="mt-2 text-center font-bold text-2xl text-zinc-900 tracking-tight sm:text-3xl dark:text-zinc-50">
-            Pick the format that matches how firm your spec is
-          </h2>
-          <div className="mx-auto mt-10 grid max-w-5xl gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            {REQUEST_TYPES.map(({ icon: Icon, name, title, description }) => (
-              <div
-                className="rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900"
-                key={name}
-              >
-                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-[#086b85] dark:text-cyan-300">
-                  <Icon aria-hidden="true" className="h-4 w-4" />
-                </span>
-                <p className="mt-4 font-semibold text-[#086b85] dark:text-cyan-300 text-xs uppercase tracking-wider">
-                  {name}
-                </p>
-                <h3 className="mt-1 font-semibold text-base text-zinc-900 dark:text-zinc-50">
-                  {title}
-                </h3>
-                <p className="mt-1.5 text-muted-foreground text-sm">
-                  {description}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* How it works - mirrors the homepage's 3-step numbered pattern. */}
-      <div className="border-b bg-muted/20 py-14">
-        <div className="container mx-auto px-4">
-          <h2 className="text-center font-bold text-2xl text-zinc-900 tracking-tight sm:text-3xl dark:text-zinc-50">
-            How it works
-          </h2>
-          <div className="mx-auto mt-10 grid max-w-4xl gap-8 sm:grid-cols-3">
-            {HOW_IT_WORKS.map(({ step, title, description }) => (
-              <div key={step}>
-                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary font-semibold text-primary-foreground text-sm">
-                  {step}
-                </span>
-                <h3 className="mt-4 font-semibold text-base text-zinc-900 dark:text-zinc-50">
-                  {title}
-                </h3>
-                <p className="mt-1.5 text-muted-foreground text-sm">
-                  {description}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Built for both sides - buyers vs. vendors, mirrors the homepage's
-          "Job seekers / Employers & recruiters" split. */}
-      <div className="bg-background py-14">
-        <div className="container mx-auto px-4">
-          <div className="mx-auto grid max-w-4xl gap-5 sm:grid-cols-2">
-            <div className="rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
-              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-[#086b85] dark:text-cyan-300">
-                <ClipboardCheck aria-hidden="true" className="h-4 w-4" />
-              </span>
-              <h3 className="mt-4 font-semibold text-base text-zinc-900 dark:text-zinc-50">
-                Buyers
-              </h3>
-              <p className="mt-1.5 text-muted-foreground text-sm">
-                Create a request, invite suppliers, and award with a defensible
-                audit trail.
+      </section>
+      <section className="border-y bg-muted/20">
+        <div className={styles.section}>
+          <div className={styles.process}>
+            <div>
+              <p className={styles.kicker}>FROM BRIEF TO DECISION</p>
+              <h2>
+                A clear next step.
+                <br />
+                At every stage.
+              </h2>
+              <p className={`${styles.intro} mt-5`}>
+                Start with the requirement. Keep suppliers and evaluation
+                connected as the process moves forward.
               </p>
-              <Link
-                className="mt-4 inline-flex items-center gap-1 font-medium text-[#086b85] dark:text-cyan-300 text-sm hover:underline"
-                href={
-                  session?.user
-                    ? workspaceHref
-                    : "/sign-up?callbackUrl=/procurement/organizations"
-                }
-              >
-                Your business workspace
-                <ArrowRight aria-hidden="true" className="h-3.5 w-3.5" />
+            </div>
+            <ol>
+              {[
+                {
+                  title: "Define what you need",
+                  text: "Choose a format, describe the requirement, and set your deadline and evaluation criteria.",
+                },
+                {
+                  title: "Bring the right suppliers in",
+                  text: "Invite suppliers and collect responses in the context of your request.",
+                },
+                {
+                  title: "Compare, decide and record",
+                  text: "Review submissions, evaluate your options and keep a record of the decision.",
+                },
+              ].map((step, i) => (
+                <li key={step.title}>
+                  <span>0{i + 1}</span>
+                  <div>
+                    <h3>{step.title}</h3>
+                    <p>{step.text}</p>
+                  </div>
+                </li>
+              ))}
+            </ol>
+          </div>
+        </div>
+      </section>
+      <section className={styles.section} aria-labelledby="roles-title">
+        <div className={styles.sectionHeading}>
+          <div>
+            <p className={styles.kicker}>TWO SIDES. SHARED PROGRESS.</p>
+            <h2 id="roles-title">Built for the way you do business.</h2>
+          </div>
+        </div>
+        <div className={styles.resources}>
+          <article className={styles.resource}>
+            <span className={styles.resourceNumber}>B</span>
+            <div>
+              <h3>For buyers</h3>
+              <p>
+                Discover partners, organize your requirements and give sourcing
+                decisions a clearer foundation.
+              </p>
+              <Link className={styles.textLink} href={startHref}>
+                Start your business profile
+                <ArrowUpRight size={17} aria-hidden="true" />
               </Link>
             </div>
-
-            <div className="rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
-              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-[#086b85] dark:text-cyan-300">
-                <Store aria-hidden="true" className="h-4 w-4" />
-              </span>
-              <h3 className="mt-4 font-semibold text-base text-zinc-900 dark:text-zinc-50">
-                Vendors
-              </h3>
-              <p className="mt-1.5 text-muted-foreground text-sm">
-                Get invited to requests that match your category and respond
-                directly — no cold outreach.
+          </article>
+          <article className={styles.resource}>
+            <span className={styles.resourceNumber}>S</span>
+            <div>
+              <h3>For suppliers</h3>
+              <p>
+                Make your capabilities visible. Build connections and respond to
+                invitations from your business workspace.
               </p>
               <Link
-                className="mt-4 inline-flex items-center gap-1 font-medium text-[#086b85] dark:text-cyan-300 text-sm hover:underline"
+                className={styles.textLink}
                 href={
                   session?.user
                     ? workspaceHref
                     : "/sign-in?callbackUrl=/procurement/organizations"
                 }
               >
-                Business sign in
-                <ArrowRight aria-hidden="true" className="h-3.5 w-3.5" />
+                Open your business workspace
+                <ArrowUpRight size={17} aria-hidden="true" />
               </Link>
             </div>
-          </div>
+          </article>
         </div>
-      </div>
+      </section>
     </main>
   );
 }
