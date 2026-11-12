@@ -1,140 +1,118 @@
-import { Briefcase, CheckCircle2, Sparkles } from "lucide-react";
+import {
+  ArrowRight,
+  BriefcaseBusiness,
+  Building2,
+  Check,
+  FileText,
+  Network,
+} from "lucide-react";
 
-// Guest-only hero - deliberately NOT the shared <HeroSection> component
-// used everywhere else on the site (job pages, job-alerts, etc.), so this
-// stays free to look completely different from the rest of the app without
-// touching a component other pages depend on. Same brand gradient as
-// config.ui.heroGradient (kept in sync by hand - see that config comment)
-// so the color scheme still reads as one product, just a different layout/
-// visual on this one page.
-const BRAND_GRADIENT =
-  "linear-gradient(135deg, #065C79 0%, #0982AC 50%, #0BA6DA 100%)";
+import Link from "next/link";
 
-export function GuestHero({
-  statsAvailable = true,
-  badge,
-  title,
-  description,
-  totalActiveJobs,
-  companiesHiringCount,
-  children,
-}: {
-  statsAvailable?: boolean;
-  badge: string;
-  title: string;
-  description: string;
-  totalActiveJobs: number;
-  companiesHiringCount: number;
-  children: React.ReactNode;
-}) {
+import styles from "./landing.module.css";
+
+// The illustration is HTML, not a video or animation dependency. The entrance
+
+// sequence finishes in under five seconds and respects reduced motion.
+
+export function GuestHero() {
   return (
-    <div
-      className="relative overflow-hidden border-b"
-      style={{ background: BRAND_GRADIENT }}
-    >
-      <div className="container relative z-10 mx-auto px-4 py-12 md:py-16">
-        <div className="grid gap-10 md:grid-cols-2 md:items-center md:gap-8 lg:gap-16">
-          {/* Left: copy + CTA */}
-          <div className="space-y-4">
-            {badge && (
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-white/30 bg-white/10 px-3 py-1 font-medium text-white text-xs backdrop-blur-sm">
-                <Sparkles aria-hidden="true" className="h-3 w-3" />
-                {badge}
-              </span>
-            )}
-            <h1 className="font-bold text-3xl text-white tracking-tight sm:text-4xl md:text-5xl">
-              {title}
-            </h1>
-            <p className="max-w-md text-base text-white/80">{description}</p>
-            {children}
+    <section className={styles.hero} aria-labelledby="landing-title">
+      <div className="container mx-auto grid items-center gap-12 px-4 py-16 lg:grid-cols-2 lg:gap-16 lg:py-24">
+        <div>
+          <p className={styles.eyebrow}>
+            <span className={styles.dot} /> TWO PATHS. MORE POSSIBILITIES.
+          </p>
+          <h1
+            id="landing-title"
+            className="mt-6 max-w-xl font-semibold text-4xl leading-[1.08] tracking-tight sm:text-5xl xl:text-6xl"
+          >
+            Your next opportunity.
+            <br />
+            <span className={styles.accent}>Your next connection.</span>
+          </h1>
+          <p className="mt-6 max-w-lg text-base leading-relaxed text-white/75 sm:text-lg">
+            Move your career forward with Jobs. Build business relationships and
+            source with confidence through Procurement.
+          </p>
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+            <Link className={styles.primary} href="/jobs">
+              Explore Jobs <ArrowRight aria-hidden="true" size={17} />
+            </Link>
+            <Link className={styles.secondary} href="/procurement">
+              Explore Procurement <ArrowRight aria-hidden="true" size={17} />
+            </Link>
           </div>
-
-          {/* Right: custom "product visualization" - floating cards instead
-              of a generic stock photo. No real job data - purely decorative
-              except the two numbers, which reuse the real counts already
-              shown on the left. */}
-          <div className="relative hidden h-72 md:block lg:h-80">
-            <div className="absolute top-2 right-6 w-56 -rotate-3 rounded-xl border border-white/10 bg-white/95 p-4 shadow-xl backdrop-blur dark:bg-zinc-900/95">
-              <div className="flex items-center gap-2">
-                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
-                  <Briefcase aria-hidden="true" className="h-4 w-4" />
-                </span>
-                <div className="min-w-0">
-                  <p className="truncate font-semibold text-xs text-zinc-900 dark:text-zinc-50">
-                    {statsAvailable
-                      ? `${totalActiveJobs.toLocaleString()} open roles`
-                      : "Find your next role"}
-                  </p>
-                  <p className="text-[11px] text-zinc-500">
-                    {statsAvailable ? "Updated daily" : "Jobs"}
-                  </p>
-                </div>
+          <p className="mt-5 text-sm text-white/60">
+            For individuals. For businesses. Built around your next step.
+          </p>
+        </div>
+        <div
+          className={styles.preview}
+          aria-label="Illustrative Jobs and Procurement workflow"
+        >
+          <div className={styles.previewTop}>
+            <span className={styles.dot} /> THE OPPORTUNITY NETWORK{" "}
+            <span className="ml-auto text-[10px] normal-case tracking-normal">
+              Illustration
+            </span>
+          </div>
+          <div className={styles.network}>
+            <div className={`${styles.flowCard} ${styles.profile}`}>
+              <span className={styles.icon}>
+                <FileText size={21} aria-hidden="true" />
+              </span>
+              <div>
+                <strong>Your experience</strong>
+                <small>Skills · Resume · Ambitions</small>
               </div>
             </div>
-
-            <div className="absolute top-20 left-4 w-52 rotate-2 rounded-xl border border-white/10 bg-white/95 p-4 shadow-xl backdrop-blur dark:bg-zinc-900/95">
-              <div className="flex items-center gap-2">
-                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-green-50 text-green-600 dark:bg-green-500/10 dark:text-green-400">
-                  <CheckCircle2 aria-hidden="true" className="h-4 w-4" />
-                </span>
-                <div className="min-w-0">
-                  <p className="font-semibold text-xs text-zinc-900 dark:text-zinc-50">
-                    {statsAvailable
-                      ? `${companiesHiringCount.toLocaleString()} companies hiring`
-                      : "Connect with employers"}
-                  </p>
-                  <p className="text-[11px] text-zinc-500">
-                    {statsAvailable
-                      ? "Verified listings"
-                      : "Career opportunities"}
-                  </p>
-                </div>
+            <div className={`${styles.flowCard} ${styles.business}`}>
+              <span className={styles.icon}>
+                <Building2 size={21} aria-hidden="true" />
+              </span>
+              <div>
+                <strong>Your business</strong>
+                <small>Profile · Capabilities · Team</small>
               </div>
             </div>
-
-            <div className="absolute right-10 bottom-4 w-48 -rotate-2 rounded-xl border border-white/10 bg-white/95 p-4 shadow-xl backdrop-blur dark:bg-zinc-900/95">
-              <div className="flex items-center gap-3">
-                <div className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary/10">
-                  <svg className="h-11 w-11 -rotate-90" viewBox="0 0 44 44">
-                    <circle
-                      className="text-primary/15"
-                      cx="22"
-                      cy="22"
-                      fill="none"
-                      r="18"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    />
-                    <circle
-                      className="text-primary"
-                      cx="22"
-                      cy="22"
-                      fill="none"
-                      r="18"
-                      stroke="currentColor"
-                      strokeDasharray={2 * Math.PI * 18}
-                      strokeDashoffset={2 * Math.PI * 18 * 0.08}
-                      strokeLinecap="round"
-                      strokeWidth="4"
-                    />
-                  </svg>
-                  <span className="absolute font-bold text-[10px] text-primary">
-                    92%
-                  </span>
-                </div>
-                <div className="min-w-0">
-                  <p className="font-semibold text-xs text-zinc-900 dark:text-zinc-50">
-                    AI match score
-                  </p>
-                  <p className="text-[11px] text-zinc-500">
-                    Based on your resume
-                  </p>
-                </div>
-              </div>
+            <div className={styles.connector} aria-hidden="true" />
+            <div className={styles.hub}>
+              <Network size={27} aria-hidden="true" />
+              <span>Connect</span>
             </div>
+            <div className={`${styles.flowCard} ${styles.jobs}`}>
+              <BriefcaseBusiness size={19} aria-hidden="true" />
+              <div>
+                <strong>Find your next role</strong>
+                <small>Discover. Save. Apply.</small>
+              </div>
+              <Check
+                size={15}
+                className="ml-auto text-emerald-600"
+                aria-hidden="true"
+              />
+            </div>
+            <div className={`${styles.flowCard} ${styles.procurement}`}>
+              <Building2 size={19} aria-hidden="true" />
+              <div>
+                <strong>Build your next partnership</strong>
+                <small>Discover. Connect. Source.</small>
+              </div>
+              <Check
+                size={15}
+                className="ml-auto text-emerald-600"
+                aria-hidden="true"
+              />
+            </div>
+          </div>
+          <div className={styles.previewBottom}>
+            <span>JOBS</span>
+            <span className="h-px flex-1 bg-white/15" />
+            <span>PROCUREMENT</span>
           </div>
         </div>
       </div>
-    </div>
+    </section>
   );
 }

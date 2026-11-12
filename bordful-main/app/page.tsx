@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { auth } from "@/auth";
-import { HomePage } from "@/components/home/HomePage";
+import { PublicLanding } from "@/components/home/PublicLanding";
+import { SeekerHome } from "@/components/home/SeekerHome";
 import { HowItWorksSection } from "@/components/home/HowItWorksSection";
 import { TrustSection } from "@/components/home/TrustSection";
 import config from "@/config";
@@ -41,6 +42,7 @@ export const dynamic = "force-dynamic";
 export default async function Home() {
   const session = await auth();
   const isSeeker = session?.user?.role === "seeker";
+  if (!isSeeker) return <PublicLanding />;
 
   const [jobs, totalActiveJobs, jobStats, testimonials] = await Promise.all([
     // Guests never render a single job card, so there's no reason to ship
@@ -99,7 +101,7 @@ export default async function Home() {
 
   return (
     <>
-      <HomePage
+      <SeekerHome
         companiesHiringCount={companiesHiringCount}
         initialJobs={jobs}
         isSeeker={isSeeker}
