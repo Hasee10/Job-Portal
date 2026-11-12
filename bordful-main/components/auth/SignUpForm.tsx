@@ -78,15 +78,25 @@ export function SignUpForm() {
           description: "Please sign in with your new account.",
           title: "Account created",
         });
-        router.push("/sign-in");
+        router.push(
+          new URLSearchParams(window.location.search).get("callbackUrl") ===
+            "/procurement/organizations"
+            ? "/sign-in?callbackUrl=/procurement/organizations"
+            : "/sign-in"
+        );
         return;
       }
 
       toast({
-        description: "Your employer account is ready.",
+        description: "Your business account is ready.",
         title: "Welcome to Caliber",
       });
-      router.push("/dashboard");
+      router.push(
+        new URLSearchParams(window.location.search).get("callbackUrl") ===
+          "/procurement/organizations"
+          ? "/procurement/organizations"
+          : "/dashboard"
+      );
       router.refresh();
     } catch (error) {
       toast({

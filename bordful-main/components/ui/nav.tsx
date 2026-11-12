@@ -531,31 +531,32 @@ export function Nav() {
           {/* Mobile Actions */}
           <div className="flex items-center space-x-2 lg:hidden">
             {/* Mobile Post Job Button - Smaller version */}
-            {config.nav.postJob.show && (
-              <Button
-                asChild
-                className="gap-1 px-2 py-1 text-xs"
-                size="xs"
-                style={
-                  config.nav.postJob.variant === "primary"
-                    ? {
-                        backgroundColor: resolveColor(config.ui.primaryColor),
-                      }
-                    : undefined
-                }
-                variant={config.nav.postJob.variant || "default"}
-              >
-                <Link
-                  href={config.nav.postJob.link}
-                  {...(config.nav.postJob.external
-                    ? { rel: "noopener noreferrer", target: "_blank" }
-                    : {})}
+            {config.nav.postJob.show &&
+              !pathname.startsWith("/procurement") && (
+                <Button
+                  asChild
+                  className="gap-1 px-2 py-1 text-xs"
+                  size="xs"
+                  style={
+                    config.nav.postJob.variant === "primary"
+                      ? {
+                          backgroundColor: resolveColor(config.ui.primaryColor),
+                        }
+                      : undefined
+                  }
+                  variant={config.nav.postJob.variant || "default"}
                 >
-                  {config.nav.postJob.label}
-                  <Briefcase aria-hidden="true" className="ml-1 h-3 w-3" />
-                </Link>
-              </Button>
-            )}
+                  <Link
+                    href={config.nav.postJob.link}
+                    {...(config.nav.postJob.external
+                      ? { rel: "noopener noreferrer", target: "_blank" }
+                      : {})}
+                  >
+                    {config.nav.postJob.label}
+                    <Briefcase aria-hidden="true" className="ml-1 h-3 w-3" />
+                  </Link>
+                </Button>
+              )}
 
             <ThemeToggle />
 
@@ -584,31 +585,35 @@ export function Nav() {
               {renderDesktopNavItems()}
             </nav>
 
-            {config.nav.postJob.show && (
-              <Button
-                asChild
-                className="gap-1.5 whitespace-nowrap text-xs"
-                size="sm"
-                style={
-                  config.nav.postJob.variant === "primary"
-                    ? {
-                        backgroundColor: resolveColor(config.ui.primaryColor),
-                      }
-                    : undefined
-                }
-                variant={config.nav.postJob.variant || "default"}
-              >
-                <Link
-                  href={config.nav.postJob.link}
-                  {...(config.nav.postJob.external
-                    ? { rel: "noopener noreferrer", target: "_blank" }
-                    : {})}
+            {config.nav.postJob.show &&
+              !pathname.startsWith("/procurement") && (
+                <Button
+                  asChild
+                  className="gap-1.5 whitespace-nowrap text-xs"
+                  size="sm"
+                  style={
+                    config.nav.postJob.variant === "primary"
+                      ? {
+                          backgroundColor: resolveColor(config.ui.primaryColor),
+                        }
+                      : undefined
+                  }
+                  variant={config.nav.postJob.variant || "default"}
                 >
-                  {config.nav.postJob.label}
-                  <Briefcase aria-hidden="true" className="ml-1 h-3.5 w-3.5" />
-                </Link>
-              </Button>
-            )}
+                  <Link
+                    href={config.nav.postJob.link}
+                    {...(config.nav.postJob.external
+                      ? { rel: "noopener noreferrer", target: "_blank" }
+                      : {})}
+                  >
+                    {config.nav.postJob.label}
+                    <Briefcase
+                      aria-hidden="true"
+                      className="ml-1 h-3.5 w-3.5"
+                    />
+                  </Link>
+                </Button>
+              )}
           </div>
         </nav>
 
@@ -644,40 +649,41 @@ export function Nav() {
               </div>
 
               {/* Post Job Action */}
-              {config.nav.postJob.show && (
-                <div className="px-4 pt-2 lg:hidden">
-                  <Button
-                    asChild
-                    className={"w-full gap-1.5 text-xs"}
-                    size="xs"
-                    style={
-                      config.nav.postJob.variant === "primary"
-                        ? {
-                            backgroundColor: resolveColor(
-                              config.ui.primaryColor
-                            ),
-                          }
-                        : undefined
-                    }
-                    variant={config.nav.postJob.variant || "default"}
-                  >
-                    <Link
-                      href={config.nav.postJob.link}
-                      {...(config.nav.postJob.external
-                        ? { rel: "noopener noreferrer", target: "_blank" }
-                        : {})}
-                      className="flex items-center justify-center"
-                      onClick={() => setIsOpen(false)}
+              {config.nav.postJob.show &&
+                !pathname.startsWith("/procurement") && (
+                  <div className="px-4 pt-2 lg:hidden">
+                    <Button
+                      asChild
+                      className={"w-full gap-1.5 text-xs"}
+                      size="xs"
+                      style={
+                        config.nav.postJob.variant === "primary"
+                          ? {
+                              backgroundColor: resolveColor(
+                                config.ui.primaryColor
+                              ),
+                            }
+                          : undefined
+                      }
+                      variant={config.nav.postJob.variant || "default"}
                     >
-                      {config.nav.postJob.label}
-                      <Briefcase
-                        aria-hidden="true"
-                        className="ml-1 h-3.5 w-3.5"
-                      />
-                    </Link>
-                  </Button>
-                </div>
-              )}
+                      <Link
+                        href={config.nav.postJob.link}
+                        {...(config.nav.postJob.external
+                          ? { rel: "noopener noreferrer", target: "_blank" }
+                          : {})}
+                        className="flex items-center justify-center"
+                        onClick={() => setIsOpen(false)}
+                      >
+                        {config.nav.postJob.label}
+                        <Briefcase
+                          aria-hidden="true"
+                          className="ml-1 h-3.5 w-3.5"
+                        />
+                      </Link>
+                    </Button>
+                  </div>
+                )}
             </nav>
           </div>
         )}

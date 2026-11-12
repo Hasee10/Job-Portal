@@ -5,7 +5,7 @@ import { SignInForm } from "@/components/auth/SignInForm";
 import config from "@/config";
 
 export const metadata: Metadata = {
-  description: "Sign in to your employer account.",
+  description: "Sign in to your business account.",
   robots: { follow: false, index: false },
   title: `Sign In | ${config.title}`,
 };
@@ -19,7 +19,7 @@ export default function SignInPage() {
         <div className="mx-auto mb-8 max-w-md text-center">
           <h1 className="font-bold text-2xl">Sign in</h1>
           <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-            Employer accounts only - job seekers browse without signing in.
+            Business account sign in for procurement and hiring.
           </p>
         </div>
         {/* useSearchParams() (for the post-login callbackUrl) requires a

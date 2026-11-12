@@ -2,12 +2,10 @@
 
 import { ChevronDown, User } from "lucide-react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
 import { useEffect, useRef, useState } from "react";
-import {
-  capabilitiesFor,
-  procurementWorkspaceHref,
-} from "@/lib/auth/capabilities";
+import { capabilitiesFor } from "@/lib/auth/capabilities";
 
 type AuthNavStatusProps = {
   className?: string;
@@ -25,6 +23,7 @@ export function AuthNavStatus({
   variant = "mobile",
 }: AuthNavStatusProps) {
   const { data: session, status } = useSession();
+  const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
 
@@ -44,10 +43,12 @@ export function AuthNavStatus({
 
   if (session?.user) {
     const capabilities = capabilitiesFor(session.user.role);
-    const accountHref = capabilities.workspaceHref;
+    const accountHref = pathname.startsWith("/procurement")
+      ? "/procurement/organizations"
+      : capabilities.workspaceHref;
     // Buyers and suppliers have different procurement homes, and an account
     // with no procurement capability gets no entry point at all.
-    const procurementHref = procurementWorkspaceHref(capabilities);
+    const procurementHref = "/procurement/organizations";
     const displayName = session.user.name || session.user.email;
 
     const closeAndNavigate = () => {
@@ -199,8 +200,7 @@ export function AuthNavStatus({
 
   return (
     <div className={`flex items-center gap-3 text-sm ${className}`}>
-      {/* /join already lists all three sign-in paths (job seeker, recruiter,
-          employer); a signed-out visitor here has not said which they are,
+      {/* /join offers job seeker and business sign-in; a signed-out visitor here has not said which they are,
           so this must not assume job seeker the way a bare /account/sign-in
           link would. */}
       <Link

@@ -4,7 +4,10 @@ import Link from "next/link";
 
 const SIGN_IN_PATHS = [
   { href: "/account/sign-in", label: "Job seeker sign in" },
-  { href: "/sign-in", label: "Business sign in" },
+  {
+    href: "/sign-in?callbackUrl=/procurement/organizations",
+    label: "Business sign in",
+  },
 ] as const;
 
 const JOB_PATHS = [

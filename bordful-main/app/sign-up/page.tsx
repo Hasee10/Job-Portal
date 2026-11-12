@@ -4,7 +4,7 @@ import { SignUpForm } from "@/components/auth/SignUpForm";
 import config from "@/config";
 
 export const metadata: Metadata = {
-  description: "Create an employer account to post and feature jobs.",
+  description: "Create a business account for procurement and hiring.",
   robots: { follow: false, index: false },
   title: `Sign Up | ${config.title}`,
 };
@@ -16,9 +16,9 @@ export default function SignUpPage() {
     <main className="min-h-[60vh] bg-background py-16">
       <div className="container mx-auto px-4">
         <div className="mx-auto mb-8 max-w-md text-center">
-          <h1 className="font-bold text-2xl">Create an employer account</h1>
+          <h1 className="font-bold text-2xl">Create a business account</h1>
           <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-            Post jobs and feature listings above the aggregated noise.
+            Connect with buyers and suppliers, manage procurement, or hire through Jobs.
           </p>
         </div>
         <SignUpForm />
@@ -37,15 +37,7 @@ export default function SignUpPage() {
             Job seeker sign in
           </Link>
         </p>
-        <p className="mt-2 text-center text-sm text-zinc-600 dark:text-zinc-400">
-          Are you a recruiter?{" "}
-          <Link
-            className="underline hover:no-underline"
-            href="/recruiter/sign-up"
-          >
-            Recruiter sign up
-          </Link>
-        </p>
+
       </div>
     </main>
   );

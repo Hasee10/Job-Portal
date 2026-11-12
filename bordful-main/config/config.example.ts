@@ -287,7 +287,7 @@ export const config = {
     defaultCurrency: "USD" as CurrencyCode,
   },
   description:
-    "Caliber matches candidates to roles and buyers to vendors - one AI-powered platform for job seekers, employers, recruiters, and procurement teams.",
+    "Caliber matches candidates to roles and buyers to vendors - one platform for Jobs and Procurement.",
 
   // Email Provider Configuration
   email: {
@@ -892,7 +892,6 @@ export const config = {
         items: [
           { label: "Career Guides", link: "/guides" },
           { label: "MasterClasses", link: "/masterclasses" },
-          { label: "Recruiters", link: "/recruiters" },
         ],
         label: "Resources",
         link: "/guides",
@@ -1212,7 +1211,7 @@ export const config = {
           variant: "default", // Using button variants
         },
         description:
-          "For recruiters and agencies hiring continuously across roles.",
+          "For teams hiring continuously across roles.",
         features: [
           "Unlimited featured listings",
           "Priority placement",
