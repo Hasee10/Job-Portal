@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { redirect } from "next/navigation";
+import { localBusinessPreviewHref } from "@/lib/dev/business-preview";
 import { SignUpForm } from "@/components/auth/SignUpForm";
 import config from "@/config";
 
@@ -11,14 +13,22 @@ export const metadata: Metadata = {
 
 export const dynamic = "force-dynamic";
 
-export default function SignUpPage() {
+export default async function SignUpPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ callbackUrl?: string }>;
+}) {
+  const { callbackUrl } = await searchParams;
+  const preview = await localBusinessPreviewHref(callbackUrl ?? "/dashboard");
+  if (preview) redirect(preview);
   return (
     <main className="min-h-[60vh] bg-background py-16">
       <div className="container mx-auto px-4">
         <div className="mx-auto mb-8 max-w-md text-center">
           <h1 className="font-bold text-2xl">Create a business account</h1>
           <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-            Connect with buyers and suppliers, manage procurement, or hire through Jobs.
+            Connect with buyers and suppliers, manage procurement, or hire
+            through Jobs.
           </p>
         </div>
         <SignUpForm />
@@ -37,7 +47,6 @@ export default function SignUpPage() {
             Job seeker sign in
           </Link>
         </p>
-
       </div>
     </main>
   );

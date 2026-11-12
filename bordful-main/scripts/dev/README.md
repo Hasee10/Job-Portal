@@ -16,3 +16,10 @@ The development app displays a demo banner when LOCAL_DEMO_DATA=true. Production
 Fixtures cover four employment types, seven career levels, three workplace settings, ten cities/countries, missing salaries, featured listings, varied dates, six CPV categories, 100 PPRA / 400 TED notices, and buyer/supplier/combined business profiles. Names/descriptions are explicitly fictional, business contacts are blank, tender links use example.invalid, and jobs have no application destination or employer account.
 
 Verified locally: exactly 500 API records in each dataset; three focused fixture/adapter tests; TypeScript check; browser rendering of job types, full-time cards, one job detail, tender pages 1/2, PPRA filtering, business directory and one public business profile. All checked routes returned 200 with no page JavaScript errors. These fixtures are for public layout testing, not for authenticated submission or award workflow testing.
+
+
+## Read-only business workspace preview
+
+With `next dev`, a loopback request host, and `LOCAL_DEMO_DATA=true`, `/procurement/organizations` and its business sign-in callback open `/procurement/preview`. The business signup link with an organization callback also opens this preview. Ordinary hiring signup/login callbacks retain their normal flow. The preview has three fictional organizations and overview/request/connection/message/quotation/team views. It does not issue a session, load private organization data, or send API writes. Actual organization membership and all APIs remain protected. The preview route returns 404 outside opted-in loopback development, including production even when the flag is set.
+
+Verified: 12 guard tests; sign-in and workspace redirects; all five record tabs; mobile overflow check; zero write requests during browser inspection.
