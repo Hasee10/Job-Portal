@@ -434,3 +434,22 @@ export async function testConnection(): Promise<boolean> {
     return false;
   }
 }
+
+// Read every matching row using only the fields required by homepage aggregates.
+// Explicit paging avoids treating PostgREST's response cap as the full dataset.
+export const getHomepageJobStats = cache(async () => {
+  const client = getSupabaseClient();
+  if (!client) return [];
+  const rows: { company: string; posted_date: string; title: string }[] = [];
+  for (let offset = 0; ; offset += 1000) {
+    const { data, error } = await client.from("jobs")
+      .select("company,posted_at,title").eq("is_active", true)
+      .order("id").range(offset, offset + 999);
+    if (error) throw error;
+    for (const row of data ?? []) {
+      rows.push({ company: row.company, posted_date: row.posted_at, title: row.title });
+    }
+    if (!data || data.length < 1000) break;
+  }
+  return rows;
+});
