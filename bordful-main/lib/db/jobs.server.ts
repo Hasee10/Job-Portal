@@ -445,7 +445,10 @@ export const getHomepageJobStats = cache(async () => {
     const { data, error } = await client.from("jobs")
       .select("company,posted_at,title").eq("is_active", true)
       .order("id").range(offset, offset + 999);
-    if (error) throw error;
+    if (error) {
+      console.error("Homepage statistics unavailable", error.code);
+      return [];
+    }
     for (const row of data ?? []) {
       rows.push({ company: row.company, posted_date: row.posted_at, title: row.title });
     }
