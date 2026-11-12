@@ -1,11 +1,10 @@
-import { ArrowRight, Briefcase, Search, Users } from "lucide-react";
+import { ArrowRight, Briefcase, Search } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
 const SIGN_IN_PATHS = [
   { href: "/account/sign-in", label: "Job seeker sign in" },
-  { href: "/recruiter/sign-in", label: "Recruiter sign in" },
-  { href: "/sign-in", label: "Employer sign in" },
+  { href: "/sign-in", label: "Business sign in" },
 ] as const;
 
 const JOB_PATHS = [
@@ -15,23 +14,15 @@ const JOB_PATHS = [
       "Save jobs, track applications, build a resume, and get matched with recruiters and employers.",
     href: "/account/sign-in?intent=signup",
     icon: Search,
-    title: "I'm looking for a job",
+    title: "Looking for a job",
   },
   {
-    cta: "Continue as a recruiter",
+    cta: "Continue as a business",
     description:
-      "Search candidates who are open to opportunities and reach out directly.",
-    href: "/recruiter/sign-up",
-    icon: Users,
-    title: "I'm a recruiter",
-  },
-  {
-    cta: "Continue as an employer",
-    description:
-      "Post jobs, review applications, and find candidates for your open roles.",
-    href: "/sign-up",
+      "Create a business profile, discover buyers and suppliers, and manage procurement. Hiring tools are available under Jobs.",
+    href: "/sign-up?callbackUrl=/procurement/organizations",
     icon: Briefcase,
-    title: "I'm hiring",
+    title: "Business / Procurement",
   },
 ] as const;
 
@@ -64,7 +55,7 @@ export function JoinChooser({ siteTitle }: { siteTitle: string }) {
         </p>
       </div>
 
-      <div className="mx-auto grid max-w-4xl grid-cols-1 gap-5 sm:grid-cols-3">
+      <div className="mx-auto grid max-w-4xl grid-cols-1 gap-5 sm:grid-cols-2">
         {JOB_PATHS.map(({ icon: Icon, title, description, cta, href }) => (
           <Link
             className="group flex flex-col rounded-xl border border-zinc-200 bg-white p-6 shadow-sm transition-all hover:-translate-y-0.5 hover:border-zinc-300 hover:shadow-lg dark:border-zinc-800 dark:bg-zinc-900/60 dark:hover:border-zinc-700"

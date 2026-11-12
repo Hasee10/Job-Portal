@@ -483,13 +483,7 @@ export function Nav() {
                 className="text-zinc-500 transition-colors hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
                 href="/sign-up"
               >
-                For employers
-              </Link>
-              <Link
-                className="text-zinc-500 transition-colors hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
-                href="/recruiter/sign-up"
-              >
-                For recruiters
+                For businesses
               </Link>
             </div>
             <div className="flex items-center gap-4">
@@ -631,14 +625,7 @@ export function Nav() {
                   href="/sign-up"
                   onClick={() => setIsOpen(false)}
                 >
-                  For employers
-                </Link>
-                <Link
-                  className="text-sm text-zinc-500 dark:text-zinc-400"
-                  href="/recruiter/sign-up"
-                  onClick={() => setIsOpen(false)}
-                >
-                  For recruiters
+                  For businesses
                 </Link>
               </div>
 
