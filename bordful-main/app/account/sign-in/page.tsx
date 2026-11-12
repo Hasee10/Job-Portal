@@ -1,9 +1,12 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { Suspense } from "react";
 import { SeekerSignInButtons } from "@/components/auth/SeekerSignInButtons";
 import config from "@/config";
+import { localJobsPreviewDestination } from "@/lib/auth/local-jobs-preview";
 
 export const metadata: Metadata = {
   description: "Sign in to save jobs and track your applications.",
@@ -16,9 +19,23 @@ export const dynamic = "force-dynamic";
 export default async function SeekerSignInPage({
   searchParams,
 }: {
-  searchParams: Promise<{ intent?: string }>;
+  searchParams: Promise<{ intent?: string; callbackUrl?: string }>;
 }) {
-  const { intent } = await searchParams;
+  const { intent, callbackUrl } = await searchParams;
+  const host = (await headers()).get("host");
+  let previewDestination: string | null = null;
+  if (host) {
+    try {
+      previewDestination = localJobsPreviewDestination(
+        new URL(`http://${host}`),
+        process.env.NODE_ENV,
+        callbackUrl
+      );
+    } catch {
+      previewDestination = null;
+    }
+  }
+  if (previewDestination) redirect(previewDestination);
   // Sign up and sign in are the same OAuth action (an account is created on
   // first login), so there's no separate signup form - this just adjusts
   // the heading so "Sign up" doesn't look like a dead link to a page that
