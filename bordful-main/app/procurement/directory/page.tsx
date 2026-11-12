@@ -1,4 +1,4 @@
-import { Search } from "lucide-react";
+import { ArrowRight, Search, SlidersHorizontal, X } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { OrganizationCard } from "@/components/procurement/OrganizationCard";
@@ -9,6 +9,7 @@ import {
   getDirectoryFacets,
   listPublicOrganizations,
   parseDirectoryFilters,
+  DIRECTORY_PAGE_SIZE,
 } from "@/lib/procurement/directory-actions";
 
 export const metadata: Metadata = {
@@ -54,139 +55,241 @@ export default async function DirectoryPage({
     activeParams.region = filters.region;
   }
 
+  const filterLabels = Object.entries(activeParams).map(([key, value]) => ({
+    key,
+    label:
+      key === "capability"
+        ? value === "buyer"
+          ? "Buyers"
+          : "Suppliers"
+        : value,
+  }));
+  const removeFilterHref = (key: string) => {
+    const params = new URLSearchParams(activeParams);
+    params.delete(key);
+    return `/procurement/directory${params.size ? `?${params}` : ""}`;
+  };
+  const firstResult = (filters.page - 1) * DIRECTORY_PAGE_SIZE + 1;
   return (
-    <main className="min-h-[60vh] bg-background py-16">
-      <div className="container mx-auto px-4">
-        <div className="mx-auto max-w-5xl">
-          <h1 className="font-bold text-3xl text-zinc-900 tracking-tight dark:text-zinc-50">
-            Business directory
-          </h1>
-          <p className="mt-2 text-zinc-600 dark:text-zinc-400">
-            Businesses that chose to list themselves publicly. Details are
-            self-declared and are not verified by us.
-          </p>
-
-          <form
-            action="/procurement/directory"
-            className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-5"
-            method="get"
+    <main className="min-h-[60vh] bg-muted/20 pb-16">
+      <section className="border-b bg-background">
+        <div className="container mx-auto max-w-6xl px-4 py-10 sm:py-12">
+          <Link
+            href="/procurement"
+            className="text-muted-foreground text-sm hover:underline"
           >
-            <div className="lg:col-span-2">
-              <Input
-                aria-label="Search businesses"
-                defaultValue={filters.q}
-                name="q"
-                placeholder="Search name, description or services"
-                type="search"
-              />
+            Procurement / Business directory
+          </Link>
+          <div className="mt-5 flex flex-wrap items-end justify-between gap-6">
+            <div>
+              <p className="font-semibold text-[#086b85] text-xs uppercase tracking-widest dark:text-cyan-200">
+                DISCOVER YOUR NEXT BUSINESS PARTNER
+              </p>
+              <h1 className="mt-3 font-semibold text-3xl tracking-tight sm:text-4xl">
+                Business directory
+              </h1>
+              <p className="mt-3 max-w-2xl text-muted-foreground text-sm leading-relaxed">
+                Find buyers and suppliers by capability, industry and region.
+                Explore a business before starting a conversation.
+              </p>
             </div>
-            <select
-              aria-label="Capability"
-              className="h-9 rounded-md border border-zinc-200 bg-transparent px-3 text-sm dark:border-zinc-800"
-              defaultValue={filters.capability}
-              name="capability"
-            >
-              <option value="all">Buyers and suppliers</option>
-              <option value="buyer">Buyers only</option>
-              <option value="supplier">Suppliers only</option>
-            </select>
-            <select
-              aria-label="Category"
-              className="h-9 rounded-md border border-zinc-200 bg-transparent px-3 text-sm dark:border-zinc-800"
-              defaultValue={filters.category}
-              name="category"
-            >
-              <option value="">All categories</option>
-              {facets.categories.map((category) => (
-                <option key={category} value={category}>
-                  {category}
-                </option>
-              ))}
-            </select>
-            <select
-              aria-label="Region"
-              className="h-9 rounded-md border border-zinc-200 bg-transparent px-3 text-sm dark:border-zinc-800"
-              defaultValue={filters.region}
-              name="region"
-            >
-              <option value="">All regions</option>
-              {facets.regions.map((region) => (
-                <option key={region} value={region}>
-                  {region}
-                </option>
-              ))}
-            </select>
-            <Button className="sm:col-span-2 lg:col-span-1" type="submit">
-              <Search aria-hidden="true" className="mr-1.5 h-4 w-4" />
-              Search
+            <Button asChild variant="outline">
+              <Link href="/procurement/organizations">
+                List your business{" "}
+                <ArrowRight size={16} className="ml-2" aria-hidden="true" />
+              </Link>
             </Button>
-          </form>
-
-          <p className="mt-6 text-sm text-zinc-600 dark:text-zinc-400">
-            {result.total === 0
-              ? "No businesses match these filters."
-              : `${result.total} ${result.total === 1 ? "business" : "businesses"} found`}
-          </p>
-
-          {result.organizations.length === 0 ? (
-            <div className="mt-6 rounded-xl border border-zinc-200 border-dashed p-10 text-center dark:border-zinc-800">
-              <p className="font-semibold text-zinc-900 dark:text-zinc-50">
-                Nothing to show yet
-              </p>
-              <p className="mx-auto mt-1.5 max-w-md text-sm text-zinc-600 dark:text-zinc-400">
-                Try removing a filter. If you run a business, you can list it
-                from{" "}
-                <Link
-                  className="text-primary hover:underline"
-                  href="/procurement/organizations"
-                >
-                  your organizations
-                </Link>
-                .
-              </p>
-            </div>
-          ) : (
-            <div className="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {result.organizations.map((organization) => (
-                <OrganizationCard
-                  key={organization.id}
-                  organization={organization}
-                />
-              ))}
-            </div>
-          )}
-
-          {result.pageCount > 1 && (
-            <nav
-              aria-label="Directory pagination"
-              className="mt-10 flex items-center justify-between text-sm"
-            >
-              {filters.page > 1 ? (
-                <Link
-                  className="text-primary hover:underline"
-                  href={pageHref(activeParams, filters.page - 1)}
-                >
-                  &larr; Previous
-                </Link>
-              ) : (
-                <span />
-              )}
-              <span className="text-zinc-600 dark:text-zinc-400">
-                Page {filters.page} of {result.pageCount}
-              </span>
-              {filters.page < result.pageCount ? (
-                <Link
-                  className="text-primary hover:underline"
-                  href={pageHref(activeParams, filters.page + 1)}
-                >
-                  Next &rarr;
-                </Link>
-              ) : (
-                <span />
-              )}
-            </nav>
-          )}
+          </div>
         </div>
+      </section>
+      <div className="container mx-auto max-w-6xl px-4">
+        <form
+          action="/procurement/directory"
+          method="get"
+          className="mt-8 rounded-2xl border bg-card p-5 sm:p-6"
+        >
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <div className="flex-1">
+              <label
+                htmlFor="business-search"
+                className="mb-2 block font-medium text-sm"
+              >
+                Find a business
+              </label>
+              <div className="relative">
+                <Search
+                  size={18}
+                  className="absolute left-3 top-3 text-muted-foreground"
+                  aria-hidden="true"
+                />
+                <Input
+                  className="h-11 pl-10"
+                  id="business-search"
+                  name="q"
+                  type="search"
+                  defaultValue={filters.q}
+                  placeholder="Business name, service or keyword"
+                />
+              </div>
+            </div>
+            <Button
+              className="h-11 self-end bg-[#086b85] text-white hover:bg-[#07576d] max-sm:w-full"
+              type="submit"
+            >
+              <Search size={16} className="mr-2" aria-hidden="true" />
+              Search businesses
+            </Button>
+          </div>
+          <div className="mt-5 grid gap-4 border-t pt-5 sm:grid-cols-3">
+            <label className="space-y-2 text-sm">
+              <span className="flex items-center gap-2 font-medium">
+                <SlidersHorizontal size={14} aria-hidden="true" />
+                Business type
+              </span>
+              <select
+                aria-label="Capability"
+                name="capability"
+                defaultValue={filters.capability}
+                className="h-10 w-full rounded-lg border bg-background px-3 text-sm"
+              >
+                <option value="all">Buyers and suppliers</option>
+                <option value="buyer">Buyers only</option>
+                <option value="supplier">Suppliers only</option>
+              </select>
+            </label>
+            <label className="space-y-2 text-sm">
+              <span className="block font-medium">Category</span>
+              <select
+                aria-label="Category"
+                name="category"
+                defaultValue={filters.category}
+                className="h-10 w-full rounded-lg border bg-background px-3 text-sm"
+              >
+                <option value="">All categories</option>
+                {facets.categories.map((category) => (
+                  <option key={category} value={category}>
+                    {category}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="space-y-2 text-sm">
+              <span className="block font-medium">Operating region</span>
+              <select
+                aria-label="Region"
+                name="region"
+                defaultValue={filters.region}
+                className="h-10 w-full rounded-lg border bg-background px-3 text-sm"
+              >
+                <option value="">All regions</option>
+                {facets.regions.map((region) => (
+                  <option key={region} value={region}>
+                    {region}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+        </form>
+        {filterLabels.length > 0 && (
+          <div className="mt-4 flex flex-wrap items-center gap-2">
+            <span className="mr-1 text-muted-foreground text-xs">
+              Active filters
+            </span>
+            {filterLabels.map((filter) => (
+              <Link
+                key={filter.key}
+                href={removeFilterHref(filter.key)}
+                aria-label={`Remove ${filter.label} filter`}
+                className="inline-flex items-center gap-2 rounded-full border bg-background px-3 py-1.5 text-xs"
+              >
+                {filter.label}
+                <X size={12} aria-hidden="true" />
+              </Link>
+            ))}
+            <Link
+              className="ml-2 text-sm underline underline-offset-4"
+              href="/procurement/directory"
+            >
+              Clear all
+            </Link>
+          </div>
+        )}
+        <div className="mt-8 flex flex-wrap items-center justify-between gap-3">
+          <h2 className="font-semibold text-base">
+            {result.total.toLocaleString()}{" "}
+            {result.total === 1 ? "business" : "businesses"} found
+          </h2>
+          <span className="text-muted-foreground text-xs">
+            {result.organizations.length
+              ? `${firstResult}-${firstResult + result.organizations.length - 1} of ${result.total} · Name A-Z`
+              : "No results on this page"}
+          </span>
+        </div>
+        {result.organizations.length === 0 ? (
+          <div className="mt-5 rounded-2xl border border-dashed bg-card px-6 py-14 text-center">
+            <Search
+              className="mx-auto text-muted-foreground"
+              size={28}
+              aria-hidden="true"
+            />
+            <h3 className="mt-4 font-semibold text-xl">
+              No businesses on this page
+            </h3>
+            <p className="mx-auto mt-2 max-w-md text-muted-foreground text-sm">
+              Try a broader keyword or remove a filter to discover more
+              businesses.
+            </p>
+            <Button asChild className="mt-6" variant="outline">
+              <Link href="/procurement/directory">
+                Reset filters and view all
+              </Link>
+            </Button>
+          </div>
+        ) : (
+          <div className="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {result.organizations.map((organization) => (
+              <OrganizationCard
+                key={organization.id}
+                organization={organization}
+              />
+            ))}
+          </div>
+        )}
+        {result.pageCount > 1 && (
+          <nav
+            aria-label="Directory pagination"
+            className="mt-8 flex items-center justify-between gap-3 rounded-xl border bg-background p-4 text-sm"
+          >
+            {filters.page > 1 ? (
+              <Link
+                className="rounded-lg border px-3 py-2 hover:bg-muted"
+                href={pageHref(activeParams, filters.page - 1)}
+              >
+                Previous
+              </Link>
+            ) : (
+              <span className="text-muted-foreground text-xs">First page</span>
+            )}
+            <span className="text-muted-foreground">
+              Page {filters.page} of {result.pageCount}
+            </span>
+            {filters.page < result.pageCount ? (
+              <Link
+                className="rounded-lg border px-3 py-2 hover:bg-muted"
+                href={pageHref(activeParams, filters.page + 1)}
+              >
+                Next
+              </Link>
+            ) : (
+              <span className="text-muted-foreground text-xs">Last page</span>
+            )}
+          </nav>
+        )}
+        <p className="mt-6 text-center text-muted-foreground text-xs leading-relaxed">
+          Business information is self-declared. Review capabilities and
+          credentials before entering into an agreement.
+        </p>
       </div>
     </main>
   );

@@ -92,16 +92,16 @@ export function ConnectRequestForm({
         <h2 className="font-semibold text-zinc-900 dark:text-zinc-50">
           Work with {target.name}
         </h2>
-        <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-          You need a business of your own before you can connect. You can{" "}
-          <Link
-            className="underline underline-offset-2"
-            href="/procurement/organizations"
-          >
-            create one
-          </Link>
-          .
+        <p className="mt-3 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
+          Start a conversation through your business workspace. Create or select
+          a business to send a connection request.
         </p>
+        <Button
+          asChild
+          className="mt-5 h-10 w-full bg-[#086b85] text-white hover:bg-[#07576d]"
+        >
+          <Link href="/procurement/organizations">Open business workspace</Link>
+        </Button>
       </section>
     );
   }
