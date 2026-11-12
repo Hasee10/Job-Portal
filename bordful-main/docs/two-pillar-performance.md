@@ -66,3 +66,14 @@ Procurement now has a route loading state and an error boundary with the install
 
 ### Local Jobs preview
 Jobs-page middleware allows anonymous viewing only when NODE_ENV is development and the request hostname is exactly localhost, 127.0.0.1 or [::1]. Production builds always retain the sign-in gate, including when served on localhost. This does not create an authenticated session or alter API, account, employer/recruiter or organization permissions. Nine focused policy tests cover development loopback, production/test modes, LAN addresses and lookalike hostnames. Local /jobs and /jobs/types returned 200 without a session. The local procurement-only database still has no Jobs records/table; this bypass does not supply fixture data.
+
+
+## Directory, business profile and job-detail polish
+
+Directory search now has visible labels, a contained filter panel, removable active-filter chips, a reset action, accurate visible result ranges, and clearer pagination. Existing server query predicates, public projection, sort order and pagination values are unchanged. Business cards share a monogram avatar and role-badge presentation with profile headers, show location/team size when present, and have a consistent profile action. No fabricated logos, verification labels or counters were introduced.
+
+Public business profiles use an identity header and separate overview/capabilities cards, with connection controls and business facts in a responsive sidebar. The existing connection form and membership/capability checks remain unchanged; the no-organization state now has a clear workspace action. Self-declared information remains labelled as such.
+
+Job details separate the role summary, description, qualifications, requirements and tracking controls. Application tools and primary facts have their own panel. Long metadata remains available through an accessible native details disclosure. Similar jobs use readable cards; repeated description headings matching the job title are omitted from display. A missing external application destination now produces a disabled unavailable state rather than an empty link; in-app applications and valid external links retain their behavior. A source with no URL is plain text. Breadcrumb/report/metadata/action contrast was corrected.
+
+Verification: three focused ApplyButton tests cover unavailable, valid external and enabled in-app destinations. Typecheck and production build passed. Headless Edge checks cover buyer filtering, chip removal, preserved filters in pagination, empty-state recovery, and expanded job details. All three views render without horizontal overflow at 390px and 320px; no page JavaScript errors were observed. Automated axe A/AA scans checked all three in light/dark mode, including the expanded metadata, and identified contrast fixes. Desktop/mobile screenshots were reviewed. These checks do not replace real authenticated application/connection end-to-end testing.

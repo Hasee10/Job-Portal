@@ -143,7 +143,7 @@ export function JobDetailsSidebar({
         <h2 className="font-semibold text-md">Job Details</h2>
         {config.jobReport.enabled && config.jobReport.showInSidebar && (
           <a
-            className="flex items-center gap-1 font-medium text-red-700 text-xs hover:text-red-800"
+            className="flex items-center gap-1 font-medium text-red-700 text-xs hover:text-red-800 dark:text-red-300 dark:hover:text-red-200"
             href={`mailto:${
               config.jobReport.email
             }?subject=${encodeURIComponent(
@@ -245,7 +245,7 @@ export function JobDetailsSidebar({
               {formatSalary(salary, true)}
             </p>
             {usdApprox && (
-              <p className="mt-0.5 text-gray-500 text-xs dark:text-gray-500">
+              <p className="mt-0.5 text-gray-600 text-xs dark:text-gray-300">
                 {usdApprox}
               </p>
             )}
@@ -281,14 +281,20 @@ export function JobDetailsSidebar({
             <Link className="h-4 w-4 shrink-0 text-gray-500 dark:text-gray-500" />
             <h3 className="font-medium text-sm">Job Source</h3>
           </div>
-          <a
-            className="ml-6 text-sm text-zinc-900 underline underline-offset-4 transition-colors hover:text-zinc-800 dark:text-zinc-100 dark:hover:text-zinc-200"
-            href={apply_url}
-            rel="noopener noreferrer"
-            target="_blank"
-          >
-            {job_source_name}
-          </a>
+          {apply_url ? (
+            <a
+              className="ml-6 text-sm text-zinc-900 underline underline-offset-4 transition-colors hover:text-zinc-800 dark:text-zinc-100 dark:hover:text-zinc-200"
+              href={apply_url}
+              rel="noopener noreferrer"
+              target="_blank"
+            >
+              {job_source_name}
+            </a>
+          ) : (
+            <p className="ml-6 text-gray-700 text-sm dark:text-gray-300">
+              {job_source_name}
+            </p>
+          )}
         </div>
       )}
 

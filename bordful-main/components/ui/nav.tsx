@@ -24,7 +24,6 @@ import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import config from "@/config";
 import { capabilitiesFor } from "@/lib/auth/capabilities";
-import { resolveColor } from "@/lib/utils/colors";
 
 // Brand icon component that uses the configured icon name or falls back to BriefcaseBusiness
 function BrandIcon() {
@@ -566,7 +565,7 @@ export function Nav() {
                 style={
                   config.nav.postJob.variant === "primary"
                     ? {
-                        backgroundColor: resolveColor(config.ui.primaryColor),
+                        backgroundColor: "#086b85",
                       }
                     : undefined
                 }
@@ -622,7 +621,7 @@ export function Nav() {
                 style={
                   config.nav.postJob.variant === "primary"
                     ? {
-                        backgroundColor: resolveColor(config.ui.primaryColor),
+                        backgroundColor: "#086b85",
                       }
                     : undefined
                 }
@@ -684,9 +683,7 @@ export function Nav() {
                     style={
                       config.nav.postJob.variant === "primary"
                         ? {
-                            backgroundColor: resolveColor(
-                              config.ui.primaryColor
-                            ),
+                            backgroundColor: "#086b85",
                           }
                         : undefined
                     }

@@ -496,7 +496,7 @@ export function Footer() {
                   className="flex h-8 items-center justify-center gap-1.5 px-3 text-xs sm:h-7 sm:px-2.5"
                   size="xs"
                   style={{
-                    backgroundColor: resolveColor(config.ui.primaryColor),
+                    backgroundColor: "#086b85",
                   }}
                   variant={config.ui.primaryColor ? "primary" : "default"}
                 >

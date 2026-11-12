@@ -161,7 +161,7 @@ function ServerBreadcrumb({
                     </span>
                   ) : (
                     <a
-                      className="text-gray-500 transition-colors hover:text-foreground dark:text-gray-500"
+                      className="text-gray-500 transition-colors hover:text-foreground dark:text-gray-400"
                       href={item.url}
                     >
                       {item.name}
