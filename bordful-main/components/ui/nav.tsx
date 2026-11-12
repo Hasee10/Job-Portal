@@ -1,715 +1,125 @@
 "use client";
-
-import {
-  Briefcase,
-  BriefcaseBusiness,
-  ChevronDown,
-  Menu,
-  X,
-} from "lucide-react";
-import Image from "next/image";
+import { Menu, X, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useSession } from "next-auth/react";
-import { useTheme } from "next-themes";
-import {
-  type ReactNode,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import { useRef, useState } from "react";
 import { AuthNavStatus } from "@/components/auth/AuthNavStatus";
-import { Button } from "@/components/ui/button";
-import { ThemeToggle } from "@/components/ui/theme-toggle";
-import config from "@/config";
-import { capabilitiesFor } from "@/lib/auth/capabilities";
-
-// Brand icon component that uses the configured icon name or falls back to BriefcaseBusiness
-function BrandIcon() {
-  // We're intentionally using a simple approach for the brand icon
-  // Most users will use a custom logo, so this is just a fallback
-  return <BriefcaseBusiness aria-hidden="true" className="h-4 w-4" />;
-}
-
-// Reusable component interfaces
-type NavLinkProps = {
-  href: string;
-  isActive: boolean;
-  onClick?: () => void;
-  children: ReactNode;
-  className?: string;
-};
-
-type SocialLinkProps = {
-  href: string;
-  label: string;
-  children: ReactNode;
-};
-
-type SocialIconProps = {
-  src: string;
-  alt: string;
-};
-
-type DropdownItemProps = {
-  href: string;
-  isActive: boolean;
-  onClick?: () => void;
-  children: ReactNode;
-};
-
-// Reusable navigation link component
-function NavLink({
-  href,
-  isActive,
-  onClick,
-  children,
-  className = "",
-}: NavLinkProps) {
-  const baseClasses = "text-sm px-2.5 py-1 rounded-lg transition-colors";
-  const activeClasses =
-    "text-zinc-900 dark:text-zinc-100 bg-zinc-100 dark:bg-zinc-800";
-  const inactiveClasses =
-    "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-800";
-
-  const linkClasses = `${baseClasses} ${
-    isActive ? activeClasses : inactiveClasses
-  } ${className}`;
-
-  return (
-    <Link className={linkClasses} href={href} onClick={onClick}>
-      {children}
-    </Link>
-  );
-}
-
-// Reusable social icon link component
-function SocialLink({ href, label, children }: SocialLinkProps) {
-  return (
-    <Link
-      aria-label={label}
-      className="text-zinc-600 transition-colors hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
-      href={href}
-      rel="noopener noreferrer"
-      target="_blank"
-    >
-      {children}
-    </Link>
-  );
-}
-
-// Reusable social icon component with hover effect
-function SocialIcon({ src, alt }: SocialIconProps) {
-  return (
-    <div className="group relative">
-      {/* Default state (zinc-600) */}
-      <Image
-        alt={alt}
-        className="transition-opacity group-hover:opacity-0"
-        height={16}
-        src={src}
-        style={{
-          filter:
-            "invert(41%) sepia(9%) saturate(380%) hue-rotate(202deg) brightness(94%) contrast(91%)", // zinc-600
-          height: "16px",
-          width: "16px",
-        }}
-        width={16}
-      />
-
-      {/* Hover state (zinc-900) - positioned absolutely on top */}
-      <Image
-        alt=""
-        aria-hidden="true"
-        className="absolute inset-0 opacity-0 transition-opacity group-hover:opacity-100"
-        height={16}
-        src={src}
-        style={{
-          filter:
-            "invert(14%) sepia(8%) saturate(427%) hue-rotate(202deg) brightness(93%) contrast(90%)", // zinc-900
-          height: "16px",
-          width: "16px",
-        }}
-        width={16}
-      />
-    </div>
-  );
-}
-
-// Dropdown menu item component
-function DropdownItem({
-  href,
-  isActive,
-  onClick,
-  children,
-}: DropdownItemProps) {
-  const baseClasses = "block px-4 py-2 text-sm";
-  const activeClasses =
-    "bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100";
-  const inactiveClasses =
-    "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-zinc-100";
-
-  const itemClasses = `${baseClasses} ${
-    isActive ? activeClasses : inactiveClasses
-  }`;
-
-  return (
-    <Link className={itemClasses} href={href} onClick={onClick}>
-      {children}
-    </Link>
-  );
-}
-
-// Use a consistent type for social platform configuration
-type SocialPlatformConfig = {
-  id: string;
-  configProp: string;
-  src: string;
-  alt: string;
-  labelPrefix: string;
-  enabled: (config: typeof import("@/config").default) => boolean;
-  getUrl: (config?: typeof import("@/config").default) => string;
-};
-
-// Define social platforms with their properties outside of component for reuse
-const SOCIAL_PLATFORMS: SocialPlatformConfig[] = [
-  {
-    alt: "RSS Feed",
-    configProp: "rssFeed",
-    enabled: () => false,
-    getUrl: () => "/feed.xml",
-    id: "rss",
-    labelPrefix: "Subscribe to",
-    src: "/assets/social/rss.svg",
-  },
-  {
-    alt: "GitHub",
-    configProp: "github",
-    enabled: (config) => config.nav.github?.show,
-    getUrl: (config) => config?.nav.github?.url || "",
-    id: "github",
-    labelPrefix: "View on",
-    src: "/assets/social/github.svg",
-  },
-  {
-    alt: "LinkedIn",
-    configProp: "linkedin",
-    enabled: (config) => config.nav.linkedin?.show,
-    getUrl: (config) => config?.nav.linkedin?.url || "",
-    id: "linkedin",
-    labelPrefix: "Follow us on",
-    src: "/assets/social/linkedin.svg",
-  },
-  {
-    alt: "Twitter",
-    configProp: "twitter",
-    enabled: (config) => config.nav.twitter?.show,
-    getUrl: (config) => config?.nav.twitter?.url || "",
-    id: "twitter",
-    labelPrefix: "Follow us on X (",
-    src: "/assets/social/twitter.svg",
-  },
-  {
-    alt: "Bluesky",
-    configProp: "bluesky",
-    enabled: (config) => config.nav.bluesky?.show,
-    getUrl: (config) => config?.nav.bluesky?.url || "",
-    id: "bluesky",
-    labelPrefix: "Follow us on",
-    src: "/assets/social/bluesky.svg",
-  },
-  {
-    alt: "Reddit",
-    configProp: "reddit",
-    enabled: (config) => config.nav.reddit?.show,
-    getUrl: (config) => config?.nav.reddit?.url || "",
-    id: "reddit",
-    labelPrefix: "Follow us on",
-    src: "/assets/social/reddit.svg",
-  },
-];
-
-// Custom hook for dropdown management
-//
-// Click-only by design (no hover-to-open): a real mouse click always fires a
-// hover/mouseenter first, so a hover-opens + click-toggles combination opens
-// then immediately closes again on every click - a self-canceling race that
-// made the dropdown look permanently broken. Click-to-toggle plus
-// click-outside-to-close is unambiguous and works identically for mouse,
-// touch, and keyboard activation.
-function useDropdownMenu() {
-  const [openDropdowns, setOpenDropdowns] = useState<Record<string, boolean>>(
-    {}
-  );
-  const dropdownRefs = useRef<Record<string, HTMLDivElement | null>>({});
-  const dropdownRefSetters = useRef<
-    Record<string, (el: HTMLDivElement | null) => void>
-  >({});
-
-  // Register dropdown refs for click outside detection. Returns a ref
-  // callback stable across renders (cached per label) so React doesn't
-  // needlessly null-then-reattach the ref on every re-render of Nav.
-  const registerDropdownRef = useCallback((label: string) => {
-    if (!dropdownRefSetters.current[label]) {
-      dropdownRefSetters.current[label] = (el: HTMLDivElement | null) => {
-        dropdownRefs.current[label] = el;
-      };
-    }
-    return dropdownRefSetters.current[label];
-  }, []);
-
-  // Toggle dropdown open/closed
-  const toggleDropdown = useCallback((label: string) => {
-    setOpenDropdowns((prev) => ({
-      ...prev,
-      [label]: !prev[label],
-    }));
-  }, []);
-
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      Object.entries(dropdownRefs.current).forEach(([label, ref]) => {
-        if (ref && !ref.contains(event.target as Node)) {
-          setOpenDropdowns((prev) => ({
-            ...prev,
-            [label]: false,
-          }));
-        }
-      });
-    }
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
-
-  return {
-    openDropdowns,
-    registerDropdownRef,
-    toggleDropdown,
-  };
-}
+import { Brand } from "./brand";
+import { ThemeToggle } from "./theme-toggle";
+import { SITE_LINKS, siteContext } from "@/lib/ui/site-navigation";
 
 export function Nav() {
-  const [isOpen, setIsOpen] = useState(false);
-  const mobileMenuButton = useRef<HTMLButtonElement>(null);
   const pathname = usePathname();
-
-  // Swap to the white-stroke logo variant in dark mode - the default
-  // black-stroke logo.src is invisible against a dark background. Waits
-  // for mount (same reasoning as ThemeToggle) since the real theme isn't
-  // knowable until after hydration; renders the light-mode logo until then
-  // to match the server-rendered default.
-  const { resolvedTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
-  const logoSrc =
-    mounted && resolvedTheme === "dark" && config.nav.logoDark
-      ? config.nav.logoDark
-      : config.nav.logo.src;
-
-  // Use our custom hook for dropdown functionality
-  const { openDropdowns, registerDropdownRef, toggleDropdown } =
-    useDropdownMenu();
-
-  // The procurement entries are the public marketplace: an overview, the
-  // business directory and the tender feed. They stay visible to everyone,
-  // because whether someone can do business here is now decided by the
-  // organizations they belong to, not by the recruitment role their account
-  // happens to carry - a job seeker may well own a supplier business. The
-  // private workspaces are reached from the account menu instead, and every
-  // one of them enforces membership server-side.
-  //
-  // The job board is still dropped for an account with no recruitment
-  // capability. This is presentation only; a hidden link is not
-  // authorization.
-  const { data: session } = useSession();
-  const capabilities = capabilitiesFor(session?.user?.role);
-  const showHiringAction =
-    pathname.startsWith("/jobs") ||
-    pathname.startsWith("/dashboard") ||
-    pathname.startsWith("/recruiter");
-  const menuItems = (config.nav.menu || []).filter((item) => {
-    if (!session?.user) {
-      return true;
-    }
-    if (item.link.startsWith("/jobs") || item.link === "/job-alerts") {
-      return capabilities.recruitment;
-    }
-    return true;
-  });
-
-  // Check if a path is active (exact match or starts with for /jobs)
-  const isActivePath = (path: string): boolean => {
-    if (path === "/jobs") {
-      return pathname.startsWith(path);
-    }
-    return pathname === path;
-  };
-
-  // Render social media links
-  const renderSocialLinks = () => {
-    return (
-      <div className="flex items-center space-x-3">
-        {/* Social Media Links */}
-        {SOCIAL_PLATFORMS.map((platform) => {
-          // Check if this platform is enabled in the configuration
-          if (!platform.enabled(config)) {
-            return null;
-          }
-
-          const label =
-            platform.labelPrefix +
-            (platform.id === "twitter" ? "Twitter)" : ` ${platform.alt}`);
-
-          return (
-            <SocialLink
-              href={platform.getUrl(config)}
-              key={platform.id}
-              label={label}
-            >
-              <SocialIcon alt={platform.alt} src={platform.src} />
-            </SocialLink>
-          );
-        })}
-      </div>
-    );
-  };
-
-  // Unified function to render navigation items for both mobile and desktop
-  const renderNavItems = (isMobile: boolean) => {
-    return menuItems.map((item) => {
-      // Handle dropdown menu items
-      if (item.dropdown && item.items) {
-        const isDropdownOpen = openDropdowns[item.label] ?? false;
-
-        if (isMobile) {
-          return (
-            <div className="mb-1" key={item.link}>
-              <NavLink
-                className="mb-1 block"
-                href={item.link}
-                isActive={pathname === item.link}
-                onClick={() => setIsOpen(false)}
-              >
-                {item.label}
-              </NavLink>
-              <div className="mt-1 border-zinc-200 border-l pl-4">
-                {item.items.map((subItem) => (
-                  <NavLink
-                    className="mb-1 block"
-                    href={subItem.link}
-                    isActive={pathname === subItem.link}
-                    key={subItem.link}
-                    onClick={() => setIsOpen(false)}
-                  >
-                    {subItem.label}
-                  </NavLink>
-                ))}
-              </div>
-            </div>
-          );
-        }
-
-        // Desktop dropdown
-        return (
-          <div
-            className="relative"
-            key={item.link}
-            ref={registerDropdownRef(item.label)}
-            onKeyDown={(event) => {
-              if (event.key === "Escape" && isDropdownOpen) {
-                toggleDropdown(item.label);
-                event.currentTarget.querySelector("button")?.focus();
-              }
-            }}
-            onBlur={(event) => {
-              if (
-                isDropdownOpen &&
-                !event.currentTarget.contains(event.relatedTarget)
-              )
-                toggleDropdown(item.label);
-            }}
-          >
-            <button
-              type="button"
-              aria-expanded={isDropdownOpen}
-              className={`flex items-center rounded-lg px-2.5 py-1 text-sm ${
-                pathname.startsWith(item.link)
-                  ? "bg-zinc-100 text-zinc-900 dark:bg-zinc-800 dark:text-zinc-100"
-                  : "text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
-              } transition-colors`}
-              onClick={() => toggleDropdown(item.label)}
-            >
-              {item.label}
-              <ChevronDown aria-hidden="true" className="ml-1 h-3 w-3" />
-            </button>
-
-            {isDropdownOpen && (
-              <div className="absolute left-0 z-50 mt-1 w-40 rounded-md bg-popover shadow-lg ring-1 ring-black ring-opacity-5 dark:ring-white/10">
-                <div className="py-1">
-                  {item.items.map((subItem) => (
-                    <DropdownItem
-                      href={subItem.link}
-                      isActive={pathname === subItem.link}
-                      key={subItem.link}
-                      onClick={() => toggleDropdown(item.label)}
-                    >
-                      {subItem.label}
-                    </DropdownItem>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        );
-      }
-
-      // Regular menu items
-      return (
-        <NavLink
-          className={isMobile ? "mb-1 block" : ""}
-          href={item.link}
-          isActive={isActivePath(item.link)}
-          key={item.link}
-          onClick={() => isMobile && setIsOpen(false)}
-        >
-          {item.label}
-        </NavLink>
-      );
-    });
-  };
-
-  // Create specialized renderers for desktop and mobile
-  const renderDesktopNavItems = () => renderNavItems(false);
-  const renderMobileNavItems = () => renderNavItems(true);
-
+  const context = siteContext(pathname);
+  const [openPath, setOpenPath] = useState<string | null>(null);
+  const open = openPath === pathname;
+  const toggle = useRef<HTMLButtonElement>(null);
+  const links = SITE_LINKS[context];
+  const accountKind = pathname.startsWith("/recruiter")
+    ? "recruiter"
+    : pathname.startsWith("/dashboard") || pathname === "/pricing"
+      ? "employer"
+      : "seeker";
+  const active = (href: string) =>
+    (href === "/procurement/organizations" &&
+      pathname === "/procurement/preview") ||
+    pathname === href ||
+    (href !== "/procurement" && pathname.startsWith(`${href}/`));
   return (
     <header
-      className="relative z-40 border-border border-b bg-background"
+      className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur-xl"
       onKeyDown={(event) => {
-        if (event.key === "Escape" && isOpen) {
-          setIsOpen(false);
-          mobileMenuButton.current?.focus();
+        if (event.key === "Escape" && open) {
+          setOpenPath(null);
+          toggle.current?.focus();
         }
       }}
     >
-      {/* Utility bar - desktop only. Carries the stuff visitors aren't here
-          for by default (audience routing, social, theme, account) so the
-          main bar below can stay purely wayfinding: logo, destinations, one
-          action. */}
-      <div className="hidden border-border/60 border-b bg-muted/40 lg:block">
-        <div className="container mx-auto px-4">
-          <div className="flex h-10 items-center justify-between text-xs">
-            <div className="flex items-center gap-4">
-              <Link
-                className="text-zinc-500 transition-colors hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
-                href="/sign-up?callbackUrl=/procurement/organizations"
-              >
-                For businesses
-              </Link>
-            </div>
-            <div className="flex items-center gap-4">
-              {renderSocialLinks()}
-              <ThemeToggle />
-              <AuthNavStatus variant="desktop" />
-            </div>
+      <div className="container mx-auto flex h-[76px] max-w-7xl items-center justify-between gap-6 px-4 sm:px-6">
+        <div className="flex items-center gap-4">
+          <Brand />
+          {context !== "home" && (
+            <span className="hidden border-l pl-4 font-medium text-muted-foreground text-xs xl:block">
+              {context === "jobs" ? "CAREERS" : "PROCUREMENT"}
+            </span>
+          )}
+        </div>
+        <nav aria-label="Primary" className="hidden items-center gap-1 lg:flex">
+          {links.map((link) => (
+            <Link
+              key={link.href}
+              aria-current={active(link.href) ? "page" : undefined}
+              href={link.href}
+              className={`rounded-lg px-3 py-2 text-sm transition-colors ${active(link.href) ? "bg-primary/5 font-medium text-[#086b85] dark:text-cyan-200" : "text-muted-foreground hover:bg-muted hover:text-foreground"}`}
+            >
+              {link.label}
+            </Link>
+          ))}
+        </nav>
+        <div className="flex items-center gap-3">
+          <ThemeToggle />
+          <div className="hidden lg:block">
+            <AuthNavStatus
+              variant="desktop"
+              context={context}
+              accountKind={accountKind}
+            />
           </div>
+          <button
+            type="button"
+            ref={toggle}
+            aria-label={open ? "Close navigation" : "Open navigation"}
+            aria-expanded={open}
+            aria-controls={open ? "mobile-navigation" : undefined}
+            onClick={() => setOpenPath(open ? null : pathname)}
+            className="rounded-lg border p-2 lg:hidden"
+          >
+            {open ? (
+              <X size={19} aria-hidden="true" />
+            ) : (
+              <Menu size={19} aria-hidden="true" />
+            )}
+          </button>
         </div>
       </div>
-
-      <div className="container mx-auto px-4">
+      {open && (
         <nav
-          aria-label="Main navigation"
-          className="flex h-16 items-center justify-between lg:h-[76px]"
+          id="mobile-navigation"
+          aria-label="Mobile navigation"
+          className="border-t px-4 py-5 lg:hidden"
         >
-          {/* Brand */}
-          <Link
-            aria-label="Home"
-            className="flex items-center space-x-1.5 text-zinc-900 transition-colors hover:text-zinc-800 dark:text-zinc-100 dark:hover:text-zinc-200"
-            href="/"
-          >
-            {config.nav.logo.enabled ? (
-              <Image
-                alt={config.nav.logo.alt}
-                className="object-contain"
-                height={config.nav.logo.height}
-                key={logoSrc}
-                priority
-                src={logoSrc}
-                style={{
-                  height: `${config.nav.logo.height}px`,
-                  width: `${config.nav.logo.width}px`,
-                }}
-                width={config.nav.logo.width}
+          <div className="mx-auto max-w-7xl space-y-1">
+            {links.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                onClick={() => setOpenPath(null)}
+                aria-current={active(link.href) ? "page" : undefined}
+                className={`block rounded-lg px-3 py-3 text-sm ${active(link.href) ? "bg-muted font-medium" : "text-muted-foreground"}`}
+              >
+                {link.label}
+              </Link>
+            ))}
+            {context !== "home" && (
+              <Link
+                href="/"
+                onClick={() => setOpenPath(null)}
+                className="flex items-center gap-2 px-3 py-3 text-muted-foreground text-xs"
+              >
+                <ArrowLeft size={14} aria-hidden="true" />
+                JobLo home
+              </Link>
+            )}
+            <div className="border-t pt-4 lg:hidden">
+              <AuthNavStatus
+                context={context}
+                accountKind={accountKind}
+                onNavigate={() => setOpenPath(null)}
               />
-            ) : (
-              <>
-                <BrandIcon />
-                <span className="font-medium text-sm">{config.nav.title}</span>
-              </>
-            )}
-          </Link>
-
-          {/* Mobile Actions */}
-          <div className="flex items-center space-x-2 lg:hidden">
-            {/* Mobile Post Job Button - Smaller version */}
-            {config.nav.postJob.show && showHiringAction && (
-              <Button
-                asChild
-                className="gap-1 px-2 py-1 text-xs"
-                size="xs"
-                style={
-                  config.nav.postJob.variant === "primary"
-                    ? {
-                        backgroundColor: "#086b85",
-                      }
-                    : undefined
-                }
-                variant={config.nav.postJob.variant || "default"}
-              >
-                <Link
-                  href={config.nav.postJob.link}
-                  {...(config.nav.postJob.external
-                    ? { rel: "noopener noreferrer", target: "_blank" }
-                    : {})}
-                >
-                  {config.nav.postJob.label}
-                  <Briefcase aria-hidden="true" className="ml-1 h-3 w-3" />
-                </Link>
-              </Button>
-            )}
-
-            <ThemeToggle />
-
-            {/* Mobile menu button */}
-            <button
-              aria-expanded={isOpen}
-              aria-label="Toggle menu"
-              aria-controls={isOpen ? "mobile-navigation" : undefined}
-              ref={mobileMenuButton}
-              type="button"
-              className="p-2 text-zinc-600 transition-colors hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
-              onClick={() => setIsOpen(!isOpen)}
-            >
-              {isOpen ? (
-                <X aria-hidden="true" className="h-4 w-4" />
-              ) : (
-                <Menu aria-hidden="true" className="h-4 w-4" />
-              )}
-            </button>
-          </div>
-
-          {/* Desktop navigation - primary destinations plus the one action,
-              nothing else competing for attention (see utility bar above) */}
-          <div className="hidden items-center lg:flex">
-            <nav
-              aria-label="Primary"
-              className="mr-6 flex items-center space-x-1 whitespace-nowrap"
-            >
-              {renderDesktopNavItems()}
-            </nav>
-
-            {config.nav.postJob.show && showHiringAction && (
-              <Button
-                asChild
-                className="gap-1.5 whitespace-nowrap text-xs"
-                size="sm"
-                style={
-                  config.nav.postJob.variant === "primary"
-                    ? {
-                        backgroundColor: "#086b85",
-                      }
-                    : undefined
-                }
-                variant={config.nav.postJob.variant || "default"}
-              >
-                <Link
-                  href={config.nav.postJob.link}
-                  {...(config.nav.postJob.external
-                    ? { rel: "noopener noreferrer", target: "_blank" }
-                    : {})}
-                >
-                  {config.nav.postJob.label}
-                  <Briefcase aria-hidden="true" className="ml-1 h-3.5 w-3.5" />
-                </Link>
-              </Button>
-            )}
+            </div>
           </div>
         </nav>
-
-        {isOpen && (
-          <div className="border-zinc-200 border-t lg:hidden">
-            <nav
-              aria-label="Mobile navigation"
-              id="mobile-navigation"
-              className="flex flex-col px-4 py-4"
-            >
-              {/* Audience routing (mirrors the desktop utility bar) */}
-              <div className="mb-2 flex items-center gap-4 px-4 pb-3">
-                <Link
-                  className="text-sm text-zinc-500 dark:text-zinc-400"
-                  href="/sign-up?callbackUrl=/procurement/organizations"
-                  onClick={() => setIsOpen(false)}
-                >
-                  For businesses
-                </Link>
-              </div>
-
-              {/* Primary Navigation */}
-              {renderMobileNavItems()}
-
-              {/* Social Links */}
-              <div className="mt-2 flex items-center space-x-3 border-zinc-200 border-t px-4 py-4">
-                {renderSocialLinks()}
-                <ThemeToggle />
-              </div>
-
-              {/* Auth status (sign in/up or account) */}
-              <div className="flex items-center justify-center px-4 pb-2">
-                <AuthNavStatus onNavigate={() => setIsOpen(false)} />
-              </div>
-
-              {/* Post Job Action */}
-              {config.nav.postJob.show && showHiringAction && (
-                <div className="px-4 pt-2 lg:hidden">
-                  <Button
-                    asChild
-                    className={"w-full gap-1.5 text-xs"}
-                    size="xs"
-                    style={
-                      config.nav.postJob.variant === "primary"
-                        ? {
-                            backgroundColor: "#086b85",
-                          }
-                        : undefined
-                    }
-                    variant={config.nav.postJob.variant || "default"}
-                  >
-                    <Link
-                      href={config.nav.postJob.link}
-                      {...(config.nav.postJob.external
-                        ? { rel: "noopener noreferrer", target: "_blank" }
-                        : {})}
-                      className="flex items-center justify-center"
-                      onClick={() => setIsOpen(false)}
-                    >
-                      {config.nav.postJob.label}
-                      <Briefcase
-                        aria-hidden="true"
-                        className="ml-1 h-3.5 w-3.5"
-                      />
-                    </Link>
-                  </Button>
-                </div>
-              )}
-            </nav>
-          </div>
-        )}
-      </div>
+      )}
     </header>
   );
 }

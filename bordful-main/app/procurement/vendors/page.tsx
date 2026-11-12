@@ -7,7 +7,7 @@ import { listVerifiedVendors } from "@/lib/procurement/vendor-actions";
 
 export const metadata: Metadata = {
   description:
-    "Browse verified suppliers and service providers registered on Caliber.",
+    "Browse verified suppliers and service providers registered on JobLo.",
   title: `Registered Suppliers | ${config.title}`,
 };
 
@@ -24,7 +24,7 @@ export default async function ProcurementVendorsPage() {
             Registered suppliers
           </h1>
           <p className="mt-2 text-zinc-600 dark:text-zinc-400">
-            Verified vendors and service providers on Caliber. To work with one,
+            Verified vendors and service providers on JobLo. To work with one,
             create a procurement request and invite them by email.
           </p>
 

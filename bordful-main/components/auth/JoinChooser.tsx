@@ -40,7 +40,7 @@ export function JoinChooser({ siteTitle }: { siteTitle: string }) {
           className="mx-auto mb-6 dark:hidden"
           height={60}
           priority
-          src="/caliber-bowtie.svg"
+          src="/joblo-mark.svg"
           width={80}
         />
         <Image
@@ -48,7 +48,7 @@ export function JoinChooser({ siteTitle }: { siteTitle: string }) {
           className="mx-auto mb-6 hidden dark:block"
           height={60}
           priority
-          src="/caliber-bowtie-light.svg"
+          src="/joblo-mark.svg"
           width={80}
         />
         <h1 className="font-bold text-3xl text-zinc-900 tracking-tight dark:text-zinc-50">

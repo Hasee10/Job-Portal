@@ -31,4 +31,26 @@ describe("workspace destinations", () => {
       expect(html).toContain("Business workspace");
     }
   );
+  it("hides hiring account destinations in Procurement", () => {
+    vi.stubGlobal("React", React);
+    state.role = "employer";
+    const html = renderToStaticMarkup(
+      React.createElement(AuthNavStatus, {
+        variant: "mobile",
+        context: "procurement",
+      })
+    );
+    expect(html).toContain("Business workspace");
+    expect(html).not.toContain('href="/dashboard"');
+  });
+  it("hides business workspace destinations in Jobs", () => {
+    vi.stubGlobal("React", React);
+    state.role = "seeker";
+    const html = renderToStaticMarkup(
+      React.createElement(AuthNavStatus, { variant: "mobile", context: "jobs" })
+    );
+    expect(html).toContain("Job account");
+    expect(html).toContain("Resume builder");
+    expect(html).not.toContain("/procurement/organizations");
+  });
 });

@@ -1,212 +1,166 @@
 "use client";
-
 import { ChevronDown, User } from "lucide-react";
 import Link from "next/link";
 import { signOut, useSession } from "next-auth/react";
 import { useEffect, useId, useRef, useState } from "react";
 import { capabilitiesFor } from "@/lib/auth/capabilities";
+import type { SiteContext } from "@/lib/ui/site-navigation";
 
 type AuthNavStatusProps = {
+  accountKind?: "seeker" | "employer" | "recruiter";
   className?: string;
   onNavigate?: () => void;
-  // "desktop" collapses account links into a dropdown so the nav bar
-  // doesn't show Resume Builder / name / Sign out as separate flat links.
-  // "mobile" (default) keeps them stacked, which already reads fine in the
-  // vertical mobile menu.
   variant?: "desktop" | "mobile";
+  context?: SiteContext;
 };
-
 export function AuthNavStatus({
+  accountKind = "seeker",
   className = "",
   onNavigate,
   variant = "mobile",
+  context = "home",
 }: AuthNavStatusProps) {
   const { data: session, status } = useSession();
+  const [open, setOpen] = useState(false);
+  const container = useRef<HTMLDivElement>(null);
   const menuId = useId();
-  const [isOpen, setIsOpen] = useState(false);
-  const menuRef = useRef<HTMLDivElement | null>(null);
-
   useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    const outside = (event: MouseEvent) => {
+      if (
+        container.current &&
+        !container.current.contains(event.target as Node)
+      )
+        setOpen(false);
+    };
+    document.addEventListener("mousedown", outside);
+    return () => document.removeEventListener("mousedown", outside);
   }, []);
-
-  if (status === "loading") {
-    return null;
-  }
-
+  const close = () => {
+    setOpen(false);
+    onNavigate?.();
+  };
+  if (status === "loading") return null;
   if (session?.user) {
     const capabilities = capabilitiesFor(session.user.role);
-    const accountHref = capabilities.workspaceHref;
-    const accountLabel =
-      session.user.role === "seeker"
-        ? "Job account"
-        : session.user.role === "recruiter"
-          ? "Recruiter workspace"
-          : "Hiring workspace";
-    const displayName = session.user.name || session.user.email;
-
-    const closeAndNavigate = () => {
-      setIsOpen(false);
-      onNavigate?.();
-    };
-
-    if (variant === "desktop") {
-      return (
-        <div className={`flex items-center gap-3 text-sm ${className}`}>
-          {session.user.role === "seeker" && (
-            <Link
-              className="font-medium text-amber-600 hover:text-amber-700 dark:text-amber-400 dark:hover:text-amber-300"
-              href="/pricing"
-            >
-              Go Premium
-            </Link>
-          )}
-          <div
-            className="relative"
-            ref={menuRef}
-            onKeyDown={(event) => {
-              if (event.key === "Escape") {
-                setIsOpen(false);
-                menuRef.current?.querySelector("button")?.focus();
-              }
-            }}
-            onBlur={(event) => {
-              if (!event.currentTarget.contains(event.relatedTarget))
-                setIsOpen(false);
-            }}
-          >
-            <button
-              aria-controls={isOpen ? menuId : undefined}
-              aria-expanded={isOpen}
-              className="flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-zinc-600 transition-colors hover:bg-zinc-50 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
-              onClick={() => setIsOpen((prev) => !prev)}
-              type="button"
-            >
-              <User aria-hidden="true" className="h-3.5 w-3.5" />
-              <span className="max-w-[120px] truncate">{displayName}</span>
-              <ChevronDown aria-hidden="true" className="h-3 w-3" />
-            </button>
-
-            {isOpen && (
-              <div className="absolute right-0 z-50 mt-1 w-48 rounded-md bg-popover shadow-lg ring-1 ring-black ring-opacity-5 dark:ring-white/10">
-                <div className="py-1" id={menuId}>
-                  {session.user.role === "seeker" && (
-                    <Link
-                      className="block px-4 py-2 text-sm text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
-                      href="/account/resume"
-                      onClick={closeAndNavigate}
-                    >
-                      Resume Builder
-                    </Link>
-                  )}
-                  {/* Every signed-in account can own a business, whatever
-                      recruitment role it carries, so this is not gated on
-                      capability - the page itself lists only organizations
-                      the caller is actually a member of. */}
-                  <Link
-                    className="block px-4 py-2 text-sm text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
-                    href="/procurement/organizations"
-                    onClick={closeAndNavigate}
-                  >
-                    Business workspace
-                  </Link>
-                  <Link
-                    className="block px-4 py-2 text-sm text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
-                    href={accountHref}
-                    onClick={closeAndNavigate}
-                  >
-                    {accountLabel}
-                  </Link>
-                  <button
-                    className="block w-full px-4 py-2 text-left text-sm text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
-                    onClick={() => {
-                      closeAndNavigate();
-                      signOut({ callbackUrl: "/" });
-                    }}
-                    type="button"
-                  >
-                    Sign out
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      );
+    const links: { href: string; label: string }[] = [];
+    if (context !== "jobs")
+      links.push({
+        href: "/procurement/organizations",
+        label: "Business workspace",
+      });
+    if (context !== "procurement" && capabilities.recruitment) {
+      links.push({
+        href: capabilities.workspaceHref,
+        label:
+          session.user.role === "seeker"
+            ? "Job account"
+            : session.user.role === "recruiter"
+              ? "Recruiter workspace"
+              : "Hiring workspace",
+      });
+      if (session.user.role === "seeker")
+        links.push({ href: "/account/resume", label: "Resume builder" });
     }
-
-    return (
-      <div className={`flex flex-col items-center gap-2 text-sm ${className}`}>
-        {session.user.role === "seeker" && (
-          <>
-            <Link
-              className="text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
-              href="/account/resume"
-              onClick={onNavigate}
-            >
-              Resume Builder
-            </Link>
-            <Link
-              className="font-medium text-amber-600 hover:text-amber-700 dark:text-amber-400 dark:hover:text-amber-300"
-              href="/pricing"
-              onClick={onNavigate}
-            >
-              Go Premium
-            </Link>
-          </>
-        )}
-        <Link
-          className="text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
-          href="/procurement/organizations"
-          onClick={onNavigate}
-        >
-          Business workspace
-        </Link>
-        <Link
-          className="text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
-          href={accountHref}
-          onClick={onNavigate}
-        >
-          {accountLabel}
-        </Link>
+    const items = (
+      <>
+        {links.map((link) => (
+          <Link
+            key={link.href}
+            href={link.href}
+            onClick={close}
+            className="block rounded-lg px-4 py-3 text-sm hover:bg-muted"
+          >
+            {link.label}
+          </Link>
+        ))}
         <button
-          className="text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
+          type="button"
+          className="block w-full rounded-lg border-t px-4 py-3 text-left text-sm hover:bg-muted"
           onClick={() => {
-            onNavigate?.();
+            close();
             signOut({ callbackUrl: "/" });
           }}
-          type="button"
         >
           Sign out
         </button>
+      </>
+    );
+    if (variant === "mobile")
+      return <div className={`space-y-1 ${className}`}>{items}</div>;
+    return (
+      <div
+        ref={container}
+        className={`relative ${className}`}
+        onKeyDown={(event) => {
+          if (event.key === "Escape") {
+            setOpen(false);
+            container.current?.querySelector("button")?.focus();
+          }
+        }}
+        onBlur={(event) => {
+          if (!event.currentTarget.contains(event.relatedTarget))
+            setOpen(false);
+        }}
+      >
+        <button
+          type="button"
+          aria-expanded={open}
+          aria-controls={open ? menuId : undefined}
+          onClick={() => setOpen((value) => !value)}
+          className="flex items-center gap-2 rounded-lg border px-3 py-2 text-sm"
+        >
+          <User size={16} aria-hidden="true" />
+          <span className="max-w-28 truncate">
+            {session.user.name || "My account"}
+          </span>
+          <ChevronDown size={13} aria-hidden="true" />
+        </button>
+        {open && (
+          <div
+            id={menuId}
+            className="absolute right-0 mt-2 w-60 rounded-xl border bg-popover p-1 shadow-lg"
+          >
+            {items}
+          </div>
+        )}
       </div>
     );
   }
-
+  const signin =
+    context === "procurement"
+      ? "/sign-in?callbackUrl=/procurement/organizations"
+      : context === "jobs"
+        ? accountKind === "recruiter"
+          ? "/recruiter/sign-in"
+          : accountKind === "employer"
+            ? "/sign-in?callbackUrl=/dashboard"
+            : "/account/sign-in"
+        : "/join";
+  const signup =
+    context === "procurement"
+      ? "/sign-up?callbackUrl=/procurement/organizations"
+      : context === "jobs"
+        ? accountKind === "recruiter"
+          ? "/recruiter/sign-up"
+          : accountKind === "employer"
+            ? "/sign-up"
+            : "/account/sign-in?intent=signup"
+        : "/join";
   return (
-    <div className={`flex items-center gap-3 text-sm ${className}`}>
-      {/* /join offers job seeker and business sign-in; a signed-out visitor here has not said which they are,
-          so this must not assume job seeker the way a bare /account/sign-in
-          link would. */}
+    <div className={`flex items-center gap-4 text-sm ${className}`}>
       <Link
-        className="text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
-        href="/join"
+        href={signin}
         onClick={onNavigate}
+        className="text-muted-foreground hover:text-foreground"
       >
         Sign in
       </Link>
       <Link
-        className="rounded-lg bg-zinc-900 px-3 py-1 font-medium text-white text-xs transition-colors hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
-        href="/join"
+        href={signup}
         onClick={onNavigate}
+        className="rounded-lg bg-[#086b85] px-4 py-2.5 font-medium text-white hover:bg-[#07576d]"
       >
-        Sign up
+        Get started
       </Link>
     </div>
   );

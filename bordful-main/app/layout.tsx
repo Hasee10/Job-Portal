@@ -52,7 +52,7 @@ export const metadata: Metadata = {
     index: true,
     nocache: false,
   },
-  title: `${siteConfig.title} | ${siteConfig.nav.title}`,
+  title: "JobLo | Careers and Procurement",
 };
 
 export default async function RootLayout({
