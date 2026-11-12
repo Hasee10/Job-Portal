@@ -73,6 +73,7 @@ function HomePageContent({
   jobsAddedToday: jobsAddedTodayProp,
   jobsThisWeek: jobsThisWeekProp,
   isSeeker,
+  statsAvailable = true,
 }: {
   initialJobs: Job[];
   totalActiveJobs: number;
@@ -80,6 +81,7 @@ function HomePageContent({
   jobsAddedToday: number;
   jobsThisWeek: number;
   isSeeker: boolean;
+  statsAvailable?: boolean;
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -452,10 +454,11 @@ function HomePageContent({
   // forces the wrapper to fill the viewport even though this trimmed-down
   // hero is short, which left a large dead gap before the next section
   // (TrustSection, rendered as a sibling in app/page.tsx).
-  if (!isSeeker) {
+  if (!isSeeker || !statsAvailable) {
     return (
       <main className="bg-background">
         <GuestHero
+          statsAvailable={statsAvailable}
           badge={config.badge}
           companiesHiringCount={companiesHiringCountProp}
           description={config.description}
@@ -476,6 +479,12 @@ function HomePageContent({
               Sign in
             </a>
           </div>
+          {!statsAvailable && (
+            <p className="mt-3 text-sm text-white/80" role="status">
+              Job listings and statistics are temporarily unavailable. You can
+              still explore Procurement.
+            </p>
+          )}
           {/* Risk-reversal micro-copy right under the CTA - reduces
               signup friction anxiety (free, no card, fast). */}
           <p className="mt-3 text-white/70 text-xs">
@@ -509,8 +518,9 @@ function HomePageContent({
                   className="mt-6 inline-flex items-center justify-center rounded-md bg-primary px-5 py-2.5 font-medium text-primary-foreground text-sm transition-opacity hover:opacity-90"
                   href="/account/sign-in?intent=signup"
                 >
-                  Sign up to browse {totalActiveJobs.toLocaleString()} open
-                  roles
+                  {statsAvailable
+                    ? `Sign up to browse ${totalActiveJobs.toLocaleString()} open roles`
+                    : "Explore job opportunities"}
                 </a>
               </div>
 
@@ -531,25 +541,32 @@ function HomePageContent({
         {/* Bold stats band - real numbers, big treatment. Distinct from
             TrustSection's prose-style stat sentence further down: this is
             a scannable grid, meant to land fast rather than be read. */}
-        <div className="border-t bg-background py-12">
-          <div className="container mx-auto px-4">
-            <div className="mx-auto grid max-w-3xl grid-cols-2 gap-6 text-center sm:grid-cols-4">
-              {[
-                { label: "Open roles", value: totalActiveJobs },
-                { label: "Added today", value: jobsAddedTodayProp },
-                { label: "This week", value: jobsThisWeekProp },
-                { label: "Companies hiring", value: companiesHiringCountProp },
-              ].map(({ label, value }) => (
-                <div key={label}>
-                  <p className="font-bold text-2xl text-zinc-900 tracking-tight sm:text-3xl dark:text-zinc-50">
-                    {value.toLocaleString()}
-                  </p>
-                  <p className="mt-1 text-muted-foreground text-xs">{label}</p>
-                </div>
-              ))}
+        {statsAvailable && (
+          <div className="border-t bg-background py-12">
+            <div className="container mx-auto px-4">
+              <div className="mx-auto grid max-w-3xl grid-cols-2 gap-6 text-center sm:grid-cols-4">
+                {[
+                  { label: "Open roles", value: totalActiveJobs },
+                  { label: "Added today", value: jobsAddedTodayProp },
+                  { label: "This week", value: jobsThisWeekProp },
+                  {
+                    label: "Companies hiring",
+                    value: companiesHiringCountProp,
+                  },
+                ].map(({ label, value }) => (
+                  <div key={label}>
+                    <p className="font-bold text-2xl text-zinc-900 tracking-tight sm:text-3xl dark:text-zinc-50">
+                      {value.toLocaleString()}
+                    </p>
+                    <p className="mt-1 text-muted-foreground text-xs">
+                      {label}
+                    </p>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
-        </div>
+        )}
 
         {/* Built for both sides - a multi-sided marketplace (seekers,
             employers, recruiters) benefits from telling guests that
@@ -981,6 +998,7 @@ export function HomePage({
   jobsAddedToday,
   jobsThisWeek,
   isSeeker,
+  statsAvailable = true,
 }: {
   initialJobs: Job[];
   totalActiveJobs: number;
@@ -988,10 +1006,12 @@ export function HomePage({
   jobsAddedToday: number;
   jobsThisWeek: number;
   isSeeker: boolean;
+  statsAvailable?: boolean;
 }) {
   return (
     <Suspense>
       <HomePageContent
+        statsAvailable={statsAvailable}
         companiesHiringCount={companiesHiringCount}
         initialJobs={initialJobs}
         isSeeker={isSeeker}

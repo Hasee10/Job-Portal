@@ -11,6 +11,7 @@ const BRAND_GRADIENT =
   "linear-gradient(135deg, #065C79 0%, #0982AC 50%, #0BA6DA 100%)";
 
 export function GuestHero({
+  statsAvailable = true,
   badge,
   title,
   description,
@@ -18,6 +19,7 @@ export function GuestHero({
   companiesHiringCount,
   children,
 }: {
+  statsAvailable?: boolean;
   badge: string;
   title: string;
   description: string;
@@ -59,9 +61,13 @@ export function GuestHero({
                 </span>
                 <div className="min-w-0">
                   <p className="truncate font-semibold text-xs text-zinc-900 dark:text-zinc-50">
-                    {totalActiveJobs.toLocaleString()} open roles
+                    {statsAvailable
+                      ? `${totalActiveJobs.toLocaleString()} open roles`
+                      : "Find your next role"}
                   </p>
-                  <p className="text-[11px] text-zinc-500">Updated daily</p>
+                  <p className="text-[11px] text-zinc-500">
+                    {statsAvailable ? "Updated daily" : "Jobs"}
+                  </p>
                 </div>
               </div>
             </div>
@@ -73,9 +79,15 @@ export function GuestHero({
                 </span>
                 <div className="min-w-0">
                   <p className="font-semibold text-xs text-zinc-900 dark:text-zinc-50">
-                    {companiesHiringCount.toLocaleString()} companies hiring
+                    {statsAvailable
+                      ? `${companiesHiringCount.toLocaleString()} companies hiring`
+                      : "Connect with employers"}
                   </p>
-                  <p className="text-[11px] text-zinc-500">Verified listings</p>
+                  <p className="text-[11px] text-zinc-500">
+                    {statsAvailable
+                      ? "Verified listings"
+                      : "Career opportunities"}
+                  </p>
                 </div>
               </div>
             </div>

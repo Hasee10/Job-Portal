@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { auth } from "@/auth";
 import { HomePage } from "@/components/home/HomePage";
 import { HowItWorksSection } from "@/components/home/HowItWorksSection";
@@ -43,7 +42,7 @@ export default async function Home() {
   const session = await auth();
   const isSeeker = session?.user?.role === "seeker";
 
-  const [jobs, totalActiveJobs, allJobs, testimonials] = await Promise.all([
+  const [jobs, totalActiveJobs, jobStats, testimonials] = await Promise.all([
     // Guests never render a single job card, so there's no reason to ship
     // the full job payload (titles, descriptions, salaries) down to their
     // browser at all - not just unrendered, actually absent from the page.
@@ -52,25 +51,8 @@ export default async function Home() {
     getHomepageJobStats(),
     listPublishedTestimonials(),
   ]);
-  if (allJobs === null) {
-    return (
-      <main className="container mx-auto space-y-6 px-4 py-20">
-        <h1 className="font-bold text-4xl">Jobs and Procurement</h1>
-        <p>Find your next opportunity or connect with businesses.</p>
-        <div className="flex gap-6">
-          <Link className="underline" href="/jobs">
-            Explore Jobs
-          </Link>
-          <Link className="underline" href="/procurement">
-            Explore Procurement
-          </Link>
-        </div>
-        <p className="text-muted-foreground">
-          Job listings and statistics are currently unavailable.
-        </p>
-      </main>
-    );
-  }
+  const statsAvailable = jobStats !== null;
+  const allJobs = jobStats ?? [];
   const companiesHiringCount = new Set(allJobs.map((job) => job.company)).size;
   // Companies with the most open roles right now - real data, not a
   // fabricated logo strip of brands that don't actually post here.
@@ -121,19 +103,23 @@ export default async function Home() {
         companiesHiringCount={companiesHiringCount}
         initialJobs={jobs}
         isSeeker={isSeeker}
+        statsAvailable={statsAvailable}
         jobsAddedToday={jobsAddedToday}
         jobsThisWeek={jobsThisWeek}
         totalActiveJobs={totalActiveJobs}
       />
       <HowItWorksSection />
-      <TrustSection
-        companiesHiringCount={companiesHiringCount}
-        featuredCompanies={featuredCompanies}
-        isSeeker={isSeeker}
-        recentlyPostedJobs={recentlyPostedJobs}
-        testimonials={testimonials}
-        totalActiveJobs={totalActiveJobs}
-      />
+      {(statsAvailable || testimonials.length > 0) && (
+        <TrustSection
+          companiesHiringCount={companiesHiringCount}
+          featuredCompanies={featuredCompanies}
+          isSeeker={isSeeker}
+          recentlyPostedJobs={recentlyPostedJobs}
+          statsAvailable={statsAvailable}
+          testimonials={testimonials}
+          totalActiveJobs={totalActiveJobs}
+        />
+      )}
     </>
   );
 }
