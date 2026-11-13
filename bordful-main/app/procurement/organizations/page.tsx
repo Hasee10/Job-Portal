@@ -6,8 +6,7 @@ import { auth } from "@/auth";
 import { OrganizationForm } from "@/components/procurement/OrganizationForm";
 import config from "@/config";
 import {
-  getOrganizationAttention,
-  listOrganizationsForMember,
+  listOrganizationsWithAttention,
   resolveOrganizationMember,
 } from "@/lib/procurement/organization-actions";
 
@@ -33,16 +32,7 @@ export default async function OrganizationsPage() {
     redirect("/sign-in?callbackUrl=/procurement/organizations");
   }
 
-  const organizations = await listOrganizationsForMember(member);
-  const attention = await Promise.all(
-    organizations.map((organization) =>
-      getOrganizationAttention(
-        organization.id,
-        organization.isBuyer,
-        organization.isSupplier
-      )
-    )
-  );
+  const organizations = await listOrganizationsWithAttention(member);
 
   return (
     <main className="min-h-[60vh] bg-background py-16">
@@ -58,11 +48,11 @@ export default async function OrganizationsPage() {
 
           {organizations.length > 0 && (
             <ul className="mt-8 space-y-3">
-              {organizations.map((organization, index) => {
+              {organizations.map((organization) => {
                 const needsAttention =
-                  attention[index].pendingConnections +
-                  attention[index].openInvitations +
-                  attention[index].pendingQuotations;
+                  organization.attention.pendingConnections +
+                  organization.attention.openInvitations +
+                  organization.attention.pendingQuotations;
                 return (
                   <li key={organization.id}>
                     <Link

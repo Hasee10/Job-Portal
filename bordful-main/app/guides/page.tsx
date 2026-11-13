@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { GuideLibrary } from "@/components/content/GuideLibrary";
 import config from "@/config";
+import { STARTER_GUIDES } from "@/lib/content/starter-guides";
+import { LearningHeader } from "@/components/content/LearningHeader";
 import { listPublishedGuides } from "@/lib/content/guide-actions";
 
 export const metadata: Metadata = {
@@ -11,37 +13,30 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function GuidesPage() {
-  const guides = await listPublishedGuides();
+  const published = await listPublishedGuides().catch(() => []);
+  const guides = published.length ? published : STARTER_GUIDES;
 
   return (
-    <main className="min-h-[60vh] bg-background py-16">
-      <div className="container mx-auto px-4">
-        <div className="mx-auto max-w-5xl">
-          <h1 className="font-bold text-3xl text-zinc-900 tracking-tight dark:text-zinc-50">
-            Career guides
-          </h1>
-          <p className="mt-2 text-zinc-600 dark:text-zinc-400">
-            Practical, no-fluff advice on job searching, applications, and
-            negotiation.
+    <main className="bg-muted/20 pb-16">
+      <LearningHeader kind="guides" />
+      <section className="container mx-auto max-w-6xl px-4 py-10">
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <p className="text-muted-foreground text-xs uppercase tracking-widest">
+              YOUR CAREER TOOLKIT
+            </p>
+            <h2 className="mt-2 font-semibold text-2xl">
+              Find the guidance you need
+            </h2>
+          </div>
+          <p className="max-w-sm text-muted-foreground text-sm">
+            Clear explanations. Practical next steps. Read at your own pace.
           </p>
-
-          {guides.length === 0 ? (
-            <div className="mt-8 rounded-lg border border-dashed p-6 text-center">
-              <p className="font-medium text-sm">
-                Our guide library is launching soon.
-              </p>
-              <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-                Check back shortly for practical guides on searching, applying,
-                and negotiating.
-              </p>
-            </div>
-          ) : (
-            <div className="mt-8">
-              <GuideLibrary guides={guides} />
-            </div>
-          )}
         </div>
-      </div>
+        <div className="mt-7">
+          <GuideLibrary guides={guides} />
+        </div>
+      </section>
     </main>
   );
 }

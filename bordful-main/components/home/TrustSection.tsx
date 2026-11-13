@@ -3,6 +3,7 @@ import type { Testimonial } from "@/lib/content/testimonial-actions";
 import { getCompanyLogoUrls } from "@/lib/utils/company-logo";
 
 export async function TrustSection({
+  statsAvailable = true,
   testimonials,
   companiesHiringCount,
   totalActiveJobs,
@@ -10,6 +11,7 @@ export async function TrustSection({
   recentlyPostedJobs,
   isSeeker,
 }: {
+  statsAvailable?: boolean;
   testimonials: Testimonial[];
   companiesHiringCount: number;
   totalActiveJobs: number;
@@ -32,18 +34,20 @@ export async function TrustSection({
   return (
     <div className="border-t bg-muted/20">
       <div className="container mx-auto px-4 py-12">
-        <div className="mx-auto max-w-3xl text-center">
-          <p className="text-muted-foreground text-sm">
-            <span className="font-semibold text-foreground">
-              {totalActiveJobs.toLocaleString()}
-            </span>{" "}
-            open roles right now, across{" "}
-            <span className="font-semibold text-foreground">
-              {companiesHiringCount.toLocaleString()}
-            </span>{" "}
-            companies currently hiring on the board.
-          </p>
-        </div>
+        {statsAvailable && (
+          <div className="mx-auto max-w-3xl text-center">
+            <p className="text-muted-foreground text-sm">
+              <span className="font-semibold text-foreground">
+                {totalActiveJobs.toLocaleString()}
+              </span>{" "}
+              open roles right now, across{" "}
+              <span className="font-semibold text-foreground">
+                {companiesHiringCount.toLocaleString()}
+              </span>{" "}
+              companies currently hiring on the board.
+            </p>
+          </div>
+        )}
 
         <CompanyLogoMarquee companies={companiesWithLogos} />
 

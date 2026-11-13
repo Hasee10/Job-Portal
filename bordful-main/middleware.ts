@@ -9,7 +9,7 @@ export const runtime = "nodejs";
 // Job listings used to be intentionally anonymous/browsable (see auth.ts) -
 // this reverses that: nothing under /jobs is reachable without a session,
 // whether someone lands there from the nav, a shared link, or a search
-// engine crawler.
+// engine crawler. The same session requirement applies on localhost.
 export default auth((req) => {
   if (!req.auth) {
     const signInUrl = new URL("/account/sign-in", req.nextUrl.origin);

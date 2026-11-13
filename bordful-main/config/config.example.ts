@@ -138,7 +138,7 @@ export const config = {
     },
     // Description for the about page
     description:
-      "Learn more about our mission to connect talent with opportunity.",
+      "A career worth pursuing. A partnership worth building. One platform to take your next step.",
     // Enable or disable the About page
     enabled: true,
 
@@ -158,25 +158,25 @@ export const config = {
       description:
         "Connect talented professionals with meaningful opportunities",
       // Logo URL for the schema
-      logo: "/caliber.svg",
+      logo: "/caliber-wordmark.svg",
     },
 
     // Section titles and content
     sections: {
       mission: {
         content:
-          "We're on a mission to connect talented professionals with meaningful opportunities and help organizations find the perfect candidates to drive their success.",
-        title: "Mission",
+          "Caliber helps people explore their next career move and businesses discover their next working relationship. Those ambitions have two focused spaces: Jobs and Procurement.",
+        title: "Opportunity, with direction",
       },
       story: {
         content:
-          "Founded with a passion for revolutionizing the job search experience, our platform was built to address the challenges faced by both job seekers and employers in today's competitive market.",
-        title: "Story",
+          "Jobs brings role discovery, applications and career resources together. Procurement gives buyers and suppliers a place to discover businesses, build connections and manage sourcing.",
+        title: "Two paths, one clear purpose",
       },
       team: {
         content:
-          "Our diverse team brings together expertise from recruitment, technology, and design to create an innovative job board solution that puts user experience first.",
-        title: "Team",
+          "We aim to keep important context close: your experience when looking for work, and your capabilities and relationships when doing business. Public discovery and private workspaces each have a clear role.",
+        title: "Built around the next step",
       },
     },
     // Show or hide the About page in navigation
@@ -287,7 +287,7 @@ export const config = {
     defaultCurrency: "USD" as CurrencyCode,
   },
   description:
-    "Caliber matches candidates to roles and buyers to vendors - one AI-powered platform for job seekers, employers, recruiters, and procurement teams.",
+    "Caliber matches candidates to roles and buyers to vendors - one platform for Jobs and Procurement.",
 
   // Email Provider Configuration
   email: {
@@ -318,97 +318,104 @@ export const config = {
     // Categories of FAQs
     categories: [
       {
+        title: "Getting started",
         items: [
           {
-            answer:
-              "Caliber is a modern, minimal job board built with Next.js, Tailwind CSS, and Supabase. It features static generation, client-side search, and a clean UI with Geist font.",
             question: "What is Caliber?",
+            answer:
+              "Caliber brings two paths together: Jobs for your career and Procurement for your business. Explore roles, career resources, business profiles and public tender notices.",
           },
           {
+            question: "Do I need an account to explore?",
             answer:
-              "Yes, browsing jobs on Caliber is completely free. You can search and apply to any listed role at no cost.",
-            question: "Is Caliber free to use?",
+              "Public business profiles, tenders and career resources can be explored without a business workspace. Jobs and personal tools may ask you to sign in. Private business activity requires an account and appropriate organization membership.",
           },
           {
+            question: "Which account should I use?",
             answer:
-              "Job listings are updated in real-time using Incremental Static Regeneration (ISR) with a 5-minute revalidation period. This means new jobs appear without manual rebuilds.",
-            question: "How often are job listings updated?",
+              "Use Jobs sign-in for career tools and business sign-in for Procurement. Existing employers and recruiters can continue using their dedicated sign-in pages.",
           },
         ],
-        title: "General Questions",
       },
       {
+        title: "Jobs and applications",
         items: [
           {
+            question: "How do I find a relevant role?",
             answer:
-              "You can search for jobs using the search bar on the homepage. You can also filter jobs by type, career level, remote work preference, salary range, visa sponsorship status, and languages.",
-            question: "How do I search for jobs?",
+              "Open Jobs to search and filter by the available options, including location, job type and experience. Open a listing to check requirements and application instructions.",
           },
           {
+            question: "Where does the Apply button take me?",
             answer:
-              "Yes, you can subscribe to job alerts to receive notifications when new jobs matching your criteria are posted. Visit the Job Alerts page to set up your preferences.",
+              "Depending on the listing, apply through Caliber or continue to an external application site. Check the employer’s instructions. A listing without a valid application destination cannot accept an application.",
+          },
+          {
+            question: "Where can I get career advice?",
+            answer:
+              "Career guides covers resumes, applications and interviews. Masterclasses lists video learning; playback is available when a recording is published.",
+          },
+          {
             question: "Can I set up job alerts?",
-          },
-          {
             answer:
-              "Each job listing has an 'Apply' button that will direct you to the application page specified by the employer. The application process may vary depending on the employer.",
-            question: "How do I apply for a job?",
+              "Visit Job alerts to see the subscription options and choose your preferences. Check the email address and confirmation instructions shown during setup.",
           },
         ],
-        title: "For Job Seekers",
       },
       {
+        title: "Business and procurement",
         items: [
           {
+            question: "Can my business be both a buyer and a supplier?",
             answer:
-              "You can post a job by clicking the 'Post a Job' button in the navigation bar. You'll need to create an account and select a pricing plan before posting your job.",
-            question: "How do I post a job?",
+              "Yes. A business profile can represent a buyer, a supplier or both. Choose the roles that reflect how your organization participates.",
           },
           {
+            question: "Are directory businesses verified?",
             answer:
-              "A good job posting should include a clear title, company name, job type, salary range, job description, requirements, benefits, and application instructions. The more details you provide, the more qualified candidates you'll attract.",
-            question: "What information should I include in my job posting?",
+              "Business directory information is self-declared. Caliber does not independently verify those claims. Carry out your own checks before entering a business relationship.",
           },
           {
+            question: "How do public tenders differ from workspace requests?",
             answer:
-              "Job postings are typically visible for 30 days, depending on your selected plan. You can always extend the visibility period by upgrading your plan or renewing your posting.",
-            question: "How long will my job posting be visible?",
+              "Public tenders are aggregated notices from external sources such as TED and PPRA. Follow the original notice for requirements and submissions. Workspace requests are sourcing activity managed by organizations on Caliber.",
+          },
+          {
+            question: "Which request format should I choose?",
+            answer:
+              "Use an RFI to explore capabilities, an RFQ for pricing against a defined requirement, an RFP to evaluate proposed approaches, or a tender for a formal structured process.",
+          },
+          {
+            question: "Who can access a private workspace?",
+            answer:
+              "Private access depends on membership and permissions in that organization. A public profile does not grant access to private requests, messages or quotations.",
           },
         ],
-        title: "For Employers",
       },
       {
+        title: "Account and support",
         items: [
           {
+            question: "How do I recover account access?",
             answer:
-              "Caliber is built with Next.js, Tailwind CSS, and uses Supabase as the backend.\n\n## Core Technologies\n\n* **Next.js**: For server-side rendering and static site generation\n* **Tailwind CSS**: For utility-first styling\n* **Supabase**: As a flexible backend database\n* **TypeScript**: For type safety and better developer experience\n\nIt also features Incremental Static Regeneration (ISR) for real-time updates and client-side search with memoization.",
-            isRichText: true,
-            question: "What technologies does Caliber use?",
+              "Use Forgot password for email-and-password business accounts. For social sign-in, use the same provider as before. Recruiter accounts have their own recovery page.",
           },
           {
+            question: "How do I contact support?",
             answer:
-              'Yes, Caliber is designed to be easily customizable. You can modify the configuration file to change the branding, navigation, and other aspects of the job board.\n\n### Key customization options:\n\n- **Branding**: Change the logo, colors, and text\n- **Navigation**: Add or remove menu items\n- **Features**: Enable or disable features like job alerts and RSS feeds\n- **Layout**: Modify the layout and styling\n\nFor more advanced customization, you can extend the codebase to add new features.\n\n```typescript\n// Example config customization\nconst config = {\n  title: "My Custom Job Board",\n  description: "Find your dream job here",\n  // ... more configuration\n};\n```',
-            isRichText: true,
-            question: "Can I customize Caliber for my own job board?",
+              "Open Contact and choose the relevant topic. Include the page and a short description. Never send passwords, sign-in codes or confidential bid documents by email.",
           },
           {
+            question: "Where are privacy and terms?",
             answer:
-              'Yes, Caliber includes comprehensive SEO features such as:\n\n1. Automatic XML sitemap generation\n2. Programmatic robots.txt\n3. SEO-friendly URLs with descriptive job slugs\n4. Dynamic sitemap updates every 5 minutes\n5. Structured data for job postings\n\n> "SEO is not just about being search engine-friendly, but also about creating a better user experience."',
-            isRichText: true,
-            question: "Is Caliber SEO-friendly?",
-          },
-          {
-            answer:
-              "Caliber can be deployed to various platforms, with Vercel being the recommended option.\n\n## Deployment Steps\n\n1. Fork the repository\n2. Create your `config.ts` file\n3. Connect your repository to Vercel\n4. Configure environment variables\n5. Deploy!\n\n### Environment Variables\n\n| Variable | Description | Required |\n|----------|-------------|----------|\n| `SUPABASE_URL` | Your Supabase project URL | Yes |\n| `SUPABASE_ANON_KEY` | Your Supabase anon/public API key | Yes |\n| `NEXT_PUBLIC_APP_URL` | Your site URL | Yes |\n\nFor more detailed instructions, please refer to the deployment documentation.",
-            isRichText: true,
-            question: "How do I deploy my Caliber job board?",
+              "Privacy & cookies and Terms of service are linked in the footer. They contain the published wording and contact links.",
           },
         ],
-        title: "Technical Questions",
       },
     ],
+
     description:
-      "Find answers to common questions about our job board and services.",
+      "Practical help with Jobs, business profiles, procurement and your account.",
     // Enable or disable the FAQ page
     enabled: true,
 
@@ -456,14 +463,14 @@ export const config = {
     // Brand section (reuses nav social links)
     brand: {
       description:
-        "Browse curated opportunities from leading companies. Updated daily with the latest positions.",
+        "Find your next role. Connect with buyers and suppliers. Two clear paths for your career and your business.",
       // Optional logo configuration specifically for the footer
       logo: {
         alt: "Caliber",
         enabled: true,
         height: 32,
         // Use different image from navbar if needed (e.g., light logo for dark footer)
-        src: "/caliber-light.svg", // Path to footer-specific logo (light version)
+        src: "/caliber-wordmark-light.svg", // Path to footer-specific logo (light version)
         width: 112,
       },
       order: 1, // Display order in footer grid (lower numbers displayed first)
@@ -512,6 +519,18 @@ export const config = {
         order: 3,
         show: true,
         title: "Jobs",
+      },
+      {
+        id: "procurement",
+        links: [
+          { label: "Overview", link: "/procurement" },
+          { label: "Business directory", link: "/procurement/directory" },
+          { label: "Public tenders", link: "/procurement/tenders" },
+          { label: "Business workspace", link: "/procurement/organizations" },
+        ],
+        order: 4,
+        show: true,
+        title: "Procurement",
       },
       {
         id: "legal",
@@ -848,13 +867,13 @@ export const config = {
       alt: "Caliber", // Alt text for the logo
       enabled: true, // Set to true to use a custom logo instead of icon + text
       height: 30, // Height of the logo in pixels
-      src: "/caliber.svg", // Path to your logo image (place it in the public directory)
+      src: "/caliber-wordmark.svg", // Path to your logo image (place it in the public directory)
       width: 105, // Width of the logo in pixels
     },
     // White-stroke variant swapped in automatically for dark mode (see
     // Nav's logoSrc logic) - the black-stroke logo.src above is invisible
     // against a dark background otherwise.
-    logoDark: "/caliber-light.svg",
+    logoDark: "/caliber-wordmark-light.svg",
     // Kept to a small number of top-level items on purpose - About/Pricing/
     // Contact and Job Alerts used to sit as their own flat links next to the
     // two existing dropdowns, which crowded the desktop bar. They're folded
@@ -873,6 +892,7 @@ export const config = {
           { label: "Job Levels", link: "/jobs/levels" },
           { label: "Job Languages", link: "/jobs/languages" },
           { label: "Job Alerts", link: "/job-alerts" },
+          { label: "Post a job", link: "/pricing" },
         ],
         label: "Jobs",
         link: "/jobs",
@@ -892,7 +912,6 @@ export const config = {
         items: [
           { label: "Career Guides", link: "/guides" },
           { label: "MasterClasses", link: "/masterclasses" },
-          { label: "Recruiters", link: "/recruiters" },
         ],
         label: "Resources",
         link: "/guides",
@@ -1007,7 +1026,7 @@ export const config = {
         show: true,
 
         // Logo source path (direct path from public folder)
-        src: "/caliber-light.svg",
+        src: "/caliber-wordmark-light.svg",
 
         // Logo dimensions
         width: 185, // IMPORTANT: Use a fixed pixel value
@@ -1035,8 +1054,8 @@ export const config = {
       show: true,
 
       // Logo source path (direct path from public folder)
-      // Examples: "/caliber.svg", "/logo/my-logo.png", etc.
-      src: "/caliber-light.svg",
+      // Examples: "/caliber-wordmark.svg", "/logo/my-logo.png", etc.
+      src: "/caliber-wordmark-light.svg",
 
       // Logo dimensions
       width: 185, // IMPORTANT: Use a fixed pixel value, "auto" doesn't work reliably
@@ -1211,8 +1230,7 @@ export const config = {
           link: "/contact",
           variant: "default", // Using button variants
         },
-        description:
-          "For recruiters and agencies hiring continuously across roles.",
+        description: "For teams hiring continuously across roles.",
         features: [
           "Unlimited featured listings",
           "Priority placement",
@@ -1318,13 +1336,13 @@ export const config = {
   // before the matchmaking repositioning, still pure job-board copy on
   // every single tab and search result regardless of which product
   // surface (jobs or procurement) the visitor is actually on.
-  title: "AI Matchmaking for Jobs and Procurement",
+  title: "Caliber",
 
   // UI Configuration
   ui: {
     // Hero section background color (CSS color value)
     // Can be hex, rgb, hsl, etc. Leave empty for default.
-    heroBackgroundColor: "#042454", // Example: light gray background
+    heroBackgroundColor: "var(--hero-surface)", // Example: light gray background
 
     // Hero section background image
     // Takes precedence over both gradient and solid background when enabled
@@ -1336,7 +1354,7 @@ export const config = {
       enabled: false, // Set to true to enable background image
       // Optional overlay for better text readability
       overlay: {
-        color: "rgba(9, 130, 172, 0.75)", // Brand blue (#0982AC) tint
+        color: "rgba(23, 61, 51, 0.75)", // Forest ink tint
         enabled: true, // Set to true to enable a color overlay
         opacity: 0.75, // Opacity value from 0 to 1 (alternative to using rgba)
       },
@@ -1368,23 +1386,14 @@ export const config = {
 
     // Hero section gradient background
     // Takes precedence over heroBackgroundColor when enabled
+    // Legacy configuration is retained for compatibility. Shared page headers
+    // use the Caliber hero tokens instead of per-page gradient overrides.
     heroGradient: {
-      // For radial gradients: "circle", "ellipse at center", etc.
-      colors: [
-        "#065C79", // Start color (deep blue)
-        "#0982AC", // Middle color (brand primary)
-        "#0BA6DA", // End color (lighter blue)
-      ],
-      direction: "135deg", // For linear gradients: "to right", "to bottom", "45deg", etc.
-      // Branded gradient (matches ui.primaryColor #0982AC) replaces the
-      // generic stock-photo swirl background - ties the hero to the site's
-      // actual identity instead of a random blue/black image with no
-      // connection to Caliber, and drops an external image dependency.
-      enabled: true, // Set to true to enable gradient background
-      // Optional stops for precise control (0-100%)
-      // If not provided, colors will be evenly distributed
+      colors: ["#173d33", "#457565", "#d5e8a8"],
+      direction: "135deg",
+      enabled: false,
       stops: ["0%", "50%", "100%"],
-      type: "linear" as "linear" | "radial", // Type of gradient: "linear" or "radial"
+      type: "linear" as "linear" | "radial",
     },
 
     // Optional: Configure an image for the right side of the hero section
@@ -1405,15 +1414,15 @@ export const config = {
 
     // Hero section subtitle color (CSS color value)
     // Can be hex, rgb, hsl, etc. Leave empty for default.
-    heroSubtitleColor: "#fff", // Example: "text-gray-600"
+    heroSubtitleColor: "var(--hero-muted)", // Example: "text-gray-600"
 
     // Hero section main title color (CSS color value)
     // Can be hex, rgb, hsl, etc. Leave empty for default.
-    heroTitleColor: "#fff", // Example: "text-gray-900"
+    heroTitleColor: "var(--hero-ink)", // Example: "text-gray-900"
 
     // Primary color used throughout the site (buttons, links, etc.)
     // Can be hex, rgb, hsl, etc. Leave empty for default.
-    primaryColor: "#0982AC", // Example: amber color
+    primaryColor: "hsl(var(--primary))", // Example: amber color
   },
   url:
     process.env.NEXT_PUBLIC_APP_URL ||

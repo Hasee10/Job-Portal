@@ -1,3 +1,5 @@
+import { cache } from "react";
+import { STARTER_GUIDES } from "@/lib/content/starter-guides";
 import { ArrowLeft, Clock } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -20,13 +22,20 @@ export const dynamic = "force-dynamic";
 
 const MAX_RELATED_GUIDES = 3;
 
+const resolveGuide = cache(
+  async (slug: string) =>
+    (await getPublishedGuideBySlug(slug).catch(() => null)) ??
+    STARTER_GUIDES.find((guide) => guide.slug === slug) ??
+    null
+);
+
 export async function generateMetadata({
   params,
 }: {
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const guide = await getPublishedGuideBySlug(slug);
+  const guide = await resolveGuide(slug);
   if (!guide) {
     return { title: `Career Guides | ${config.title}` };
   }
@@ -42,7 +51,7 @@ export default async function GuideDetailPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const guide = await getPublishedGuideBySlug(slug);
+  const guide = await resolveGuide(slug);
   if (!guide) {
     notFound();
   }
@@ -50,7 +59,8 @@ export default async function GuideDetailPage({
   const headings = extractGuideHeadings(guide.content);
   const readMinutes = estimateReadMinutes(guide.content);
 
-  const allGuides = await listPublishedGuides();
+  const published = await listPublishedGuides().catch(() => []);
+  const allGuides = published.length ? published : STARTER_GUIDES;
   const relatedGuides = allGuides
     .filter((g) => g.id !== guide.id && g.category === guide.category)
     .slice(0, MAX_RELATED_GUIDES);
@@ -75,7 +85,7 @@ export default async function GuideDetailPage({
                 {guide.category}
               </span>
             )}
-            <span className="flex items-center gap-1 text-xs text-zinc-500 dark:text-zinc-500">
+            <span className="flex items-center gap-1 text-muted-foreground text-xs">
               <Clock aria-hidden="true" className="h-3 w-3" />
               {readMinutes} min read
             </span>

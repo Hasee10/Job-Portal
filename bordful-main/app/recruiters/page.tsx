@@ -34,7 +34,7 @@ export default async function RecruitersPage() {
 
           {recruiters.length === 0 ? (
             <div className="mx-auto mt-8 max-w-md rounded-xl border border-zinc-200 border-dashed bg-white p-8 text-center dark:border-zinc-800 dark:bg-zinc-900/60">
-              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-cyan-50 text-cyan-700 dark:bg-cyan-500/10 dark:text-cyan-400">
+              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-accent text-primary dark:bg-accent dark:text-primary">
                 <Users aria-hidden="true" className="h-5 w-5" />
               </div>
               <p className="mt-4 font-semibold text-zinc-900 dark:text-zinc-50">

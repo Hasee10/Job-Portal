@@ -1,125 +1,173 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ContactInfoSection } from "@/components/contact/ContactInfoSection";
-import { SupportChannelCard } from "@/components/contact/SupportChannelCard";
-import { Button } from "@/components/ui/button";
-import { ContactSchema } from "@/components/ui/contact-schema";
-import { HeroSection } from "@/components/ui/hero-section";
-import { MetadataBreadcrumb } from "@/components/ui/metadata-breadcrumb";
+import {
+  Mail,
+  ArrowUpRight,
+  CircleHelp,
+  BriefcaseBusiness,
+  Building2,
+  ShieldCheck,
+  Check,
+} from "lucide-react";
 import config from "@/config";
-import { resolveColor } from "@/lib/utils/colors";
-
-// Add metadata for SEO
+import { ContactSchema } from "@/components/ui/contact-schema";
 export const metadata: Metadata = {
-  alternates: {
-    canonical: "/contact",
-    languages: {
-      en: `${config.url}/contact`,
-      "x-default": `${config.url}/contact`,
-    },
-  },
+  title: `Contact | ${config.nav.title}`,
   description:
-    config.contact?.description ||
-    "Have questions or feedback? We'd love to hear from you.",
-  keywords:
-    config.contact?.keywords ||
-    "contact us, support, help, questions, feedback, get in touch",
-  openGraph: {
-    description:
-      config.contact?.description ||
-      "Have questions or feedback? We'd love to hear from you.",
-    title: `${config.contact?.title || "Contact"} | ${config.title}`,
-    type: "website",
-    url: `${config.url}/contact`,
-  },
-  title: `${config.contact?.title || "Contact"} | ${config.title}`,
-  twitter: {
-    card: "summary_large_image",
-    description:
-      config.contact?.description ||
-      "Have questions or feedback? We'd love to hear from you.",
-    title: `${config.contact?.title || "Contact"} | ${config.title}`,
-  },
+    "Questions about Jobs, Procurement or your account? Find the right way to contact Caliber.",
+  alternates: { canonical: "/contact" },
 };
-
-// This page will be static
 export const dynamic = "force-static";
-
 export default function ContactPage() {
-  // If contact page is not enabled, redirect to home page
-  if (!config.contact?.enabled) {
-    return (
-      <main className="min-h-screen bg-background">
-        <div className="container mx-auto px-4 py-12 text-center">
-          <h1 className="mb-4 font-bold text-2xl">
-            Contact Page Not Available
-          </h1>
-          <p className="mb-6">The contact page is currently not available.</p>
-          <Link href="/">
-            <Button
-              style={{ backgroundColor: resolveColor(config.ui.primaryColor) }}
-              variant="primary"
-            >
-              Return Home
-            </Button>
-          </Link>
-        </div>
-      </main>
-    );
-  }
-
+  const email = config.contact.contactInfo.email;
+  const routes = [
+    {
+      title: "Jobs & your account",
+      description:
+        "Questions about job listings, applications, resumes or signing in.",
+      icon: BriefcaseBusiness,
+      subject: "Jobs and account support",
+    },
+    {
+      title: "Business & procurement",
+      description:
+        "Help with business profiles, connections, requests or supplier workflows.",
+      icon: Building2,
+      subject: "Business and procurement support",
+    },
+    {
+      title: "Privacy & other inquiries",
+      description:
+        "Questions about personal information, feedback or general inquiries.",
+      icon: ShieldCheck,
+      subject: "Privacy or general inquiry",
+    },
+  ];
   return (
-    <main className="min-h-screen bg-background">
-      {/* Add ContactPage Schema */}
+    <main className="bg-muted/20 pb-16">
       <ContactSchema
-        address={config.contact.contactInfo.address}
-        companyName={config.contact.contactInfo.companyName}
-        description={config.contact.schema?.description}
-        email={config.contact.contactInfo.email}
-        phone={config.contact.contactInfo.phone}
+        companyName={config.nav.title}
+        email={email}
+        phone={config.contact.contactInfo.phone || undefined}
+        address={config.contact.contactInfo.address || undefined}
       />
-
-      <HeroSection
-        badge={config.contact.badge || "Contact Us"}
-        description={config.contact.description}
-        heroImage={config.contact.heroImage}
-        title={config.contact.title}
-      />
-
-      {/* Contact and Support Channels */}
-      <div className="container mx-auto px-4 py-10">
-        <div className="mb-6">
-          <MetadataBreadcrumb metadata={metadata} pathname="/contact" />
-        </div>
-
-        <h2 className="mb-8 text-center font-semibold text-2xl text-zinc-900 dark:text-zinc-100">
-          {config.contact.supportChannels.title}
-        </h2>
-
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
-          {/* Contact Information Card (First Card) */}
-          <div className="h-full">
-            <ContactInfoSection
-              address={config.contact.contactInfo.address}
-              companyName={config.contact.contactInfo.companyName}
-              description={config.contact.contactInfo.description}
-              email={config.contact.contactInfo.email}
-              phone={config.contact.contactInfo.phone}
-              title={config.contact.contactInfo.title}
-            />
+      <section className="border-b bg-background">
+        <div className="container mx-auto grid max-w-6xl gap-8 px-4 py-12 sm:py-16 lg:grid-cols-[1.35fr_1fr]">
+          <div>
+            <p className="text-muted-foreground text-xs uppercase tracking-widest">
+              CALIBER / CONTACT
+            </p>
+            <h1 className="mt-4 max-w-xl font-semibold text-4xl leading-tight tracking-tight sm:text-5xl">
+              Let’s point you in the right direction.
+            </h1>
+            <p className="mt-5 max-w-xl text-muted-foreground text-base leading-7">
+              A product question, an account issue or an idea to share. Choose
+              the topic that best fits and tell us how we can help.
+            </p>
           </div>
-
-          {/* Support Channel Cards */}
-          {config.contact.supportChannels.channels.map((channel, index) => (
-            <SupportChannelCard
-              buttonLink={channel.buttonLink}
-              buttonText={channel.buttonText}
-              description={channel.description}
-              icon={channel.icon}
-              key={channel.title || index}
-              title={channel.title}
+          <div className="self-center rounded-2xl border bg-card p-7">
+            <Mail
+              className="text-[hsl(var(--primary))] dark:text-lime-200"
+              size={24}
+              aria-hidden="true"
             />
+            <p className="mt-4 text-muted-foreground text-xs uppercase tracking-widest">
+              DIRECT EMAIL
+            </p>
+            <a
+              href={`mailto:${email}`}
+              className="mt-2 inline-flex break-all items-center gap-3 font-medium text-xl"
+            >
+              {email}
+              <ArrowUpRight size={18} className="shrink-0" aria-hidden="true" />
+            </a>
+            <p className="mt-4 text-muted-foreground text-sm leading-6">
+              Prefer to write directly? Include the page you were using and a
+              short description of your question.
+            </p>
+          </div>
+        </div>
+      </section>
+      <div className="container mx-auto max-w-6xl px-4 py-10">
+        <h2 className="font-semibold text-2xl">What can we help with?</h2>
+        <div className="mt-6 grid gap-5 md:grid-cols-3">
+          {routes.map((route) => (
+            <a
+              key={route.subject}
+              href={`mailto:${email}?subject=${encodeURIComponent(route.subject)}`}
+              className="group flex flex-col rounded-2xl border bg-card p-6 hover:border-primary/50"
+            >
+              <route.icon
+                size={25}
+                className="text-[hsl(var(--primary))] dark:text-lime-200"
+                aria-hidden="true"
+              />
+              <h3 className="mt-5 font-semibold text-lg">{route.title}</h3>
+              <p className="mb-6 mt-3 text-muted-foreground text-sm leading-6">
+                {route.description}
+              </p>
+              <span className="mt-auto inline-flex items-center gap-2 font-medium text-sm">
+                Email us
+                <ArrowUpRight size={15} aria-hidden="true" />
+              </span>
+            </a>
           ))}
+        </div>
+        <div className="mt-8 grid gap-6 lg:grid-cols-2">
+          <section className="rounded-2xl border bg-card p-7">
+            <h2 className="font-semibold text-lg">A little context helps</h2>
+            <p className="mt-3 text-muted-foreground text-sm leading-6">
+              To make your message easier to understand, include:
+            </p>
+            <ul className="mt-4 space-y-3 text-sm">
+              {[
+                "The page or listing URL you were viewing",
+                "What you expected and what happened instead",
+                "A screenshot with personal information hidden",
+              ].map((item) => (
+                <li key={item} className="flex items-start gap-3">
+                  <Check
+                    size={16}
+                    className="mt-0.5 shrink-0 text-[hsl(var(--primary))] dark:text-lime-200"
+                    aria-hidden="true"
+                  />
+                  {item}
+                </li>
+              ))}
+            </ul>
+            <p className="mt-5 border-t pt-4 text-muted-foreground text-xs leading-6">
+              Do not send passwords, authentication codes or confidential bid
+              documents by email.
+            </p>
+          </section>
+          <section className="rounded-2xl border bg-[var(--brand-panel)] p-7 text-white">
+            <CircleHelp
+              size={25}
+              className="text-[#b3e4d7]"
+              aria-hidden="true"
+            />
+            <h2 className="mt-5 font-semibold text-xl">
+              Looking for a quick answer?
+            </h2>
+            <p className="mt-3 text-[var(--brand-soft-text)] text-sm leading-7">
+              Explore the help pages for common questions, or read our policies
+              before getting in touch.
+            </p>
+            <div className="mt-6 flex flex-wrap gap-3">
+              <Link
+                className="rounded-lg bg-[#b3e4d7] px-4 py-2.5 font-medium text-[var(--brand-ink)] text-sm"
+                href="/faq"
+              >
+                Browse FAQs
+              </Link>
+              <Link
+                className="rounded-lg border border-white/30 px-4 py-2.5 text-sm"
+                href="/privacy"
+              >
+                Privacy & cookies
+              </Link>
+            </div>
+          </section>
         </div>
       </div>
     </main>

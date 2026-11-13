@@ -4,29 +4,42 @@ import { ArrowUpRight } from "lucide-react";
 import { useState } from "react";
 import { ApplyModal } from "@/components/jobs/ApplyModal";
 import { Button } from "@/components/ui/button";
-import config from "@/config";
-import { resolveColor } from "@/lib/utils/colors";
 
 export function ApplyButton({
   jobId,
   jobTitle,
   applyUrl,
   acceptsApplications,
+  size = "xs",
+  fullWidth = false,
 }: {
   jobId: string;
   jobTitle: string;
   applyUrl: string;
   acceptsApplications: boolean;
+  size?: "xs" | "sm" | "default" | "lg";
+  fullWidth?: boolean;
 }) {
   const [showModal, setShowModal] = useState(false);
 
+  if (!acceptsApplications && !applyUrl) {
+    return (
+      <Button
+        disabled
+        size={size}
+        className={fullWidth ? "w-full" : "w-full sm:w-auto"}
+      >
+        Applications unavailable
+      </Button>
+    );
+  }
   if (!acceptsApplications) {
     return (
       <Button
         asChild
-        className="w-full gap-1.5 text-xs sm:w-auto"
-        size="xs"
-        style={{ backgroundColor: resolveColor(config.ui.primaryColor) }}
+        className={fullWidth ? "w-full gap-1.5" : "w-full gap-1.5 sm:w-auto"}
+        size={size}
+        style={{ backgroundColor: "hsl(var(--primary))" }}
         variant="primary"
       >
         <a href={applyUrl} rel="noopener noreferrer" target="_blank">
@@ -40,10 +53,10 @@ export function ApplyButton({
   return (
     <>
       <Button
-        className="w-full gap-1.5 text-xs sm:w-auto"
+        className={fullWidth ? "w-full gap-1.5" : "w-full gap-1.5 sm:w-auto"}
         onClick={() => setShowModal(true)}
-        size="xs"
-        style={{ backgroundColor: resolveColor(config.ui.primaryColor) }}
+        size={size}
+        style={{ backgroundColor: "hsl(var(--primary))" }}
         variant="primary"
       >
         Apply Now

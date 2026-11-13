@@ -37,7 +37,7 @@ function LevelCard({ href, title, count }: LevelCardProps) {
     >
       <div className="space-y-1.5 sm:space-y-2">
         <h2 className="font-medium text-sm sm:text-base">{title}</h2>
-        <div className="text-gray-500 text-xs sm:text-sm dark:text-gray-500">
+        <div className="text-gray-500 text-xs sm:text-sm dark:text-muted-foreground">
           {count.toLocaleString()} {count === 1 ? "position" : "positions"}{" "}
           available
         </div>

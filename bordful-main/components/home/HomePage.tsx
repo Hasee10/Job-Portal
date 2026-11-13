@@ -1,11 +1,9 @@
 "use client";
 
-import { formatDistanceToNow, isToday } from "date-fns";
-import { ArrowRight, Briefcase, Search } from "lucide-react";
-import Image from "next/image";
+import { formatDistanceToNow } from "date-fns";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
-import { GuestHero } from "@/components/home/GuestHero";
+import { PublicLanding } from "@/components/home/PublicLanding";
 import { JobCard } from "@/components/jobs/JobCard";
 import { SaveSearchButton } from "@/components/jobs/SaveSearchButton";
 import { useSeekerJobState } from "@/components/jobs/SeekerJobStateContext";
@@ -73,6 +71,7 @@ function HomePageContent({
   jobsAddedToday: jobsAddedTodayProp,
   jobsThisWeek: jobsThisWeekProp,
   isSeeker,
+  statsAvailable = true,
 }: {
   initialJobs: Job[];
   totalActiveJobs: number;
@@ -80,6 +79,7 @@ function HomePageContent({
   jobsAddedToday: number;
   jobsThisWeek: number;
   isSeeker: boolean;
+  statsAvailable?: boolean;
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -437,185 +437,14 @@ function HomePageContent({
     return mostRecentDate; // Return the timestamp
   }, [initialJobs]);
 
-  // Calculate jobs added today
-  const jobsAddedToday = useMemo(
-    () =>
-      initialJobs.filter((job) => isToday(new Date(job.posted_date))).length,
-    [initialJobs]
-  );
+  // Global figures come from complete server-side statistics, never the
+  // bounded preview of jobs delivered to this client.
+  const jobsAddedToday = jobsAddedTodayProp;
+  const jobsThisWeek = jobsThisWeekProp;
+  const companiesHiringCount = companiesHiringCountProp;
 
-  // Activity stats
-  const jobsThisWeek = useMemo(() => {
-    const weekAgo = new Date();
-    weekAgo.setDate(weekAgo.getDate() - 7);
-    return initialJobs.filter((job) => new Date(job.posted_date) > weekAgo)
-      .length;
-  }, [initialJobs]);
-
-  const companiesHiringCount = useMemo(
-    () => new Set(initialJobs.map((job) => job.company)).size,
-    [initialJobs]
-  );
-
-  // Guests don't get the job feed at all - no search, no stats tied to job
-  // data, no listings, no filters. Just the hero copy and a sign-in/sign-up
-  // prompt. This is a deliberate reversal of the "show listings to guests
-  // for SEO" approach - a product decision, not a bug.
-  //
-  // No min-h-screen here (unlike the seeker <main> below) - that class
-  // forces the wrapper to fill the viewport even though this trimmed-down
-  // hero is short, which left a large dead gap before the next section
-  // (TrustSection, rendered as a sibling in app/page.tsx).
-  if (!isSeeker) {
-    return (
-      <main className="bg-background">
-        <GuestHero
-          badge={config.badge}
-          companiesHiringCount={companiesHiringCountProp}
-          description={config.description}
-          title={config.title}
-          totalActiveJobs={totalActiveJobs}
-        >
-          <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
-            <a
-              className="inline-flex items-center justify-center rounded-md bg-white px-5 py-2.5 font-medium text-primary text-sm transition-opacity hover:opacity-90"
-              href="/account/sign-in?intent=signup"
-            >
-              Sign up to browse jobs
-            </a>
-            <a
-              className="inline-flex items-center justify-center rounded-md border border-white/30 px-5 py-2.5 font-medium text-sm text-white transition-colors hover:bg-white/10"
-              href="/account/sign-in"
-            >
-              Sign in
-            </a>
-          </div>
-          {/* Risk-reversal micro-copy right under the CTA - reduces
-              signup friction anxiety (free, no card, fast). */}
-          <p className="mt-3 text-white/70 text-xs">
-            Free forever · No credit card · Takes under a minute
-          </p>
-        </GuestHero>
-
-        {/* Product showcase: one confident, real-looking mockup instead of
-            a blurred/gimmicky "unlock" overlay. Built from our own JobCard
-            visual language (title, salary chip, match ring, Apply button)
-            so it reads as genuine product UI, not a generic template - the
-            content is illustrative (no real listing data), same as how
-            Indeed's own feature-page mockups use a demo persona rather
-            than real user data. */}
-        <div className="border-t bg-muted/20 py-14">
-          <div className="container mx-auto px-4">
-            <div className="mx-auto grid max-w-5xl gap-10 md:grid-cols-2 md:items-center md:gap-12">
-              <div>
-                <p className="font-semibold text-primary text-xs uppercase tracking-wider">
-                  See it in action
-                </p>
-                <h2 className="mt-2 font-bold text-2xl text-zinc-900 tracking-tight sm:text-3xl dark:text-zinc-50">
-                  Know your fit before you apply.
-                </h2>
-                <p className="mt-3 max-w-sm text-muted-foreground text-sm">
-                  Every role you see comes with an AI match score based on your
-                  actual skills - so you spend your applications on roles worth
-                  applying to.
-                </p>
-                <a
-                  className="mt-6 inline-flex items-center justify-center rounded-md bg-primary px-5 py-2.5 font-medium text-primary-foreground text-sm transition-opacity hover:opacity-90"
-                  href="/account/sign-in?intent=signup"
-                >
-                  Sign up to browse {totalActiveJobs.toLocaleString()} open
-                  roles
-                </a>
-              </div>
-
-              <div className="relative mx-auto w-full max-w-md">
-                <Image
-                  alt="A recruiter and a job seeker reviewing a 96% AI match between a candidate and a role"
-                  className="h-auto w-full"
-                  height={1086}
-                  priority
-                  src="/ai-match-illustration.png"
-                  width={1448}
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Bold stats band - real numbers, big treatment. Distinct from
-            TrustSection's prose-style stat sentence further down: this is
-            a scannable grid, meant to land fast rather than be read. */}
-        <div className="border-t bg-background py-12">
-          <div className="container mx-auto px-4">
-            <div className="mx-auto grid max-w-3xl grid-cols-2 gap-6 text-center sm:grid-cols-4">
-              {[
-                { label: "Open roles", value: totalActiveJobs },
-                { label: "Added today", value: jobsAddedTodayProp },
-                { label: "This week", value: jobsThisWeekProp },
-                { label: "Companies hiring", value: companiesHiringCountProp },
-              ].map(({ label, value }) => (
-                <div key={label}>
-                  <p className="font-bold text-2xl text-zinc-900 tracking-tight sm:text-3xl dark:text-zinc-50">
-                    {value.toLocaleString()}
-                  </p>
-                  <p className="mt-1 text-muted-foreground text-xs">{label}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Built for both sides - a multi-sided marketplace (seekers,
-            employers, recruiters) benefits from telling guests that
-            up front, and it doubles as a navigational hint toward /join
-            for whichever side actually applies to them. */}
-        <div className="border-t bg-muted/20 py-14">
-          <div className="container mx-auto px-4">
-            <div className="mx-auto grid max-w-4xl gap-5 sm:grid-cols-2">
-              <div className="rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
-                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
-                  <Search aria-hidden="true" className="h-4 w-4" />
-                </span>
-                <h3 className="mt-4 font-semibold text-base text-zinc-900 dark:text-zinc-50">
-                  Job seekers
-                </h3>
-                <p className="mt-1.5 text-muted-foreground text-sm">
-                  Get matched by AI, apply in one click, and let recruiters find
-                  you.
-                </p>
-                <a
-                  className="mt-4 inline-flex items-center gap-1 font-medium text-primary text-sm hover:underline"
-                  href="/account/sign-in?intent=signup"
-                >
-                  Get started
-                  <ArrowRight aria-hidden="true" className="h-3.5 w-3.5" />
-                </a>
-              </div>
-
-              <div className="rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
-                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
-                  <Briefcase aria-hidden="true" className="h-4 w-4" />
-                </span>
-                <h3 className="mt-4 font-semibold text-base text-zinc-900 dark:text-zinc-50">
-                  Employers &amp; recruiters
-                </h3>
-                <p className="mt-1.5 text-muted-foreground text-sm">
-                  Post a role or search candidates who are open to hearing from
-                  you.
-                </p>
-                <a
-                  className="mt-4 inline-flex items-center gap-1 font-medium text-primary text-sm hover:underline"
-                  href="/join"
-                >
-                  Get started
-                  <ArrowRight aria-hidden="true" className="h-3.5 w-3.5" />
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
-      </main>
-    );
+  if (!isSeeker || !statsAvailable) {
+    return <PublicLanding jobsUnavailable={!statsAvailable} />;
   }
 
   return (
@@ -903,7 +732,7 @@ function HomePageContent({
                   {JOB_VIEW_TABS.find((t) => t.value === activeView)?.label ??
                     "Latest Opportunities"}
                   {page > 1 && (
-                    <span className="font-normal text-gray-500 dark:text-gray-500">
+                    <span className="font-normal text-gray-500 dark:text-muted-foreground">
                       Page {page}
                     </span>
                   )}
@@ -995,6 +824,7 @@ export function HomePage({
   jobsAddedToday,
   jobsThisWeek,
   isSeeker,
+  statsAvailable = true,
 }: {
   initialJobs: Job[];
   totalActiveJobs: number;
@@ -1002,10 +832,12 @@ export function HomePage({
   jobsAddedToday: number;
   jobsThisWeek: number;
   isSeeker: boolean;
+  statsAvailable?: boolean;
 }) {
   return (
     <Suspense>
       <HomePageContent
+        statsAvailable={statsAvailable}
         companiesHiringCount={companiesHiringCount}
         initialJobs={initialJobs}
         isSeeker={isSeeker}

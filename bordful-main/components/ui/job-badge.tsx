@@ -40,7 +40,7 @@ export function JobBadge({
     currency:
       "bg-amber-50 border-amber-100 border text-amber-700 dark:bg-amber-950 dark:border-amber-900 dark:text-amber-400",
     default: "bg-card border text-foreground",
-    featured: "text-zinc-50",
+    featured: "text-primary-foreground",
     hybrid:
       "bg-blue-50 border-blue-100 border text-blue-700 dark:bg-blue-950 dark:border-blue-900 dark:text-blue-400",
     language: "bg-card border text-foreground",

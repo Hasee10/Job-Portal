@@ -4,7 +4,7 @@ import Link from "next/link";
 import { TenderCard } from "@/components/procurement/TenderCard";
 import { TenderControls } from "@/components/procurement/TenderControls";
 import { TenderFiltersSidebar } from "@/components/procurement/TenderFiltersSidebar";
-import { HeroSection } from "@/components/ui/hero-section";
+import styles from "@/components/home/marketing.module.css";
 import config from "@/config";
 import {
   getTenderFacets,
@@ -94,50 +94,70 @@ export default async function ProcurementTendersPage({
 
   return (
     <main className="bg-background">
-      <HeroSection
-        badge="Global tenders"
-        description={`Aggregated daily from TED (EU Tenders Electronic Daily) and PPRA (Pakistan). ${totalActive.toLocaleString()} tenders currently open.`}
-        heroImage={{
-          alt: "Caliber’s AI matching engine scoring verified vendors against open tenders",
-          enabled: true,
-          src: "/procurement-hero.png",
-        }}
-        title={`${totalActive.toLocaleString()} open tenders worldwide`}
-      >
-        <form
-          action="/procurement/tenders"
-          className="flex max-w-md gap-2"
-          method="GET"
-        >
-          {sp.category && (
-            <input name="category" type="hidden" value={sp.category} />
-          )}
-          {sp.source && <input name="source" type="hidden" value={sp.source} />}
-          {sp.country && (
-            <input name="country" type="hidden" value={sp.country} />
-          )}
-          {sp.sort && <input name="sort" type="hidden" value={sp.sort} />}
-          <div className="relative flex-1">
-            <SearchIcon
-              aria-hidden="true"
-              className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground"
-            />
-            <input
-              className="w-full rounded-md border bg-background py-2 pr-3 pl-9 text-sm placeholder:text-muted-foreground"
-              defaultValue={query}
-              name="q"
-              placeholder="Search tenders by keyword or buyer…"
-              type="text"
-            />
+      <section className={styles.hero} aria-labelledby="tenders-title">
+        <div className="mx-auto max-w-[1200px] px-5 py-12 sm:px-8 sm:py-16">
+          <p className={styles.eyebrow}>
+            <span />
+            CALIBER / PUBLIC TENDERS
+          </p>
+          <div className="my-6 flex flex-wrap items-end justify-between gap-5">
+            <div>
+              <h1
+                id="tenders-title"
+                className="text-3xl font-medium tracking-tight sm:text-5xl"
+              >
+                Find your next business opportunity.
+              </h1>
+              <p className="mt-4 max-w-xl text-sm leading-7 text-[var(--hero-muted)]">
+                Explore public notices from TED and PPRA. Search by requirement,
+                refine your market, and view the details at the original source.
+              </p>
+            </div>
+            <p className="text-sm text-[var(--hero-muted)]">
+              <strong className="mr-2 text-3xl font-medium tracking-tight text-[var(--hero-ink)]">
+                {totalActive.toLocaleString()}
+              </strong>
+              open tenders
+            </p>
           </div>
-          <button
-            className="rounded-md bg-primary px-4 py-2 font-medium text-primary-foreground text-sm hover:opacity-90"
-            type="submit"
+          <form
+            action="/procurement/tenders"
+            className="flex max-w-2xl gap-2"
+            method="GET"
           >
-            Search
-          </button>
-        </form>
-      </HeroSection>
+            {sp.category && (
+              <input name="category" type="hidden" value={sp.category} />
+            )}
+            {sp.source && (
+              <input name="source" type="hidden" value={sp.source} />
+            )}
+            {sp.country && (
+              <input name="country" type="hidden" value={sp.country} />
+            )}
+            {sp.sort && <input name="sort" type="hidden" value={sp.sort} />}
+            <div className="relative flex-1">
+              <SearchIcon
+                aria-hidden="true"
+                className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+              />
+              <input
+                className="w-full rounded-md border bg-background py-2 pr-3 pl-9 text-sm placeholder:text-muted-foreground"
+                defaultValue={query}
+                aria-label="Search public tenders"
+                name="q"
+                placeholder="Search tenders by keyword or buyer…"
+                type="text"
+              />
+            </div>
+            <button
+              className="rounded-md bg-[#173d33] px-4 py-2 font-medium text-white text-sm hover:opacity-90"
+              type="submit"
+            >
+              Search
+            </button>
+          </form>
+        </div>
+      </section>
 
       <div className="container mx-auto px-4 py-8">
         <div className="flex flex-col justify-between gap-4 md:flex-row md:gap-8">
@@ -152,7 +172,7 @@ export default async function ProcurementTendersPage({
 
             {tenders.length === 0 ? (
               <div className="rounded-lg border border-dashed p-10 text-center">
-                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-cyan-50 text-cyan-700 dark:bg-cyan-500/10 dark:text-cyan-400">
+                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-accent text-primary dark:bg-accent dark:text-primary">
                   <FileSearch aria-hidden="true" className="h-5 w-5" />
                 </div>
                 <p className="mt-4 font-semibold">No tenders found</p>
@@ -173,7 +193,7 @@ export default async function ProcurementTendersPage({
               <div className="mt-6 flex items-center justify-between text-sm">
                 {page > 1 ? (
                   <Link
-                    className="text-primary hover:underline"
+                    className="text-[#075d47] dark:text-emerald-200 hover:underline"
                     href={buildLink({ page: String(page - 1) })}
                   >
                     &larr; Previous
@@ -186,7 +206,7 @@ export default async function ProcurementTendersPage({
                 </span>
                 {page < totalPages ? (
                   <Link
-                    className="text-primary hover:underline"
+                    className="text-[#075d47] dark:text-emerald-200 hover:underline"
                     href={buildLink({ page: String(page + 1) })}
                   >
                     Next &rarr;

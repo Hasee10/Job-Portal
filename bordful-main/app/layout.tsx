@@ -52,7 +52,7 @@ export const metadata: Metadata = {
     index: true,
     nocache: false,
   },
-  title: `${siteConfig.title} | ${siteConfig.nav.title}`,
+  title: "Caliber | Careers and Procurement",
 };
 
 export default async function RootLayout({
@@ -103,15 +103,28 @@ export default async function RootLayout({
             {...script.attributes}
           />
         ))}
+        <a
+          href="#page-content"
+          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-background focus:px-4 focus:py-3 focus:text-foreground focus:shadow-lg"
+        >
+          Skip to content
+        </a>
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
           <AuthSessionProvider session={session}>
             <SeekerJobStateProvider>
               <ResumePanelProvider>
                 <div className="flex min-h-screen flex-col">
                   <Nav />
-                  <main className="flex-1">
+                  {process.env.NODE_ENV === "development" &&
+                    process.env.LOCAL_DEMO_DATA === "true" && (
+                      <p className="border-b bg-amber-50 px-4 py-2 text-center text-amber-950 text-xs dark:bg-amber-950 dark:text-amber-100">
+                        Local demo data: fictional jobs, tenders and businesses
+                        for layout testing.
+                      </p>
+                    )}
+                  <div className="flex-1" id="page-content" tabIndex={-1}>
                     <NuqsAdapter>{children}</NuqsAdapter>
-                  </main>
+                  </div>
                   <Footer />
                 </div>
               </ResumePanelProvider>

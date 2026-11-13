@@ -143,7 +143,7 @@ export function JobDetailsSidebar({
         <h2 className="font-semibold text-md">Job Details</h2>
         {config.jobReport.enabled && config.jobReport.showInSidebar && (
           <a
-            className="flex items-center gap-1 font-medium text-red-700 text-xs hover:text-red-800"
+            className="flex items-center gap-1 font-medium text-red-700 text-xs hover:text-red-800 dark:text-red-300 dark:hover:text-red-200"
             href={`mailto:${
               config.jobReport.email
             }?subject=${encodeURIComponent(
@@ -162,7 +162,7 @@ export function JobDetailsSidebar({
 
       <div>
         <div className="mb-1 flex items-center gap-2">
-          <Calendar className="h-4 w-4 shrink-0 text-gray-500 dark:text-gray-500" />
+          <Calendar className="h-4 w-4 shrink-0 text-gray-500 dark:text-muted-foreground" />
           <h3 className="font-medium text-sm">Date Posted</h3>
         </div>
         <p className="ml-6 text-gray-600 text-sm dark:text-gray-400">
@@ -174,7 +174,7 @@ export function JobDetailsSidebar({
       {deadline && (
         <div>
           <div className="mb-1 flex items-center gap-2">
-            <Calendar className="h-4 w-4 shrink-0 text-gray-500 dark:text-gray-500" />
+            <Calendar className="h-4 w-4 shrink-0 text-gray-500 dark:text-muted-foreground" />
             <h3 className="font-medium text-sm">Application Deadline</h3>
           </div>
           <div className="ml-6">
@@ -193,7 +193,7 @@ export function JobDetailsSidebar({
 
       <div>
         <div className="mb-1 flex items-center gap-2">
-          <MapPin className="h-4 w-4 shrink-0 text-gray-500 dark:text-gray-500" />
+          <MapPin className="h-4 w-4 shrink-0 text-gray-500 dark:text-muted-foreground" />
           <h3 className="font-medium text-sm">Job Location</h3>
         </div>
         {workplace_type === "Remote" ? (
@@ -213,7 +213,7 @@ export function JobDetailsSidebar({
 
       <div>
         <div className="mb-1 flex items-center gap-2">
-          <Laptop className="h-4 w-4 shrink-0 text-gray-500 dark:text-gray-500" />
+          <Laptop className="h-4 w-4 shrink-0 text-gray-500 dark:text-muted-foreground" />
           <h3 className="font-medium text-sm">Workplace Type</h3>
         </div>
         <div className="ml-6">
@@ -237,7 +237,7 @@ export function JobDetailsSidebar({
       {showSalary && (
         <div>
           <div className="mb-1 flex items-center gap-2">
-            <Wallet className="h-4 w-4 shrink-0 text-gray-500 dark:text-gray-500" />
+            <Wallet className="h-4 w-4 shrink-0 text-gray-500 dark:text-muted-foreground" />
             <h3 className="font-medium text-sm">Salary</h3>
           </div>
           <div className="ml-6">
@@ -245,7 +245,7 @@ export function JobDetailsSidebar({
               {formatSalary(salary, true)}
             </p>
             {usdApprox && (
-              <p className="mt-0.5 text-gray-500 text-xs dark:text-gray-500">
+              <p className="mt-0.5 text-gray-600 text-xs dark:text-gray-300">
                 {usdApprox}
               </p>
             )}
@@ -255,7 +255,7 @@ export function JobDetailsSidebar({
 
       <div>
         <div className="mb-1 flex items-center gap-2">
-          <Briefcase className="h-4 w-4 shrink-0 text-gray-500 dark:text-gray-500" />
+          <Briefcase className="h-4 w-4 shrink-0 text-gray-500 dark:text-muted-foreground" />
           <h3 className="font-medium text-sm">Career Level</h3>
         </div>
         <div className="ml-6 flex flex-wrap gap-1.5">
@@ -278,17 +278,23 @@ export function JobDetailsSidebar({
       {job_source_name && (
         <div>
           <div className="mb-1 flex items-center gap-2">
-            <Link className="h-4 w-4 shrink-0 text-gray-500 dark:text-gray-500" />
+            <Link className="h-4 w-4 shrink-0 text-gray-500 dark:text-muted-foreground" />
             <h3 className="font-medium text-sm">Job Source</h3>
           </div>
-          <a
-            className="ml-6 text-sm text-zinc-900 underline underline-offset-4 transition-colors hover:text-zinc-800 dark:text-zinc-100 dark:hover:text-zinc-200"
-            href={apply_url}
-            rel="noopener noreferrer"
-            target="_blank"
-          >
-            {job_source_name}
-          </a>
+          {apply_url ? (
+            <a
+              className="ml-6 text-sm text-zinc-900 underline underline-offset-4 transition-colors hover:text-zinc-800 dark:text-zinc-100 dark:hover:text-zinc-200"
+              href={apply_url}
+              rel="noopener noreferrer"
+              target="_blank"
+            >
+              {job_source_name}
+            </a>
+          ) : (
+            <p className="ml-6 text-gray-700 text-sm dark:text-gray-300">
+              {job_source_name}
+            </p>
+          )}
         </div>
       )}
 
@@ -296,7 +302,7 @@ export function JobDetailsSidebar({
       {job_identifier && (
         <div>
           <div className="mb-1 flex items-center gap-2">
-            <Hash className="h-4 w-4 shrink-0 text-gray-500 dark:text-gray-500" />
+            <Hash className="h-4 w-4 shrink-0 text-gray-500 dark:text-muted-foreground" />
             <h3 className="font-medium text-sm">Job ID</h3>
           </div>
           <p className="ml-6 text-gray-600 text-sm dark:text-gray-400">
@@ -307,7 +313,7 @@ export function JobDetailsSidebar({
 
       <div>
         <div className="mb-1 flex items-center gap-2">
-          <Globe className="h-4 w-4 shrink-0 text-gray-500 dark:text-gray-500" />
+          <Globe className="h-4 w-4 shrink-0 text-gray-500 dark:text-muted-foreground" />
           <h3 className="font-medium text-sm">Visa Sponsorship</h3>
         </div>
         <div className="ml-6">
@@ -327,7 +333,7 @@ export function JobDetailsSidebar({
 
       <div>
         <div className="mb-1 flex items-center gap-2">
-          <Clock className="h-4 w-4 shrink-0 text-gray-500 dark:text-gray-500" />
+          <Clock className="h-4 w-4 shrink-0 text-gray-500 dark:text-muted-foreground" />
           <h3 className="font-medium text-sm">Job Timezones</h3>
         </div>
         <p className="ml-6 text-gray-600 text-sm dark:text-gray-400">
@@ -339,7 +345,7 @@ export function JobDetailsSidebar({
       {languages && languages.length > 0 && (
         <div>
           <div className="mb-1 flex items-center gap-2">
-            <Languages className="h-4 w-4 shrink-0 text-gray-500 dark:text-gray-500" />
+            <Languages className="h-4 w-4 shrink-0 text-gray-500 dark:text-muted-foreground" />
             <h3 className="font-medium text-sm">Languages</h3>
           </div>
           <div className="ml-6 flex flex-wrap gap-1.5">
@@ -360,7 +366,7 @@ export function JobDetailsSidebar({
       {benefits && (
         <div>
           <div className="mb-1 flex items-center gap-2">
-            <Gift className="h-4 w-4 shrink-0 text-gray-500 dark:text-gray-500" />
+            <Gift className="h-4 w-4 shrink-0 text-gray-500 dark:text-muted-foreground" />
             <h3 className="font-medium text-sm">Benefits & Perks</h3>
           </div>
           <div className="ml-6">

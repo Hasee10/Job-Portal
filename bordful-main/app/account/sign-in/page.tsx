@@ -16,7 +16,7 @@ export const dynamic = "force-dynamic";
 export default async function SeekerSignInPage({
   searchParams,
 }: {
-  searchParams: Promise<{ intent?: string }>;
+  searchParams: Promise<{ intent?: string; callbackUrl?: string }>;
 }) {
   const { intent } = await searchParams;
   // Sign up and sign in are the same OAuth action (an account is created on

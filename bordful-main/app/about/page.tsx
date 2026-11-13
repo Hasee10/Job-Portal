@@ -88,15 +88,15 @@ export default function AboutPage() {
 
       {/* About Content */}
       <div className="container mx-auto px-4 py-10">
-        <div className="mx-auto max-w-3xl">
+        <div className="mx-auto max-w-4xl">
           <div className="mb-6">
             <MetadataBreadcrumb metadata={metadata} pathname="/about" />
           </div>
 
           <div className="w-full divide-y divide-zinc-100 dark:divide-zinc-800">
             {/* Mission Section */}
-            <div className="flex gap-4 py-8 first:pt-0">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-cyan-50 text-cyan-700 dark:bg-cyan-500/10 dark:text-cyan-400">
+            <div className="flex gap-5 py-10 first:pt-0">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent text-primary dark:bg-accent dark:text-primary">
                 <Target aria-hidden="true" className="h-5 w-5" />
               </div>
               <div>
@@ -111,8 +111,8 @@ export default function AboutPage() {
             </div>
 
             {/* Story Section */}
-            <div className="flex gap-4 py-8">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-violet-50 text-violet-700 dark:bg-violet-500/10 dark:text-violet-400">
+            <div className="flex gap-5 py-10">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent text-primary">
                 <BookOpen aria-hidden="true" className="h-5 w-5" />
               </div>
               <div>
@@ -127,8 +127,8 @@ export default function AboutPage() {
             </div>
 
             {/* Team Section */}
-            <div className="flex gap-4 py-8">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400">
+            <div className="flex gap-5 py-10">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent text-primary">
                 <Users aria-hidden="true" className="h-5 w-5" />
               </div>
               <div>
@@ -144,8 +144,8 @@ export default function AboutPage() {
 
             {/* Contact Us Section - Conditionally rendered based on config */}
             {config.about.contact?.show && (
-              <div className="flex gap-4 py-8 last:pb-0">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400">
+              <div className="flex gap-5 py-10 last:pb-0">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent text-primary">
                   <Mail aria-hidden="true" className="h-5 w-5" />
                 </div>
                 <div>
