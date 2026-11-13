@@ -17,5 +17,13 @@ export function safeInternalRedirect(
   if (!target.startsWith("/") || target.startsWith("//")) {
     return fallback;
   }
+  // Browsers normalize backslashes and strip control characters before resolving URLs.
+  try {
+    const decoded = decodeURIComponent(target);
+    if (decoded.startsWith("//") || /[\\\u0000-\u001f\u007f]/.test(decoded))
+      return fallback;
+  } catch {
+    return fallback;
+  }
   return target;
 }

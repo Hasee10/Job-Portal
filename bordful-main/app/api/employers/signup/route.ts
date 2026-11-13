@@ -1,3 +1,8 @@
+import { auth } from "@/auth";
+import {
+  procurementOnboardingDestination,
+  PROCUREMENT_WORKSPACE,
+} from "@/lib/auth/procurement-onboarding";
 import { NextResponse } from "next/server";
 import config from "@/config";
 import { createEmployer, EmployerAuthError } from "@/lib/auth/employers";
@@ -13,6 +18,15 @@ const isRateLimited = createRateLimiter(3);
 
 export async function POST(request: Request) {
   try {
+    if (procurementOnboardingDestination(await auth(), PROCUREMENT_WORKSPACE)) {
+      return NextResponse.json(
+        {
+          error: "Use your existing account to access your business workspace.",
+          code: "already_authenticated",
+        },
+        { status: 409 }
+      );
+    }
     const clientIp = getClientIp(request);
     if (isRateLimited(clientIp)) {
       return NextResponse.json(
@@ -47,7 +61,10 @@ export async function POST(request: Request) {
   } catch (error) {
     if (error instanceof EmployerAuthError) {
       const status = error.code === "db_unavailable" ? 503 : 400;
-      return NextResponse.json({ error: error.message }, { status });
+      return NextResponse.json(
+        { error: error.message, code: error.code },
+        { status }
+      );
     }
 
     // Log the real error server-side only - never return raw error details

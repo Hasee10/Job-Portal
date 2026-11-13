@@ -13,10 +13,14 @@ import {
 // code - this tests verifyEmployerCredentials' actual logic (missing-config
 // handling, "no such user", hash comparison, row mapping) against a fake
 // query result, not a real database.
+const insertSingleMock = vi.fn();
+const insertMock = vi.fn(() => ({
+  select: () => ({ single: insertSingleMock }),
+}));
 const maybeSingleMock = vi.fn();
 const eqMock = vi.fn(() => ({ maybeSingle: maybeSingleMock }));
 const selectMock = vi.fn(() => ({ eq: eqMock }));
-const fromMock = vi.fn(() => ({ select: selectMock }));
+const fromMock = vi.fn(() => ({ select: selectMock, insert: insertMock }));
 const createClientMock = vi.fn((..._args: unknown[]) => ({ from: fromMock }));
 
 vi.mock("@supabase/supabase-js", () => ({
@@ -42,6 +46,7 @@ beforeEach(() => {
   vi.stubEnv("SUPABASE_URL", "https://example.supabase.co");
   vi.stubEnv("SUPABASE_SERVICE_ROLE_KEY", "test-service-role-key");
   maybeSingleMock.mockReset();
+  insertSingleMock.mockReset();
 });
 
 afterEach(() => {
@@ -49,6 +54,37 @@ afterEach(() => {
 });
 
 describe("createEmployer", () => {
+  it.each([
+    {
+      code: "23505",
+      message:
+        'duplicate key value violates unique constraint "employers_email_key"',
+    },
+    {
+      code: "23505",
+      message:
+        'duplicate key value violates unique constraint "custom_email_index"',
+      details: "Key (email)=(example@example.test) already exists.",
+    },
+  ])("recognizes only a proven email conflict", async (error) => {
+    insertSingleMock.mockResolvedValueOnce({ data: null, error });
+    await expect(
+      createEmployer("example@example.test", TEST_PASSWORD)
+    ).rejects.toMatchObject({ code: "email_taken" });
+  });
+  it("does not mislabel an id conflict as a duplicate email", async () => {
+    const error = {
+      code: "23505",
+      message:
+        'duplicate key value violates unique constraint "employers_pkey"',
+      details: "Key (id)=(example) already exists.",
+    };
+    insertSingleMock.mockResolvedValueOnce({ data: null, error });
+    await expect(
+      createEmployer("example@example.test", TEST_PASSWORD)
+    ).rejects.toBe(error);
+  });
+
   it("rejects an email longer than 254 characters without attempting to create the account", async () => {
     // EMAIL_REGEX's own `+` quantifiers are unbounded - this guards the
     // length separately so an absurdly long (but pattern-valid) address
