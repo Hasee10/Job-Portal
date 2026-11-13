@@ -153,19 +153,19 @@ export const config = {
     // Schema.org structured data customization
     schema: {
       // Company name for the schema
-      companyName: "Caliber",
+      companyName: "Quantus",
       // Description for the schema
       description:
         "Connect talented professionals with meaningful opportunities",
       // Logo URL for the schema
-      logo: "/caliber-wordmark.svg",
+      logo: "/quantus-wordmark.svg",
     },
 
     // Section titles and content
     sections: {
       mission: {
         content:
-          "Caliber helps people explore their next career move and businesses discover their next working relationship. Those ambitions have two focused spaces: Jobs and Procurement.",
+          "Quantus helps people explore their next career move and businesses discover their next working relationship. Those ambitions have two focused spaces: Jobs and Procurement.",
         title: "Opportunity, with direction",
       },
       story: {
@@ -182,7 +182,7 @@ export const config = {
     // Show or hide the About page in navigation
     showInNavigation: true,
     // Title for the about page hero section
-    title: "About Caliber",
+    title: "About Quantus",
   },
 
   // Marketing & SEO
@@ -212,9 +212,9 @@ export const config = {
     // here when you have them.
     contactInfo: {
       address: "",
-      companyName: "Caliber",
+      companyName: "Quantus",
       description: "Here's how you can reach us directly.",
-      email: "hello@caliber.com",
+      email: "",
       phone: "",
       title: "Contact Information",
     },
@@ -251,12 +251,12 @@ export const config = {
     supportChannels: {
       channels: [
         {
-          buttonLink: "mailto:hello@caliber.com",
-          buttonText: "Contact via Email",
+          buttonLink: "/faq",
+          buttonText: "Browse help",
           description:
             "Our support team is available to help you with any questions or issues you might have.",
           icon: "Mail", // Lucide icon name
-          title: "Email Support",
+          title: "Help & guidance",
           type: "email",
         },
         {
@@ -287,7 +287,7 @@ export const config = {
     defaultCurrency: "USD" as CurrencyCode,
   },
   description:
-    "Caliber matches candidates to roles and buyers to vendors - one platform for Jobs and Procurement.",
+    "Quantus matches candidates to roles and buyers to vendors - one platform for Jobs and Procurement.",
 
   // Email Provider Configuration
   email: {
@@ -321,9 +321,9 @@ export const config = {
         title: "Getting started",
         items: [
           {
-            question: "What is Caliber?",
+            question: "What is Quantus?",
             answer:
-              "Caliber brings two paths together: Jobs for your career and Procurement for your business. Explore roles, career resources, business profiles and public tender notices.",
+              "Quantus brings two paths together: Jobs for your career and Procurement for your business. Explore roles, career resources, business profiles and public tender notices.",
           },
           {
             question: "Do I need an account to explore?",
@@ -348,7 +348,7 @@ export const config = {
           {
             question: "Where does the Apply button take me?",
             answer:
-              "Depending on the listing, apply through Caliber or continue to an external application site. Check the employer’s instructions. A listing without a valid application destination cannot accept an application.",
+              "Depending on the listing, apply through Quantus or continue to an external application site. Check the employer’s instructions. A listing without a valid application destination cannot accept an application.",
           },
           {
             question: "Where can I get career advice?",
@@ -373,12 +373,12 @@ export const config = {
           {
             question: "Are directory businesses verified?",
             answer:
-              "Business directory information is self-declared. Caliber does not independently verify those claims. Carry out your own checks before entering a business relationship.",
+              "Business directory information is self-declared. Quantus does not independently verify those claims. Carry out your own checks before entering a business relationship.",
           },
           {
             question: "How do public tenders differ from workspace requests?",
             answer:
-              "Public tenders are aggregated notices from external sources such as TED and PPRA. Follow the original notice for requirements and submissions. Workspace requests are sourcing activity managed by organizations on Caliber.",
+              "Public tenders are aggregated notices from external sources such as TED and PPRA. Follow the original notice for requirements and submissions. Workspace requests are sourcing activity managed by organizations on Quantus.",
           },
           {
             question: "Which request format should I choose?",
@@ -466,11 +466,11 @@ export const config = {
         "Find your next role. Connect with buyers and suppliers. Two clear paths for your career and your business.",
       // Optional logo configuration specifically for the footer
       logo: {
-        alt: "Caliber",
+        alt: "Quantus",
         enabled: true,
         height: 32,
         // Use different image from navbar if needed (e.g., light logo for dark footer)
-        src: "/caliber-wordmark-light.svg", // Path to footer-specific logo (light version)
+        src: "/quantus-wordmark-light.svg", // Path to footer-specific logo (light version)
         width: 112,
       },
       order: 1, // Display order in footer grid (lower numbers displayed first)
@@ -556,7 +556,7 @@ export const config = {
     copyright: {
       show: true,
       startYear: 2024,
-      text: "Caliber. All rights reserved.",
+      text: "Quantus. All rights reserved.",
     },
 
     // Post Job section
@@ -619,7 +619,7 @@ export const config = {
 
       // Description text under the heading
       description:
-        "Get notified when new jobs are posted. We'll also subscribe you to Caliber newsletter.",
+        "Get notified when new jobs are posted. We'll also subscribe you to Quantus newsletter.",
 
       // Form fields configuration
       fields: {
@@ -743,7 +743,7 @@ export const config = {
     buttonText: "Report",
 
     // Email address to send reports to
-    email: "hello@caliber.com",
+    email: "",
 
     // Message template for the report email
     // Available placeholders:
@@ -864,16 +864,16 @@ export const config = {
       url: "",
     },
     logo: {
-      alt: "Caliber", // Alt text for the logo
+      alt: "Quantus", // Alt text for the logo
       enabled: true, // Set to true to use a custom logo instead of icon + text
       height: 30, // Height of the logo in pixels
-      src: "/caliber-wordmark.svg", // Path to your logo image (place it in the public directory)
+      src: "/quantus-wordmark.svg", // Path to your logo image (place it in the public directory)
       width: 105, // Width of the logo in pixels
     },
     // White-stroke variant swapped in automatically for dark mode (see
     // Nav's logoSrc logic) - the black-stroke logo.src above is invisible
     // against a dark background otherwise.
-    logoDark: "/caliber-wordmark-light.svg",
+    logoDark: "/quantus-wordmark-light.svg",
     // Kept to a small number of top-level items on purpose - About/Pricing/
     // Contact and Job Alerts used to sit as their own flat links next to the
     // two existing dropdowns, which crowded the desktop bar. They're folded
@@ -944,7 +944,7 @@ export const config = {
       show: false, // Add your own Reddit link later
       url: "",
     },
-    title: "Caliber", // The text shown in the navigation bar
+    title: "Quantus", // The text shown in the navigation bar
     twitter: {
       show: false, // Add your own X/Twitter link later
       url: "",
@@ -1026,7 +1026,7 @@ export const config = {
         show: true,
 
         // Logo source path (direct path from public folder)
-        src: "/caliber-wordmark-light.svg",
+        src: "/quantus-wordmark-light.svg",
 
         // Logo dimensions
         width: 185, // IMPORTANT: Use a fixed pixel value
@@ -1054,8 +1054,8 @@ export const config = {
       show: true,
 
       // Logo source path (direct path from public folder)
-      // Examples: "/caliber-wordmark.svg", "/logo/my-logo.png", etc.
-      src: "/caliber-wordmark-light.svg",
+      // Examples: "/quantus-wordmark.svg", "/logo/my-logo.png", etc.
+      src: "/quantus-wordmark-light.svg",
 
       // Logo dimensions
       width: 185, // IMPORTANT: Use a fixed pixel value, "auto" doesn't work reliably
@@ -1124,7 +1124,7 @@ export const config = {
     // Currency for pricing display
     currency: "USD" as CurrencyCode,
     description:
-      "Caliber aggregates thousands of jobs. Featuring yours puts it at the top, above the noise.",
+      "Quantus aggregates thousands of jobs. Featuring yours puts it at the top, above the noise.",
     // Enable or disable the pricing page
     enabled: true,
 
@@ -1164,7 +1164,7 @@ export const config = {
 
     // Plans configuration
     //
-    // Model note: Caliber is an aggregator - the feed is mostly jobs scraped
+    // Model note: Quantus is an aggregator - the feed is mostly jobs scraped
     // from many sources. Charging employers to *post* into that feed doesn't
     // work (their listing drowns among thousands of free aggregated ones).
     // So the paid product is *visibility*: getting a role pinned/highlighted
@@ -1336,7 +1336,7 @@ export const config = {
   // before the matchmaking repositioning, still pure job-board copy on
   // every single tab and search result regardless of which product
   // surface (jobs or procurement) the visitor is actually on.
-  title: "Caliber",
+  title: "Quantus",
 
   // UI Configuration
   ui: {
@@ -1387,7 +1387,7 @@ export const config = {
     // Hero section gradient background
     // Takes precedence over heroBackgroundColor when enabled
     // Legacy configuration is retained for compatibility. Shared page headers
-    // use the Caliber hero tokens instead of per-page gradient overrides.
+    // use the Quantus hero tokens instead of per-page gradient overrides.
     heroGradient: {
       colors: ["#173d33", "#457565", "#d5e8a8"],
       direction: "135deg",

@@ -20,7 +20,7 @@ export type JobMatchDigestRow = {
 export type JobMatchDigestData = {
   // e.g. `3 new jobs match "Remote React roles"` or `5 new jobs match your resume skills`
   headline: string;
-  // e.g. `Based on your saved search on Caliber.` or `Based on the resume you uploaded to Caliber.`
+  // e.g. `Based on your saved search on Quantus.` or `Based on the resume you uploaded to Quantus.`
   contextLine: string;
   matches: JobMatchDigestRow[];
   browseUrl: string;
@@ -76,7 +76,7 @@ export function renderJobMatchDigestEmail({
     <div style="padding: 0 40px 32px;"></div>
 
     ${emailFooter({
-      customBottomLine: `You're receiving this because ${reasonForReceiving} on Caliber.`,
+      customBottomLine: `You're receiving this because ${reasonForReceiving} on Quantus.`,
     })}
   `);
 

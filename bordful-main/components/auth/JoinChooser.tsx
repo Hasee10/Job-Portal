@@ -38,18 +38,18 @@ export function JoinChooser({ siteTitle }: { siteTitle: string }) {
         <Image
           alt=""
           className="mx-auto mb-6 dark:hidden"
-          height={60}
+          height={64}
           priority
-          src="/caliber-symbol.svg"
-          width={80}
+          src="/quantus-symbol.svg"
+          width={64}
         />
         <Image
           alt=""
           className="mx-auto mb-6 hidden dark:block"
-          height={60}
+          height={64}
           priority
-          src="/caliber-symbol.svg"
-          width={80}
+          src="/quantus-symbol-light.svg"
+          width={64}
         />
         <h1 className="font-bold text-3xl text-zinc-900 tracking-tight dark:text-zinc-50">
           How will you use {siteTitle}?

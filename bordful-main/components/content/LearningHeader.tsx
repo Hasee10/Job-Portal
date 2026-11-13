@@ -7,7 +7,7 @@ export function LearningHeader({ kind }: { kind: "guides" | "masterclasses" }) {
       <div className="container mx-auto grid max-w-6xl items-center gap-8 px-4 py-12 sm:py-16 lg:grid-cols-[1.5fr_1fr]">
         <div>
           <p className="font-medium text-[var(--brand-highlight)] text-xs uppercase tracking-[.2em]">
-            CALIBER / CAREER DEVELOPMENT
+            QUANTUS / CAREER DEVELOPMENT
           </p>
           <h1 className="mt-4 max-w-xl font-semibold text-4xl leading-tight tracking-tight sm:text-5xl">
             {guides

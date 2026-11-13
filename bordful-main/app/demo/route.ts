@@ -2,6 +2,7 @@ import { signIn } from "@/auth";
 import {
   isLocalPresentationRequest,
   PRESENTATION_EMAIL,
+  presentationDestination,
 } from "@/lib/auth/local-presentation";
 
 // Only the isolated presentation launcher supplies this password and endpoint.
@@ -14,6 +15,8 @@ export async function GET(request: Request) {
   await signIn("credentials", {
     email: PRESENTATION_EMAIL,
     password: process.env.PRESENTATION_PASSWORD,
-    redirectTo: "/procurement/organizations",
+    redirectTo: presentationDestination(
+      new URL(request.url).searchParams.get("callbackUrl")
+    ),
   });
 }

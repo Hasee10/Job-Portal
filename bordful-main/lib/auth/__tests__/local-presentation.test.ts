@@ -1,5 +1,11 @@
-import { describe, expect, it } from "vitest";
-import { isLocalPresentationRequest } from "../local-presentation";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import {
+  isLocalPresentationRequest,
+  localPresentationEntry,
+  presentationDestination,
+} from "../local-presentation";
+
+afterEach(() => vi.unstubAllEnvs());
 
 const localEnvironment = {
   NODE_ENV: "development",
@@ -8,6 +14,40 @@ const localEnvironment = {
 };
 
 describe("local presentation authentication boundary", () => {
+  it("bypasses the sign-in page only for the opted-in local presentation", () => {
+    for (const [key, value] of Object.entries(localEnvironment))
+      vi.stubEnv(key, value);
+    expect(
+      localPresentationEntry(
+        "http://localhost:3000/sign-in",
+        "/procurement/organizations?view=Messages"
+      )
+    ).toBe(
+      "/demo?callbackUrl=%2Fprocurement%2Forganizations%3Fview%3DMessages"
+    );
+    vi.stubEnv("NODE_ENV", "production");
+    expect(
+      localPresentationEntry(
+        "http://localhost:3000/sign-in",
+        "/procurement/organizations"
+      )
+    ).toBeNull();
+  });
+  it.each([
+    "https://evil.example",
+    "//evil.example",
+    "/demo",
+    "/sign-in",
+    "/procurement/../../sign-in",
+    "javascript:alert(1)",
+  ])(
+    "does not redirect demo login to unsafe or looping callback %s",
+    (callback) => {
+      expect(presentationDestination(callback)).toBe(
+        "/procurement/organizations"
+      );
+    }
+  );
   it.each(["localhost", "127.0.0.1", "[::1]"])(
     "accepts the opted-in loopback host %s",
     (host) => {

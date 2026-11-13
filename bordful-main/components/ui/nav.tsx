@@ -122,7 +122,7 @@ export function Nav() {
                 onClick={() => setOpenPath(null)}
               >
                 <ArrowLeft aria-hidden="true" size={14} />
-                Caliber home
+                Quantus home
               </Link>
             )}
             <div className="border-t pt-4 lg:hidden">

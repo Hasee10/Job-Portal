@@ -56,7 +56,7 @@ async function main() {
   const filter = process.argv[2]?.toLowerCase();
 
   const startTime = Date.now();
-  console.log(`\n=== Caliber Scraper — ${new Date().toISOString()} ===`);
+  console.log(`\n=== Quantus Scraper — ${new Date().toISOString()} ===`);
   if (filter) {
     console.log(`Running source filter: "${filter}"`);
   }

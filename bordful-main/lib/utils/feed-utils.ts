@@ -58,7 +58,7 @@ export function createFeed(baseUrl: string, feedConfig: FeedConfig): Feed {
       json: `${baseUrl}/feed.json`,
       rss2: `${baseUrl}/feed.xml`,
     },
-    generator: "Caliber Job Board",
+    generator: "Quantus Job Board",
     id: baseUrl,
     image: `${baseUrl}/opengraph-image.png`,
     language: "en",

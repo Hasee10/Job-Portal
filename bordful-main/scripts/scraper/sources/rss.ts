@@ -93,7 +93,7 @@ export async function scrapeRss(
   console.log(`[${config.name}] Fetching RSS: ${config.feedUrl}`);
 
   const res = await fetch(config.feedUrl, {
-    headers: { "User-Agent": "Caliber-Aggregator/1.0 (+https://caliber.app)" },
+    headers: { "User-Agent": "Quantus-Aggregator/1.0" },
     signal: AbortSignal.timeout(15_000),
   });
 

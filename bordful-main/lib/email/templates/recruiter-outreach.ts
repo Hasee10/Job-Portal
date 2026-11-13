@@ -42,7 +42,7 @@ export function renderRecruiterOutreachEmail({
         ${
           jobTitle
             ? `They found your profile and think you&rsquo;d be a great fit for <strong>${h(jobTitle)}</strong>.`
-            : "They found your profile on Caliber and want to reach out directly."
+            : "They found your profile on Quantus and want to reach out directly."
         }
       </p>
       <table cellpadding="0" cellspacing="0" role="presentation" width="100%" style="margin-bottom: 28px;">

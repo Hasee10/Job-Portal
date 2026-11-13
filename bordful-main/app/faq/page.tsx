@@ -99,7 +99,7 @@ export default function FAQPage() {
                 href="/contact"
                 className="mt-5 inline-flex items-center gap-3 text-sm font-medium text-primary"
               >
-                Contact Caliber
+                Contact Quantus
                 <ArrowUpRight size={16} aria-hidden="true" />
               </Link>
             </div>

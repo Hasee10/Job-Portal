@@ -98,7 +98,7 @@ export default async function ProcurementTendersPage({
         <div className="mx-auto max-w-[1200px] px-5 py-12 sm:px-8 sm:py-16">
           <p className={styles.eyebrow}>
             <span />
-            CALIBER / PUBLIC TENDERS
+            QUANTUS / PUBLIC TENDERS
           </p>
           <div className="my-6 flex flex-wrap items-end justify-between gap-5">
             <div>

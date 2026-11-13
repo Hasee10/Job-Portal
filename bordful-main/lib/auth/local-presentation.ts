@@ -1,5 +1,31 @@
 export const PRESENTATION_EMAIL = "ihaseebarshad10@gmail.com";
 
+export function presentationDestination(
+  callback: string | null | undefined
+): string {
+  try {
+    const target = new URL(callback ?? "", "http://localhost");
+    if (
+      target.origin === "http://localhost" &&
+      (target.pathname === "/procurement" ||
+        target.pathname.startsWith("/procurement/"))
+    ) {
+      return `${target.pathname}${target.search}`;
+    }
+  } catch {
+    // Invalid callbacks use the procurement dashboard.
+  }
+  return "/procurement/organizations";
+}
+
+export function localPresentationEntry(
+  requestUrl: string,
+  callback?: string | null
+): string | null {
+  if (!isLocalPresentationRequest(requestUrl)) return null;
+  return `/demo?${new URLSearchParams({ callbackUrl: presentationDestination(callback) })}`;
+}
+
 /** The presentation launcher is the only place that supplies these settings. */
 export function isLocalPresentationRequest(
   requestUrl: string,

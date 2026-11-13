@@ -12,6 +12,8 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { SignInForm } from "@/components/auth/SignInForm";
 import config from "@/config";
+import { headers } from "next/headers";
+import { localPresentationEntry } from "@/lib/auth/local-presentation";
 
 export const metadata: Metadata = {
   description: "Sign in to your business account.",
@@ -28,6 +30,9 @@ export default async function SignInPage({
 }) {
   const params = await searchParams;
   const callbackUrl = safeInternalRedirect(params.callbackUrl, "/dashboard");
+  const host = (await headers()).get("host") ?? "";
+  const demoEntry = localPresentationEntry(`http://${host}`, callbackUrl);
+  if (demoEntry) redirect(demoEntry);
   const destination = procurementOnboardingDestination(
     await auth(),
     callbackUrl

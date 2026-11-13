@@ -108,9 +108,9 @@ export async function getOrCreateVendorForRecruiter(
 }
 
 // Lets a buyer invite a recruiter who has never touched procurement before -
-// they type the recruiter's Caliber email, we resolve it against the real
+// they type the recruiter's Quantus email, we resolve it against the real
 // recruiter_accounts table (never an arbitrary address, matching the
-// Caliber-registered-only decision) and provision the vendor identity on
+// Quantus-registered-only decision) and provision the vendor identity on
 // first contact instead of requiring the recruiter to visit /procurement
 // first just to become inviteable.
 export async function getOrCreateVendorForRecruiterEmail(

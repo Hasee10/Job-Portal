@@ -76,7 +76,8 @@ async function callOpenRouter(
   messages: ChatMessage[],
   options: ChatOptions
 ): Promise<string> {
-  const siteUrl = process.env.NEXT_PUBLIC_APP_URL || "https://caliber.app";
+  const siteUrl =
+    process.env.NEXT_PUBLIC_APP_URL || "https://job-portal-ten-pi.vercel.app";
   const response = await axios.post(
     OPENROUTER_API_URL,
     {
@@ -90,7 +91,7 @@ async function callOpenRouter(
         Authorization: `Bearer ${key}`,
         "Content-Type": "application/json",
         "HTTP-Referer": siteUrl,
-        "X-Title": "Caliber",
+        "X-Title": "Quantus",
       },
       timeout: 30_000,
     }

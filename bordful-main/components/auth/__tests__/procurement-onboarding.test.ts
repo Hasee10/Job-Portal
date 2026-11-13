@@ -3,6 +3,9 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 const state = vi.hoisted(() => ({ session: null as unknown }));
 vi.mock("@/auth", () => ({ auth: async () => state.session }));
+vi.mock("next/headers", () => ({
+  headers: async () => new Headers({ host: "app.example.test" }),
+}));
 vi.mock("next/navigation", () => ({
   redirect: (path: string) => {
     throw new Error(`REDIRECT:${path}`);

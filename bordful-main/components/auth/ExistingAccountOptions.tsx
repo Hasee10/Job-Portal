@@ -13,7 +13,7 @@ export function ExistingAccountOptions({
       className="mt-5 space-y-3 rounded-xl border bg-muted/30 p-5"
       aria-label="Existing account sign-in options"
     >
-      <h2 className="font-medium text-sm">Already use Caliber?</h2>
+      <h2 className="font-medium text-sm">Already use Quantus?</h2>
       <p className="text-xs leading-6 text-muted-foreground">
         Use your original sign-in method. You don’t need a second account to
         create or join a business.

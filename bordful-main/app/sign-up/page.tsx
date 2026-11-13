@@ -11,6 +11,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { SignUpForm } from "@/components/auth/SignUpForm";
 import config from "@/config";
+import { headers } from "next/headers";
+import { localPresentationEntry } from "@/lib/auth/local-presentation";
 
 export const metadata: Metadata = {
   description: "Create a business account for procurement and hiring.",
@@ -26,6 +28,12 @@ export default async function SignUpPage({
   searchParams: Promise<{ callbackUrl?: string }>;
 }) {
   const params = await searchParams;
+  const host = (await headers()).get("host") ?? "";
+  const demoEntry = localPresentationEntry(
+    `http://${host}`,
+    params.callbackUrl
+  );
+  if (demoEntry) redirect(demoEntry);
   const session = await auth();
   const callbackUrl = safeInternalRedirect(params.callbackUrl, "/dashboard");
   const destination = procurementOnboardingDestination(session, callbackUrl);

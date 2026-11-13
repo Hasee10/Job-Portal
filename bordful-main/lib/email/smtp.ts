@@ -75,7 +75,7 @@ export async function sendEmail(data: {
     }
 
     await transporter.sendMail({
-      from: `Caliber <${process.env.GMAIL_USER}>`,
+      from: `Quantus <${process.env.GMAIL_USER}>`,
       html: data.html,
       subject: data.subject,
       to: data.to,

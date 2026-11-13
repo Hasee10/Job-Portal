@@ -51,7 +51,7 @@ export default function ChangelogPage() {
       <HeroSection
         badge="Product updates"
         title="Always moving forward."
-        description="Follow the changes, improvements and fixes recorded in Caliber’s release notes."
+        description="Follow the changes, improvements and fixes recorded in Quantus’s release notes."
       />
       <div className="container mx-auto max-w-4xl px-5 py-12 sm:px-8">
         <div className="markdown-content rounded-2xl border bg-card p-6 sm:p-10">

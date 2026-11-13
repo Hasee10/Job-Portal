@@ -28,7 +28,7 @@ export function ProductPreview({ sourcing = false }: { sourcing?: boolean }) {
           <i />
         </span>
         <span>
-          caliber / {sourcing ? "business workspace" : "your next chapter"}
+          quantus / {sourcing ? "business workspace" : "your next chapter"}
         </span>
         <span className={styles.example}>Illustrative preview</span>
       </div>
@@ -148,7 +148,7 @@ export function ProductPreview({ sourcing = false }: { sourcing?: boolean }) {
           {sourcing
             ? "Discover → Connect → Request → Evaluate"
             : "Two paths. One place to move forward."}
-          <span>CALIBER</span>
+          <span>QUANTUS</span>
         </div>
       </div>
     </div>

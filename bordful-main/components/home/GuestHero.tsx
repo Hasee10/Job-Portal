@@ -18,7 +18,7 @@ export function GuestHero() {
           </h1>
           <p className={styles.heroDescription}>
             A career worth pursuing. A partnership worth building. Find your
-            next move with Caliber.
+            next move with Quantus.
           </p>
           <div className={styles.actions}>
             <Link className={styles.primary} href="/jobs">

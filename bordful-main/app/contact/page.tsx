@@ -14,7 +14,7 @@ import { ContactSchema } from "@/components/ui/contact-schema";
 export const metadata: Metadata = {
   title: `Contact | ${config.nav.title}`,
   description:
-    "Questions about Jobs, Procurement or your account? Find the right way to contact Caliber.",
+    "Questions about Jobs, Procurement or your account? Find the right way to contact Quantus.",
   alternates: { canonical: "/contact" },
 };
 export const dynamic = "force-static";
@@ -55,7 +55,7 @@ export default function ContactPage() {
         <div className="container mx-auto grid max-w-6xl gap-8 px-4 py-12 sm:py-16 lg:grid-cols-[1.35fr_1fr]">
           <div>
             <p className="text-muted-foreground text-xs uppercase tracking-widest">
-              CALIBER / CONTACT
+              QUANTUS / CONTACT
             </p>
             <h1 className="mt-4 max-w-xl font-semibold text-4xl leading-tight tracking-tight sm:text-5xl">
               Let’s point you in the right direction.
@@ -72,18 +72,19 @@ export default function ContactPage() {
               aria-hidden="true"
             />
             <p className="mt-4 text-muted-foreground text-xs uppercase tracking-widest">
-              DIRECT EMAIL
+              {email ? "DIRECT EMAIL" : "HELP & GUIDANCE"}
             </p>
             <a
-              href={`mailto:${email}`}
+              href={email ? `mailto:${email}` : "/faq"}
               className="mt-2 inline-flex break-all items-center gap-3 font-medium text-xl"
             >
-              {email}
+              {email || "Explore the help center"}
               <ArrowUpRight size={18} className="shrink-0" aria-hidden="true" />
             </a>
             <p className="mt-4 text-muted-foreground text-sm leading-6">
-              Prefer to write directly? Include the page you were using and a
-              short description of your question.
+              {email
+                ? "Prefer to write directly? Include the page you were using and a short description of your question."
+                : "Find answers about jobs, business profiles, procurement and your account."}
             </p>
           </div>
         </div>
@@ -94,7 +95,11 @@ export default function ContactPage() {
           {routes.map((route) => (
             <a
               key={route.subject}
-              href={`mailto:${email}?subject=${encodeURIComponent(route.subject)}`}
+              href={
+                email
+                  ? `mailto:${email}?subject=${encodeURIComponent(route.subject)}`
+                  : "/faq"
+              }
               className="group flex flex-col rounded-2xl border bg-card p-6 hover:border-primary/50"
             >
               <route.icon
@@ -107,7 +112,7 @@ export default function ContactPage() {
                 {route.description}
               </p>
               <span className="mt-auto inline-flex items-center gap-2 font-medium text-sm">
-                Email us
+                {email ? "Email us" : "Read the FAQs"}
                 <ArrowUpRight size={15} aria-hidden="true" />
               </span>
             </a>

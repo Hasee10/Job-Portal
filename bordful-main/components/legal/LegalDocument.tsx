@@ -20,7 +20,7 @@ export function LegalDocument({
       <section className="border-b bg-background">
         <div className="container mx-auto max-w-6xl px-4 py-10 sm:py-14">
           <p className="text-muted-foreground text-xs uppercase tracking-widest">
-            CALIBER / LEGAL & TRUST
+            QUANTUS / LEGAL & TRUST
           </p>
           <div className="mt-5 flex items-start gap-5">
             <span className="hidden rounded-2xl border bg-primary/5 p-4 text-[hsl(var(--primary))] dark:text-lime-200 sm:block">
@@ -77,7 +77,7 @@ export function LegalDocument({
               href="/contact"
               className="mt-2 inline-flex items-center gap-1.5 text-muted-foreground text-xs underline underline-offset-4"
             >
-              Contact Caliber
+              Contact Quantus
               <ArrowUpRight size={13} aria-hidden="true" />
             </Link>
           </div>

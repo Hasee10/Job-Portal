@@ -38,16 +38,18 @@ export function ContactInfoSection({
             {companyName}
           </p>
 
-          <div className="flex items-center gap-2.5">
-            <Mail className="h-4 w-4 text-zinc-500 dark:text-zinc-500" />
-            <a
-              className="text-sm hover:underline"
-              href={`mailto:${email}`}
-              style={{ color: primaryColor }}
-            >
-              {email}
-            </a>
-          </div>
+          {email && (
+            <div className="flex items-center gap-2.5">
+              <Mail className="h-4 w-4 text-zinc-500 dark:text-zinc-500" />
+              <a
+                className="text-sm hover:underline"
+                href={`mailto:${email}`}
+                style={{ color: primaryColor }}
+              >
+                {email}
+              </a>
+            </div>
+          )}
 
           {phone && (
             <div className="flex items-center gap-2.5">

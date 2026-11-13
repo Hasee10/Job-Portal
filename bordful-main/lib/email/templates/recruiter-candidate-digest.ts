@@ -52,7 +52,7 @@ export function renderRecruiterCandidateDigestEmail({
       </div>
       <h1 style="margin: 0 0 8px; font-size: 22px; line-height: 1.3; font-weight: 800; color: #18181b; letter-spacing: -0.01em;">${h(headline)}</h1>
       <p style="margin: 0 0 24px; font-size: 14px; line-height: 1.6; color: #71717a;">
-        Hi ${h(recruiterName)}, these opted-in candidates joined Caliber and match your specialties.
+        Hi ${h(recruiterName)}, these opted-in candidates joined Quantus and match your specialties.
       </p>
       <table cellpadding="0" cellspacing="0" role="presentation" width="100%">
         ${rows}
@@ -70,7 +70,7 @@ export function renderRecruiterCandidateDigestEmail({
     ${emailFooter({
       audience: "recruiter",
       customBottomLine:
-        "You're receiving this because you're a verified recruiter on Caliber with specialties set on your profile.",
+        "You're receiving this because you're a verified recruiter on Quantus with specialties set on your profile.",
     })}
   `);
 

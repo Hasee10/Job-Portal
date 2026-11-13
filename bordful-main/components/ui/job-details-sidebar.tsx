@@ -141,23 +141,25 @@ export function JobDetailsSidebar({
     <div className="space-y-4 rounded-lg border bg-muted p-5">
       <div className="mb-2 flex items-center justify-between">
         <h2 className="font-semibold text-md">Job Details</h2>
-        {config.jobReport.enabled && config.jobReport.showInSidebar && (
-          <a
-            className="flex items-center gap-1 font-medium text-red-700 text-xs hover:text-red-800 dark:text-red-300 dark:hover:text-red-200"
-            href={`mailto:${
-              config.jobReport.email
-            }?subject=${encodeURIComponent(
-              config.jobReport.emailSubject.replace("[Job Title]", title)
-            )}&body=${encodeURIComponent(
-              config.jobReport.emailMessage
-                .replace("[Job Title]", title)
-                .replace("[Job URL]", jobUrl)
-            )}`}
-          >
-            <Flag className="h-3 w-3" />
-            {config.jobReport.buttonText}
-          </a>
-        )}
+        {config.jobReport.enabled &&
+          config.jobReport.email &&
+          config.jobReport.showInSidebar && (
+            <a
+              className="flex items-center gap-1 font-medium text-red-700 text-xs hover:text-red-800 dark:text-red-300 dark:hover:text-red-200"
+              href={`mailto:${
+                config.jobReport.email
+              }?subject=${encodeURIComponent(
+                config.jobReport.emailSubject.replace("[Job Title]", title)
+              )}&body=${encodeURIComponent(
+                config.jobReport.emailMessage
+                  .replace("[Job Title]", title)
+                  .replace("[Job URL]", jobUrl)
+              )}`}
+            >
+              <Flag className="h-3 w-3" />
+              {config.jobReport.buttonText}
+            </a>
+          )}
       </div>
 
       <div>

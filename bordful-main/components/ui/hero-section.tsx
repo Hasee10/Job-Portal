@@ -7,7 +7,7 @@ type HeroSectionProps = {
   children?: React.ReactNode;
   heroImage?: HeroImageConfig;
 };
-/** Shared page introduction; every route uses the Caliber surface and ink tokens. */
+/** Shared page introduction; every route uses the Quantus surface and ink tokens. */
 export function HeroSection({
   badge,
   title,
@@ -24,7 +24,7 @@ export function HeroSection({
           <div className="space-y-5">
             {badge && (
               <p className="text-[10px] font-semibold uppercase tracking-[.16em] text-[var(--hero-muted)]">
-                CALIBER / {badge}
+                QUANTUS / {badge}
               </p>
             )}
             <h1 className="max-w-3xl text-3xl font-medium leading-[1.12] tracking-[-.04em] sm:text-5xl">

@@ -103,7 +103,7 @@ export function SignUpForm({
       }
       toast({
         description: "Your business account is ready.",
-        title: "Welcome to Caliber",
+        title: "Welcome to Quantus",
       });
       router.push(callbackUrl);
       router.refresh();
@@ -126,7 +126,7 @@ export function SignUpForm({
         <div role="alert" className="mb-5">
           <p className="text-sm">
             We couldn’t create an account with this email. If you already use
-            Caliber, sign in using your original account.
+            Quantus, sign in using your original account.
           </p>
           <ExistingAccountOptions callbackUrl={callbackUrl} />
         </div>

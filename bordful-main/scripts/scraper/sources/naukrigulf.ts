@@ -70,7 +70,7 @@ async function fetchPage(url: string): Promise<string | null> {
         "Accept-Language": "en-US,en;q=0.9",
         Referer: BASE,
         "User-Agent":
-          "Mozilla/5.0 (compatible; Caliber-Aggregator/1.0; +https://caliber.app)",
+          "Mozilla/5.0 (compatible; Quantus-Aggregator/1.0)",
       },
       signal: AbortSignal.timeout(15_000),
     });

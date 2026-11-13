@@ -52,7 +52,7 @@ export const metadata: Metadata = {
     index: true,
     nocache: false,
   },
-  title: "Caliber | Careers and Procurement",
+  title: "Quantus | Careers and Procurement",
 };
 
 export default async function RootLayout({

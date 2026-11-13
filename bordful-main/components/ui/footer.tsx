@@ -35,7 +35,7 @@ export function Footer() {
       links: SITE_LINKS[context],
     },
     {
-      title: "Caliber",
+      title: "Quantus",
       links: [
         { label: "About us", href: "/about" },
         { label: "Contact", href: "/contact" },
@@ -78,7 +78,7 @@ export function Footer() {
                 ? "A clearer way to discover partners, build relationships and manage sourcing."
                 : context === "jobs"
                   ? "Find relevant roles, build your confidence and take the next step in your career."
-                  : "One platform for your career and your business. Move forward with Caliber."}
+                  : "One platform for your career and your business. Move forward with Quantus."}
             </p>
           </div>
           <div className="grid grid-cols-2 gap-8 sm:grid-cols-3">
@@ -103,7 +103,7 @@ export function Footer() {
         </div>
         <div className="flex flex-wrap justify-between gap-3 border-t border-white/15 py-6 text-[var(--brand-soft-text)] text-xs">
           <span>
-            © {new Date().getFullYear()} Caliber. All rights reserved.
+            © {new Date().getFullYear()} Quantus. All rights reserved.
           </span>
           <span>Careers. Connections. Possibilities.</span>
         </div>

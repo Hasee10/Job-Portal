@@ -60,7 +60,7 @@ export default async function ProcurementLandingPage() {
           <div className={styles.heroCopy}>
             <p className={styles.eyebrow}>
               <span />
-              CALIBER / PROCUREMENT
+              QUANTUS / PROCUREMENT
             </p>
             <h1 id="procurement-title">
               Good business.

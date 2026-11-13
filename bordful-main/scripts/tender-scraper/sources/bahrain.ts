@@ -77,7 +77,7 @@ async function callWebService<T>(
       headers: {
         "Content-Type": "application/json; charset=utf-8",
         "User-Agent":
-          "Mozilla/5.0 (compatible; Caliber-Aggregator/1.0; +https://caliber.app)",
+          "Mozilla/5.0 (compatible; Quantus-Aggregator/1.0)",
       },
       method: "POST",
       signal: AbortSignal.timeout(20_000),

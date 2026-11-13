@@ -16,7 +16,7 @@ type ContactSchemaProps = {
 
 export const ContactSchema: FC<ContactSchemaProps> = ({
   companyName = config.contact?.contactInfo?.companyName || config.title,
-  email = config.contact?.contactInfo?.email || "contact@example.com",
+  email = config.contact?.contactInfo?.email || undefined,
   // No fake fallbacks for phone/address - emitting a placeholder US number
   // and street into schema.org markup (which Google reads) is worse than
   // omitting them. Left undefined when unset so the fields are dropped below.
@@ -36,7 +36,7 @@ export const ContactSchema: FC<ContactSchemaProps> = ({
     description,
     mainEntity: {
       "@type": "Organization",
-      email,
+      ...(email ? { email } : {}),
       name: companyName,
       ...(phone ? { telephone: phone } : {}),
       ...(address

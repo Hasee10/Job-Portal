@@ -82,7 +82,7 @@ async function upsertAll(
 }
 
 async function main() {
-  console.log(`\n=== Caliber Tender Scraper — ${new Date().toISOString()} ===`);
+  console.log(`\n=== Quantus Tender Scraper — ${new Date().toISOString()} ===`);
 
   let inserted = 0;
   let updated = 0;

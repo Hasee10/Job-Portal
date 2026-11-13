@@ -57,7 +57,7 @@ export function renderProcurementInvitationEmail({
 
     ${emailFooter({
       customBottomLine:
-        "You're receiving this because a buyer invited your Caliber recruiter account to a procurement request.",
+        "You're receiving this because a buyer invited your Quantus recruiter account to a procurement request.",
     })}
   `);
 

@@ -12,7 +12,7 @@ import {
 
 export const dynamic = "force-dynamic";
 
-// Buyer invites by the recruiter's Caliber email - resolved here against
+// Buyer invites by the recruiter's Quantus email - resolved here against
 // the real recruiter_accounts table (see getOrCreateVendorForRecruiterEmail)
 // rather than requiring the buyer to already know an internal vendor id.
 export async function POST(
@@ -50,7 +50,7 @@ export async function POST(
   if (vendorIds.length === 0) {
     return NextResponse.json(
       {
-        error: `No Caliber recruiter account found for: ${notFound.join(", ")}`,
+        error: `No Quantus recruiter account found for: ${notFound.join(", ")}`,
       },
       { status: 400 }
     );
