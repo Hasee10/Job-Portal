@@ -103,7 +103,8 @@ describe("createEmployer", () => {
 
 describe("verifyEmployerCredentials", () => {
   it("throws a db_unavailable EmployerAuthError when Supabase env vars are missing", async () => {
-    vi.unstubAllEnvs();
+    vi.stubEnv("SUPABASE_URL", "");
+    vi.stubEnv("SUPABASE_SERVICE_ROLE_KEY", "");
 
     await expect(
       verifyEmployerCredentials("someone@example.com", TEST_PASSWORD)

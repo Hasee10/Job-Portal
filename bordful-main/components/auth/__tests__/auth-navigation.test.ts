@@ -28,7 +28,7 @@ describe("workspace destinations", () => {
       expect(html.match(/href="\/procurement\/organizations"/g)).toHaveLength(
         1
       );
-      expect(html).toContain("Business workspace");
+      expect(html).toContain("Procurement dashboard");
     }
   );
   it("hides hiring account destinations in Procurement", () => {
@@ -40,10 +40,10 @@ describe("workspace destinations", () => {
         context: "procurement",
       })
     );
-    expect(html).toContain("Business workspace");
+    expect(html).toContain("Procurement dashboard");
     expect(html).not.toContain('href="/dashboard"');
   });
-  it("hides business workspace destinations in Jobs", () => {
+  it("keeps the procurement dashboard accessible from Jobs account navigation", () => {
     vi.stubGlobal("React", React);
     state.role = "seeker";
     const html = renderToStaticMarkup(
@@ -51,6 +51,7 @@ describe("workspace destinations", () => {
     );
     expect(html).toContain("Job account");
     expect(html).toContain("Resume builder");
-    expect(html).not.toContain("/procurement/organizations");
+    expect(html).toContain('href="/procurement/organizations"');
+    expect(html).toContain("Procurement dashboard");
   });
 });

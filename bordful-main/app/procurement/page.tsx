@@ -2,46 +2,46 @@ import {
   ArrowRight,
   ArrowUpRight,
   FileSearch,
+  MessagesSquare,
   ShieldCheck,
   Users,
-  MessagesSquare,
 } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { auth } from "@/auth";
-import config from "@/config";
-import { ProductPreview } from "@/components/home/ProductPreview";
 import styles from "@/components/home/marketing.module.css";
+import { ProductPreview } from "@/components/home/ProductPreview";
+import config from "@/config";
 import { getActiveTenderCount } from "@/lib/procurement/scraped-tender-actions";
 export const metadata: Metadata = {
-  title: `Procurement | ${config.title}`,
   description:
     "Discover business partners and public tenders. Bring requests, supplier responses and sourcing decisions into one workspace.",
+  title: `Procurement | ${config.title}`,
 };
 export const dynamic = "force-dynamic";
 const FORMATS = [
   {
-    name: "RFI",
-    label: "Explore the market",
     description:
       "Understand supplier capabilities before you commit to a specification.",
+    label: "Explore the market",
+    name: "RFI",
   },
   {
-    name: "RFQ",
-    label: "Compare pricing",
     description:
       "Ask for comparable quotations against a well-defined requirement.",
+    label: "Compare pricing",
+    name: "RFQ",
   },
   {
-    name: "RFP",
-    label: "Evaluate the approach",
     description:
       "Invite proposals when the solution matters as much as the price.",
+    label: "Evaluate the approach",
+    name: "RFP",
   },
   {
-    name: "Tender",
-    label: "Structure the process",
     description: "Set formal requirements, deadlines and evaluation criteria.",
+    label: "Structure the process",
+    name: "Tender",
   },
 ];
 export default async function ProcurementLandingPage() {
@@ -55,7 +55,7 @@ export default async function ProcurementLandingPage() {
     : "/sign-up?callbackUrl=/procurement/organizations";
   return (
     <main className={styles.page}>
-      <section className={styles.hero} aria-labelledby="procurement-title">
+      <section aria-labelledby="procurement-title" className={styles.hero}>
         <div className={styles.heroGrid}>
           <div className={styles.heroCopy}>
             <p className={styles.eyebrow}>
@@ -72,15 +72,13 @@ export default async function ProcurementLandingPage() {
               first conversation to your next business decision, in one place.
             </p>
             <div className={styles.actions}>
-              <Link className={styles.primary} href={startHref}>
-                {session?.user
-                  ? "Open your workspace"
-                  : "Create a business profile"}
-                <ArrowUpRight size={18} aria-hidden="true" />
-              </Link>
+              <a className={styles.primary} href={workspaceHref}>
+                Open procurement dashboard
+                <ArrowUpRight aria-hidden="true" size={18} />
+              </a>
               <Link className={styles.secondary} href="/procurement/directory">
                 Explore businesses
-                <ArrowRight size={17} aria-hidden="true" />
+                <ArrowRight aria-hidden="true" size={17} />
               </Link>
             </div>
             <div className={styles.heroNote}>
@@ -98,7 +96,7 @@ export default async function ProcurementLandingPage() {
           </div>
         </div>
       </section>
-      <section className={styles.section} aria-labelledby="discovery-title">
+      <section aria-labelledby="discovery-title" className={styles.section}>
         <div className={styles.sectionHeading}>
           <div>
             <p className={styles.kicker}>OPEN THE RIGHT DOORS</p>
@@ -115,19 +113,19 @@ export default async function ProcurementLandingPage() {
         </div>
         <div className={styles.discovery}>
           <div>
-            <FileSearch size={26} aria-hidden="true" />
-            {totalOpenTenders !== null ? (
+            <FileSearch aria-hidden="true" size={26} />
+            {totalOpenTenders === null ? (
+              <h3 className="mt-6">
+                Public opportunities.
+                <br />A wider perspective.
+              </h3>
+            ) : (
               <>
                 <div className={styles.tenderCount}>
                   {totalOpenTenders.toLocaleString()}
                 </div>
                 <h3>Open tenders to explore.</h3>
               </>
-            ) : (
-              <h3 className="mt-6">
-                Public opportunities.
-                <br />A wider perspective.
-              </h3>
             )}
             <p>
               Browse aggregated public notices from TED and PPRA.
@@ -138,11 +136,11 @@ export default async function ProcurementLandingPage() {
             </p>
             <Link className={styles.textLink} href="/procurement/tenders">
               Browse public tenders
-              <ArrowUpRight size={17} aria-hidden="true" />
+              <ArrowUpRight aria-hidden="true" size={17} />
             </Link>
           </div>
           <div>
-            <Users size={26} aria-hidden="true" />
+            <Users aria-hidden="true" size={26} />
             <h3 className="mt-6">
               Find a business.
               <br />
@@ -152,17 +150,17 @@ export default async function ProcurementLandingPage() {
               Discover buyers and suppliers by category, location and
               capabilities. Get a clearer picture of who you could work with.
             </p>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-muted-foreground text-xs">
               Business information is self-declared, not independently verified.
             </p>
             <Link className={styles.textLink} href="/procurement/directory">
               Explore the directory
-              <ArrowUpRight size={17} aria-hidden="true" />
+              <ArrowUpRight aria-hidden="true" size={17} />
             </Link>
           </div>
         </div>
       </section>
-      <section className={styles.band} aria-labelledby="workspace-title">
+      <section aria-labelledby="workspace-title" className={styles.band}>
         <div className={styles.bandInner}>
           <div>
             <p className={styles.kicker}>WORK TOGETHER. WITH CONTEXT.</p>
@@ -176,38 +174,38 @@ export default async function ProcurementLandingPage() {
               relationship a place to develop.
             </p>
             <Link
-              className="mt-6 inline-flex items-center gap-3 border-b border-white/40 pb-2 text-sm"
+              className="mt-6 inline-flex items-center gap-3 border-white/40 border-b pb-2 text-sm"
               href={workspaceHref}
             >
               Explore your workspace
-              <ArrowUpRight size={17} aria-hidden="true" />
+              <ArrowUpRight aria-hidden="true" size={17} />
             </Link>
           </div>
           <div className={styles.benefitGrid}>
             {[
               {
                 icon: Users,
-                title: "Business connections",
                 text: "Build a network around your organization, not a disconnected contact list.",
+                title: "Business connections",
               },
               {
                 icon: MessagesSquare,
-                title: "Shared context",
                 text: "Keep conversations tied to the businesses you work with.",
+                title: "Shared context",
               },
               {
                 icon: FileSearch,
-                title: "Structured requests",
                 text: "Bring requirements and supplier responses into a clear sourcing process.",
+                title: "Structured requests",
               },
               {
                 icon: ShieldCheck,
-                title: "Membership-based access",
                 text: "Your organization’s workspace stays scoped to its members and permissions.",
+                title: "Membership-based access",
               },
             ].map(({ icon: Icon, title, text }) => (
               <div key={title}>
-                <Icon size={22} aria-hidden="true" />
+                <Icon aria-hidden="true" size={22} />
                 <h3>{title}</h3>
                 <p>{text}</p>
               </div>
@@ -215,7 +213,7 @@ export default async function ProcurementLandingPage() {
           </div>
         </div>
       </section>
-      <section className={styles.section} aria-labelledby="formats-title">
+      <section aria-labelledby="formats-title" className={styles.section}>
         <div className={styles.sectionHeading}>
           <div>
             <p className={styles.kicker}>THE RIGHT STARTING POINT</p>
@@ -258,16 +256,16 @@ export default async function ProcurementLandingPage() {
             <ol>
               {[
                 {
-                  title: "Define what you need",
                   text: "Choose a format, describe the requirement, and set your deadline and evaluation criteria.",
+                  title: "Define what you need",
                 },
                 {
-                  title: "Bring the right suppliers in",
                   text: "Invite suppliers and collect responses in the context of your request.",
+                  title: "Bring the right suppliers in",
                 },
                 {
-                  title: "Compare, decide and record",
                   text: "Review submissions, evaluate your options and keep a record of the decision.",
+                  title: "Compare, decide and record",
                 },
               ].map((step, i) => (
                 <li key={step.title}>
@@ -282,7 +280,7 @@ export default async function ProcurementLandingPage() {
           </div>
         </div>
       </section>
-      <section className={styles.section} aria-labelledby="roles-title">
+      <section aria-labelledby="roles-title" className={styles.section}>
         <div className={styles.sectionHeading}>
           <div>
             <p className={styles.kicker}>TWO SIDES. SHARED PROGRESS.</p>
@@ -300,7 +298,7 @@ export default async function ProcurementLandingPage() {
               </p>
               <Link className={styles.textLink} href={startHref}>
                 Start your business profile
-                <ArrowUpRight size={17} aria-hidden="true" />
+                <ArrowUpRight aria-hidden="true" size={17} />
               </Link>
             </div>
           </article>
@@ -321,7 +319,7 @@ export default async function ProcurementLandingPage() {
                 }
               >
                 Open your business workspace
-                <ArrowUpRight size={17} aria-hidden="true" />
+                <ArrowUpRight aria-hidden="true" size={17} />
               </Link>
             </div>
           </article>

@@ -1,12 +1,12 @@
 "use client";
-import { Menu, X, ArrowLeft } from "lucide-react";
+import { ArrowLeft, Menu, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useRef, useState } from "react";
 import { AuthNavStatus } from "@/components/auth/AuthNavStatus";
+import { SITE_LINKS, siteContext } from "@/lib/ui/site-navigation";
 import { Brand } from "./brand";
 import { ThemeToggle } from "./theme-toggle";
-import { SITE_LINKS, siteContext } from "@/lib/ui/site-navigation";
 
 export function Nav() {
   const pathname = usePathname();
@@ -43,75 +43,92 @@ export function Nav() {
           aria-label="Primary"
           className="hidden items-center gap-0.5 rounded-full border bg-muted/25 p-1 lg:flex"
         >
-          {links.map((link) => (
-            <Link
-              key={link.href}
-              aria-current={active(link.href) ? "page" : undefined}
-              href={link.href}
-              className={`rounded-full px-3.5 py-2 text-[13px] transition-colors ${active(link.href) ? "bg-background font-semibold text-[var(--brand-ink)] shadow-sm dark:text-lime-200" : "text-muted-foreground hover:bg-muted hover:text-foreground"}`}
-            >
-              {link.label}
-            </Link>
-          ))}
+          {links.map((link) => {
+            // Dashboard entry can issue a local demo session, requiring a document navigation.
+            const NavigationLink =
+              link.href === "/procurement/organizations" ? "a" : Link;
+            return (
+              <NavigationLink
+                aria-current={active(link.href) ? "page" : undefined}
+                className={`rounded-full px-3.5 py-2 text-[13px] transition-colors ${active(link.href) ? "bg-background font-semibold text-[var(--brand-ink)] shadow-sm dark:text-lime-200" : "text-muted-foreground hover:bg-muted hover:text-foreground"}`}
+                href={link.href}
+                key={link.href}
+              >
+                {link.label}
+              </NavigationLink>
+            );
+          })}
         </nav>
         <div className="flex items-center gap-3">
+          {context === "procurement" && (
+            <a
+              className="rounded-lg bg-primary px-3 py-2 font-medium text-primary-foreground text-xs lg:hidden"
+              href="/procurement/organizations"
+            >
+              Dashboard
+            </a>
+          )}
           <ThemeToggle />
           <div className="hidden lg:block">
             <AuthNavStatus
-              variant="desktop"
-              context={context}
               accountKind={accountKind}
+              context={context}
+              variant="desktop"
             />
           </div>
           <button
-            type="button"
-            ref={toggle}
-            aria-label={open ? "Close navigation" : "Open navigation"}
-            aria-expanded={open}
             aria-controls={open ? "mobile-navigation" : undefined}
-            onClick={() => setOpenPath(open ? null : pathname)}
+            aria-expanded={open}
+            aria-label={open ? "Close navigation" : "Open navigation"}
             className="rounded-lg border p-2 lg:hidden"
+            onClick={() => setOpenPath(open ? null : pathname)}
+            ref={toggle}
+            type="button"
           >
             {open ? (
-              <X size={19} aria-hidden="true" />
+              <X aria-hidden="true" size={19} />
             ) : (
-              <Menu size={19} aria-hidden="true" />
+              <Menu aria-hidden="true" size={19} />
             )}
           </button>
         </div>
       </div>
       {open && (
         <nav
-          id="mobile-navigation"
           aria-label="Mobile navigation"
           className="border-t px-4 py-5 lg:hidden"
+          id="mobile-navigation"
         >
           <div className="mx-auto max-w-7xl space-y-1">
-            {links.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                onClick={() => setOpenPath(null)}
-                aria-current={active(link.href) ? "page" : undefined}
-                className={`block rounded-lg px-3 py-3 text-sm ${active(link.href) ? "bg-muted font-medium" : "text-muted-foreground"}`}
-              >
-                {link.label}
-              </Link>
-            ))}
+            {links.map((link) => {
+              const NavigationLink =
+                link.href === "/procurement/organizations" ? "a" : Link;
+              return (
+                <NavigationLink
+                  aria-current={active(link.href) ? "page" : undefined}
+                  className={`block rounded-lg px-3 py-3 text-sm ${active(link.href) ? "bg-muted font-medium" : "text-muted-foreground"}`}
+                  href={link.href}
+                  key={link.href}
+                  onClick={() => setOpenPath(null)}
+                >
+                  {link.label}
+                </NavigationLink>
+              );
+            })}
             {context !== "home" && (
               <Link
+                className="flex items-center gap-2 px-3 py-3 text-muted-foreground text-xs"
                 href="/"
                 onClick={() => setOpenPath(null)}
-                className="flex items-center gap-2 px-3 py-3 text-muted-foreground text-xs"
               >
-                <ArrowLeft size={14} aria-hidden="true" />
+                <ArrowLeft aria-hidden="true" size={14} />
                 Caliber home
               </Link>
             )}
             <div className="border-t pt-4 lg:hidden">
               <AuthNavStatus
-                context={context}
                 accountKind={accountKind}
+                context={context}
                 onNavigate={() => setOpenPath(null)}
               />
             </div>

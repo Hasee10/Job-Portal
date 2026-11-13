@@ -59,16 +59,26 @@ const server = createServer((req, res) => {
     return;
   }
 
+  const upstreamFailure = (err) => {
+    if (res.destroyed) return;
+    if (res.headersSent) {
+      res.destroy();
+      return;
+    }
+    res.writeHead(502, { "content-type": "application/json" });
+    res.end(JSON.stringify({ message: `PostgREST unreachable on ${HOST}:${TARGET_PORT}`, detail: err.message }));
+  };
   const upstream = httpRequest(
     { host: HOST, port: TARGET_PORT, method: req.method, path, headers: { ...req.headers, host: `${HOST}:${TARGET_PORT}` } },
     (up) => {
+      up.on("error", upstreamFailure);
       res.writeHead(up.statusCode ?? 502, up.headers);
       up.pipe(res);
     }
   );
-  upstream.on("error", (err) => {
-    res.writeHead(502, { "content-type": "application/json" });
-    res.end(JSON.stringify({ message: `PostgREST unreachable on ${HOST}:${TARGET_PORT}`, detail: err.message }));
+  upstream.on("error", upstreamFailure);
+  res.on("close", () => {
+    if (!res.writableEnded) upstream.destroy();
   });
   req.pipe(upstream);
 });

@@ -29,8 +29,9 @@ export function AuthNavStatus({
       if (
         container.current &&
         !container.current.contains(event.target as Node)
-      )
+      ) {
         setOpen(false);
+      }
     };
     document.addEventListener("mousedown", outside);
     return () => document.removeEventListener("mousedown", outside);
@@ -39,15 +40,17 @@ export function AuthNavStatus({
     setOpen(false);
     onNavigate?.();
   };
-  if (status === "loading") return null;
+  if (status === "loading") {
+    return null;
+  }
   if (session?.user) {
     const capabilities = capabilitiesFor(session.user.role);
-    const links: { href: string; label: string }[] = [];
-    if (context !== "jobs")
-      links.push({
+    const links: { href: string; label: string }[] = [
+      {
         href: "/procurement/organizations",
-        label: "Business workspace",
-      });
+        label: "Procurement dashboard",
+      },
+    ];
     if (context !== "procurement" && capabilities.recruitment) {
       links.push({
         href: capabilities.workspaceHref,
@@ -58,67 +61,70 @@ export function AuthNavStatus({
               ? "Recruiter workspace"
               : "Hiring workspace",
       });
-      if (session.user.role === "seeker")
+      if (session.user.role === "seeker") {
         links.push({ href: "/account/resume", label: "Resume builder" });
+      }
     }
     const items = (
       <>
         {links.map((link) => (
           <Link
-            key={link.href}
-            href={link.href}
-            onClick={close}
             className="block rounded-lg px-4 py-3 text-sm hover:bg-muted"
+            href={link.href}
+            key={link.href}
+            onClick={close}
           >
             {link.label}
           </Link>
         ))}
         <button
-          type="button"
           className="block w-full rounded-lg border-t px-4 py-3 text-left text-sm hover:bg-muted"
           onClick={() => {
             close();
             signOut({ callbackUrl: "/" });
           }}
+          type="button"
         >
           Sign out
         </button>
       </>
     );
-    if (variant === "mobile")
+    if (variant === "mobile") {
       return <div className={`space-y-1 ${className}`}>{items}</div>;
+    }
     return (
       <div
-        ref={container}
         className={`relative ${className}`}
+        onBlur={(event) => {
+          if (!event.currentTarget.contains(event.relatedTarget)) {
+            setOpen(false);
+          }
+        }}
         onKeyDown={(event) => {
           if (event.key === "Escape") {
             setOpen(false);
             container.current?.querySelector("button")?.focus();
           }
         }}
-        onBlur={(event) => {
-          if (!event.currentTarget.contains(event.relatedTarget))
-            setOpen(false);
-        }}
+        ref={container}
       >
         <button
-          type="button"
-          aria-expanded={open}
           aria-controls={open ? menuId : undefined}
-          onClick={() => setOpen((value) => !value)}
+          aria-expanded={open}
           className="flex items-center gap-2 rounded-lg border px-3 py-2 text-sm"
+          onClick={() => setOpen((value) => !value)}
+          type="button"
         >
-          <User size={16} aria-hidden="true" />
+          <User aria-hidden="true" size={16} />
           <span className="max-w-28 truncate">
             {session.user.name || "My account"}
           </span>
-          <ChevronDown size={13} aria-hidden="true" />
+          <ChevronDown aria-hidden="true" size={13} />
         </button>
         {open && (
           <div
-            id={menuId}
             className="absolute right-0 mt-2 w-60 rounded-xl border bg-popover p-1 shadow-lg"
+            id={menuId}
           >
             {items}
           </div>
@@ -149,16 +155,16 @@ export function AuthNavStatus({
   return (
     <div className={`flex items-center gap-4 text-sm ${className}`}>
       <Link
+        className="text-muted-foreground hover:text-foreground"
         href={signin}
         onClick={onNavigate}
-        className="text-muted-foreground hover:text-foreground"
       >
         Sign in
       </Link>
       <Link
+        className="rounded-full bg-[var(--brand-ink)] px-4 py-2.5 font-medium text-white hover:bg-[#285c49]"
         href={signup}
         onClick={onNavigate}
-        className="rounded-full bg-[var(--brand-ink)] px-4 py-2.5 font-medium text-white hover:bg-[#285c49]"
       >
         Get started
       </Link>

@@ -5,6 +5,7 @@
   "scripts": {
     "build": "next build",
     "dev": "next dev --turbopack",
+    "dev:presentation": "node scripts/dev/start-procurement-presentation.mjs",
     "format": "ultracite format",
     "lint": "ultracite check",
     "scrape": "npx tsx scripts/scraper/index.ts",
@@ -14,6 +15,7 @@
     "scrape:tenders": "npx tsx scripts/tender-scraper/index.ts",
     "start": "next start",
     "test": "vitest run",
+    "test:presentation": "node --test scripts/dev/demo-data.test.mjs scripts/dev/procurement-presentation-data.test.mjs scripts/dev/local-rest-gateway.test.mjs",
     "test:watch": "vitest"
   },
   "dependencies": {

@@ -65,7 +65,8 @@ describe("createRecruiterAccount", () => {
 
 describe("verifyRecruiterCredentials", () => {
   it("throws a db_unavailable RecruiterAuthError when Supabase env vars are missing", async () => {
-    vi.unstubAllEnvs();
+    vi.stubEnv("SUPABASE_URL", "");
+    vi.stubEnv("SUPABASE_SERVICE_ROLE_KEY", "");
 
     await expect(
       verifyRecruiterCredentials("someone@example.com", TEST_PASSWORD)

@@ -89,16 +89,16 @@ export function ConnectRequestForm({
   if (organizations.length === 0) {
     return (
       <section className="mt-8 rounded-xl border border-zinc-200 p-5 dark:border-zinc-800">
-        <h2 className="font-semibold text-zinc-900 dark:text-zinc-50">
+        <h2 className="break-words font-semibold text-zinc-900 dark:text-zinc-50">
           Work with {target.name}
         </h2>
-        <p className="mt-3 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
+        <p className="mt-3 text-sm text-zinc-600 leading-relaxed dark:text-zinc-400">
           Start a conversation through your business workspace. Create or select
           a business to send a connection request.
         </p>
         <Button
           asChild
-          className="mt-5 h-10 w-full bg-[hsl(var(--primary))] text-primary-foreground hover:bg-[#285c49]"
+          className="mt-5 h-auto min-h-10 w-full whitespace-normal bg-[hsl(var(--primary))] text-center text-primary-foreground hover:bg-[#285c49]"
         >
           <Link href="/procurement/organizations">Open business workspace</Link>
         </Button>
@@ -108,7 +108,7 @@ export function ConnectRequestForm({
 
   return (
     <section className="mt-8 rounded-xl border border-zinc-200 p-5 dark:border-zinc-800">
-      <h2 className="font-semibold text-zinc-900 dark:text-zinc-50">
+      <h2 className="break-words font-semibold text-zinc-900 dark:text-zinc-50">
         Work with {target.name}
       </h2>
 
@@ -120,11 +120,12 @@ export function ConnectRequestForm({
         </p>
       ) : (
         <>
-          <div className="mt-3 flex flex-wrap gap-2">
+          <div className="mt-3 grid min-w-0 grid-cols-1 gap-2">
             <select
               aria-label="Which of your businesses"
-              className="rounded-md border border-zinc-300 bg-transparent px-3 py-2 text-sm dark:border-zinc-700"
+              className="w-full min-w-0 truncate rounded-md border border-zinc-300 bg-transparent px-3 py-2 pr-8 text-sm dark:border-zinc-700"
               onChange={(event) => setFromId(event.target.value)}
+              title={from?.name}
               value={fromId}
             >
               {organizations.map((org) => (
@@ -135,10 +136,11 @@ export function ConnectRequestForm({
             </select>
             <select
               aria-label="What you want to do"
-              className="rounded-md border border-zinc-300 bg-transparent px-3 py-2 text-sm dark:border-zinc-700"
+              className="w-full min-w-0 truncate rounded-md border border-zinc-300 bg-transparent px-3 py-2 pr-8 text-sm dark:border-zinc-700"
               onChange={(event) =>
                 setDirection(event.target.value as ConnectionDirection)
               }
+              title={directions.find((entry) => entry.value === chosen)?.label}
               value={chosen}
             >
               {directions.map((entry) => (
@@ -157,7 +159,7 @@ export function ConnectRequestForm({
             value={message}
           />
           <Button
-            className="mt-3"
+            className="mt-3 h-auto min-h-10 w-full whitespace-normal"
             disabled={isSending}
             onClick={submit}
             type="button"
