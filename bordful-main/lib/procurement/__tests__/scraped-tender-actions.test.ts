@@ -168,17 +168,35 @@ import { getTenderFacets, listActiveTenders } from "../scraped-tender-actions";
 
 // The 2-digit prefix extraction the real trigger
 // (scraped_tenders_set_cpv_divisions) performs on write, replicated here so
-// the mock rows look like what the database would actually store.
+// the mock rows look like what the database would actually store. DISTINCT
+// + sort, not a plain map: a tender whose codes share a division (e.g.
+// 72000000 and 72200000) must store that division once, which is the exact
+// defect PR #103's review caught - the un-fixed trigger stored one entry
+// per matching code, and the facets function double-counted that tender.
 function divisionsOf(codes: string[]): string[] {
-  return codes.filter((c) => c.length >= 2).map((c) => c.slice(0, 2));
+  const divisions = codes
+    .filter((c) => c.length >= 2)
+    .map((c) => c.slice(0, 2));
+  return [...new Set(divisions)].sort();
 }
+
+const DUAL_CODE_ROW_INDEX = 3100;
 
 beforeEach(() => {
   process.env.SUPABASE_URL = "http://localhost:3002";
   process.env.SUPABASE_SERVICE_ROLE_KEY = "test";
   state.calls = [];
   state.rows = Array.from({ length: 3105 }, (_, i) => {
-    const cpvCodes = [i === 3104 ? "72000000" : "45000000"];
+    // Two codes in the same division, on one row distinct from every other
+    // assertion in this file - proves divisionsOf() (and so the real
+    // trigger it replicates) collapses them to one element, which is what
+    // keeps this row counted once in the "45" facet below.
+    const cpvCodes =
+      i === 3104
+        ? ["72000000"]
+        : i === DUAL_CODE_ROW_INDEX
+          ? ["45000000", "45700000"]
+          : ["45000000"];
     return {
       buyer_name: "Buyer",
       country: i === 3104 ? "PAK" : "DEU",
@@ -226,6 +244,14 @@ describe("tender retrieval correctness", () => {
     expect(facets.sources.find((row) => row.source === "ppra")?.count).toBe(1);
     expect(facets.sources.reduce((sum, row) => sum + row.count, 0)).toBe(3105);
     expect(facets.categories.find((c) => c.cpvPrefix === "72")?.count).toBe(1);
+    // 3104 rows carry division 45 (every row except the single "72" one),
+    // including the row at DUAL_CODE_ROW_INDEX with two division-45 codes.
+    // 3105 here would mean that row was counted twice - the exact defect
+    // the review caught, now covered by an explicit assertion rather than
+    // only by the real-DB test in scraped-tenders-facets-local-integration.
+    expect(facets.categories.find((c) => c.cpvPrefix === "45")?.count).toBe(
+      3104
+    );
     expect(state.calls).toEqual(["rpc:scraped_tender_facets"]);
 
     state.calls = [];
