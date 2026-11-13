@@ -10,30 +10,32 @@
 -- full 8-digit codes cannot express prefix matching through PostgREST's
 -- query operators, so the code had no way to push that filter into SQL.
 --
--- DEPLOYMENT, not a single `\i` of this file against hosted Supabase:
+-- STAGE 1 OF 3. This file only - column, trigger, functions, procedure.
+-- Deliberately contains NO index build: see
+-- 20261113_scraped_tenders_cpv_divisions_index_concurrent.sql (stage 2) for
+-- why that has to be its own file, run its own way, never bundled in here.
 --
---   1. Apply this file as-is. Every statement in it is fast, metadata-only
---      or touches zero existing rows - ADD COLUMN ... DEFAULT '{}' is a
---      PG11+ metadata-only operation (no table rewrite, no row locks), the
---      trigger and the facets function are CREATE OR REPLACE with no data
---      access, and CREATE INDEX CONCURRENTLY (see below) does not block
---      the scraper's writes. Nothing here requires a maintenance window on
---      its own.
---   2. Separately, run:
---        CALL public.backfill_scraped_tenders_cpv_divisions();
---      This derives cpv_divisions for the ~87k rows that already exist,
---      committing every 5000 rows rather than holding one transaction open
---      for the whole table - see that procedure's own comment for why.
---      Safe to run while the scraper is active: each batch is its own
---      short transaction, and the trigger means any row the scraper
---      touches mid-backfill is already correct and simply skipped.
---   3. Confirm with:
---        select count(*) from scraped_tenders where cpv_codes <> '{}' and cpv_divisions = '{}';
---      which should return 0.
+-- DEPLOYMENT (all three stages - see that file and the PR description for
+-- the exact hosted commands):
+--   1. This file. Every statement here is fast, metadata-only or touches
+--      zero existing rows - ADD COLUMN ... DEFAULT '{}' is a PG11+
+--      metadata-only operation (no table rewrite, no row locks), and the
+--      trigger/function/procedure are CREATE OR REPLACE with no data
+--      access. Safe to run through any transactional migration runner.
+--   2. 20261113_scraped_tenders_cpv_divisions_index_concurrent.sql, run
+--      through psql (or any plain client), NOT through a tool that wraps
+--      it in a transaction - CREATE INDEX CONCURRENTLY errors if it is.
+--   3. CALL public.backfill_scraped_tenders_cpv_divisions(); as a
+--      standalone top-level statement, through psql - the procedure COMMITs
+--      internally between batches, which a client-opened transaction
+--      around the CALL would turn into an error, and a web SQL editor with
+--      a query timeout may kill a multi-batch run on the full table before
+--      it finishes.
+--   4. Confirm with the query in that same file's closing comment.
 --
 -- Additive and backward compatible throughout. Rolls back by dropping the
--- trigger, the two functions/procedure, the index and the column, in that
--- order.
+-- trigger, the two functions, the procedure, the index (separately - see
+-- stage 2) and the column, in that order.
 
 -- A STORED GENERATED column was the first attempt here and Postgres
 -- rejects it ("cannot use subquery in column generation expression") - the
@@ -54,14 +56,15 @@ alter table public.scraped_tenders
 -- division (e.g. 72000000 and 72200000, both division 72) must contribute
 -- that division to cpv_divisions once, not once per matching code - the
 -- facets function below counts a tender once per element of this array, so
--- a duplicate here double-counts that tender for that category. The old
--- JavaScript implementation counted via `.some()` per category per tender,
--- which is inherently a single count regardless of how many codes matched;
--- this is what makes SQL DISTINCT the correct equivalent, not an
+-- a duplicate here double-counts that tender for that category. Confirmed
+-- by reproduction during review: without DISTINCT, a tender with two
+-- same-division codes moved a category's count by +2 instead of +1. The
+-- old JavaScript implementation counted via `.some()` per category per
+-- tender, which is inherently a single count regardless of how many codes
+-- matched; this is what makes SQL DISTINCT the correct equivalent, not an
 -- optimization. ORDER BY makes the column's contents deterministic across
 -- runs for the same input, which plain SELECT DISTINCT does not guarantee
--- on its own - needed for the array to compare equal in tests and for
--- anything that might reasonably assume a stable element order.
+-- on its own.
 create or replace function public.scraped_tenders_set_cpv_divisions()
 returns trigger
 language plpgsql
@@ -99,7 +102,9 @@ create trigger scraped_tenders_cpv_divisions_trg
 -- A PROCEDURE, not a function: only a procedure can COMMIT mid-execution
 -- in Postgres (11+) - a function's body always runs inside the caller's
 -- single transaction, which is exactly the "one long transaction" problem
--- this exists to avoid.
+-- this exists to avoid. The COMMIT inside also means CALLing this
+-- procedure must itself be a top-level statement, not inside an explicit
+-- BEGIN the caller opened - see stage 3 in the deployment list above.
 --
 -- Idempotent and resumable: the WHERE clause only selects rows the trigger
 -- has not already derived divisions for, so CALLing this again (after an
@@ -127,31 +132,16 @@ begin
 end;
 $$;
 
--- CONCURRENTLY: a plain CREATE INDEX takes a SHARE lock for the build's
--- duration, which blocks writes to the table - including the scraper's
--- upserts - for however long the build takes. CONCURRENTLY avoids that at
--- the cost of a slower build and two scans instead of one, which is the
--- right tradeoff for an index added to a table something else writes to
--- continuously. It cannot run inside a transaction block, so it is NOT
--- bundled with the DDL above when this file is applied to hosted Supabase -
--- apply it as its own statement, outside any transaction (psql's default,
--- or any migration runner that does not wrap each statement in BEGIN).
--- Locally (this file, applied as one script, no concurrent scraper) a
--- transactional CREATE INDEX is simpler and has already been verified; the
--- CONCURRENTLY form is what the hosted deployment step in this file's own
--- header comment means by "apply this file as-is" - IF_NOT_EXISTS makes it
--- safe to run the same statement either way without erroring on a re-run.
-create index if not exists scraped_tenders_cpv_divisions_idx
-  on public.scraped_tenders using gin (cpv_divisions);
-
 -- All three facets in one round trip, computed entirely in SQL instead of
 -- fetching every active row into the application. Category counts are
--- restricted first by `cpv_divisions && category_prefixes` (GIN-indexed)
--- before the per-row unnest, so the expensive part only touches rows that
--- can actually match, not the whole active set. Each tender contributes at
--- most one row per matching category because cpv_divisions itself holds
--- distinct divisions (see the trigger above) - this function does not need
--- its own DISTINCT, it inherits correctness from the column it reads.
+-- restricted first by `cpv_divisions && category_prefixes` (GIN-indexed
+-- once stage 2 below has run; a sequential scan until then, which is still
+-- correct, just not yet fast) before the per-row unnest, so the expensive
+-- part only touches rows that can actually match, not the whole active
+-- set. Each tender contributes at most one row per matching category
+-- because cpv_divisions itself holds distinct divisions (see the trigger
+-- above) - this function does not need its own DISTINCT, it inherits
+-- correctness from the column it reads.
 --
 -- SECURITY DEFINER with a locked-down search_path: the function must read
 -- scraped_tenders regardless of which role calls it (anon/authenticated
