@@ -12,8 +12,16 @@
 --
 -- STAGE 1 OF 3. This file only - column, trigger, functions, procedure.
 -- Deliberately contains NO index build: see
--- 20261113_scraped_tenders_cpv_divisions_index_concurrent.sql (stage 2) for
+-- 20261114_scraped_tenders_cpv_divisions_index_concurrent.sql (stage 2) for
 -- why that has to be its own file, run its own way, never bundled in here.
+-- That file is dated a day later than this one on purpose, not by
+-- coincidence of when it was written: ordinary migration tooling applies
+-- files in filename order, and an earlier revision of this change dated
+-- both files 20261113 - stage 2's filename then sorted BEFORE stage 1's
+-- ("cpv_divisions_index..." precedes "facets_performance..."
+-- alphabetically), so a tool applying migrations in order would have tried
+-- to index a column stage 1 had not created yet. The later date is what
+-- actually enforces the sequencing; the file split alone does not.
 --
 -- DEPLOYMENT (all three stages - see that file and the PR description for
 -- the exact hosted commands):
@@ -22,7 +30,7 @@
 --      metadata-only operation (no table rewrite, no row locks), and the
 --      trigger/function/procedure are CREATE OR REPLACE with no data
 --      access. Safe to run through any transactional migration runner.
---   2. 20261113_scraped_tenders_cpv_divisions_index_concurrent.sql, run
+--   2. 20261114_scraped_tenders_cpv_divisions_index_concurrent.sql, run
 --      through psql (or any plain client), NOT through a tool that wraps
 --      it in a transaction - CREATE INDEX CONCURRENTLY errors if it is.
 --   3. CALL public.backfill_scraped_tenders_cpv_divisions(); as a
@@ -106,26 +114,67 @@ create trigger scraped_tenders_cpv_divisions_trg
 -- procedure must itself be a top-level statement, not inside an explicit
 -- BEGIN the caller opened - see stage 3 in the deployment list above.
 --
--- Idempotent and resumable: the WHERE clause only selects rows the trigger
--- has not already derived divisions for, so CALLing this again (after an
--- interruption, or safely at any later point) only processes what is still
--- outstanding, and a row the scraper updates mid-backfill is already
--- correct via the trigger and will not be re-selected.
+-- Advances by id, not by "does this row still look unbackfilled": an
+-- earlier revision selected `where cpv_codes <> '{}' and cpv_divisions =
+-- '{}'`, which looks right but does not terminate for a row whose codes
+-- are all shorter than 2 characters or otherwise invalid - the trigger
+-- correctly derives cpv_divisions = '{}' for such a row (there is no valid
+-- division to record), so it matches that WHERE clause again on the very
+-- next iteration, forever. Reproduced locally: a row with cpv_codes =
+-- {'X',''} still matched the old selection after being "processed".
+--
+-- A monotonic id cursor cannot have this problem, because it does not
+-- re-examine content at all: every row with id > last_id and non-empty
+-- cpv_codes is touched exactly once, whatever the trigger derives for it,
+-- malformed or not, and the loop ends when no such row remains above the
+-- cursor. id is a random UUID, not insertion order, which is fine here -
+-- the set of pre-existing rows this backfill needs to reach is fixed at
+-- migration time, and scanning every id in ascending order reaches all of
+-- them exactly once regardless of the order they were originally
+-- inserted in. A row the scraper inserts mid-backfill already has correct
+-- divisions from the trigger at insert time and needs no backfill at all;
+-- if its random id happens to fall behind an already-advanced cursor, it
+-- is simply never revisited, which is correct, not a gap.
+--
+-- The UPDATE, the id selection and the cursor advance happen in one
+-- statement (CTE + RETURNING) so batch membership and the new cursor
+-- value are read from the same consistent batch rather than two separate
+-- queries that could see different rows if the scraper writes between
+-- them.
+--
+-- Idempotent and resumable: re-CALLing this after an interruption simply
+-- starts the cursor over from the beginning (NULL::uuid) and re-touches
+-- every row with non-empty cpv_codes, which is always correct (the
+-- trigger is deterministic) and, for Postgres UUIDs, cheap enough that
+-- re-scanning the whole table once more is not worth optimizing against.
 create or replace procedure public.backfill_scraped_tenders_cpv_divisions(batch_size int default 5000)
 language plpgsql
 as $$
 declare
+  last_id uuid;
   affected int;
 begin
   loop
-    update public.scraped_tenders
-    set cpv_codes = cpv_codes
-    where id in (
+    with batch as (
       select id from public.scraped_tenders
-      where cpv_codes <> '{}' and cpv_divisions = '{}'
+      where (last_id is null or id > last_id) and cpv_codes <> '{}'
+      order by id
       limit batch_size
-    );
-    get diagnostics affected = row_count;
+    ),
+    touched as (
+      update public.scraped_tenders t
+      set cpv_codes = t.cpv_codes
+      from batch
+      where t.id = batch.id
+      returning t.id
+    )
+    -- max(uuid) is not a built-in Postgres aggregate (uuid has the
+    -- ordering operators ORDER BY and > above rely on, but no registered
+    -- MAX/MIN aggregate) - found by actually running this, not assumed.
+    -- array_agg ordered descending, first element, is the equivalent.
+    select count(*), (array_agg(id order by id desc))[1]
+      into affected, last_id
+      from touched;
     exit when affected = 0;
     commit;
   end loop;
