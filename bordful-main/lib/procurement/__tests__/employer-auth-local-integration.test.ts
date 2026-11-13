@@ -130,5 +130,18 @@ describeLocal("local HTTP integration: employer authentication", () => {
       memberType: "employer" as const,
     };
     expect(await getOrganizationForMember(other, organizationId)).toBeNull();
+    // Even an identical UUID in another identity namespace grants no membership.
+    expect(
+      await getOrganizationForMember(
+        { memberId: employerId, memberType: "seeker" },
+        organizationId
+      )
+    ).toBeNull();
+    expect(
+      await getOrganizationForMember(
+        { memberId: employerId, memberType: "recruiter" },
+        organizationId
+      )
+    ).toBeNull();
   });
 });

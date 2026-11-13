@@ -1,5 +1,8 @@
 "use client";
 
+import { ExistingAccountOptions } from "@/components/auth/ExistingAccountOptions";
+import { safeInternalRedirect } from "@/lib/utils/safe-redirect";
+import { existingAccountHref } from "@/lib/auth/procurement-onboarding";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { useState } from "react";
@@ -13,7 +16,13 @@ import { resolveColor } from "@/lib/utils/colors";
 
 const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
-export function SignUpForm() {
+export function SignUpForm({
+  callbackUrl: requestedCallback = "/dashboard",
+}: {
+  callbackUrl?: string;
+}) {
+  const callbackUrl = safeInternalRedirect(requestedCallback, "/dashboard");
+  const [duplicateAccount, setDuplicateAccount] = useState(false);
   const [companyName, setCompanyName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -52,6 +61,7 @@ export function SignUpForm() {
       return;
     }
 
+    setDuplicateAccount(false);
     setIsSubmitting(true);
     try {
       const response = await fetch("/api/employers/signup", {
@@ -61,6 +71,15 @@ export function SignUpForm() {
       });
       const result = await response.json();
 
+      if (!response.ok && result.code === "already_authenticated") {
+        router.push(callbackUrl);
+        router.refresh();
+        return;
+      }
+      if (!response.ok && result.code === "email_taken") {
+        setDuplicateAccount(true);
+        return;
+      }
       if (!response.ok) {
         throw new Error(result.error || "Sign up failed.");
       }
@@ -68,6 +87,7 @@ export function SignUpForm() {
       // Immediately sign in with the same credentials so the new employer
       // doesn't have to fill the sign-in form right after signing up.
       const signInResult = await signIn("credentials", {
+        accountType: "employer",
         email,
         password,
         redirect: false,
@@ -78,25 +98,14 @@ export function SignUpForm() {
           description: "Please sign in with your new account.",
           title: "Account created",
         });
-        router.push(
-          new URLSearchParams(window.location.search).get("callbackUrl") ===
-            "/procurement/organizations"
-            ? "/sign-in?callbackUrl=/procurement/organizations"
-            : "/sign-in"
-        );
+        router.push(existingAccountHref("/sign-in", callbackUrl));
         return;
       }
-
       toast({
         description: "Your business account is ready.",
         title: "Welcome to Caliber",
       });
-      router.push(
-        new URLSearchParams(window.location.search).get("callbackUrl") ===
-          "/procurement/organizations"
-          ? "/procurement/organizations"
-          : "/dashboard"
-      );
+      router.push(callbackUrl);
       router.refresh();
     } catch (error) {
       toast({
@@ -113,6 +122,15 @@ export function SignUpForm() {
 
   return (
     <div className="mx-auto w-full max-w-md rounded-lg border p-6">
+      {duplicateAccount && (
+        <div role="alert" className="mb-5">
+          <p className="text-sm">
+            We couldn’t create an account with this email. If you already use
+            Caliber, sign in using your original account.
+          </p>
+          <ExistingAccountOptions callbackUrl={callbackUrl} />
+        </div>
+      )}
       <form className="space-y-5" onSubmit={handleSubmit}>
         <div className="space-y-4">
           <div className="space-y-2">
@@ -191,7 +209,7 @@ export function SignUpForm() {
           type="submit"
           variant="primary"
         >
-          {isSubmitting ? "Creating account..." : "Create employer account"}
+          {isSubmitting ? "Creating account..." : "Create business account"}
         </Button>
       </form>
     </div>

@@ -115,7 +115,13 @@ export async function createEmployer(
     .single();
 
   if (error) {
-    if (error.code === "23505") {
+    // Verified local catalog: employers_email_key is UNIQUE (email), while
+    // employers_pkey is UNIQUE (id). Do not mislabel every uniqueness error.
+    if (
+      error.code === "23505" &&
+      (error.message?.includes('unique constraint "employers_email_key"') ||
+        /^Key \(email\)=/.test(error.details ?? ""))
+    ) {
       throw new EmployerAuthError(
         "An account with this email already exists.",
         "email_taken"

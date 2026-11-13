@@ -3,6 +3,7 @@
 import { useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { useState } from "react";
+import { safeInternalRedirect } from "@/lib/utils/safe-redirect";
 import { Button } from "@/components/ui/button";
 
 function GoogleIcon() {
@@ -47,7 +48,10 @@ export function SeekerSignInButtons() {
 
   const handleSignIn = (provider: "google" | "linkedin") => {
     setPendingProvider(provider);
-    const callbackUrl = searchParams.get("callbackUrl") || "/account";
+    const callbackUrl = safeInternalRedirect(
+      searchParams.get("callbackUrl"),
+      "/account"
+    );
     signIn(provider, { callbackUrl });
   };
 

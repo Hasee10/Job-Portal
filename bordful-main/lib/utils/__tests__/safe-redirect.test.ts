@@ -49,3 +49,23 @@ describe("safeInternalRedirect", () => {
     );
   });
 });
+
+describe("callback normalization attacks", () => {
+  it.each([
+    "/\\evil.example",
+    "/%5cevil.example",
+    "/%2fevil.example",
+    "/\nevil.example",
+    "/%09/evil.example",
+    "https://evil.example",
+    "//evil.example",
+  ])("rejects %s", (target) => {
+    expect(safeInternalRedirect(target, "/account")).toBe("/account");
+  });
+});
+
+it("preserves legitimate encoded Jobs searches", () => {
+  expect(safeInternalRedirect("/jobs?q=software%20engineer", "/account")).toBe(
+    "/jobs?q=software%20engineer"
+  );
+});
