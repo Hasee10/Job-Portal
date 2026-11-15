@@ -31,7 +31,7 @@
     "@radix-ui/react-slot": "^1.2.3",
     "@radix-ui/react-switch": "^1.4.1",
     "@radix-ui/react-toast": "^1.2.15",
-    "@react-pdf/renderer": "^4.5.1",
+    "@react-pdf/renderer": "^4.9.0",
     "@supabase/supabase-js": "^2.119.0",
     "@types/bcryptjs": "^3.0.0",
     "axios": "^1.21.1",
