@@ -1,0 +1,45 @@
+-- STAGE 2 OF 3 of the rollout started in
+-- 20261113_scraped_tenders_facets_performance.sql. A SEPARATE FILE, not a
+-- statement appended to that one, because it must be run differently:
+--
+-- CREATE INDEX CONCURRENTLY cannot run inside a transaction block. A plain
+-- CREATE INDEX takes a SHARE lock on the table for the whole build, which
+-- blocks every write to it - including the scraper's own upserts - until
+-- the build finishes. CONCURRENTLY avoids that lock, at the cost of a
+-- slower, two-pass build, which is the correct tradeoff for an index added
+-- to a table something else is writing to continuously.
+--
+-- Earlier revisions of this change bundled a plain `CREATE INDEX IF NOT
+-- EXISTS` into the stage 1 file, with a comment saying to re-run it
+-- CONCURRENTLY afterward. That instruction did not actually work: stage 1
+-- would have already built the index the blocking way, and IF NOT EXISTS
+-- makes the later CONCURRENTLY statement a silent no-op rather than a real
+-- rebuild - so stage 1 never contains any form of CREATE INDEX, and this
+-- is the only place the index is built.
+--
+-- MUST run through psql or an equivalent plain client with autocommit, one
+-- statement, nothing else in the same batch - not through a SQL editor or
+-- migration runner that wraps it in BEGIN/COMMIT, which errors on
+-- CONCURRENTLY, and not concatenated with the stage 1 file.
+--
+-- Lets .overlaps('cpv_divisions', prefixes) and the facets function's
+-- `cpv_divisions && category_prefixes` resolve as index scans instead of
+-- sequential scans, the same way the existing GIN index on cpv_codes
+-- already does for other array lookups on this table. Both already work
+-- correctly without this index - it is a performance step, not a
+-- correctness dependency, so stage 3's backfill does not need to wait for
+-- it specifically, though running it before stage 3 means the backfill's
+-- own queries also benefit.
+create index concurrently if not exists scraped_tenders_cpv_divisions_idx
+  on public.scraped_tenders using gin (cpv_divisions);
+
+-- Verify the build actually finished valid - a CONCURRENTLY build that is
+-- interrupted (connection drop, cancelled query) leaves an INVALID index
+-- that is silently skipped by the planner and must be dropped and rebuilt,
+-- not repaired in place:
+--   select indexrelid::regclass, indisvalid
+--   from pg_index
+--   where indexrelid = 'public.scraped_tenders_cpv_divisions_idx'::regclass;
+-- indisvalid must be true. If it is false:
+--   drop index concurrently public.scraped_tenders_cpv_divisions_idx;
+-- then re-run this file.
