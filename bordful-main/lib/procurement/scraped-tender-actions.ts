@@ -1,6 +1,5 @@
 import "server-only";
 
-import { cache } from "react";
 import { createClient } from "@supabase/supabase-js";
 import { TENDER_CATEGORIES } from "./tender-categories";
 
@@ -51,31 +50,24 @@ export type TenderListOpts = {
   perPage?: number;
 };
 
-// Shared only within a server render. Full coverage is necessary for CPV prefix
-// facets: the existing schema has arrays of full codes, not division columns.
-const getActiveIndex = cache(async (): Promise<ScrapedTenderRow[]> => {
-  const rows: ScrapedTenderRow[] = [];
-  const client = getAdminClient();
-  for (let offset = 0; ; offset += 1000) {
-    const { data, error } = await client
-      .from("scraped_tenders")
-      .select("id,source,country,cpv_codes")
-      .eq("is_active", true)
-      .order("id")
-      .range(offset, offset + 999);
-    if (error) throw error;
-    rows.push(...(data ?? []).map(rowToTender));
-    if (!data || data.length < 1000) break;
-  }
-  return rows;
-});
-
 // Quote the PostgREST literal and escape LIKE metacharacters so user input
 // remains a literal substring, including commas, percent and underscores.
 function keywordPattern(value: string): string {
   return JSON.stringify(`%${value.replace(/[\\%_*]/g, "\\$&")}%`);
 }
 
+// Every filter is applied in the database and windowed with range() before
+// anything reaches this process - no step here fetches more than one page
+// of rows, regardless of how many tenders are active.
+//
+// Category filtering used to need a full-table fetch into JavaScript: CPV
+// codes are full 8-digit codes, and matching a 2-digit division prefix
+// isn't expressible through PostgREST's query operators against that
+// column. migrations/20261113_scraped_tenders_facets_performance.sql adds
+// cpv_divisions, a trigger-maintained, GIN-indexed text[] of exactly the
+// 2-digit divisions each tender's codes fall into, so a category filter is
+// now a plain, indexed array-overlap predicate like the existing
+// source/country filters - no separate code path, no JS-side scan.
 export async function listActiveTenders(
   opts: TenderListOpts
 ): Promise<{ tenders: ScrapedTenderRow[]; total: number }> {
@@ -87,17 +79,18 @@ export async function listActiveTenders(
       { count: "exact" }
     )
     .eq("is_active", true);
-  if (opts.sources?.length) query = query.in("source", opts.sources);
-  if (opts.countries?.length) query = query.in("country", opts.countries);
+  if (opts.sources?.length) {
+    query = query.in("source", opts.sources);
+  }
+  if (opts.countries?.length) {
+    query = query.in("country", opts.countries);
+  }
+  if (opts.categories?.length) {
+    query = query.overlaps("cpv_divisions", opts.categories);
+  }
   if (opts.query?.trim()) {
     const pattern = keywordPattern(opts.query.trim());
     query = query.or(`title.ilike.${pattern},buyer_name.ilike.${pattern}`);
-  }
-  // CPV prefix matching is not expressible with PostgREST array containment.
-  // Scan the shared narrow index, then restrict SQL by exact full CPV codes.
-  if (opts.categories?.length) {
-    const index = await getActiveIndex();
-    return listCategoryTenders(opts, index);
   }
   const perPage = opts.perPage ?? 20;
   const start = ((opts.page ?? 1) - 1) * perPage;
@@ -109,72 +102,10 @@ export async function listActiveTenders(
     })
     .order("id")
     .range(start, start + perPage - 1);
-  if (error) throw error;
-  return { tenders: (data ?? []).map(rowToTender), total: count ?? 0 };
-}
-
-async function listCategoryTenders(
-  opts: TenderListOpts,
-  index: ScrapedTenderRow[]
-) {
-  const ids = index
-    .filter(
-      (row) =>
-        (!opts.sources?.length || opts.sources.includes(row.source)) &&
-        (!opts.countries?.length ||
-          opts.countries.includes(row.country ?? "")) &&
-        row.cpvCodes.some((code) =>
-          opts.categories?.some((prefix) => code.startsWith(prefix))
-        )
-    )
-    .map((row) => row.id);
-  const rows: ScrapedTenderRow[] = [];
-  const client = getAdminClient();
-  for (let offset = 0; offset < ids.length; offset += 100) {
-    let query = client
-      .from("scraped_tenders")
-      .select("id,title,buyer_name,publication_date,deadline_date")
-      .eq("is_active", true)
-      .in("id", ids.slice(offset, offset + 100));
-    if (opts.query?.trim()) {
-      const pattern = keywordPattern(opts.query.trim());
-      query = query.or(`title.ilike.${pattern},buyer_name.ilike.${pattern}`);
-    }
-    const { data, error } = await query;
-    if (error) throw error;
-    rows.push(...(data ?? []).map(rowToTender));
+  if (error) {
+    throw error;
   }
-  const deadline = opts.sort === "deadline";
-  rows.sort((a, b) => {
-    const left = deadline ? a.deadlineDate : a.publicationDate;
-    const right = deadline ? b.deadlineDate : b.publicationDate;
-    if (!left && !right) return a.id.localeCompare(b.id);
-    if (!left) return 1;
-    if (!right) return -1;
-    return (
-      (deadline ? left.localeCompare(right) : right.localeCompare(left)) ||
-      a.id.localeCompare(b.id)
-    );
-  });
-  const perPage = opts.perPage ?? 20;
-  const start = ((opts.page ?? 1) - 1) * perPage;
-  const pageIds = rows.slice(start, start + perPage).map((row) => row.id);
-  if (!pageIds.length) return { tenders: [], total: rows.length };
-  const { data, error } = await client
-    .from("scraped_tenders")
-    .select(
-      "id,source,title,buyer_name,country,cpv_codes,publication_date,deadline_date,url"
-    )
-    .in("id", pageIds);
-  if (error) throw error;
-  const byId = new Map((data ?? []).map((row) => [row.id, rowToTender(row)]));
-  return {
-    tenders: pageIds.flatMap((id) => {
-      const row = byId.get(id);
-      return row ? [row] : [];
-    }),
-    total: rows.length,
-  };
+  return { tenders: (data ?? []).map(rowToTender), total: count ?? 0 };
 }
 
 export async function getActiveTenderCount(): Promise<number> {
@@ -182,7 +113,9 @@ export async function getActiveTenderCount(): Promise<number> {
     .from("scraped_tenders")
     .select("id", { count: "exact", head: true })
     .eq("is_active", true);
-  if (error) throw error;
+  if (error) {
+    throw error;
+  }
   return count ?? 0;
 }
 
@@ -192,33 +125,52 @@ export type TenderFacets = {
   countries: { code: string; count: number }[];
 };
 
-// Global facets cover all active records, independently of current filters.
+// Global facets cover all active records, independently of current filters -
+// the sidebar always shows every option with its true count, not just the
+// ones that survive the current filter selection.
+//
+// One round trip, computed entirely in Postgres by
+// scraped_tender_facets(): previously this called getActiveIndex(), which
+// paginated id/source/country/cpv_codes for every active row (tens of
+// thousands in production) into this process and grouped them in
+// JavaScript on every single page view. That function and the full-table
+// fetch it depended on are gone; the database does the grouping and sends
+// back only the handful of rows this function needs.
 export async function getTenderFacets(): Promise<TenderFacets> {
-  const all = await getActiveIndex();
+  const categoryPrefixes = TENDER_CATEGORIES.map((c) => c.cpvPrefix);
+  const { data, error } = await getAdminClient().rpc("scraped_tender_facets", {
+    category_prefixes: categoryPrefixes,
+  });
+  if (error) {
+    throw error;
+  }
 
+  const rows = (data ?? []) as { kind: string; key: string; cnt: number }[];
+  const countBy = (kind: string) => {
+    const counts = new Map<string, number>();
+    for (const row of rows) {
+      if (row.kind === kind) {
+        counts.set(row.key, Number(row.cnt));
+      }
+    }
+    return counts;
+  };
+
+  const categoryCounts = countBy("category");
   const categories = TENDER_CATEGORIES.map((c) => ({
-    count: all.filter((t) =>
-      t.cpvCodes.some((code) => code.startsWith(c.cpvPrefix))
-    ).length,
+    count: categoryCounts.get(c.cpvPrefix) ?? 0,
     cpvPrefix: c.cpvPrefix,
     label: c.label,
   }));
 
-  const sourceCounts = new Map<string, number>();
-  const countryCounts = new Map<string, number>();
-  for (const t of all) {
-    sourceCounts.set(t.source, (sourceCounts.get(t.source) ?? 0) + 1);
-    if (t.country) {
-      countryCounts.set(t.country, (countryCounts.get(t.country) ?? 0) + 1);
-    }
-  }
-
-  const sources = Array.from(sourceCounts.entries())
-    .map(([source, count]) => ({ count, source }))
+  const sources = rows
+    .filter((row) => row.kind === "source")
+    .map((row) => ({ count: Number(row.cnt), source: row.key }))
     .sort((a, b) => b.count - a.count);
 
-  const countries = Array.from(countryCounts.entries())
-    .map(([code, count]) => ({ code, count }))
+  const countries = rows
+    .filter((row) => row.kind === "country")
+    .map((row) => ({ code: row.key, count: Number(row.cnt) }))
     .sort((a, b) => b.count - a.count);
 
   return { categories, countries, sources };
